@@ -37,13 +37,15 @@ def main(scratch, out):
     # per fixture matrix
     with (O / "parity-per-fixture.tsv").open("w") as fh:
         w = csv.writer(fh, delimiter="\t")
-        w.writerow(["fixture", "description", "comparator"] + routes)
+        w.writerow(["fixture", "description", "comparator", "comparator_state", "comparator_candidate_ST"] + routes)
         names = list(manifest["fixtures"])
         for n in names:
-            row = [n, manifest["fixtures"][n]["description"], ""]
+            row = [n, manifest["fixtures"][n]["description"], "", "", ""]
             for r in routes:
                 rec = next(x for x in cmp[r] if x["fixture"] == n)
                 row[2] = rec.get("comparator", row[2])
+                row[3] = rec.get("comparator_state", row[3])
+                row[4] = rec.get("comparator_candidate_ST") or row[4]
                 row.append({"PASS": "PASS", "FAIL": "FAIL: " + rec.get("differences", ""), "CANDIDATE_FAILED": f"CRASH(exit {rec['candidate_exit']})"}[rec["parity"]])
             w.writerow(row)
     # summary

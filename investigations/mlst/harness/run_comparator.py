@@ -30,7 +30,7 @@ def main(package, fixtures, out, names):
         with fasta.open("w") as fh:
             for loc in LOCI:
                 for line in (scheme_dir / f"{loc}.tfa").read_text().splitlines():
-                    fh.write(("&gt;" if False else ">ecloacae." + line[1:]) + "\n" if line.startswith(">") else line + "\n")
+                    fh.write((">ecloacae." + line[1:] if line.startswith(">") else line) + "\n")
         rec = timed(["makeblastdb", "-hash_index", "-in", fasta, "-dbtype", "nucl", "-title", "PubMLST", "-parse_seqids"],
                     stdout=db_dir / "makeblastdb.stdout", stderr=db_dir / "makeblastdb.stderr", env=env)
         assert rec["exit_code"] == 0, rec
