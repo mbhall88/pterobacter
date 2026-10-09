@@ -354,6 +354,34 @@ mod v2 {
     }
 
     #[test]
+    fn records_without_a_query_id_produce_no_decision() {
+        let f = files(&input());
+        // Swapped native IDs that only a query ID could expose.
+        let text = std::fs::read_to_string(&f.records)
+            .unwrap()
+            .replace("\"id\":\"query\",", "")
+            .replace(
+                "\"native_query_id\":\"query\"",
+                "\"native_query_id\":\"swapped\"",
+            );
+        std::fs::write(&f.records, text).unwrap();
+        let (code, d, stderr) = dev(
+            "saved-evidence",
+            &f,
+            &[
+                ("--policy", "conservative-assembly-anim-v2"),
+                ("--reference-inventory", "inventory"),
+                ("--anim-records", "records"),
+                ("--anim-method-profile", PROFILE),
+                ("--exclude-references", "mask"),
+            ],
+        );
+        assert_eq!(code, Some(1));
+        assert_eq!(d, Value::Null);
+        assert!(stderr.contains("ANIm query ID required"), "{stderr}");
+    }
+
+    #[test]
     fn a_pretty_printed_json_record_file_is_read_as_one_record() {
         let mut witness = input();
         witness["anim"] = json!({"A1": reciprocal("96.2", "85", "85")});

@@ -8,7 +8,7 @@ use serde_json::{json, Value};
 fn decide(input: &Value, mask: &[&str]) -> Value {
     let (rescue, records) = p1::input("mask", input, mask).unwrap();
     let anim = rescue.bind_supplied(&records, PROFILE).unwrap();
-    rescue.decide(&anim).to_value().clone()
+    rescue.decide(&anim).unwrap().to_value().clone()
 }
 
 /// A rescue in species A that an unreturned species-C reference challenges through ANIm.

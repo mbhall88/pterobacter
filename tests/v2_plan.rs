@@ -14,7 +14,7 @@ fn plan(input: &Value, anim: &[(&str, Value)]) -> Value {
     }
     let (rescue, records) = p1::input("plan", &input, &[]).unwrap();
     let bound = rescue.bind_to_plan(&records, PROFILE).unwrap();
-    rescue.plan(&bound).to_value().clone()
+    rescue.plan(&bound).unwrap().to_value().clone()
 }
 
 /// Species A nearest at 95.5 (A2), two more A candidates, an A reference with low skani AF, a
@@ -218,10 +218,14 @@ fn the_plan_does_not_depend_on_record_order() {
         let records = AnimRecords::from_jsonl(t).unwrap();
         rescue
             .plan(&rescue.bind_to_plan(&records, PROFILE).unwrap())
+            .unwrap()
             .to_json()
     };
     assert_eq!(plan_of(&text), plan_of(&reversed.join("\n")));
-    assert_ne!(plan_of(&text), rescue.plan(&BoundAnim::none()).to_json());
+    assert_ne!(
+        plan_of(&text),
+        rescue.plan(&BoundAnim::none()).unwrap().to_json()
+    );
 }
 
 #[test]

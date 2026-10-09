@@ -300,13 +300,21 @@ fn execute(command: DevCommand) -> Result<String, String> {
                 ));
             }
             let (rescue, bound, files) = rescue_inputs(&inputs, &v2, &mut pins)?;
-            let mut value = rescue.decide(&bound).to_value().clone();
+            let mut value = rescue
+                .decide(&bound)
+                .map_err(|e| e.to_string())?
+                .to_value()
+                .clone();
             value["input"]["anim_record_files"] = files;
             value
         }
         DevCommand::RescuePlan { inputs, v2 } => {
             let (rescue, bound, files) = rescue_inputs(&inputs, &v2, &mut pins)?;
-            let mut value = rescue.plan(&bound).to_value().clone();
+            let mut value = rescue
+                .plan(&bound)
+                .map_err(|e| e.to_string())?
+                .to_value()
+                .clone();
             value["input"]["anim_record_files"] = files;
             value
         }

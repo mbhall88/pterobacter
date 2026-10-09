@@ -291,7 +291,7 @@ pub fn input(
 pub fn decide(case: &Value) -> Result<Value, EvidenceError> {
     let (rescue, records) = input(case["id"].as_str().unwrap(), &case["input"], &[])?;
     let anim = rescue.bind_supplied(&records, PROFILE)?;
-    Ok(rescue.decide(&anim).to_value().clone())
+    Ok(rescue.decide(&anim)?.to_value().clone())
 }
 
 /// The P1 case called `id`.

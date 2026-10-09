@@ -334,10 +334,12 @@ impl AnimRecords {
         }
         let query = input(raw.query, "query")?;
         let reference = input(raw.reference, "reference")?;
-        if reference
-            .as_ref()
-            .is_some_and(|r| r.id.as_deref().is_none_or(|id| id.trim().is_empty()))
-        {
+        // Both IDs are needed to check that each orientation's native roles match its direction.
+        let blank = |i: &RawInput| i.id.as_deref().is_none_or(|id| id.trim().is_empty());
+        if query.as_ref().is_some_and(blank) {
+            return invalid("ANIm query ID required");
+        }
+        if reference.as_ref().is_some_and(blank) {
             return invalid("ANIm reference ID required");
         }
         let (qb, rb) = (

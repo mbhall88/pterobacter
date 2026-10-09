@@ -120,8 +120,13 @@ enum Rule {
 /// ANIm records bound to one [`RescueInput`]: same query, panel reference hashes and profile.
 /// Records with no query or reference binding are counted as unattributed and never bound, so
 /// their pairs stay outstanding (`not_run`).
+///
+/// A bound set remembers the evidence, warnings, panel, mask and thresholds it was bound
+/// under, and [`RescueInput::plan`] and [`RescueInput::decide`] refuse it for any other input.
+/// [`BoundAnim::none`] carries no measurements and is accepted by every input.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BoundAnim {
+    input: Option<Value>,
     pairs: BTreeMap<String, Pair>,
     profile: Option<String>,
     rule: Rule,
@@ -134,6 +139,7 @@ impl BoundAnim {
     /// No ANIm at all, as for a first dry plan.
     pub fn none() -> Self {
         BoundAnim {
+            input: None,
             pairs: BTreeMap::new(),
             profile: None,
             rule: Rule::Supplied,
@@ -325,6 +331,24 @@ impl RescueInput {
         })
     }
 
+    /// Everything that decides which records bind and which pairs the dry plan requests.
+    fn binding_key(&self) -> Value {
+        json!({"evidence_sha256": self.evidence.source_sha256(),
+            "problem_warnings": self.evidence.problem_warnings(),
+            "primary_inventory_sha256": self.full_panel.source_sha256(),
+            "mask": self.mask, "thresholds": self.thresholds.to_json()})
+    }
+
+    /// Refuse ANIm bound under a different evidence, warning, panel, mask or threshold input.
+    fn check_binding(&self, anim: &BoundAnim) -> Result<(), EvidenceError> {
+        match &anim.input {
+            Some(key) if *key != self.binding_key() => {
+                invalid("ANIm records were bound to a different query, panel, mask or thresholds")
+            }
+            _ => Ok(()),
+        }
+    }
+
     /// Bind every record for this query whose provenance matches: query hash and length,
     /// panel reference hash, and `profile`. Records for other queries are skipped and counted;
     /// masked references are excluded. Mismatched provenance for this query is an error.
@@ -335,6 +359,7 @@ impl RescueInput {
     ) -> Result<BoundAnim, EvidenceError> {
         let query = &self.evidence.provenance().query_sha256;
         let mut bound = BoundAnim {
+            input: Some(self.binding_key()),
             profile: Some(profile.to_owned()),
             ..BoundAnim::none()
         };
@@ -648,7 +673,8 @@ impl RescueInput {
 
     /// The dry rescue plan: trigger, nearest parent, witnesses and the pairs still required.
     /// It reads saved evidence only and executes no alignment.
-    pub fn plan(&self, anim: &BoundAnim) -> RescuePlan {
+    pub fn plan(&self, anim: &BoundAnim) -> Result<RescuePlan, EvidenceError> {
+        self.check_binding(anim)?;
         let a = self.analyse(anim);
         let requested = self.requested(&a);
         let source = |id: &str| self.panel.get(id).map(|r| r.source_sha256.clone());
@@ -704,12 +730,13 @@ impl RescueInput {
             "counts": self.counts(&requested, anim)});
         merge(&mut value, self.policy_json());
         merge(&mut value, self.trigger_json(&a));
-        RescuePlan { value }
+        Ok(RescuePlan { value })
     }
 
     /// Decide v2. Outside the trigger band the v1 skani rules apply, plus the old method veto
     /// for any supplied ANIm. Inside it, P1's ordered rescue applies.
-    pub fn decide(&self, anim: &BoundAnim) -> Decision {
+    pub fn decide(&self, anim: &BoundAnim) -> Result<Decision, EvidenceError> {
+        self.check_binding(anim)?;
         let a = self.analyse(anim);
         let t = &self.thresholds;
         let vetoes: BTreeSet<String> = a.method_vetoes.iter().map(|r| (*r).to_owned()).collect();
@@ -832,7 +859,7 @@ impl RescueInput {
             "purity_established": false});
         merge(&mut value, self.policy_json());
         merge(&mut value, self.trigger_json(&a));
-        Decision::from_value(value)
+        Ok(Decision::from_value(value))
     }
 
     /// The five highest skani references, plus every exact tie at fifth place.

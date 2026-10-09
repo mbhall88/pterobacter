@@ -32,9 +32,11 @@ skani comparisons use the emitted two-decimal values. A threshold T compares to 
 
 A record is bound when its query SHA-256 matches the evidence and its reference ID and SHA-256 match the panel. Its method profile must match the expected profile. Every record for one query must agree on the query length. Records for other queries are skipped and counted, and masked references are excluded. A record with no query or reference binding is counted as unattributed and never bound, so its pair stays `not_run`. A stale hash, wrong profile, conflicting duplicate or malformed metrics is an error.
 
+A bound set records the evidence, problem warnings, primary inventory, mask and thresholds it was bound under. `decide` and `plan` refuse it for any other input, so records bound for one query cannot be reused for another. `BoundAnim::none()` holds no measurements and works with every input.
+
 `bind_to_plan` applies the evaluation's binding rule on top. It keeps only the pairs the dry plan requests under the same evidence, mask and thresholds. Witness records decide whether the competitor panel is requested, and every other record is excluded with `not_requested_by_dry_plan`. An out-of-band or already-blocked record therefore binds no ANIm. `bind_supplied` keeps every provenance-bound record, which is how P1 treats supplied evidence; the P1 acceptance cases run through it.
 
-Records use the `terobacter-anim-pair-v1` format from the per-pair ANIm operation (issue #8). Both bindings must cover the whole assembly, and the reference must come from the `primary_whole` component. Each orientation must name the native reference and query its direction implies: the reference is the native reference in `QR`, and the query in `RQ`. Orientation status `aligned` or `no_alignment` is a measurement, `error` or `not_run` a failure, and any other status an error. Receipts and native artifacts are not read.
+Records use the `terobacter-anim-pair-v1` format from the per-pair ANIm operation (issue #8). A query or reference binding must carry its ID, since the native-role check needs both. Both bindings must cover the whole assembly, and the reference must come from the `primary_whole` component. Each orientation must name the native reference and query its direction implies: the reference is the native reference in `QR`, and the query in `RQ`. Orientation status `aligned` or `no_alignment` is a measurement, `error` or `not_run` a failure, and any other status an error. Receipts and native artifacts are not read.
 
 ## Dry rescue plan
 
