@@ -5,8 +5,9 @@
 pub const WORD: usize = 32;
 pub const REWARD: i32 = 1;
 pub const PENALTY: i32 = -2;
-/// blastn default ungapped X-drop (20 bits) converted with lambda = 1.28: floor(20 ln2 / 1.28).
-pub const XDROP: i32 = 10;
+/// Raw ungapped X-drop. blastn documents 20 bits but its raw conversion is not stated; comparator hits bracket it
+/// to 12..=14 (11 and 15 each break one hit per fixture), so the midpoint is used. See protocol addendum B.
+pub const XDROP: i32 = 13;
 
 #[derive(Clone, Debug)]
 pub struct Hsp {

@@ -36,20 +36,22 @@ def main(package, fixtures, out, names):
         assert rec["exit_code"] == 0, rec
         (db_dir / "makeblastdb.record.json").write_text(json.dumps(rec, indent=1))
     manifest = json.loads((fixtures / "manifest.json").read_text())
-    todo = names or list(manifest["fixtures"])
-    for name in todo:
+    jobs = [(n, fixtures / manifest["fixtures"][n]["file"]) for n in (names or manifest["fixtures"])]
+    if not names:
+        jobs += [("invalid_" + p.stem, p) for p in sorted((fixtures / "invalid").iterdir())]
+        jobs.append(("invalid_missing_file", fixtures / "invalid" / "does_not_exist.fna"))
+    for name, fa in jobs:
         d = out / name
         if (d / "record.json").exists():
             continue
         d.mkdir(exist_ok=True)
-        fa = fixtures / manifest["fixtures"][name]["file"]
         with tempfile.TemporaryDirectory(prefix="mlstcmp-", dir="/tmp") as tmp:
             e = dict(env, TMPDIR=tmp)
             argv = ["mlst", "--scheme", "ecloacae", "--datadir", package / "pubmlst", "--blastdb", fasta,
                     "--minid", "95", "--mincov", "50", "--threads", "1", "--full", "--json", d / "mlst.json",
                     "--debug", "--nopath", fa]
             rec = timed(argv, stdout=d / "mlst.tsv", stderr=d / "mlst.debug", env=e)
-        rec["input_sha256"] = sha256(fa)
+        rec["input_sha256"] = sha256(fa) if fa.exists() else None
         rec["fixture"] = name
         (d / "record.json").write_text(json.dumps(rec, indent=1))
         if rec["exit_code"] == 0:
