@@ -100,5 +100,18 @@ class BudgetTests(unittest.TestCase):
             active.finish()
             second.reserve('after completion',30,1).finish()
 
+    def test_failed_cleanup_overrun_is_charged_and_stops_future_work(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=pathlib.Path(d)/'ledger.json'
+            clock=[0.0]
+            lease=Budget(p).reserve('timed out',30,2,lambda:clock[0])
+            clock[0]=35
+            lease.finish(failed=True)
+            data=json.loads(p.read_text())
+            self.assertEqual(data['entries'][0]['charged_seconds'],70)
+            self.assertTrue(data['entries'][0]['cleanup_bound_exceeded'])
+            with self.assertRaisesRegex(BudgetExhausted,'cleanup'):
+                Budget(p).reserve('must stop',30,1)
+
 if __name__ == '__main__':
     unittest.main()
