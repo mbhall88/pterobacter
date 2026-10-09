@@ -4,6 +4,7 @@
 //! (command line, browser, GUI) can supply the evidence however it likes.
 
 use std::cmp::Reverse;
+use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Deserializer};
 
@@ -11,6 +12,9 @@ use serde::{Deserialize, Deserializer};
 pub const EVIDENCE_SCHEMA: &str = "2.0.0-dev-evidence";
 const RECORD_TYPE: &str = "development_evidence_only";
 const PRIMARY_COMPONENT: &str = "primary_whole";
+const ASSEMBLY: &str = "assembly";
+const ESTIMATES_RETURNED: &str = "estimates_returned";
+const NO_ESTIMATE_RETURNED: &str = "no_estimate_returned";
 const UNASSIGNED_STATES: [&str; 3] = ["not_evaluated", "unresolved", "unassigned"];
 
 #[derive(Debug, thiserror::Error)]
@@ -191,7 +195,7 @@ impl RawEvidence {
                 self.schema_version, self.record_type
             ));
         }
-        if self.input_kind != "assembly" || self.provenance.input_kind != "assembly" {
+        if self.input_kind != ASSEMBLY || self.provenance.input_kind != ASSEMBLY {
             return invalid("only assembly evidence is supported");
         }
         if self.units.ani != "percent" || self.units.aligned_fraction != "percent" {
@@ -220,7 +224,8 @@ impl RawEvidence {
             references.push(row.to_reference()?);
         }
         check_ranking(&references)?;
-        check_counts(&self, &references)?;
+        check_reference_identities(&references)?;
+        check_panel_summary(&self, &references)?;
 
         Ok(SavedEvidence {
             references,
@@ -250,12 +255,16 @@ impl RawReference {
         let reference = Reference {
             id: id.clone(),
             species: match (self.species_id.is_empty(), self.species_name.is_empty()) {
-                (true, _) => None,
+                (true, true) => None,
                 (false, false) => Some(Taxon {
                     id: self.species_id.clone(),
                     name: self.species_name.clone(),
                 }),
-                (false, true) => return invalid(format!("{id}: species ID without a name")),
+                _ => {
+                    return invalid(format!(
+                        "{id}: species ID and name must both be present or absent"
+                    ))
+                }
             },
             lineage_id: (!self.lineage_id.is_empty()).then(|| self.lineage_id.clone()),
             ani: self.ani_percent,
@@ -282,7 +291,31 @@ fn check_ranking(references: &[Reference]) -> Result<(), EvidenceError> {
     }
 }
 
-fn check_counts(raw: &RawEvidence, references: &[Reference]) -> Result<(), EvidenceError> {
+/// Reference IDs are unique, and one species ID always carries the same display name, so the
+/// decision can compare species by ID alone.
+fn check_reference_identities(references: &[Reference]) -> Result<(), EvidenceError> {
+    let mut ids = HashSet::new();
+    let mut species_names: HashMap<&str, &str> = HashMap::new();
+    for reference in references {
+        if !ids.insert(reference.id.as_str()) {
+            return invalid(format!("{}: reference IDs must be unique", reference.id));
+        }
+        if let Some(taxon) = &reference.species {
+            let name = species_names.entry(&taxon.id).or_insert(&taxon.name);
+            if *name != taxon.name {
+                return invalid(format!(
+                    "{}: species {} appears with conflicting names",
+                    reference.id, taxon.id
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
+/// The summary fields must agree with the rows supplied, so a truncated or edited panel
+/// cannot quietly drop a competitor.
+fn check_panel_summary(raw: &RawEvidence, references: &[Reference]) -> Result<(), EvidenceError> {
     let returned = references.len();
     let consistent = raw.unique_hit_count == returned
         && raw.reference_count > 0
@@ -302,9 +335,9 @@ fn check_counts(raw: &RawEvidence, references: &[Reference]) -> Result<(), Evide
         return invalid("nearest reference IDs do not match the highest-ANI rows");
     }
     let status = if returned > 0 {
-        "estimates_returned"
+        ESTIMATES_RETURNED
     } else {
-        "no_estimate_returned"
+        NO_ESTIMATE_RETURNED
     };
     if raw.evidence_status != status {
         return invalid("evidence status does not match the rows supplied");

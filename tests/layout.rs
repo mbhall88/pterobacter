@@ -7,7 +7,7 @@ use std::process::Command;
 
 use serde_json::Value;
 
-fn binary_targets() -> Vec<(String, Vec<String>)> {
+fn package() -> Value {
     let output = Command::new(env!("CARGO"))
         .args([
             "metadata",
@@ -26,9 +26,16 @@ fn binary_targets() -> Vec<(String, Vec<String>)> {
         String::from_utf8_lossy(&output.stderr)
     );
     let metadata: Value = serde_json::from_slice(&output.stdout).unwrap();
-    let package = &metadata["packages"][0];
-    assert_eq!(package["name"], "terobacter", "one crate only");
-    package["targets"]
+    assert_eq!(
+        metadata["packages"].as_array().unwrap().len(),
+        1,
+        "one crate only"
+    );
+    metadata["packages"][0].clone()
+}
+
+fn binary_targets() -> Vec<(String, Vec<String>)> {
+    package()["targets"]
         .as_array()
         .unwrap()
         .iter()
@@ -54,6 +61,16 @@ fn a_default_install_exposes_only_tero_and_terobacter() {
     installed.sort();
 
     assert_eq!(installed, ["tero", "terobacter"]);
+}
+
+#[test]
+fn the_development_feature_is_not_enabled_by_default() {
+    let default_features = package()["features"]["default"].clone();
+
+    assert!(
+        default_features.is_null() || !default_features.to_string().contains("dev"),
+        "dev must stay out of default builds and installs: {default_features}"
+    );
 }
 
 #[test]

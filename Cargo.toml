@@ -12,10 +12,9 @@ categories = ["science", "command-line-utilities"]
 license-file = "LICENSE"
 # Public release is a later author decision, so accidental publication is blocked.
 publish = false
-exclude = ["investigations/*"]
 
 [features]
-# Evaluation-only operations (R2-R5). Built only on request; never part of a default build or install.
+# Evaluation-only operations. Built only on request; never part of a default build or install.
 dev = []
 
 [lib]
