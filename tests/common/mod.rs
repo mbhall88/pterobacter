@@ -29,6 +29,7 @@ pub fn assert_matches_frozen_call(decision: &Value) {
 pub struct Row {
     id: &'static str,
     species: Option<&'static str>,
+    subspecies: Option<&'static str>,
     lineage: Option<&'static str>,
     ani: f64,
     af_query: f64,
@@ -41,6 +42,7 @@ pub fn row(id: &'static str, species: Option<&'static str>, ani: f64, aq: f64, a
         id,
         species,
         lineage: None,
+        subspecies: None,
         ani,
         af_query: aq,
         af_reference: ar,
@@ -48,6 +50,13 @@ pub fn row(id: &'static str, species: Option<&'static str>, ani: f64, aq: f64, a
 }
 
 impl Row {
+    pub fn subspecies(self, subspecies: &'static str) -> Row {
+        Row {
+            subspecies: Some(subspecies),
+            ..self
+        }
+    }
+
     pub fn lineage(self, lineage: &'static str) -> Row {
         Row {
             lineage: Some(lineage),
@@ -81,6 +90,10 @@ pub fn evidence_json(rows: &[Row]) -> Value {
                 "species_id": r.species.unwrap_or(""),
                 "species_name": r.species.map_or(String::new(), |s| format!("Enterobacter {s}")),
                 "lineage_id": r.lineage.unwrap_or(""),
+                "subspecies_id": r.subspecies.unwrap_or(""),
+                "subspecies_name": r.subspecies.map_or(String::new(), |s| format!("Enterobacter {s}")),
+                "reference_role": "diversity",
+                "name_status": "validly_published_correct_name",
                 "ani_percent": r.ani,
                 "aligned_fraction_query_percent": r.af_query,
                 "aligned_fraction_reference_percent": r.af_reference,
@@ -93,10 +106,13 @@ pub fn evidence_json(rows: &[Row]) -> Value {
         "record_type": "development_evidence_only",
         "input_kind": "assembly",
         "units": {"ani": "percent", "aligned_fraction": "percent"},
-        "assignment": {"status": "not_evaluated"},
+        "assignment": {"status": "not_evaluated", "reason": "development_evidence_only",
+            "species_id": null, "species_name": null, "subspecies_id": null,
+            "subspecies_name": null, "lineage_id": null, "genomovar_id": null},
         "provenance": {
             "input_kind": "assembly",
             "engine_version": "0.3.2",
+            "sequence_scope": "whole_assembly_as_supplied",
             "reference_component_id": "primary_whole",
             "reference_package_sha256": "a".repeat(64),
             "query_sha256": "b".repeat(64),
@@ -135,7 +151,32 @@ pub fn evidence_text_with_literals(
 /// The decision JSON for evidence text that is expected to load.
 pub fn decision_from_text(evidence: &str) -> Value {
     let evidence = SavedEvidence::from_json(evidence).expect("evidence should load");
-    serde_json::from_str(&decide(&evidence, &Policy::v1()).to_json()).expect("decision is JSON")
+    let decision: Value = serde_json::from_str(&decide(&evidence, &Policy::v1()).to_json())
+        .expect("decision is JSON");
+    let vocabulary: Vec<_> = include_str!("../../docs/v1-reasons.tsv")
+        .lines()
+        .skip(1)
+        .map(|line| line.split_once('\t').unwrap().0)
+        .collect();
+    for reason in decision["blocking_reasons"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|r| r.as_str().unwrap())
+        .chain(
+            decision["assignment"]["reason"]
+                .as_str()
+                .unwrap()
+                .split(';'),
+        )
+        .chain(
+            ["species", "subspecies"]
+                .map(|rank| decision["rank_evidence"][rank]["reason"].as_str().unwrap()),
+        )
+    {
+        assert!(vocabulary.contains(&reason), "unmapped reason: {reason}");
+    }
+    decision
 }
 
 pub fn decision_for(rows: &[Row]) -> Value {
