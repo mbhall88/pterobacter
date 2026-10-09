@@ -3,21 +3,28 @@
 //! Pure logic: evidence in, decision out. No terminal, file or process access, so a later
 //! browser or GUI front end can call it unchanged.
 //!
-//! This is the walking-skeleton slice. It applies the frozen rank rule for the species call
-//! (nearest reference, ANI and aligned-fraction gates, a measured competitor from another
-//! parent). The remaining v1 checks and the subspecies rank belong to later tickets, and the
-//! report says so rather than implying they were run.
+//! This is the tracer. It applies the frozen rank rule for the species call (nearest reference,
+//! ANI and aligned-fraction gates, a measured competitor from another parent). The other v1
+//! withholding checks and the subspecies rank belong to later tickets. The JSON lists the
+//! checks that were not applied, so an `assigned` here is never read as a complete v1 result.
 
 use std::collections::HashSet;
 
 use serde_json::{json, Value};
 
-use crate::evidence::{Percent, Reference, SavedEvidence};
+use crate::evidence::{Percent, Provenance, Reference, SavedEvidence, Taxon};
 
 /// Identifier of the approved v1 calling policy, as recorded in the frozen 0.2.0 reports.
 pub const V1_POLICY_ID: &str = "conservative-assembly-v1";
 /// The reason the frozen 0.2.0 reports give for an assigned species.
 const ASSIGNED_REASON: &str = "conditional_assembly_assignment";
+/// Frozen v1 withholding reasons that this build does not check yet.
+const V1_CHECKS_NOT_APPLIED: [&str; 4] = [
+    "two_parent_support_alert",
+    "unexplained_residual_sequence",
+    "coverage_method_disagreement",
+    "external_problem_warning",
+];
 
 /// Numerical gates of a calling policy.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -41,8 +48,12 @@ impl Policy {
         self.id
     }
 
+    fn meets_species_ani(&self, ani: Percent) -> bool {
+        ani >= self.species_ani
+    }
+
     fn passes(&self, reference: &Reference) -> bool {
-        reference.ani >= self.species_ani && reference.min_af() >= self.species_both_af
+        self.meets_species_ani(reference.ani) && reference.min_af() >= self.species_both_af
     }
 }
 
@@ -73,8 +84,7 @@ impl WithholdReason {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SpeciesCall {
     Assigned {
-        id: String,
-        name: String,
+        species: Taxon,
         /// The reference that satisfied the ANI and aligned-fraction gates.
         witness: Reference,
     },
@@ -84,9 +94,7 @@ pub enum SpeciesCall {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Decision {
     policy: &'static str,
-    engine_version: String,
-    reference_package_sha256: String,
-    query_sha256: String,
+    provenance: Provenance,
     species: SpeciesCall,
 }
 
@@ -129,16 +137,16 @@ fn call_species(references: &[Reference], policy: &Policy) -> SpeciesCall {
     if references.iter().all(|r| parent(r) == nearest_parent) {
         return SpeciesCall::Withheld(SpeciesCompetitorUnmeasured);
     }
-    if nearest.ani < policy.species_ani {
+    if !policy.meets_species_ani(nearest.ani) {
         return SpeciesCall::Withheld(NearestBelowSpeciesAni);
     }
+    // Species are compared by ID; validation guarantees an ID has one display name.
     let witness = references
         .iter()
-        .find(|r| r.species.as_ref() == Some(species) && policy.passes(r));
+        .find(|r| r.species.as_ref().map(|s| &s.id) == Some(&species.id) && policy.passes(r));
     match witness {
         Some(witness) => SpeciesCall::Assigned {
-            id: species.id.clone(),
-            name: species.name.clone(),
+            species: species.clone(),
             witness: witness.clone(),
         },
         None => SpeciesCall::Withheld(SpeciesCoverageNotMet),
@@ -147,21 +155,14 @@ fn call_species(references: &[Reference], policy: &Policy) -> SpeciesCall {
 
 /// Decide the v1 species call for validated saved evidence.
 pub fn decide(evidence: &SavedEvidence, policy: &Policy) -> Decision {
-    let provenance = evidence.provenance();
     Decision {
         policy: policy.id(),
-        engine_version: provenance.engine_version.clone(),
-        reference_package_sha256: provenance.reference_package_sha256.clone(),
-        query_sha256: provenance.query_sha256.clone(),
+        provenance: evidence.provenance().clone(),
         species: call_species(evidence.references(), policy),
     }
 }
 
 impl Decision {
-    pub fn species(&self) -> &SpeciesCall {
-        &self.species
-    }
-
     /// The authoritative JSON for this decision.
     pub fn to_json(&self) -> String {
         serde_json::to_string_pretty(&self.to_value()).expect("a JSON value always serialises")
@@ -178,10 +179,11 @@ impl Decision {
             "input": {
                 "kind": "assembly",
                 "evidence_schema": crate::evidence::EVIDENCE_SCHEMA,
-                "engine_version": self.engine_version,
-                "reference_package_sha256": self.reference_package_sha256,
-                "query_sha256": self.query_sha256,
+                "engine_version": self.provenance.engine_version,
+                "reference_package_sha256": self.provenance.reference_package_sha256,
+                "query_sha256": self.provenance.query_sha256,
             },
+            "v1_checks_not_applied": V1_CHECKS_NOT_APPLIED,
             "species": self.species_value(),
             "subspecies": {
                 "status": "not_evaluated",
@@ -192,11 +194,11 @@ impl Decision {
 
     fn species_value(&self) -> Value {
         match &self.species {
-            SpeciesCall::Assigned { id, name, witness } => json!({
+            SpeciesCall::Assigned { species, witness } => json!({
                 "status": "assigned",
                 "reason": ASSIGNED_REASON,
-                "id": id,
-                "name": name,
+                "id": species.id,
+                "name": species.name,
                 "witness": {
                     "reference_id": witness.id,
                     "ani_percent": witness.ani.as_f64(),

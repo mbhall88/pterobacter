@@ -45,7 +45,7 @@ This reads a frozen 0.2.0 saved-evidence file and prints its v1 species call as 
 | Path | Role |
 |---|---|
 | `src/evidence.rs`, `src/decision.rs` | Pure decision logic. No files, terminal or process code. |
-| `src/cli.rs` | Argument parsing, files and exit codes. |
+| `src/cli.rs`, `src/dev.rs` | Argument parsing, files and exit codes for the public and development commands. |
 | `src/bin/` | Thin entry points for `tero`, `terobacter` and `terobacter-dev`. |
 | `tests/` | Tests at the decision, command-line and packaging seams, with fixtures. |
 | `docs/adr/` | Decisions and their reasons. |

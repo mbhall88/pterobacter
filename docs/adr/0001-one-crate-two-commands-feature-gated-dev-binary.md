@@ -18,4 +18,4 @@ Terobacter needs a user command, plus evaluation-only operations that must never
 
 - `tests/layout.rs` fails if the development binary loses its feature gate or a third default binary appears.
 - Adding an evaluation operation means adding a subcommand to `terobacter-dev`, not to `tero`.
-- Anything that needs the dev feature to compile must stay behind `#[cfg(feature = "dev")]`.
+- All development code lives in `src/dev.rs`, which `lib.rs` declares behind `#[cfg(feature = "dev")]`.

@@ -11,12 +11,14 @@ Guidance for AI agents working in this repository.
 - `just install-check` installs into a temporary directory and checks that only `tero` and `terobacter` appear.
 - `cargo fmt --all -- --check` must pass.
 
+`tests/hygiene.rs` fails if a tracked file contains a workspace path or a private study name.
+
 Run a single test file with `cargo test --test <name>`. Add `--all-features` for tests of the development binary.
 
 ## Layout rules
 
 - One crate. Do not add a second crate or publish the library separately.
-- Decision logic (`src/evidence.rs`, `src/decision.rs`) is pure. No terminal parsing, filesystem or process code goes in it, so a browser or GUI front end can reuse it. Files, flags and exit codes live in `src/cli.rs`.
+- Decision logic (`src/evidence.rs`, `src/decision.rs`) is pure. No terminal parsing, filesystem or process code goes in it, so a browser or GUI front end can reuse it. Files, flags and exit codes live in `src/cli.rs`, and in `src/dev.rs` for the development binary.
 - Evaluation-only operations belong in the `terobacter-dev` binary behind the `dev` feature. Never expose them from `tero` or `terobacter`, and keep the feature out of default builds and installs.
 - The public command is `tero [OPTIONS] <ASSEMBLY>...` with no subcommands.
 

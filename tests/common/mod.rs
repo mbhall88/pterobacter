@@ -1,0 +1,124 @@
+//! Helpers shared by the integration tests.
+#![allow(dead_code)] // each test crate uses a different subset
+
+use serde_json::{json, Value};
+use terobacter::decision::{decide, Policy};
+use terobacter::evidence::SavedEvidence;
+
+pub const FIXTURE_PATH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/fixtures/v1-species-assigned/evidence.json"
+);
+pub const FIXTURE: &str = include_str!("../fixtures/v1-species-assigned/evidence.json");
+const FROZEN_CALL: &str = include_str!("../fixtures/v1-species-assigned/frozen-v1-call.json");
+
+/// Check a decision against the call the frozen 0.2.0 report made for the fixture.
+/// The expected values come from the frozen file, never from this implementation.
+pub fn assert_matches_frozen_call(decision: &Value) {
+    let frozen: Value = serde_json::from_str(FROZEN_CALL).unwrap();
+
+    assert_eq!(decision["policy"]["id"], frozen["policy"]);
+    assert_eq!(decision["species"]["status"], frozen["status"]);
+    assert_eq!(decision["species"]["reason"], frozen["reason"]);
+    assert_eq!(decision["species"]["id"], frozen["species_id"]);
+    assert_eq!(decision["species"]["name"], frozen["species_name"]);
+}
+
+/// One comparison row for hand-built evidence.
+#[derive(Clone, Copy)]
+pub struct Row {
+    id: &'static str,
+    species: Option<&'static str>,
+    lineage: Option<&'static str>,
+    ani: f64,
+    af_query: f64,
+    af_reference: f64,
+}
+
+/// A reference of `species` (or an unmapped one, for `None`) with the given ANI and both AFs.
+pub fn row(id: &'static str, species: Option<&'static str>, ani: f64, aq: f64, ar: f64) -> Row {
+    Row {
+        id,
+        species,
+        lineage: None,
+        ani,
+        af_query: aq,
+        af_reference: ar,
+    }
+}
+
+impl Row {
+    pub fn lineage(self, lineage: &'static str) -> Row {
+        Row {
+            lineage: Some(lineage),
+            ..self
+        }
+    }
+}
+
+fn hundredths(percent: f64) -> i64 {
+    (percent * 100.0).round() as i64
+}
+
+/// Valid saved evidence for `rows`, which must already be in rank order (highest ANI first,
+/// then reference ID). Counts and nearest IDs are filled in to match.
+pub fn evidence_json(rows: &[Row]) -> Value {
+    let rank = |r: &Row| (-hundredths(r.ani), r.id);
+    assert!(
+        rows.windows(2).all(|w| rank(&w[0]) < rank(&w[1])),
+        "rows must be in rank order"
+    );
+    let nearest: Vec<_> = rows
+        .iter()
+        .take_while(|r| hundredths(r.ani) == hundredths(rows[0].ani))
+        .map(|r| r.id)
+        .collect();
+    let references: Vec<Value> = rows
+        .iter()
+        .map(|r| {
+            json!({
+                "reference_id": r.id,
+                "species_id": r.species.unwrap_or(""),
+                "species_name": r.species.map_or(String::new(), |s| format!("Enterobacter {s}")),
+                "lineage_id": r.lineage.unwrap_or(""),
+                "ani_percent": r.ani,
+                "aligned_fraction_query_percent": r.af_query,
+                "aligned_fraction_reference_percent": r.af_reference,
+                "minimum_directional_af_percent": r.af_query.min(r.af_reference),
+            })
+        })
+        .collect();
+    json!({
+        "schema_version": "2.0.0-dev-evidence",
+        "record_type": "development_evidence_only",
+        "input_kind": "assembly",
+        "units": {"ani": "percent", "aligned_fraction": "percent"},
+        "assignment": {"status": "not_evaluated"},
+        "provenance": {
+            "input_kind": "assembly",
+            "engine_version": "0.3.2",
+            "reference_component_id": "primary_whole",
+            "reference_package_sha256": "a".repeat(64),
+            "query_sha256": "b".repeat(64),
+            "search_exit_code": 0,
+        },
+        "evidence_status": "estimates_returned",
+        "reference_count": rows.len(),
+        "raw_hit_count": rows.len(),
+        "unique_hit_count": rows.len(),
+        "not_returned_reference_count": 0,
+        "duplicate_rows_collapsed": 0,
+        "nearest_reference_ids": nearest,
+        "ranked_reference_evidence": references,
+    })
+}
+
+/// The decision JSON for evidence text that is expected to load.
+pub fn decision_from_text(evidence: &str) -> Value {
+    let evidence = SavedEvidence::from_json(evidence).expect("evidence should load");
+    serde_json::from_str(&decide(&evidence, &Policy::v1()).to_json()).expect("decision is JSON")
+}
+
+pub fn decision_for(rows: &[Row]) -> Value {
+    decision_from_text(&evidence_json(rows).to_string())
+}

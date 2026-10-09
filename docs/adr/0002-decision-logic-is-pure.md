@@ -8,7 +8,7 @@ The same decisions must be reachable from the command line now and, possibly, fr
 
 ## Decision
 
-`src/evidence.rs` and `src/decision.rs` take text and values and return values. They never read files, parse arguments, print, or exit. `src/cli.rs` owns all of that and calls the pure modules.
+`src/evidence.rs` and `src/decision.rs` take text and values and return values. They never read files, parse arguments, print, or exit. `src/cli.rs` and, for the development binary, `src/dev.rs` own all of that and call the pure modules.
 
 The seam for tests is the pair `SavedEvidence::from_json` and `decide`, plus the executables as processes. Tests do not reach into private helpers.
 
