@@ -236,6 +236,15 @@ mod tests {
     }
 
     #[test]
+    fn status_bad_needs_a_score_under_seventy_without_missing_or_mixed_tokens() {
+        let tokens: Vec<String> = (0..7).map(|_| "~1".to_string()).collect();
+        let (score, status) = score_and_status("-", 7, 7, 0, 0, &tokens);
+        assert_eq!((score, status.as_str()), (63, "BAD"));
+        let (score, status) = score_and_status("-", 7, 5, 0, 0, &tokens);
+        assert_eq!((score, status.as_str()), (70, "OK"));
+    }
+
+    #[test]
     fn no_hits_is_none_with_zero_score() {
         let c = run(vec![]);
         assert_eq!((c.st.as_str(), c.status.as_str(), c.score), ("-", "NONE", 0));
