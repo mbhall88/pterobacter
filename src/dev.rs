@@ -10,6 +10,7 @@ use clap::{Parser, Subcommand};
 
 use crate::decision::{decide, Policy};
 use crate::evidence::SavedEvidence;
+use crate::skani::{SearchSettings, SeedingMode, SkaniDatabase};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -29,14 +30,51 @@ enum DevCommand {
         /// Saved evidence JSON (schema 2.0.0-dev-evidence)
         evidence: PathBuf,
     },
+    /// Measure one assembly with the embedded skani compatibility profile
+    SkaniSearch {
+        #[arg(long)]
+        database: PathBuf,
+        #[arg(long)]
+        query: PathBuf,
+        #[arg(long, default_value_t = 1)]
+        threads: usize,
+        /// Use the genomovar zero reporting floor and retain every returned row
+        #[arg(long)]
+        genomovar: bool,
+        /// Exercise the portable path even on an AVX2 CPU
+        #[arg(long)]
+        portable: bool,
+    },
 }
 
 /// Run the development binary.
 pub fn run() -> ExitCode {
-    let Dev {
-        command: DevCommand::SavedEvidence { evidence },
-    } = Dev::parse();
-    match classify_saved_evidence(&evidence) {
+    let result = match Dev::parse().command {
+        DevCommand::SavedEvidence { evidence } => classify_saved_evidence(&evidence),
+        DevCommand::SkaniSearch {
+            database,
+            query,
+            threads,
+            genomovar,
+            portable,
+        } => {
+            let settings = if genomovar {
+                SearchSettings::Genomovar
+            } else {
+                SearchSettings::Primary
+            };
+            let mode = if portable {
+                SeedingMode::Portable
+            } else {
+                SeedingMode::Auto
+            };
+            SkaniDatabase::open(&database)
+                .and_then(|db| db.search(&query, settings, threads, mode))
+                .map_err(|e| e.to_string())
+                .and_then(|report| serde_json::to_string_pretty(&report).map_err(|e| e.to_string()))
+        }
+    };
+    match result {
         Ok(json) => {
             println!("{json}");
             ExitCode::SUCCESS

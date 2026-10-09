@@ -1,0 +1,340 @@
+//! Embedded skani search under the frozen AVX2-compatible DNA seeding profile.
+//!
+//! This adapter owns I/O and measurement only. It does not assign taxa. Database
+//! authentication belongs to the reference-package loader; opened database files
+//! must remain immutable for the lifetime of the memory mapping.
+
+use std::collections::HashSet;
+use std::fs::File;
+use std::io::BufReader;
+use std::path::Path;
+
+use bincode::Options;
+use rayon::prelude::*;
+use serde::Serialize;
+use skani::params::{CommandParams, Mode, SketchParams, MIN_LENGTH_CONTIG};
+use skani::sketch_db::SketchDbReader;
+use skani::types::{AniEstResult, Sketch};
+use skani::{chain, regression, screen, seeding};
+
+use crate::evidence::Percent;
+
+pub const ENGINE_VERSION: &str = "0.3.2";
+pub const ENGINE_REVISION: &str = "22da4ae9e44b2e3e686c8e5c71fcd16cec2b9791";
+pub const ENGINE_PROFILE: &str = "skani-0.3.2-avx2-compatible-dna-v1";
+
+#[derive(Debug, thiserror::Error)]
+#[error("skani measurement failed: {0}")]
+pub struct SkaniError(String);
+
+fn error(message: impl std::fmt::Display) -> SkaniError {
+    SkaniError(message.to_string())
+}
+
+/// The primary reporting floor is distinct from the biological AF80 gate.
+/// Genomovar comparisons retain all returned rows, without a result-count cap.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SearchSettings {
+    Primary,
+    Genomovar,
+}
+
+impl SearchSettings {
+    pub const fn reporting_floor_percent(self) -> u32 {
+        match self {
+            Self::Primary => 15,
+            Self::Genomovar => 0,
+        }
+    }
+
+    pub const fn screen_percent(self) -> u32 {
+        80
+    }
+
+    fn command_params(self) -> CommandParams {
+        CommandParams {
+            screen: false,
+            screen_val: f64::from(self.screen_percent()) / 100.0,
+            mode: Mode::Search,
+            out_file_name: String::new(),
+            ref_files: Vec::new(),
+            query_files: Vec::new(),
+            refs_are_sketch: true,
+            queries_are_sketch: false,
+            robust: false,
+            median: false,
+            sparse: false,
+            full_matrix: false,
+            diagonal: false,
+            max_results: usize::MAX,
+            individual_contig_q: false,
+            individual_contig_r: false,
+            min_aligned_frac: f64::from(self.reporting_floor_percent()) / 100.0,
+            both_min_aligned_frac: -0.01,
+            keep_refs: false,
+            est_ci: false,
+            learned_ani: true,
+            detailed_out: false,
+            distance: false,
+            rescue_small: false,
+            separate_sketches: false,
+            short_header: false,
+        }
+    }
+}
+
+/// A per-call selection. No environment variable or global mutable state is used.
+#[derive(Debug, Clone, Copy)]
+pub enum SeedingMode {
+    Auto,
+    Portable,
+}
+
+impl SeedingMode {
+    fn seed(self, seq: &[u8], params: &SketchParams, contig: u32, sketch: &mut Sketch) {
+        #[cfg(target_arch = "x86_64")]
+        if matches!(self, Self::Auto) && is_x86_feature_detected!("avx2") {
+            // SAFETY: runtime detection establishes the AVX2 requirement. Input
+            // lengths and parameters have already been checked by sketch_query.
+            unsafe { skani::avx2_seeding::avx2_fmh_seeds(seq, params, contig, sketch, true) };
+            return;
+        }
+        seeding::fmh_seeds(seq, params, contig, sketch, true);
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct SkaniRow {
+    pub reference_file: String,
+    pub ani: Percent,
+    pub af_reference: Percent,
+    pub af_query: Percent,
+    pub reference_contig: String,
+    pub query_contig: String,
+}
+
+impl SkaniRow {
+    fn from_estimate(result: AniEstResult) -> Result<Self, SkaniError> {
+        fn emitted(fraction: f32) -> Result<Percent, SkaniError> {
+            // Multiplication is f32, just as in the pinned native writer.
+            Percent::parse(&format!("{:.2}", fraction * 100.0))
+                .ok_or_else(|| error("engine returned a non-finite or out-of-range percentage"))
+        }
+        Ok(Self {
+            reference_file: result.ref_file,
+            ani: emitted(result.ani)?,
+            af_reference: emitted(result.align_fraction_ref)?,
+            af_query: emitted(result.align_fraction_query)?,
+            reference_contig: result.ref_contig,
+            query_contig: result.query_contig,
+        })
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct SearchReport {
+    pub engine_version: &'static str,
+    pub engine_revision: &'static str,
+    pub engine_profile: &'static str,
+    pub settings: SearchSettings,
+    pub reporting_floor_percent: u32,
+    pub screen_percent: u32,
+    pub total_input_bases: usize,
+    pub sketched_bases: usize,
+    pub rows: Vec<SkaniRow>,
+    /// Missing estimates are retained explicitly; they are never ANI zero.
+    pub not_returned_reference_files: Vec<String>,
+}
+
+/// A consolidated v0.3.2 DNA database, loaded without skani's CLI exit paths.
+pub struct SkaniDatabase {
+    params: SketchParams,
+    markers: Vec<Sketch>,
+    reader: SketchDbReader,
+}
+
+impl SkaniDatabase {
+    /// Open an authenticated, immutable database component. Reject malformed
+    /// files and marker/index mismatches rather than skipping references.
+    pub fn open(directory: &Path) -> Result<Self, SkaniError> {
+        let file = File::open(directory.join("markers.bin")).map_err(error)?;
+        let limit = file.metadata().map_err(error)?.len();
+        let (params, markers): (SketchParams, Vec<Sketch>) = bincode::DefaultOptions::new()
+            .with_fixint_encoding()
+            .with_limit(limit)
+            .reject_trailing_bytes()
+            .deserialize_from(BufReader::new(file))
+            .map_err(error)?;
+        if params.k != 15
+            || params.c == 0
+            || params.marker_c < params.c
+            || params.use_aa
+            || params.use_syncs
+        {
+            return Err(error(
+                "expected a k15 DNA database with valid compression factors",
+            ));
+        }
+        let reader = SketchDbReader::new(
+            directory
+                .to_str()
+                .ok_or_else(|| error("database path is not UTF-8"))?,
+        )
+        .map_err(error)?;
+        if markers.is_empty() || markers.len() != reader.len() {
+            return Err(error(
+                "marker/index reference counts disagree or database is empty",
+            ));
+        }
+        let mut ids = HashSet::new();
+        for (i, marker) in markers.iter().enumerate() {
+            if marker.file_name.is_empty()
+                || !ids.insert(&marker.file_name)
+                || reader.file_name(i) != Some(marker.file_name.as_str())
+            {
+                return Err(error(
+                    "marker/index identities disagree or reference names are duplicated",
+                ));
+            }
+        }
+        Ok(Self {
+            params,
+            markers,
+            reader,
+        })
+    }
+
+    pub fn search(
+        &self,
+        query: &Path,
+        settings: SearchSettings,
+        threads: usize,
+        mode: SeedingMode,
+    ) -> Result<SearchReport, SkaniError> {
+        if threads == 0 {
+            return Err(error("thread count must be positive"));
+        }
+        let (query, total_input_bases) = sketch_query(query, &self.params, mode)?;
+        let cp = settings.command_params();
+        let learned = regression::use_learned_ani(self.params.c, false, false, false);
+        let model = regression::get_model(self.params.c, learned);
+        // A local pool permits repeated and concurrent calls with different thread
+        // counts without installing a global logger or global Rayon pool.
+        let pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(threads)
+            .build()
+            .map_err(error)?;
+        let results: Result<Vec<Option<SkaniRow>>, SkaniError> = pool.install(|| {
+            self.markers
+                .par_iter()
+                .enumerate()
+                .map(|(i, marker)| {
+                    // Preserve upstream's query/ref argument order for screening.
+                    if query.contigs.is_empty()
+                        || !screen::check_markers_quickly(&query, marker, cp.screen_val, false)
+                    {
+                        return Ok(None);
+                    }
+                    let (params, reference) = self.reader.get_sketch(i).map_err(error)?;
+                    if params != self.params
+                        || reference.file_name != marker.file_name
+                        || reference.k != self.params.k
+                        || reference.c != self.params.c
+                        || reference.amino_acid
+                        || reference.kmer_seeds_k.is_none()
+                        || reference.contigs.is_empty()
+                        || reference.contigs.len() != reference.contig_lengths.len()
+                    {
+                        return Err(error(
+                            "reference sketch is inconsistent with its marker entry",
+                        ));
+                    }
+                    let map = chain::map_params_from_sketch(&reference, false, &cp, &model);
+                    let result = chain::chain_seeds(&reference, &query, map);
+                    if result.ani > 0.5 {
+                        SkaniRow::from_estimate(result).map(Some)
+                    } else {
+                        Ok(None)
+                    }
+                })
+                .collect()
+        });
+        let mut rows: Vec<_> = results?.into_iter().flatten().collect();
+        rows.sort_by(|a, b| {
+            b.ani
+                .cmp(&a.ani)
+                .then_with(|| a.reference_file.cmp(&b.reference_file))
+        });
+        let returned: HashSet<_> = rows.iter().map(|r| r.reference_file.as_str()).collect();
+        let mut missing: Vec<_> = self
+            .markers
+            .iter()
+            .filter(|r| !returned.contains(r.file_name.as_str()))
+            .map(|r| r.file_name.clone())
+            .collect();
+        missing.sort();
+        Ok(SearchReport {
+            engine_version: ENGINE_VERSION,
+            engine_revision: ENGINE_REVISION,
+            engine_profile: ENGINE_PROFILE,
+            settings,
+            reporting_floor_percent: settings.reporting_floor_percent(),
+            screen_percent: settings.screen_percent(),
+            total_input_bases,
+            sketched_bases: query.total_sequence_length,
+            rows,
+            not_returned_reference_files: missing,
+        })
+    }
+}
+
+fn sketch_query(
+    path: &Path,
+    params: &SketchParams,
+    mode: SeedingMode,
+) -> Result<(Sketch, usize), SkaniError> {
+    let name = path
+        .to_str()
+        .ok_or_else(|| error("query path is not UTF-8"))?;
+    let mut sketch = Sketch::new(params.marker_c, params.c, params.k, name.into(), false);
+    let mut reader = needletail::parse_fastx_file(path).map_err(error)?;
+    let mut total = 0_usize;
+    while let Some(record) = reader.next() {
+        let record = record.map_err(error)?;
+        if record.format() != needletail::parser::Format::Fasta {
+            return Err(error("query must be an assembly FASTA, not FASTQ"));
+        }
+        let seq = record.seq();
+        if seq.is_empty()
+            || !seq
+                .iter()
+                .all(|base| b"ACGTURYSWKMBDHVNacgturyswkmbdhvn".contains(base))
+        {
+            return Err(error(
+                "query contains an empty sequence or a non-IUPAC nucleotide",
+            ));
+        }
+        total = total
+            .checked_add(seq.len())
+            .ok_or_else(|| error("assembly length overflow"))?;
+        if seq.len() < MIN_LENGTH_CONTIG {
+            continue;
+        }
+        let len =
+            u32::try_from(seq.len()).map_err(|_| error("contig exceeds skani's position limit"))?;
+        let contig = u32::try_from(sketch.contigs.len()).map_err(error)?;
+        if contig >= 1 << 30 {
+            return Err(error("assembly exceeds skani's contig limit"));
+        }
+        let id = std::str::from_utf8(record.id()).map_err(error)?;
+        sketch.contigs.push(id.to_owned());
+        sketch.contig_lengths.push(len);
+        sketch.total_sequence_length += seq.len();
+        mode.seed(&seq, params, contig, &mut sketch);
+    }
+    if total == 0 {
+        return Err(error("assembly contains no sequence"));
+    }
+    Ok((sketch, total))
+}

@@ -1,0 +1,27 @@
+{
+  "revision": "22da4ae9e44b2e3e686c8e5c71fcd16cec2b9791",
+  "sha256": {
+    "Cargo.toml": "1aebb929561194b42dbb7f43640d3f4d52ea67b8d04a9b535d0790beedeab45c",
+    "LICENSE": "c4e1b9d29d2d5bc7e9301e1bbc5372e7ff604d94feb6dc9f29b9f7f411e88bae",
+    "README.md": "432c16100c306c73d35ad4e31101d08afab19aaf3b2f6b1038700433f6c71e92",
+    "src/avx2_seeding.rs": "ee0f60998a83e5f9abf31110bef6ad69d4cb7183d785eb4e131f381c537d2125",
+    "src/chain.rs": "e457515d4cf8fc648c48fd3632eabd741d2553dbd2183679b0fb63c8a8312e5d",
+    "src/cli.rs": "b76b0e167f7ec7a5c2f4c0877edb7e7b9bdbcc33e8aa591968478f4f80219346",
+    "src/cmd_line.rs": "18c56a1317b246d34ff5066593a43adf7390d49a53164adbac9196053b03cebe",
+    "src/dist.rs": "15d3d690fd7c775df775059ff03e0ecd5f26186ccc48a47b8c44e471ed0b8b93",
+    "src/file_io.rs": "082d6dc4098a97ec1fefbf7a72f83df687b628c0cb5678ed276b51b917ae3674",
+    "src/lib.rs": "006452298536227637514e58dd8d98b5187f943020c2ca890763d1d47870677c",
+    "src/main.rs": "d3b60dd478cb9c6fb7cef9dca408f8eccd519598458edee59f9e7f397c585227",
+    "src/model.rs": "7f417e0210bf16a5e8a4cd9c2b8d43bb84c1326e1ca24a39946dc6f9966aee07",
+    "src/params.rs": "b38b2025cb873f86d3447b12fc63670afdfd59a554b6a39a3a7095f88bed4997",
+    "src/parse.rs": "3c3473e1e7f16597e59d604c2ba32402f58c2802ceae50f4af30997c55594f3e",
+    "src/regression.rs": "212ed25dab3f7b7f66913b059ab81e0066868e449b71dbcc4c99abbb1781996c",
+    "src/screen.rs": "c60cce822216a713e7fcbab329761975a64c81fcacd9494f4541b3d29637432d",
+    "src/search.rs": "7198c011d9699073d0b794968ca6a2eca11e517ad55e1ae2d1431dbd2ac36d8f",
+    "src/seeding.rs": "a5d84f6149e81338f6425aeaa11caab0927f8a2365ba705e1884482b2ea1832a",
+    "src/sketch.rs": "e8474418eb91660c6d770edcb8186aeecc4c5e3f373d3178a287b611f91a64a7",
+    "src/sketch_db.rs": "f2450918bf646054ef411bd4b43cb475788692af4c6b44d720d335b293dc7b37",
+    "src/triangle.rs": "df5fca0311d201e91e9d54e783abb22474f0709c0f118be00ac6a52282828462",
+    "src/types.rs": "e0b80087b2bfe756b54d2a5eb39b2cc5fd7bab1381338413fdc22e9b4ad524f7"
+  }
+}
