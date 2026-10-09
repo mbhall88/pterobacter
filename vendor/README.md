@@ -18,4 +18,4 @@ Direct seeding tests compare full seed maps, positions, insertion order and mark
 
 Actual macOS execution, full primary/genomovar evaluation and release claims remain separate gates. Forced portable execution on Linux establishes implementation parity on these development inputs.
 
-Third-party redistribution notices are in [THIRD-PARTY-LICENSES.md](../THIRD-PARTY-LICENSES.md) and `licenses/`.
+Third-party redistribution notices are in [THIRDPARTY.json](../THIRDPARTY.json) and [THIRD-PARTY-NOTICES.txt](../THIRD-PARTY-NOTICES.txt). [THIRD-PARTY-LICENSES.md](../THIRD-PARTY-LICENSES.md) describes regeneration and redistribution.

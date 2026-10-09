@@ -1,3 +1,4 @@
 # Preserve upstream licence and source whitespace when importing third-party files.
-licenses/** -whitespace
+THIRDPARTY.json linguist-generated=true
+THIRD-PARTY-NOTICES.txt linguist-generated=true -whitespace
 vendor/** -whitespace
