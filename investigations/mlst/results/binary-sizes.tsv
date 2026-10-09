@@ -1,0 +1,7 @@
+variant	bytes	increment_over_empty_executable	increment_over_core_no_engine_build
+empty	301936	0	
+core	466120	164184	0
+exact-bio	538416	236480	72296
+exact-ba	546344	244408	80224
+minimap2	644520	342584	178400
+minimap2-pure	996664	694728	530544

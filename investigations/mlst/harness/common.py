@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 
 LOCI = ["dnaA", "fusA", "gyrB", "leuS", "pyrG", "rplB", "rpoB"]
-MLST_ENV = Path("/home/uqmhal11/sw/miniforge3/envs/mlst")
+MLST_ENV = Path(os.environ.get("MLST_ENV", "mlst-env-not-set"))  # prefix of the conda env holding mlst 2.32.2 + BLAST+ 2.16.0
 
 
 def sha256(path):

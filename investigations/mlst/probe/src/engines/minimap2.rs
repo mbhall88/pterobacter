@@ -8,7 +8,7 @@ use minimap2::{Aligner, Strand};
 use std::collections::HashSet;
 use std::fmt::Write;
 
-pub fn run(pkg: &Package, ori: &Oriented, contigs: &[Contig], preset: &str, raw: Option<&mut String>) -> Result<Vec<Hsp>, String> {
+pub fn run(pkg: &Package, ori: &Oriented, contigs: &[Contig], preset: &str, via_file: bool, raw: Option<&mut String>) -> Result<Vec<Hsp>, String> {
     let seqs: Vec<Vec<u8>> = contigs.iter().map(|c| c.seq.clone()).collect();
     let ids: Vec<Vec<u8>> = contigs.iter().map(|c| c.name.clone().into_bytes()).collect();
     let b = Aligner::builder();
@@ -18,7 +18,20 @@ pub fn run(pkg: &Package, ori: &Oriented, contigs: &[Contig], preset: &str, raw:
         "asm20" => b.asm20(),
         other => return Err(format!("unsupported preset {other}")),
     };
-    let mut aligner = b.with_cigar().with_index_threads(1).with_seqs_and_ids(&seqs, &ids)?;
+    let b = b.with_cigar().with_index_threads(1);
+    let tmp;
+    let mut aligner = if via_file {
+        // Supplementary path (protocol deviation): the in-memory multi-record index crashes in crate 0.1.31.
+        tmp = std::env::temp_dir().join(format!("mlst-probe-{}.fa", std::process::id()));
+        let mut text = String::new();
+        for c in contigs { text.push('>'); text.push_str(&c.name); text.push('\n'); text.push_str(std::str::from_utf8(&c.seq).unwrap()); text.push('\n'); }
+        std::fs::write(&tmp, text).map_err(|e| e.to_string())?;
+        let a = b.with_index(&tmp, None);
+        let _ = std::fs::remove_file(&tmp);
+        a?
+    } else {
+        b.with_seqs_and_ids(&seqs, &ids)?
+    };
     // fixed for all presets (protocol): keep secondary alignments
     aligner.mapopt.best_n = 100;
     aligner.mapopt.pri_ratio = 0.1;

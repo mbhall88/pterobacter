@@ -18,7 +18,9 @@ fn main() {
     let ori = Oriented::new(&pkg);
     let t_setup = t0.elapsed().as_secs_f64();
     let t1 = Instant::now();
+    #[allow(unused_mut)]
     let mut raw = String::new();
+    #[allow(unused_mut)]
     let mut extra = json!({});
     let hsps = match engine.as_str() {
         "ungapped" => engines::ungapped::run(&pkg, &ori, &contigs),
@@ -26,7 +28,15 @@ fn main() {
         "minimap2" => {
             let preset = get("--preset").unwrap_or_else(|| "asm20".into());
             extra["preset"] = json!(preset);
-            engines::minimap2::run(&pkg, &ori, &contigs, &preset, Some(&mut raw)).unwrap_or_else(|e| fail(e))
+            let via_file = get("--index").as_deref() == Some("file");
+            extra["index"] = json!(if via_file { "file" } else { "in-memory" });
+            engines::minimap2::run(&pkg, &ori, &contigs, &preset, via_file, Some(&mut raw)).unwrap_or_else(|e| fail(e))
+        }
+        #[cfg(feature = "engine-minimap2-pure")]
+        "minimap2-pure" => {
+            let preset = get("--preset").unwrap_or_else(|| "asm20".into());
+            extra["preset"] = json!(preset);
+            engines::minimap2_pure::run(&pkg, &ori, &contigs, &preset).unwrap_or_else(|e| fail(e))
         }
         #[cfg(feature = "engine-exact-bio")]
         "exact-bio" | "exact-only" => {

@@ -8,6 +8,8 @@ use std::collections::HashSet;
 pub mod ungapped;
 #[cfg(feature = "engine-minimap2")]
 pub mod minimap2;
+#[cfg(feature = "engine-minimap2-pure")]
+pub mod minimap2_pure;
 #[cfg(any(feature = "engine-exact-bio", feature = "engine-exact-blockaligner"))]
 pub mod exact;
 

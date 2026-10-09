@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
 
+#[derive(Debug)]
 pub struct Contig {
     pub name: String,
     pub seq: Vec<u8>,

@@ -16,7 +16,7 @@ from common import sha256, timed
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("bin"); ap.add_argument("engine"); ap.add_argument("package"); ap.add_argument("fixtures"); ap.add_argument("out")
-    ap.add_argument("--preset"); ap.add_argument("--workers", type=int, default=2); ap.add_argument("names", nargs="*")
+    ap.add_argument("--preset"); ap.add_argument("--extra", default=""); ap.add_argument("--workers", type=int, default=2); ap.add_argument("names", nargs="*")
     a = ap.parse_args()
     fixtures, out = Path(a.fixtures), Path(a.out)
     manifest = json.loads((fixtures / "manifest.json").read_text())
@@ -31,6 +31,7 @@ def main():
         argv = [a.bin, "--engine", a.engine, "--package", a.package, "--query", fa, "--hits-out", d / "hits.tsv", "--raw-out", d / "raw.tsv"]
         if a.preset:
             argv += ["--preset", a.preset]
+        argv += a.extra.split()
         rec = timed(argv, stdout=d / "result.json", stderr=d / "stderr.txt")
         rec["fixture"] = name
         rec["input_sha256"] = sha256(fa) if fa.exists() else None
