@@ -137,6 +137,30 @@ Before accepting a production route:
 
 ## Provenance and limits
 
+### Astra review correction, 9 October 2026
+
+[Astra's R2 review](https://github.com/mbhall88/terobacter/pull/18#issuecomment-6075262171)
+identified a harness failure path: a crash still allowed reverse and subsequent
+work, and any nonzero invalid-case exit was counted as rejection. This does not
+invalidate the retained successful observations; the four measured invalid
+cases returned controlled exit 1 with matching validation messages.
+
+The harness now preserves the first failure and stops that candidate before
+its reverse orientation, later matrix/invalid cases and further panel batches.
+Candidate stops persist in the budget ledger across invocations. Queued workers
+check before admission and each stage; already running stages retain their
+existing resource bounds. Signals remain errors. Native invalid-case rejection
+requires the expected probe exit code, invalid input confirmed by the guard and
+a recognized input-validation diagnostic; unexplained exits remain errors.
+
+All 25 metric/resource/harness tests pass, including five new failure-path
+regressions covering CLI scheduling, invalid crashes, controlled rejection,
+queued panel work and GNU-time signal receipts. The changed Python files
+compile. These checks use synthetic receipts and dummy Python processes; no
+alignment measurements were repeated and previous results/charges remain
+unchanged. The private maintenance handover receives a dated N2 correction
+recording Michael's settled compatibility target and current PR head.
+
 Fresh private research run:
 `Enterobacter/results/tool-planning/2026-10-09/terobacter-issue1-mummer4-maintenance-codex/`.
 Pin remains v4.0.1/eb734606f2d516f42a0e0dce7a116bfb88ec1ebf. Native build is
