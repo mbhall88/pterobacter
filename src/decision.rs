@@ -381,7 +381,7 @@ pub fn decide_bound(
     package: &VerifiedPackage,
     policy: &Policy,
 ) -> Result<Decision, PackageError> {
-    package.check_binding(evidence.provenance())?;
+    package.check_evidence(evidence)?;
     Ok(assess(evidence, policy, Some(package)))
 }
 

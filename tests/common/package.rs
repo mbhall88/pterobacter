@@ -1,25 +1,33 @@
-//! A synthetic reference package with the layout of the portable package. It is built in memory
-//! so a test can damage exactly one thing and check the rejection that follows.
+//! The reference package used by the integration tests: the committed v2 fixture, loaded into
+//! memory so a test can damage exactly one thing and check the rejection that follows.
 
-use std::collections::BTreeMap;
+use std::cell::RefCell;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::io::{self, Read};
 use std::path::Path;
 
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
-use terobacter::reference::{verify_package, PackageError, PackageSource, VerifiedPackage};
+use terobacter::reference::{
+    verify_package, PackageError, PackageSource, RegistryPins, VerifiedPackage,
+};
 
+pub const FIXTURE_DIR: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/fixtures/reference-v2/package"
+);
+pub const PINNED_MANIFEST_SHA256: &str =
+    "3c577a111960d9cd756541f1dde165bd2dc8f20048e4ff18cf7e1dcb1a33ea7d";
 pub const PACKAGE_VERSION: &str = "2026-10-09.test1";
 pub const DISCLAIMER: &str = "Synthetic test disclaimer.";
 pub const MANIFEST: &str = "portable.json";
-pub const LICENCE_PATH: &str = "licence/manifest.json";
+pub const SOURCE_PATH: &str = "metadata/source-manifest.json";
 pub const EXPORT_PATH: &str = "metadata/export-validation.json";
-const SOURCE_PATH: &str = "metadata/source-manifest.json";
-const PACKAGE_SCHEMA: &str = "1.0.0-dev-portable-reference-package";
-const LICENCE_SCHEMA: &str = "1.0.0-reference-licence-manifest";
-const COMPONENTS: [&str; 2] = ["primary_whole", "genomovar_chromosome"];
-const DATABASE_FILES: [&str; 3] = ["index.db", "markers.bin", "sketches.db"];
+pub const LICENCE_PATH: &str = "licence/manifest.json";
+pub const NAMED_REGISTRY: &str = "metadata/tables/named_registry.tsv";
+pub const LINEAGE_REGISTRY: &str = "metadata/tables/lineage_registry.tsv";
+pub const PRIMARY_INDEX: &str = "databases/primary_whole/index.db";
 
 pub fn sha256_hex(bytes: &[u8]) -> String {
     Sha256::digest(bytes)
@@ -28,106 +36,77 @@ pub fn sha256_hex(bytes: &[u8]) -> String {
         .collect()
 }
 
-pub fn licence(package_version: &str, disclaimer: &str) -> Value {
-    json!({
-        "schema_version": LICENCE_SCHEMA,
-        "package_version": package_version,
-        "ncbi_submitter_rights_disclaimer": disclaimer,
-    })
-}
-
-fn record(bytes: &[u8], path: &str, roles: Option<Vec<String>>) -> Value {
-    let mut record = json!({"path": path, "bytes": bytes.len(), "sha256": sha256_hex(bytes)});
-    if let Some(roles) = roles {
-        record["roles"] = json!(roles);
+fn read_tree(root: &Path, dir: &Path, files: &mut BTreeMap<String, Vec<u8>>) {
+    for entry in fs::read_dir(dir).unwrap() {
+        let path = entry.unwrap().path();
+        if path.is_dir() {
+            read_tree(root, &path, files);
+        } else {
+            let relative = path
+                .strip_prefix(root)
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_owned();
+            files.insert(relative, fs::read(&path).unwrap());
+        }
     }
-    record
 }
 
+/// The fixture as a set of files, with the manifest held apart so it can be edited.
 pub struct Synthetic {
     files: BTreeMap<String, Vec<u8>>,
     manifest: Value,
-    raw_manifest: Option<Vec<u8>>,
+    manifest_bytes: Vec<u8>,
 }
 
 impl Synthetic {
+    /// The committed fixture, exactly as it is on disk.
     pub fn new() -> Self {
+        let root = Path::new(FIXTURE_DIR);
         let mut files = BTreeMap::new();
-        let mut assets = Vec::new();
-        let mut put = |path: String, roles: Vec<String>, bytes: Vec<u8>| {
-            assets.push(record(&bytes, &path, Some(roles)));
-            files.insert(path, bytes);
-        };
-        for component in COMPONENTS {
-            for file in DATABASE_FILES {
-                put(
-                    format!("databases/{component}/{file}"),
-                    vec![format!("database:{component}:{file}")],
-                    format!("{component} {file}").into_bytes(),
-                );
-            }
-            put(
-                format!("build/{component}/build.json"),
-                vec![format!("build:{component}:0")],
-                format!("{{\"component\":\"{component}\"}}").into_bytes(),
-            );
-        }
-        put(
-            "tables/named_registry.tsv".into(),
-            vec!["table:named_registry".into()],
-            b"concept_id\tname\n".to_vec(),
-        );
-        put(
-            LICENCE_PATH.into(),
-            vec!["licence:manifest".into()],
-            licence(PACKAGE_VERSION, DISCLAIMER)
-                .to_string()
-                .into_bytes(),
-        );
-
-        let export = b"{}".to_vec();
-        let source = b"{}".to_vec();
-        let export_record = record(&export, EXPORT_PATH, None);
-        let source_record = record(&source, SOURCE_PATH, None);
-        files.insert(EXPORT_PATH.into(), export);
-        files.insert(SOURCE_PATH.into(), source);
-
-        let manifest = json!({
-            "schema_version": PACKAGE_SCHEMA,
-            "package_id": "terobacter-reference-test",
-            "package_version": PACKAGE_VERSION,
-            "release_state": "synthetic_test_fixture",
-            "trust_basis": "synthetic_test_fixture",
-            "positive_calling_policy_enabled": false,
-            "assets": assets,
-            "export_validation": export_record,
-            "source_manifest": source_record,
-        });
+        read_tree(root, root, &mut files);
+        let manifest_bytes = files.remove(MANIFEST).expect("the fixture has a manifest");
+        let manifest = serde_json::from_slice(&manifest_bytes).unwrap();
         Synthetic {
             files,
             manifest,
-            raw_manifest: None,
+            manifest_bytes,
         }
+    }
+
+    pub fn manifest_sha256(&self) -> String {
+        sha256_hex(&self.manifest_bytes)
+    }
+
+    pub fn file(&self, path: &str) -> &[u8] {
+        self.files
+            .get(path)
+            .unwrap_or_else(|| panic!("no file {path}"))
     }
 
     /// Every file as it would be written to disk, with the manifest as `portable.json`.
     pub fn files(&self) -> BTreeMap<String, Vec<u8>> {
         let mut files = self.files.clone();
-        files.insert(MANIFEST.into(), self.manifest_bytes());
+        files.insert(MANIFEST.into(), self.manifest_bytes.clone());
         files
     }
 
-    pub fn manifest_sha256(&self) -> String {
-        sha256_hex(&self.manifest_bytes())
-    }
-
-    /// Verify against the manifest digest this package has now, as an operator who vouches for it would.
-    pub fn verify(&self) -> Result<VerifiedPackage, PackageError> {
-        verify_package(&self.source(), &self.manifest_sha256())
-    }
-
     pub fn source(&self) -> MemorySource {
-        MemorySource(self.files())
+        MemorySource::new(self.files())
+    }
+
+    /// Verify against the manifest digest the package has now, as an operator who vouches for it would.
+    pub fn verify(&self) -> Result<VerifiedPackage, PackageError> {
+        self.verify_with(&self.manifest_sha256(), &RegistryPins::default())
+    }
+
+    pub fn verify_with(
+        &self,
+        expected: &str,
+        pins: &RegistryPins,
+    ) -> Result<VerifiedPackage, PackageError> {
+        verify_package(&self.source(), expected, pins)
     }
 
     pub fn write_to(&self, dir: &Path) {
@@ -143,12 +122,26 @@ impl Synthetic {
         self.files.get_mut(path).expect("listed file")[0] ^= 0xff;
     }
 
+    /// Replace a file's bytes and re-list it, so only the change itself is wrong.
+    pub fn rewrite(&mut self, path: &str, bytes: Vec<u8>) {
+        self.files.insert(path.into(), bytes);
+        self.relist(path);
+    }
+
     pub fn truncate(&mut self, path: &str) {
         self.files.get_mut(path).expect("listed file").pop();
     }
 
+    pub fn extend(&mut self, path: &str) {
+        self.files.get_mut(path).expect("listed file").push(b'\n');
+    }
+
     pub fn remove(&mut self, path: &str) {
         self.files.remove(path).expect("listed file");
+    }
+
+    pub fn add_unlisted(&mut self, path: &str, bytes: &[u8]) {
+        self.files.insert(path.into(), bytes.to_vec());
     }
 
     /// Remove a file and its listing together, as an incomplete build would.
@@ -156,54 +149,102 @@ impl Synthetic {
         self.remove(path);
         self.manifest["assets"]
             .as_array_mut()
-            .unwrap()
+            .expect("assets is a list")
             .retain(|asset| asset["path"] != path);
-    }
-
-    /// Replace the licence manifest and re-list it with its new digest, as a rebuild would.
-    pub fn replace_licence(&mut self, body: Value) {
-        let bytes = body.to_string().into_bytes();
-        let entry = record(&bytes, LICENCE_PATH, Some(vec!["licence:manifest".into()]));
-        self.files.insert(LICENCE_PATH.into(), bytes);
-        let assets = self.manifest["assets"].as_array_mut().unwrap();
-        let slot = assets
-            .iter_mut()
-            .find(|asset| asset["path"] == LICENCE_PATH)
-            .unwrap();
-        *slot = entry;
-    }
-
-    pub fn set_manifest(&mut self, key: &str, value: Value) {
-        self.manifest[key] = value;
+        self.write_manifest();
     }
 
     /// Change a listed path in the manifest only, so the file itself is untouched.
     pub fn rename_listing(&mut self, from: &str, to: &str) {
-        for asset in self.manifest["assets"].as_array_mut().unwrap() {
+        for asset in self.manifest["assets"]
+            .as_array_mut()
+            .expect("assets is a list")
+        {
             if asset["path"] == from {
                 asset["path"] = to.into();
             }
         }
+        self.write_manifest();
     }
 
+    /// Rewrite a file and re-list it, so the manifest agrees with the file's new length and digest.
+    pub fn edit_json(&mut self, path: &str, edit: impl FnOnce(&mut Value)) {
+        let mut value: Value = serde_json::from_slice(self.file(path)).unwrap();
+        edit(&mut value);
+        let bytes = serde_json::to_vec_pretty(&value).unwrap();
+        self.files.insert(path.into(), bytes);
+        self.relist(path);
+    }
+
+    /// Edit the manifest and seal it, so its digest is the one an operator would now expect.
+    pub fn edit_manifest(&mut self, edit: impl FnOnce(&mut Value)) {
+        edit(&mut self.manifest);
+        self.write_manifest();
+    }
+
+    /// Replace the manifest bytes without touching anything else, so the digest check sees them as is.
     pub fn replace_manifest_bytes(&mut self, bytes: &[u8]) {
-        self.raw_manifest = Some(bytes.to_vec());
+        self.manifest_bytes = bytes.to_vec();
     }
 
-    fn manifest_bytes(&self) -> Vec<u8> {
-        self.raw_manifest
-            .clone()
-            .unwrap_or_else(|| serde_json::to_vec_pretty(&self.manifest).unwrap())
+    fn relist(&mut self, path: &str) {
+        let (size, digest) = {
+            let bytes = self.file(path);
+            (bytes.len() as u64, sha256_hex(bytes))
+        };
+        let update = |record: &mut Value| {
+            if record["path"] == path {
+                record["bytes"] = json!(size);
+                record["sha256"] = json!(digest);
+            }
+        };
+        for key in ["source_manifest", "export_validation", "licence"] {
+            update(&mut self.manifest[key]);
+        }
+        for asset in self.manifest["assets"]
+            .as_array_mut()
+            .expect("assets is a list")
+        {
+            update(asset);
+        }
+        self.write_manifest();
+    }
+
+    fn write_manifest(&mut self) {
+        self.manifest_bytes = serde_json::to_vec_pretty(&self.manifest).unwrap();
     }
 }
 
-pub struct MemorySource(pub BTreeMap<String, Vec<u8>>);
+/// Serves a fixed set of files and records which paths the verifier asked for.
+pub struct MemorySource {
+    files: BTreeMap<String, Vec<u8>>,
+    opened: RefCell<Vec<String>>,
+}
+
+impl MemorySource {
+    pub fn new(files: BTreeMap<String, Vec<u8>>) -> Self {
+        MemorySource {
+            files,
+            opened: RefCell::new(Vec::new()),
+        }
+    }
+
+    /// The paths the verifier opened, in order.
+    pub fn opened(&self) -> Vec<String> {
+        self.opened.borrow().clone()
+    }
+}
 
 impl PackageSource for MemorySource {
     fn open(&self, path: &str) -> io::Result<Option<Box<dyn Read + '_>>> {
+        self.opened.borrow_mut().push(path.to_owned());
         Ok(self
-            .0
+            .files
             .get(path)
             .map(|bytes| Box::new(bytes.as_slice()) as Box<dyn Read + '_>))
+    }
+
+    fn inventory(&self) -> io::Result<BTreeSet<String>> {
+        Ok(self.files.keys().cloned().collect())
     }
 }

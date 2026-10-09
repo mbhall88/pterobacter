@@ -1,0 +1,2 @@
+/synthetic/sequences/genomovar/GCA_900000003.fna
+/synthetic/sequences/genomovar/GCA_900000004.fna

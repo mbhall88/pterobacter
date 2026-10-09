@@ -17,3 +17,7 @@ Source pins (SHA-256 of the frozen files these were derived from):
 The derivation script checks both pins before writing anything, and refuses to write a file that contains a workspace path. The script and its run log stay in the research workspace.
 
 This is development evidence that was already exposed. Passing it shows the implementation reproduces a frozen result. It says nothing about accuracy on new data.
+
+## `reference-v2/`
+
+A synthetic version 2 reference package for the authentication tests. It carries no real reference data. See [its README](reference-v2/README.md) for its contents, derivation and limits.

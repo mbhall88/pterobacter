@@ -6,13 +6,18 @@
 mod common;
 
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Output;
 
 use assert_cmd::cargo::cargo_bin_cmd;
-use common::package::{Synthetic, LICENCE_PATH, MANIFEST, PACKAGE_VERSION};
+use common::package::{
+    sha256_hex, Synthetic, LICENCE_PATH, MANIFEST, NAMED_REGISTRY, PACKAGE_VERSION,
+};
 use serde_json::{json, Value};
 use tempfile::TempDir;
+
+const V1_SCHEMA: &str = "1.0.0-dev-portable-reference-package";
+const PRIMARY_INDEX: &str = "databases/primary_whole/index.db";
 
 fn package_on_disk(synthetic: &Synthetic) -> TempDir {
     let dir = tempfile::tempdir().unwrap();
@@ -30,6 +35,12 @@ fn reference_package_run(directory: &Path, expected: &str) -> Output {
         .arg(expected)
         .output()
         .unwrap()
+}
+
+fn packaged_evidence_in(dir: &Path, package_sha256: &str) -> PathBuf {
+    let path = dir.join("evidence.json");
+    fs::write(&path, common::packaged_evidence(package_sha256).to_string()).unwrap();
+    path
 }
 
 #[test]
@@ -113,33 +124,43 @@ fn each_rejected_reference_package_exits_with_its_own_code_and_names_the_fault()
     let cases: Vec<(&str, Damage, i32, &str)> = vec![
         (
             "missing",
-            |s: &mut Synthetic| s.remove("databases/primary_whole/index.db"),
+            |s: &mut Synthetic| s.remove(PRIMARY_INDEX),
             3,
             "missing",
         ),
         (
             "altered",
-            |s: &mut Synthetic| s.alter("databases/primary_whole/index.db"),
+            |s: &mut Synthetic| s.alter(PRIMARY_INDEX),
             4,
             "altered",
         ),
         (
             "truncated",
-            |s: &mut Synthetic| s.truncate("databases/primary_whole/index.db"),
+            |s: &mut Synthetic| s.truncate(PRIMARY_INDEX),
             5,
             "truncated",
         ),
         (
-            "incompatible",
-            |s: &mut Synthetic| s.set_manifest("schema_version", json!("0.9.0")),
+            "frozen v1 schema",
+            |s: &mut Synthetic| s.edit_manifest(|m| m["schema_version"] = json!(V1_SCHEMA)),
             6,
             "incompatible",
         ),
         (
-            "incomplete",
-            |s: &mut Synthetic| s.drop_listing(LICENCE_PATH),
+            "blank licence disclaimer",
+            |s: &mut Synthetic| {
+                s.edit_json(LICENCE_PATH, |l| {
+                    l["ncbi_submitter_rights_disclaimer"] = json!(" ")
+                })
+            },
             7,
-            "incomplete",
+            "inconsistent",
+        ),
+        (
+            "unlisted",
+            |s: &mut Synthetic| s.add_unlisted("databases/primary_whole/extra.tsv", b"extra"),
+            10,
+            "unlisted",
         ),
     ];
     for (case, damage, code, word) in cases {
@@ -166,7 +187,7 @@ fn each_rejected_reference_package_exits_with_its_own_code_and_names_the_fault()
 fn a_manifest_that_is_not_the_expected_one_exits_with_its_own_code() {
     let expected = Synthetic::new().manifest_sha256();
     let mut replaced = Synthetic::new();
-    replaced.set_manifest("package_id", json!("terobacter-reference-replacement"));
+    replaced.edit_manifest(|m| m["package_id"] = json!("terobacter-reference-replacement"));
     let dir = package_on_disk(&replaced);
 
     let output = reference_package_run(dir.path(), &expected);
@@ -181,6 +202,43 @@ fn a_manifest_that_is_not_the_expected_one_exits_with_its_own_code() {
         stderr.starts_with("error:") && stderr.contains(&expected),
         "{stderr}"
     );
+}
+
+#[test]
+fn registry_pins_must_match_the_listed_tables() {
+    let synthetic = Synthetic::new();
+    let dir = package_on_disk(&synthetic);
+    let digest = synthetic.manifest_sha256();
+    let listed = sha256_hex(synthetic.file(NAMED_REGISTRY));
+
+    let matching = cargo_bin_cmd!("terobacter-dev")
+        .arg("reference-package")
+        .arg(dir.path())
+        .arg("--expected-sha256")
+        .arg(&digest)
+        .arg("--named-registry-sha256")
+        .arg(&listed)
+        .output()
+        .unwrap();
+    assert!(
+        matching.status.success(),
+        "{}",
+        String::from_utf8_lossy(&matching.stderr)
+    );
+
+    let mismatching = cargo_bin_cmd!("terobacter-dev")
+        .arg("reference-package")
+        .arg(dir.path())
+        .arg("--expected-sha256")
+        .arg(&digest)
+        .arg("--named-registry-sha256")
+        .arg("c".repeat(64))
+        .output()
+        .unwrap();
+    let stderr = String::from_utf8_lossy(&mismatching.stderr);
+    assert_eq!(mismatching.status.code(), Some(9), "{stderr}");
+    assert!(mismatching.stdout.is_empty());
+    assert!(stderr.contains(NAMED_REGISTRY), "{stderr}");
 }
 
 #[test]
@@ -211,6 +269,12 @@ fn the_expected_digest_is_required_and_must_be_lowercase_hex() {
             common::FIXTURE_PATH,
             "--reference-package",
             path,
+        ],
+        vec![
+            "saved-evidence",
+            common::FIXTURE_PATH,
+            "--named-registry-sha256",
+            digest.as_str(),
         ],
     ];
     for args in cases {
@@ -266,11 +330,8 @@ fn a_listed_file_that_is_a_symbolic_link_is_refused() {
 fn evidence_bound_to_the_verified_package_is_decided_and_reports_it() {
     let synthetic = Synthetic::new();
     let package_dir = package_on_disk(&synthetic);
-    let mut evidence: Value = serde_json::from_str(common::FIXTURE).unwrap();
-    evidence["provenance"]["reference_package_sha256"] = synthetic.manifest_sha256().into();
     let evidence_dir = tempfile::tempdir().unwrap();
-    let evidence_path = evidence_dir.path().join("evidence.json");
-    fs::write(&evidence_path, evidence.to_string()).unwrap();
+    let evidence_path = packaged_evidence_in(evidence_dir.path(), &synthetic.manifest_sha256());
 
     let output = cargo_bin_cmd!("terobacter-dev")
         .arg("saved-evidence")
@@ -288,18 +349,23 @@ fn evidence_bound_to_the_verified_package_is_decided_and_reports_it() {
         String::from_utf8_lossy(&output.stderr)
     );
     let decision: Value = serde_json::from_slice(&output.stdout).unwrap();
-    common::assert_matches_frozen_call(&decision);
     assert_eq!(decision["reference_package"]["status"], "verified");
+    assert_eq!(
+        decision["reference_package"]["package"]["version"],
+        PACKAGE_VERSION
+    );
 }
 
 #[test]
-fn saved_evidence_bound_to_another_package_is_not_bound() {
+fn saved_evidence_bound_to_another_package_is_unresolved() {
     let synthetic = Synthetic::new();
     let package_dir = package_on_disk(&synthetic);
+    let evidence_dir = tempfile::tempdir().unwrap();
+    let evidence_path = packaged_evidence_in(evidence_dir.path(), &"c".repeat(64));
 
     let output = cargo_bin_cmd!("terobacter-dev")
         .arg("saved-evidence")
-        .arg(common::FIXTURE_PATH)
+        .arg(&evidence_path)
         .arg("--reference-package")
         .arg(package_dir.path())
         .arg("--expected-sha256")
@@ -314,7 +380,7 @@ fn saved_evidence_bound_to_another_package_is_not_bound() {
         "a binding failure prints no decision"
     );
     assert!(
-        stderr.starts_with("error:") && stderr.contains("not bound"),
+        stderr.starts_with("error:") && stderr.contains("another reference package"),
         "{stderr}"
     );
 }

@@ -36,15 +36,15 @@ Evaluation-only operations live in `terobacter-dev`. It is built only on request
 
 ```sh
 cargo run --features dev --bin terobacter-dev -- saved-evidence tests/fixtures/v1-species-assigned/evidence.json
-cargo run --features dev --bin terobacter-dev -- reference-package <DIR> --expected-sha256 <SHA256>
-cargo run --features dev --bin terobacter-dev -- saved-evidence <EVIDENCE> --reference-package <DIR> --expected-sha256 <SHA256>
+cargo run --features dev --bin terobacter-dev -- reference-package <DIR> --expected-sha256 <SHA256> [--named-registry-sha256 <SHA256>] [--lineage-registry-sha256 <SHA256>]
+cargo run --features dev --bin terobacter-dev -- saved-evidence <EVIDENCE> --reference-package <DIR> --expected-sha256 <SHA256> [--named-registry-sha256 <SHA256>] [--lineage-registry-sha256 <SHA256>]
 ```
 
 `saved-evidence` reads frozen 0.2.0 saved evidence and prints the v1 species/subspecies decision as JSON, including raw nearest evidence, competitors, scope assessments and all withholding reasons. It runs no new comparisons. See [the v1 contract](docs/v1-decisions.md) for optional bound method/problem envelopes and the supported API boundary.
 
-`reference-package` authenticates a reference package directory against `--expected-sha256`, the SHA-256 that its `portable.json` must have. A manifest with any other digest is refused before its listing is read. Every file listed in the manifest must be present with the listed length and SHA-256, and no listed path may be a symbolic link. Both components (`primary_whole` and `genomovar_chromosome`) must be complete, and the package must carry a licence manifest with the NCBI submitter-rights disclaimer. On success it prints the package identity, licence and components as JSON, including the SHA-256 of each database.
+`reference-package` authenticates a reference package directory against `--expected-sha256`, the SHA-256 that its `portable.json` must have. A manifest with any other digest is refused before its listing is read. Every file listed in the manifest must be present with the listed length and SHA-256, and no listed path may be a symbolic link. A file in the directory that the manifest does not list is refused. Both components (`primary_whole` and `genomovar_chromosome`) must be complete and their tables must agree with the source manifest, and the package must carry a licence manifest with the NCBI submitter-rights disclaimer. `--named-registry-sha256` and `--lineage-registry-sha256` pin the two registry tables to digests you give. Nothing is pinned by default, so a table is checked against a digest only when you supply one. On success the command prints the package identity, licence and components as JSON, including the SHA-256 of each database.
 
-`--reference-package` authenticates the package in the same way, then requires the evidence to be bound to it: the evidence's reference package digest must equal the verified manifest digest. The two flags must be given together. Without `--reference-package` the decision reports `reference_package.status` as `not_verified`.
+`--reference-package` authenticates the package in the same way, then requires the evidence to be bound to it. The evidence's reference package digest must equal the verified manifest digest. Every reference the evidence names must be one of the package's, and must have the taxa the package gives it. The two flags must be given together. Without `--reference-package` the decision reports `reference_package.status` as `not_verified`.
 
 ### Exit codes
 
@@ -52,22 +52,23 @@ cargo run --features dev --bin terobacter-dev -- saved-evidence <EVIDENCE> --ref
 |---|---|
 | 0 | Success. |
 | 1 | Failure: an unreadable file, invalid saved evidence, an I/O error reading a package, or a listed path that is a symbolic link. |
-| 2 | Usage error: an unknown option, a missing argument, or a malformed `--expected-sha256`. |
+| 2 | Usage error: an unknown option, a missing argument, a malformed digest, or a flag given without the flag it requires. |
 | 3 | Missing: the manifest, or a file it lists, is not in the package. |
 | 4 | Altered: a file's length or SHA-256 differs from the manifest, or it is longer than listed. |
 | 5 | Truncated: a file is shorter than its listed length. |
 | 6 | Incompatible: the package or licence schema is not one this build reads. |
-| 7 | Incomplete: the manifest, a component, the licence manifest or a listed path is incomplete or unsafe. |
-| 8 | Not bound: the saved evidence was searched against a different reference package. |
-| 9 | Unexpected: `portable.json` does not have the SHA-256 given by `--expected-sha256`. |
+| 7 | Inconsistent: the manifest, a component, a table, an attestation or the licence manifest disagrees with the others or is incomplete, or a listed path is unsafe or repeated. |
+| 8 | Unresolved: the saved evidence was searched against another reference package, names a reference the package does not have, or gives a reference taxa that differ from the package's. |
+| 9 | Unexpected: `portable.json`, or a pinned registry table, does not have the SHA-256 given on the command line. |
+| 10 | Unlisted: a file in the package directory is not listed in the manifest. |
 
-Every rejection prints `error:` followed by a message that names the file or field at fault, and prints no decision.
+Every rejection prints `error:` followed by the kind of rejection and a message that names the file or field at fault. It prints no decision.
 
 ## Layout
 
 | Path | Role |
 |---|---|
-| `src/evidence.rs`, `src/annotations.rs`, `src/reference.rs`, `src/decision.rs` | Pure decision logic. Package bytes arrive through a port, so there is no file, terminal or process code. |
+| `src/evidence.rs`, `src/annotations.rs`, `src/reference/`, `src/decision.rs` | Pure decision logic. Package bytes arrive through a port, so there is no file, terminal or process code. |
 | `src/cli.rs`, `src/dev.rs` | Argument parsing, files and exit codes for the public and development commands. |
 | `src/bin/` | Thin entry points for `tero`, `terobacter` and `terobacter-dev`. |
 | `tests/` | Tests at the decision, command-line and packaging seams, with fixtures. |

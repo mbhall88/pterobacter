@@ -107,10 +107,11 @@ impl Reference {
 }
 
 /// What the evidence says about where it came from. A decision given a verified reference
-/// package first checks these bindings with [`crate::reference::VerifiedPackage::check_binding`].
+/// package first checks these bindings with [`crate::reference::VerifiedPackage::check_evidence`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Provenance {
     pub engine_version: String,
+    pub reference_component_id: String,
     pub reference_package_sha256: String,
     pub query_sha256: String,
 }
@@ -340,6 +341,7 @@ impl RawEvidence {
             references,
             provenance: Provenance {
                 engine_version: self.provenance.engine_version,
+                reference_component_id: self.provenance.reference_component_id,
                 reference_package_sha256: self.provenance.reference_package_sha256,
                 query_sha256,
             },

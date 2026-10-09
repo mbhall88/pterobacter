@@ -1,0 +1,3 @@
+accession	group	project_species	project_subspecies	named_target	type_anchor	partition	qc_pass	quality_flags	whole_fasta	whole_sha256	selection_reason
+GCA_900000001	Enterobacter alpha	Enterobacter alpha		1	1	development	0	synthetic_type_qc_exception	/synthetic/sequences/primary/GCA_900000001.fna	4af152325c4fff3572d729c78f27d339542fcd8e9cc80bee5c06a6c9617d92eb	synthetic_type_anchor
+GCA_900000002	Enterobacter alpha subsp. beta	Enterobacter alpha	beta	1	0	development	1		/synthetic/sequences/primary/GCA_900000002.fna	0525d6d7936708393ae811514a6b8d082b219970beccd9052f03e9ebf2f8604e	synthetic_named_reference

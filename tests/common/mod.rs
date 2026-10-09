@@ -184,3 +184,26 @@ pub fn decision_from_text(evidence: &str) -> Value {
 pub fn decision_for(rows: &[Row]) -> Value {
     decision_from_text(&evidence_json(rows).to_string())
 }
+
+/// Saved evidence over the packaged primary references, bound to `package_sha256`.
+pub fn packaged_evidence(package_sha256: &str) -> Value {
+    let mut evidence = evidence_json(&[
+        row(
+            "primary_whole:GCA_900000002",
+            Some("ECTX-SP-alpha"),
+            98.5,
+            95.0,
+            96.0,
+        )
+        .subspecies("ECTX-SS-beta"),
+        row(
+            "primary_whole:GCA_900000001",
+            Some("ECTX-SP-alpha"),
+            98.4,
+            95.0,
+            96.0,
+        ),
+    ]);
+    evidence["provenance"]["reference_package_sha256"] = package_sha256.into();
+    evidence
+}

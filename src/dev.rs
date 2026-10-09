@@ -6,11 +6,13 @@
 use crate::decision::{decide, decide_bound, Policy};
 use crate::evidence::SavedEvidence;
 use crate::reference::{
-    is_sha256, verify_package, PackageError, PackageErrorKind, PackageSource, VerifiedPackage,
+    is_sha256, verify_package, PackageError, PackageErrorKind, PackageSource, RegistryPins,
+    VerifiedPackage,
 };
 use clap::{Args, Parser, Subcommand};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
+use std::collections::BTreeSet;
 use std::fmt::Display;
 use std::fs::{self, File};
 use std::io::{self, Read};
@@ -39,6 +41,12 @@ enum DevCommand {
         /// SHA-256 that the package's portable.json must have
         #[arg(long, value_name = "SHA256", value_parser = parse_sha256)]
         expected_sha256: String,
+        /// SHA-256 that the named registry table must have, if it is to be pinned
+        #[arg(long, value_name = "SHA256", value_parser = parse_sha256)]
+        named_registry_sha256: Option<String>,
+        /// SHA-256 that the lineage registry table must have, if it is to be pinned
+        #[arg(long, value_name = "SHA256", value_parser = parse_sha256)]
+        lineage_registry_sha256: Option<String>,
     },
 }
 
@@ -75,6 +83,22 @@ struct SavedEvidenceArgs {
         requires = "reference_package"
     )]
     expected_sha256: Option<String>,
+    /// SHA-256 that the named registry table must have, if it is to be pinned
+    #[arg(
+        long,
+        value_name = "SHA256",
+        value_parser = parse_sha256,
+        requires = "reference_package"
+    )]
+    named_registry_sha256: Option<String>,
+    /// SHA-256 that the lineage registry table must have, if it is to be pinned
+    #[arg(
+        long,
+        value_name = "SHA256",
+        value_parser = parse_sha256,
+        requires = "reference_package"
+    )]
+    lineage_registry_sha256: Option<String>,
 }
 
 fn parse_sha256(text: &str) -> Result<String, String> {
@@ -90,9 +114,10 @@ const EXIT_MISSING: u8 = 3;
 const EXIT_ALTERED: u8 = 4;
 const EXIT_TRUNCATED: u8 = 5;
 const EXIT_INCOMPATIBLE: u8 = 6;
-const EXIT_INCOMPLETE: u8 = 7;
-const EXIT_NOT_BOUND: u8 = 8;
+const EXIT_INCONSISTENT: u8 = 7;
+const EXIT_UNRESOLVED: u8 = 8;
 const EXIT_UNEXPECTED: u8 = 9;
+const EXIT_UNLISTED: u8 = 10;
 
 struct Failure {
     code: u8,
@@ -117,8 +142,9 @@ impl From<PackageError> for Failure {
             PackageErrorKind::Altered => EXIT_ALTERED,
             PackageErrorKind::Truncated => EXIT_TRUNCATED,
             PackageErrorKind::Incompatible => EXIT_INCOMPATIBLE,
-            PackageErrorKind::Incomplete => EXIT_INCOMPLETE,
-            PackageErrorKind::NotBound => EXIT_NOT_BOUND,
+            PackageErrorKind::Inconsistent => EXIT_INCONSISTENT,
+            PackageErrorKind::Unresolved => EXIT_UNRESOLVED,
+            PackageErrorKind::Unlisted => EXIT_UNLISTED,
         };
         Failure {
             code,
@@ -135,7 +161,16 @@ pub fn run() -> ExitCode {
         DevCommand::ReferencePackage {
             directory,
             expected_sha256,
-        } => reference_package(&directory, &expected_sha256),
+            named_registry_sha256,
+            lineage_registry_sha256,
+        } => reference_package(
+            &directory,
+            &expected_sha256,
+            &RegistryPins {
+                named_registry_sha256,
+                lineage_registry_sha256,
+            },
+        ),
     };
     match result {
         Ok(json) => {
@@ -149,13 +184,17 @@ pub fn run() -> ExitCode {
     }
 }
 
-fn reference_package(directory: &Path, expected_sha256: &str) -> Result<String, Failure> {
+fn reference_package(
+    directory: &Path,
+    expected_sha256: &str,
+    pins: &RegistryPins,
+) -> Result<String, Failure> {
     let package: VerifiedPackage =
-        verify_package(&Directory(directory.to_path_buf()), expected_sha256)?;
+        verify_package(&Directory(directory.to_path_buf()), expected_sha256, pins)?;
     Ok(serde_json::to_string_pretty(&package.to_value()).expect("a JSON value always serialises"))
 }
 
-/// Reads a package directory, refusing a symbolic link on any listed path.
+/// Reads a package directory. Symbolic links and names that are not UTF-8 are refused.
 struct Directory(PathBuf);
 
 impl PackageSource for Directory {
@@ -165,10 +204,7 @@ impl PackageSource for Directory {
             full.push(segment);
             match fs::symlink_metadata(&full) {
                 Ok(metadata) if metadata.file_type().is_symlink() => {
-                    return Err(io::Error::new(
-                        io::ErrorKind::PermissionDenied,
-                        "symbolic links are not allowed in a package",
-                    ));
+                    return Err(symlink_refused());
                 }
                 Ok(_) => {}
                 Err(error)
@@ -185,6 +221,46 @@ impl PackageSource for Directory {
         let file = File::open(full)?;
         Ok(Some(Box::new(file)))
     }
+
+    fn inventory(&self) -> io::Result<BTreeSet<String>> {
+        let mut found = BTreeSet::new();
+        list_files(&self.0, "", &mut found)?;
+        Ok(found)
+    }
+}
+
+fn list_files(directory: &Path, prefix: &str, found: &mut BTreeSet<String>) -> io::Result<()> {
+    for entry in fs::read_dir(directory)? {
+        let entry = entry?;
+        let name = entry.file_name().into_string().map_err(|_| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "a file name in the package is not UTF-8",
+            )
+        })?;
+        let relative = if prefix.is_empty() {
+            name
+        } else {
+            format!("{prefix}/{name}")
+        };
+        let file_type = entry.file_type()?;
+        if file_type.is_symlink() {
+            return Err(symlink_refused());
+        }
+        if file_type.is_dir() {
+            list_files(&entry.path(), &relative, found)?;
+        } else {
+            found.insert(relative);
+        }
+    }
+    Ok(())
+}
+
+fn symlink_refused() -> io::Error {
+    io::Error::new(
+        io::ErrorKind::PermissionDenied,
+        "symbolic links are not allowed in a package",
+    )
 }
 
 fn read(
@@ -268,6 +344,8 @@ fn classify(args: SavedEvidenceArgs) -> Result<String, Failure> {
         problem_warnings_sha256,
         reference_package,
         expected_sha256,
+        named_registry_sha256,
+        lineage_registry_sha256,
     } = args;
     let mut pins = Vec::new();
     let text = read(&evidence, evidence_sha256.as_deref(), &mut pins)?;
@@ -287,7 +365,11 @@ fn classify(args: SavedEvidenceArgs) -> Result<String, Failure> {
     verify_artifacts(&saved, &mut pins)?;
     let (decision, verification) = match reference_package.zip(expected_sha256) {
         Some((directory, expected)) => {
-            let package = verify_package(&Directory(directory), &expected)?;
+            let registry_pins = RegistryPins {
+                named_registry_sha256,
+                lineage_registry_sha256,
+            };
+            let package = verify_package(&Directory(directory), &expected, &registry_pins)?;
             (
                 decide_bound(&saved, &package, &Policy::v1())?,
                 "input_and_artifact_hashes_checked; reference_package_verified",

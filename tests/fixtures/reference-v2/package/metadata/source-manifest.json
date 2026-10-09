@@ -1,0 +1,624 @@
+{
+  "cohort_coverage_summary": {
+    "context_only": 1,
+    "genomovar_definition_member": 2,
+    "primary_reference": 2
+  },
+  "components": [
+    {
+      "component_id": "genomovar_chromosome",
+      "database_files": [
+        {
+          "bytes": 152,
+          "path": "/synthetic/databases/genomovar_chromosome/index.db",
+          "sha256": "35440209f799a3a66639fbb5353b8de813b5540471198c120ca916a3860c34da"
+        },
+        {
+          "bytes": 38,
+          "path": "/synthetic/databases/genomovar_chromosome/markers.bin",
+          "sha256": "dce880756396deb46c5ee6b95ea7d229e1a1b557aad91639572177151b246542"
+        },
+        {
+          "bytes": 112,
+          "path": "/synthetic/databases/genomovar_chromosome/sketches.db",
+          "sha256": "7d165707901015418024d1bf71c4cd71112f8a0ed2f89ab266263b4af5907e8e"
+        }
+      ],
+      "database_format": "skani-0.3.2-consolidated-bincode1",
+      "database_index_entries": [
+        {
+          "bytes": 48,
+          "offset": 0,
+          "path": "/synthetic/sequences/genomovar/GCA_900000003.fna"
+        },
+        {
+          "bytes": 64,
+          "offset": 48,
+          "path": "/synthetic/sequences/genomovar/GCA_900000004.fna"
+        }
+      ],
+      "engine": "skani",
+      "engine_version": "0.3.2",
+      "provenance_state": "archived_build_records_hash_checked_not_reexecuted",
+      "reference_ids": [
+        "genomovar_chromosome:GCA_900000003",
+        "genomovar_chromosome:GCA_900000004"
+      ],
+      "reference_role": "genomovar_definition_member",
+      "search_label_semantics": "exact_archived_index_label_not_a_deployed_FASTA_requirement",
+      "sequence_scope": "historical_chromosome_record_set",
+      "sequence_scope_basis": "frozen_source_manifest_not_new_replicon_detection",
+      "sketch_payload_recomputed": false
+    },
+    {
+      "component_id": "primary_whole",
+      "database_files": [
+        {
+          "bytes": 148,
+          "path": "/synthetic/databases/primary_whole/index.db",
+          "sha256": "f1e0ac91b49f3ef8a1568bdc9a412d456d6099f257ff10b6c2302998a72f54e5"
+        },
+        {
+          "bytes": 31,
+          "path": "/synthetic/databases/primary_whole/markers.bin",
+          "sha256": "18ba0e68a252e43d3bedb83f010e914033b1f3def4aca6b1c5d6d2221ad32f15"
+        },
+        {
+          "bytes": 112,
+          "path": "/synthetic/databases/primary_whole/sketches.db",
+          "sha256": "8cbf664e426f80ce6691f19977e5d26d200862eacb38321f7edbf028ee7086eb"
+        }
+      ],
+      "database_format": "skani-0.3.2-consolidated-bincode1",
+      "database_index_entries": [
+        {
+          "bytes": 48,
+          "offset": 0,
+          "path": "/synthetic/sequences/primary/GCA_900000001.fna"
+        },
+        {
+          "bytes": 64,
+          "offset": 48,
+          "path": "/synthetic/sequences/primary/GCA_900000002.fna"
+        }
+      ],
+      "engine": "skani",
+      "engine_version": "0.3.2",
+      "provenance_state": "archived_build_records_hash_checked_not_reexecuted",
+      "reference_ids": [
+        "primary_whole:GCA_900000001",
+        "primary_whole:GCA_900000002"
+      ],
+      "reference_role": "primary_named_reference_evidence",
+      "search_label_semantics": "exact_archived_index_label_not_a_deployed_FASTA_requirement",
+      "sequence_scope": "whole_assembly_as_deposited",
+      "sequence_scope_basis": "frozen_source_manifest_not_new_replicon_detection",
+      "sketch_payload_recomputed": false
+    }
+  ],
+  "concepts": [
+    {
+      "concept_id": "ECTX-GV-syn1-GV01",
+      "definition_member_ids": [
+        "genomovar_chromosome:GCA_900000003",
+        "genomovar_chromosome:GCA_900000004"
+      ],
+      "definition_sequence_scope": "historical_chromosome_record_set",
+      "definition_version": "syn1",
+      "display_name": "GV01",
+      "historical_definition_engine": "skani 0.3.1",
+      "historical_definition_rule": "synthetic_definition_rule_v1",
+      "identifier_status": "stable_id_proposal_not_adopted_registry",
+      "nomenclature_status": "informal_operational_ANI_group",
+      "parent_concept_id": "ECTX-SS-beta",
+      "production_membership_policy_enabled": false,
+      "rank": "genomovar",
+      "reference_state": "represented_definition",
+      "representative_reference_id": "genomovar_chromosome:GCA_900000003",
+      "representative_role": "nomination_only_not_membership_shortcut",
+      "sampling_state": "multiple_definition_members",
+      "validated_supported_caller_rank": false
+    },
+    {
+      "concept_id": "ECTX-LN-gamma",
+      "display_name": "Enterobacter gamma lineage",
+      "identifier_status": "stable_id_proposal_not_adopted_registry",
+      "nomenclature_status": "synthetic_context_lineage",
+      "parent_concept_id": null,
+      "rank": "lineage",
+      "reference_state": "context_only",
+      "sampling_state": "absent",
+      "source_annotation": {
+        "concept_id": "ECTX-LN-gamma",
+        "genomovar173_reference_count": "0",
+        "nomenclature_status": "synthetic_context_lineage",
+        "primary140_reference_count": "0",
+        "project_label": "Enterobacter gamma lineage",
+        "rank": "lineage",
+        "represented_reference_evidence": "False",
+        "validated_supported_caller_rank": "False"
+      },
+      "validated_supported_caller_rank": false
+    },
+    {
+      "concept_id": "ECTX-SP-alpha",
+      "display_name": "Enterobacter alpha",
+      "identifier_status": "stable_id_proposal_not_adopted_registry",
+      "nomenclature_status": "synthetic_named_species",
+      "parent_concept_id": null,
+      "rank": "species",
+      "reference_state": "represented",
+      "sampling_state": "multiple_development_references",
+      "source_annotation": {
+        "all_represented_historical_type_accessions": "GCA_900000001",
+        "concept_id": "ECTX-SP-alpha",
+        "nomenclature_status": "synthetic_named_species",
+        "parent_concept_id": "",
+        "primary140_reference_count": "2",
+        "primary140_type_count": "1",
+        "project_name": "Enterobacter alpha",
+        "rank": "species",
+        "represented_reference_evidence": "True",
+        "supplementary_reference_accessions": "GCA_900000002",
+        "type_QC_exception_accessions": "GCA_900000001",
+        "validated_supported_caller_rank": "False"
+      },
+      "validated_supported_caller_rank": false
+    },
+    {
+      "concept_id": "ECTX-SS-beta",
+      "display_name": "Enterobacter alpha subsp. beta",
+      "identifier_status": "stable_id_proposal_not_adopted_registry",
+      "nomenclature_status": "synthetic_named_subspecies",
+      "parent_concept_id": "ECTX-SP-alpha",
+      "rank": "subspecies",
+      "reference_state": "represented",
+      "sampling_state": "single_reference",
+      "source_annotation": {
+        "all_represented_historical_type_accessions": "",
+        "concept_id": "ECTX-SS-beta",
+        "nomenclature_status": "synthetic_named_subspecies",
+        "parent_concept_id": "ECTX-SP-alpha",
+        "primary140_reference_count": "1",
+        "primary140_type_count": "0",
+        "project_name": "Enterobacter alpha subsp. beta",
+        "rank": "subspecies",
+        "represented_reference_evidence": "True",
+        "supplementary_reference_accessions": "GCA_900000002",
+        "type_QC_exception_accessions": "",
+        "validated_supported_caller_rank": "False"
+      },
+      "validated_supported_caller_rank": false
+    }
+  ],
+  "context_not_packaged": [
+    {
+      "accession": "GCA_900000009",
+      "context_disposition": "synthetic_context_only",
+      "reference_in_proposed_package": "False"
+    }
+  ],
+  "counts": {
+    "context_lineage_concepts": 1,
+    "development_context_records_not_packaged": 1,
+    "eligible_cohort_records": 5,
+    "eligible_species_reference_represented": 4,
+    "genomovar_concepts": 1,
+    "historical_chromosome_definition_references": 2,
+    "named_concepts": 2,
+    "primary_historical_type_accessions": 1,
+    "primary_whole_references": 2,
+    "reference_scope_records": 4,
+    "unique_accessions": 4
+  },
+  "historical_type_crosswalk": [
+    {
+      "current_project_species": "Enterobacter alpha",
+      "current_project_stratum": "Enterobacter alpha",
+      "historical_taxon_name": "Enterobacter alphus",
+      "represented_name_bearing_accessions": "GCA_900000001"
+    }
+  ],
+  "integrity_scope": "all_pins_and_packaged_sequence_hashes_exact_source_joins_and_database_index_membership",
+  "package_id": "synthetic-enterobacter-reference",
+  "package_version": "2026-10-09.test1",
+  "path_semantics": "absolute_existing_local_sources_no_relocation_or_sequence_copy",
+  "positive_calling_policy_enabled": false,
+  "provenance_limit": "hashes_pin_reviewed_local_records_not_authenticated_origin_or_recomputed_sketches",
+  "recipe": {
+    "components": {
+      "genomovar_chromosome": {
+        "build_records": [
+          {
+            "bytes": 48,
+            "path": "/synthetic/build/genomovar_chromosome/build-record.txt",
+            "sha256": "333c2be76df939e47d1b300a02129c9bbfb030f3ebfe7aed050154c6e8a82738"
+          }
+        ],
+        "database_files": [
+          {
+            "bytes": 152,
+            "path": "/synthetic/databases/genomovar_chromosome/index.db",
+            "sha256": "35440209f799a3a66639fbb5353b8de813b5540471198c120ca916a3860c34da"
+          },
+          {
+            "bytes": 38,
+            "path": "/synthetic/databases/genomovar_chromosome/markers.bin",
+            "sha256": "dce880756396deb46c5ee6b95ea7d229e1a1b557aad91639572177151b246542"
+          },
+          {
+            "bytes": 112,
+            "path": "/synthetic/databases/genomovar_chromosome/sketches.db",
+            "sha256": "7d165707901015418024d1bf71c4cd71112f8a0ed2f89ab266263b4af5907e8e"
+          }
+        ],
+        "skani_binary": {
+          "bytes": 49,
+          "path": "/synthetic/bin/skani-0.3.2",
+          "sha256": "a604cafbeb4f8b78e6a3f88c5a4bfe310b0b09a643c3fb1c76b5d6dd1bb13fdb"
+        },
+        "source_list": {
+          "bytes": 98,
+          "path": "/synthetic/lists/genomovar_chromosome.txt",
+          "sha256": "5b3e9c34650475bc5e285a2e7f62e58af66b99b54fbff1c70f4653cd36207469"
+        }
+      },
+      "primary_whole": {
+        "build_records": [
+          {
+            "bytes": 41,
+            "path": "/synthetic/build/primary_whole/build-record.txt",
+            "sha256": "ff9da555c9e67dd395eca2e857c3234b0bea75f86b478ee722357e5e66ab8347"
+          }
+        ],
+        "database_files": [
+          {
+            "bytes": 148,
+            "path": "/synthetic/databases/primary_whole/index.db",
+            "sha256": "f1e0ac91b49f3ef8a1568bdc9a412d456d6099f257ff10b6c2302998a72f54e5"
+          },
+          {
+            "bytes": 31,
+            "path": "/synthetic/databases/primary_whole/markers.bin",
+            "sha256": "18ba0e68a252e43d3bedb83f010e914033b1f3def4aca6b1c5d6d2221ad32f15"
+          },
+          {
+            "bytes": 112,
+            "path": "/synthetic/databases/primary_whole/sketches.db",
+            "sha256": "8cbf664e426f80ce6691f19977e5d26d200862eacb38321f7edbf028ee7086eb"
+          }
+        ],
+        "skani_binary": {
+          "bytes": 49,
+          "path": "/synthetic/bin/skani-0.3.2",
+          "sha256": "a604cafbeb4f8b78e6a3f88c5a4bfe310b0b09a643c3fb1c76b5d6dd1bb13fdb"
+        },
+        "source_list": {
+          "bytes": 94,
+          "path": "/synthetic/lists/primary_whole.txt",
+          "sha256": "29f7d02a7ae0008d8085452e1979e1edd0988334611dce3004ea50b92a98a461"
+        }
+      }
+    },
+    "expected_counts": {
+      "context_lineage_concepts": 1,
+      "development_context_records_not_packaged": 1,
+      "eligible_cohort_records": 5,
+      "eligible_species_reference_represented": 4,
+      "genomovar_concepts": 1,
+      "historical_chromosome_definition_references": 2,
+      "named_concepts": 2,
+      "primary_historical_type_accessions": 1,
+      "primary_whole_references": 2,
+      "reference_scope_records": 4,
+      "unique_accessions": 4
+    },
+    "package_id": "synthetic-enterobacter-reference",
+    "package_version": "2026-10-09.test1",
+    "provenance_files": [
+      {
+        "bytes": 28,
+        "path": "/synthetic/provenance/derivation-record.txt",
+        "sha256": "d631c513a856071c5406466e249c9fe14b749175130285d0e29e1dfb3c1dffd5"
+      }
+    ],
+    "source_tables": {
+      "assignments": {
+        "bytes": 508,
+        "path": "/synthetic/tables/assignments.tsv",
+        "sha256": "0a3508958c7f15291f4badb24ddc246edec691023a16022351391636749e8d8e"
+      },
+      "cohort_coverage": {
+        "bytes": 615,
+        "path": "/synthetic/tables/cohort_coverage.tsv",
+        "sha256": "29e2d7812f589ba86949e5df212f4d4e81deffb667e0d0e1a7a5a39f9b59c582"
+      },
+      "definition_groups": {
+        "bytes": 67,
+        "path": "/synthetic/tables/definition_groups.tsv",
+        "sha256": "858773815e54e1c81a688ac61f33736d9dad3825d582b527907142fc36be51eb"
+      },
+      "definition_memberships": {
+        "bytes": 306,
+        "path": "/synthetic/tables/definition_memberships.tsv",
+        "sha256": "7decfb61f6ee95ea60571c1d7294578c179cba46d57d4d12174fac04ca9fe5af"
+      },
+      "definition_references": {
+        "bytes": 714,
+        "path": "/synthetic/tables/definition_references.tsv",
+        "sha256": "d9b528ba3c984a76e0871fa2e694d7cca9e92933fd737c60f11893234a9cd8d2"
+      },
+      "development_context": {
+        "bytes": 240,
+        "path": "/synthetic/tables/development_context.tsv",
+        "sha256": "2829898f50b817eaaed401e41625be793e8533a377aabc232dad584e84b3dba0"
+      },
+      "genomovar_crosswalk": {
+        "bytes": 210,
+        "path": "/synthetic/tables/genomovar_crosswalk.tsv",
+        "sha256": "0503c51a832cc54b6b60c2de01e19033c749d26e5c2f529444c52764c626f8e3"
+      },
+      "historical_types": {
+        "bytes": 178,
+        "path": "/synthetic/tables/historical_types.tsv",
+        "sha256": "fc50147ef6969744273da26769dd7343c56ae1bddc5d8ebbf7138f812b866b0d"
+      },
+      "lineage_registry": {
+        "bytes": 260,
+        "path": "/synthetic/tables/lineage_registry.tsv",
+        "sha256": "1a0df12b5eb971ddfcee95e408f6f44f809760008cd1e81abe31a604b33b25af"
+      },
+      "named_registry": {
+        "bytes": 536,
+        "path": "/synthetic/tables/named_registry.tsv",
+        "sha256": "90bf91e5d078f10ed492ee2b5e45495bccb3ff5e5ace2c0db7080a215db6be4c"
+      },
+      "primary_references": {
+        "bytes": 609,
+        "path": "/synthetic/tables/primary_references.tsv",
+        "sha256": "4b8783418e79e724ad1f5de98edae951601c47bd803dffcd5f6dcd32af732756"
+      }
+    }
+  },
+  "references": [
+    {
+      "accession": "GCA_900000003",
+      "assignment_status": "synthetic_reviewed",
+      "component_id": "genomovar_chromosome",
+      "historical_origin_path": "synthetic_origin_record",
+      "historical_origin_validation": "frozen_metadata_only_not_an_additional_packaged_source",
+      "historical_source_basis": "synthetic_source_basis",
+      "quality_flags": "",
+      "quality_state": "source_QC_pass",
+      "reference_id": "genomovar_chromosome:GCA_900000003",
+      "reference_role": "genomovar_definition_member",
+      "search_label": "/synthetic/sequences/genomovar/GCA_900000003.fna",
+      "sequence_scope": "historical_chromosome_record_set",
+      "source": {
+        "bytes": 46,
+        "path": "/synthetic/sequences/genomovar/GCA_900000003.fna",
+        "sha256": "d0220a715e5ee3ab7c28d48469207e9be7f36606a0ea11b69589b9d99f323a01"
+      },
+      "source_selection_reason": "frozen_genomovar_definition_member",
+      "species_id": "ECTX-SP-alpha",
+      "stratum_concept_id": "ECTX-SS-beta",
+      "subspecies_id": "ECTX-SS-beta",
+      "supplementary_qc_pass": true,
+      "type_anchor": false
+    },
+    {
+      "accession": "GCA_900000004",
+      "assignment_status": "synthetic_reviewed",
+      "component_id": "genomovar_chromosome",
+      "historical_origin_path": "synthetic_origin_record",
+      "historical_origin_validation": "frozen_metadata_only_not_an_additional_packaged_source",
+      "historical_source_basis": "synthetic_source_basis",
+      "quality_flags": "",
+      "quality_state": "source_QC_pass",
+      "reference_id": "genomovar_chromosome:GCA_900000004",
+      "reference_role": "genomovar_definition_member",
+      "search_label": "/synthetic/sequences/genomovar/GCA_900000004.fna",
+      "sequence_scope": "historical_chromosome_record_set",
+      "source": {
+        "bytes": 46,
+        "path": "/synthetic/sequences/genomovar/GCA_900000004.fna",
+        "sha256": "d18e467f5e62771c34b89ca4dfd7615c538c16200446997a9abd283e9cdcbfa1"
+      },
+      "source_selection_reason": "frozen_genomovar_definition_member",
+      "species_id": "ECTX-SP-alpha",
+      "stratum_concept_id": "ECTX-SS-beta",
+      "subspecies_id": "ECTX-SS-beta",
+      "supplementary_qc_pass": true,
+      "type_anchor": false
+    },
+    {
+      "accession": "GCA_900000001",
+      "assignment_status": "synthetic_reviewed",
+      "component_id": "primary_whole",
+      "historical_origin_path": null,
+      "historical_origin_validation": "frozen_metadata_only_not_an_additional_packaged_source",
+      "historical_source_basis": null,
+      "quality_flags": "synthetic_type_qc_exception",
+      "quality_state": "type_QC_exception",
+      "reference_id": "primary_whole:GCA_900000001",
+      "reference_role": "primary_named_reference_evidence",
+      "search_label": "/synthetic/sequences/primary/GCA_900000001.fna",
+      "sequence_scope": "whole_assembly_as_deposited",
+      "source": {
+        "bytes": 46,
+        "path": "/synthetic/sequences/primary/GCA_900000001.fna",
+        "sha256": "4af152325c4fff3572d729c78f27d339542fcd8e9cc80bee5c06a6c9617d92eb"
+      },
+      "source_selection_reason": "synthetic_type_anchor",
+      "species_id": "ECTX-SP-alpha",
+      "stratum_concept_id": "ECTX-SP-alpha",
+      "subspecies_id": null,
+      "supplementary_qc_pass": false,
+      "type_anchor": true
+    },
+    {
+      "accession": "GCA_900000002",
+      "assignment_status": "synthetic_reviewed",
+      "component_id": "primary_whole",
+      "historical_origin_path": null,
+      "historical_origin_validation": "frozen_metadata_only_not_an_additional_packaged_source",
+      "historical_source_basis": null,
+      "quality_flags": "",
+      "quality_state": "source_QC_pass",
+      "reference_id": "primary_whole:GCA_900000002",
+      "reference_role": "primary_named_reference_evidence",
+      "search_label": "/synthetic/sequences/primary/GCA_900000002.fna",
+      "sequence_scope": "whole_assembly_as_deposited",
+      "source": {
+        "bytes": 46,
+        "path": "/synthetic/sequences/primary/GCA_900000002.fna",
+        "sha256": "0525d6d7936708393ae811514a6b8d082b219970beccd9052f03e9ebf2f8604e"
+      },
+      "source_selection_reason": "synthetic_named_reference",
+      "species_id": "ECTX-SP-alpha",
+      "stratum_concept_id": "ECTX-SS-beta",
+      "subspecies_id": "ECTX-SS-beta",
+      "supplementary_qc_pass": true,
+      "type_anchor": false
+    }
+  ],
+  "release_state": "development_proposal_not_distributable",
+  "schema_version": "1.0.0-dev-reference-package",
+  "verified_artifacts": [
+    {
+      "bytes": 49,
+      "path": "/synthetic/bin/skani-0.3.2",
+      "sha256": "a604cafbeb4f8b78e6a3f88c5a4bfe310b0b09a643c3fb1c76b5d6dd1bb13fdb"
+    },
+    {
+      "bytes": 48,
+      "path": "/synthetic/build/genomovar_chromosome/build-record.txt",
+      "sha256": "333c2be76df939e47d1b300a02129c9bbfb030f3ebfe7aed050154c6e8a82738"
+    },
+    {
+      "bytes": 41,
+      "path": "/synthetic/build/primary_whole/build-record.txt",
+      "sha256": "ff9da555c9e67dd395eca2e857c3234b0bea75f86b478ee722357e5e66ab8347"
+    },
+    {
+      "bytes": 152,
+      "path": "/synthetic/databases/genomovar_chromosome/index.db",
+      "sha256": "35440209f799a3a66639fbb5353b8de813b5540471198c120ca916a3860c34da"
+    },
+    {
+      "bytes": 38,
+      "path": "/synthetic/databases/genomovar_chromosome/markers.bin",
+      "sha256": "dce880756396deb46c5ee6b95ea7d229e1a1b557aad91639572177151b246542"
+    },
+    {
+      "bytes": 112,
+      "path": "/synthetic/databases/genomovar_chromosome/sketches.db",
+      "sha256": "7d165707901015418024d1bf71c4cd71112f8a0ed2f89ab266263b4af5907e8e"
+    },
+    {
+      "bytes": 148,
+      "path": "/synthetic/databases/primary_whole/index.db",
+      "sha256": "f1e0ac91b49f3ef8a1568bdc9a412d456d6099f257ff10b6c2302998a72f54e5"
+    },
+    {
+      "bytes": 31,
+      "path": "/synthetic/databases/primary_whole/markers.bin",
+      "sha256": "18ba0e68a252e43d3bedb83f010e914033b1f3def4aca6b1c5d6d2221ad32f15"
+    },
+    {
+      "bytes": 112,
+      "path": "/synthetic/databases/primary_whole/sketches.db",
+      "sha256": "8cbf664e426f80ce6691f19977e5d26d200862eacb38321f7edbf028ee7086eb"
+    },
+    {
+      "bytes": 98,
+      "path": "/synthetic/lists/genomovar_chromosome.txt",
+      "sha256": "5b3e9c34650475bc5e285a2e7f62e58af66b99b54fbff1c70f4653cd36207469"
+    },
+    {
+      "bytes": 94,
+      "path": "/synthetic/lists/primary_whole.txt",
+      "sha256": "29f7d02a7ae0008d8085452e1979e1edd0988334611dce3004ea50b92a98a461"
+    },
+    {
+      "bytes": 28,
+      "path": "/synthetic/provenance/derivation-record.txt",
+      "sha256": "d631c513a856071c5406466e249c9fe14b749175130285d0e29e1dfb3c1dffd5"
+    },
+    {
+      "bytes": 46,
+      "path": "/synthetic/sequences/genomovar/GCA_900000003.fna",
+      "sha256": "d0220a715e5ee3ab7c28d48469207e9be7f36606a0ea11b69589b9d99f323a01"
+    },
+    {
+      "bytes": 46,
+      "path": "/synthetic/sequences/genomovar/GCA_900000004.fna",
+      "sha256": "d18e467f5e62771c34b89ca4dfd7615c538c16200446997a9abd283e9cdcbfa1"
+    },
+    {
+      "bytes": 46,
+      "path": "/synthetic/sequences/primary/GCA_900000001.fna",
+      "sha256": "4af152325c4fff3572d729c78f27d339542fcd8e9cc80bee5c06a6c9617d92eb"
+    },
+    {
+      "bytes": 46,
+      "path": "/synthetic/sequences/primary/GCA_900000002.fna",
+      "sha256": "0525d6d7936708393ae811514a6b8d082b219970beccd9052f03e9ebf2f8604e"
+    },
+    {
+      "bytes": 508,
+      "path": "/synthetic/tables/assignments.tsv",
+      "sha256": "0a3508958c7f15291f4badb24ddc246edec691023a16022351391636749e8d8e"
+    },
+    {
+      "bytes": 615,
+      "path": "/synthetic/tables/cohort_coverage.tsv",
+      "sha256": "29e2d7812f589ba86949e5df212f4d4e81deffb667e0d0e1a7a5a39f9b59c582"
+    },
+    {
+      "bytes": 67,
+      "path": "/synthetic/tables/definition_groups.tsv",
+      "sha256": "858773815e54e1c81a688ac61f33736d9dad3825d582b527907142fc36be51eb"
+    },
+    {
+      "bytes": 306,
+      "path": "/synthetic/tables/definition_memberships.tsv",
+      "sha256": "7decfb61f6ee95ea60571c1d7294578c179cba46d57d4d12174fac04ca9fe5af"
+    },
+    {
+      "bytes": 714,
+      "path": "/synthetic/tables/definition_references.tsv",
+      "sha256": "d9b528ba3c984a76e0871fa2e694d7cca9e92933fd737c60f11893234a9cd8d2"
+    },
+    {
+      "bytes": 240,
+      "path": "/synthetic/tables/development_context.tsv",
+      "sha256": "2829898f50b817eaaed401e41625be793e8533a377aabc232dad584e84b3dba0"
+    },
+    {
+      "bytes": 210,
+      "path": "/synthetic/tables/genomovar_crosswalk.tsv",
+      "sha256": "0503c51a832cc54b6b60c2de01e19033c749d26e5c2f529444c52764c626f8e3"
+    },
+    {
+      "bytes": 178,
+      "path": "/synthetic/tables/historical_types.tsv",
+      "sha256": "fc50147ef6969744273da26769dd7343c56ae1bddc5d8ebbf7138f812b866b0d"
+    },
+    {
+      "bytes": 260,
+      "path": "/synthetic/tables/lineage_registry.tsv",
+      "sha256": "1a0df12b5eb971ddfcee95e408f6f44f809760008cd1e81abe31a604b33b25af"
+    },
+    {
+      "bytes": 536,
+      "path": "/synthetic/tables/named_registry.tsv",
+      "sha256": "90bf91e5d078f10ed492ee2b5e45495bccb3ff5e5ace2c0db7080a215db6be4c"
+    },
+    {
+      "bytes": 609,
+      "path": "/synthetic/tables/primary_references.tsv",
+      "sha256": "4b8783418e79e724ad1f5de98edae951601c47bd803dffcd5f6dcd32af732756"
+    }
+  ]
+}

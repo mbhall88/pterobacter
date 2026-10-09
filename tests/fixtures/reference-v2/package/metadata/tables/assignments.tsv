@@ -1,0 +1,6 @@
+accession	project_species	project_subspecies	assignment_status	usage_restrictions	genomovar_id	genomovar_version	genomovar_rule
+GCA_900000001	Enterobacter alpha		synthetic_reviewed				
+GCA_900000002	Enterobacter alpha	beta	synthetic_reviewed				
+GCA_900000003	Enterobacter alpha	beta	synthetic_reviewed		GV01	syn1	synthetic_definition_rule_v1
+GCA_900000004	Enterobacter alpha	beta	synthetic_reviewed		GV01	syn1	synthetic_definition_rule_v1
+GCA_900000009	Enterobacter alpha		synthetic_context	context_only			

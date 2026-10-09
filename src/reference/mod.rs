@@ -1,32 +1,40 @@
 //! Reference package authentication.
 //!
-//! A reference package is a directory whose `portable.json` lists files with their byte lengths
-//! and SHA-256 digests. The operator supplies the SHA-256 that the manifest must have, and
-//! verification refuses any other manifest before it reads the listing. It then checks every
-//! listed file against that listing, and checks that the listing describes both components and a
-//! licence manifest. Bytes arrive through [`PackageSource`], so this module never opens a path
-//! itself. Files the listing does not name are not inspected.
+//! A reference package is a directory whose `portable.json` lists its files with their byte
+//! lengths and SHA-256 digests. The operator supplies the digest that the manifest must have, and
+//! verification refuses any other manifest before it reads the listing. The attested records (the
+//! source manifest, the export attestation and the licence) are verified first because they
+//! describe the other files. The listing is then checked against the source manifest's recipe,
+//! the directory is checked for unlisted files, and every listed file is verified. The registry
+//! tables, skani indexes and references are cross-checked last. Bytes arrive through
+//! [`PackageSource`], so this module never opens a path itself.
 
-use std::collections::{BTreeMap, HashSet};
+mod index;
+mod manifest;
+mod resolve;
+mod source;
+mod tables;
+
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::io::{self, Read};
 
-use serde::Deserialize;
+use serde::de::DeserializeOwned;
 use serde_json::{json, Map, Value};
 use sha2::{Digest, Sha256};
 
-use crate::evidence::Provenance;
+use manifest::Portable;
+use source::SourceManifest;
 
-pub const PACKAGE_SCHEMA: &str = "1.0.0-dev-portable-reference-package";
-pub const LICENCE_SCHEMA: &str = "1.0.0-reference-licence-manifest";
 pub const MANIFEST_PATH: &str = "portable.json";
-const COMPONENTS: [&str; 2] = ["primary_whole", "genomovar_chromosome"];
-const DATABASE_FILES: [&str; 3] = ["index.db", "markers.bin", "sketches.db"];
 
-/// Read access to the files of a package. `Ok(None)` means the package does not contain `path`.
-/// The verifier checks each listed path for safety before asking for it, so `path` is always
-/// relative and free of `..` segments.
+/// Read access to the files of a package and to the names of all of them.
+///
+/// `open` is only asked for listed paths, which the verifier has checked for safety first, so
+/// `path` is relative and free of `..` segments. `Ok(None)` means the package does not hold `path`.
 pub trait PackageSource {
     fn open(&self, path: &str) -> io::Result<Option<Box<dyn Read + '_>>>;
+    /// Every file the package holds, by relative path.
+    fn inventory(&self) -> io::Result<BTreeSet<String>>;
 }
 
 /// The category of a rejection, for a front end that maps rejections to exit codes.
@@ -37,8 +45,9 @@ pub enum PackageErrorKind {
     Altered,
     Truncated,
     Incompatible,
-    Incomplete,
-    NotBound,
+    Inconsistent,
+    Unlisted,
+    Unresolved,
     Io,
 }
 
@@ -54,10 +63,12 @@ pub enum PackageError {
     Truncated(String),
     #[error("incompatible: {0}")]
     Incompatible(String),
-    #[error("incomplete: {0}")]
-    Incomplete(String),
-    #[error("not bound: {0}")]
-    NotBound(String),
+    #[error("inconsistent: {0}")]
+    Inconsistent(String),
+    #[error("unlisted: {0}")]
+    Unlisted(String),
+    #[error("unresolved: {0}")]
+    Unresolved(String),
     #[error("could not read {path}: {source}")]
     Io { path: String, source: io::Error },
 }
@@ -70,15 +81,16 @@ impl PackageError {
             Self::Altered(_) => PackageErrorKind::Altered,
             Self::Truncated(_) => PackageErrorKind::Truncated,
             Self::Incompatible(_) => PackageErrorKind::Incompatible,
-            Self::Incomplete(_) => PackageErrorKind::Incomplete,
-            Self::NotBound(_) => PackageErrorKind::NotBound,
+            Self::Inconsistent(_) => PackageErrorKind::Inconsistent,
+            Self::Unlisted(_) => PackageErrorKind::Unlisted,
+            Self::Unresolved(_) => PackageErrorKind::Unresolved,
             Self::Io { .. } => PackageErrorKind::Io,
         }
     }
 }
 
-fn incomplete(message: impl Into<String>) -> PackageError {
-    PackageError::Incomplete(message.into())
+fn inconsistent(message: impl Into<String>) -> PackageError {
+    PackageError::Inconsistent(message.into())
 }
 
 fn io_error(path: &str, error: io::Error) -> PackageError {
@@ -86,6 +98,14 @@ fn io_error(path: &str, error: io::Error) -> PackageError {
         path: path.to_string(),
         source: error,
     }
+}
+
+/// Operator-supplied SHA-256 values for registry tables. A table is checked only when its pin is
+/// given, and no pin has a built-in default.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct RegistryPins {
+    pub named_registry_sha256: Option<String>,
+    pub lineage_registry_sha256: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -105,21 +125,36 @@ pub struct Licence {
     pub ncbi_submitter_rights_disclaimer: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize)]
 pub struct Asset {
     pub path: String,
     pub bytes: u64,
     pub sha256: String,
     #[serde(default)]
     pub roles: Vec<String>,
+    /// Where the file was taken from when the package was built. Only listed assets carry one.
+    #[serde(default)]
+    pub source_path: Option<String>,
+}
+
+/// A reference of a component, as the source manifest describes it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PackageReference {
+    pub reference_id: String,
+    pub accession: String,
+    pub species_id: String,
+    pub subspecies_id: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Component {
+pub struct ReferenceComponent {
     pub id: String,
+    pub reference_role: String,
+    pub sequence_scope: String,
     /// Keyed by file name: `index.db`, `markers.bin` and `sketches.db`.
     pub databases: BTreeMap<String, Asset>,
     pub builds: Vec<Asset>,
+    pub references: Vec<PackageReference>,
 }
 
 /// A package that has passed [`verify_package`], so its fields are private.
@@ -132,33 +167,16 @@ pub struct Component {
 pub struct VerifiedPackage {
     package: PackageIdentity,
     licence: Licence,
-    components: Vec<Component>,
-}
-
-#[derive(Deserialize)]
-struct Manifest {
-    package_id: String,
-    package_version: String,
-    release_state: String,
-    trust_basis: String,
-    assets: Vec<Asset>,
-    export_validation: Asset,
-    source_manifest: Asset,
-}
-
-#[derive(Deserialize)]
-struct LicenceManifest {
-    schema_version: String,
-    package_version: String,
-    ncbi_submitter_rights_disclaimer: String,
+    components: Vec<ReferenceComponent>,
 }
 
 /// Authenticate a package against the SHA-256 its manifest must have. Every listed file must be
-/// present with its listed length and digest, the components and licence manifest must be
-/// complete, and the schema must be the one this build reads.
+/// present with its listed length and digest, the package must hold no unlisted file, and the
+/// records that describe the package must agree with one another and with the files.
 pub fn verify_package(
     source: &dyn PackageSource,
     expected_sha256: &str,
+    pins: &RegistryPins,
 ) -> Result<VerifiedPackage, PackageError> {
     let manifest_bytes = read_all(source, MANIFEST_PATH)?
         .ok_or_else(|| PackageError::Missing(format!("{MANIFEST_PATH} is not in the package")))?;
@@ -168,36 +186,41 @@ pub fn verify_package(
             "{MANIFEST_PATH} has SHA-256 {manifest_sha256}, not the expected {expected_sha256}"
         )));
     }
-    let manifest = parse_manifest(&manifest_bytes)?;
+    let manifest = Portable::parse(&manifest_bytes)?;
+    let attested = manifest.attested();
+    let listed: Vec<&Asset> = manifest.assets.iter().chain(attested).collect();
+    check_listings(&listed)?;
 
-    let all_assets: Vec<&Asset> = manifest
-        .assets
-        .iter()
-        .chain([&manifest.export_validation, &manifest.source_manifest])
-        .collect();
-    check_listings(&all_assets)?;
-    let (components, licence_asset) = components_and_licence(&manifest.assets)?;
+    let mut held: BTreeMap<&str, Vec<u8>> = BTreeMap::new();
+    for record in attested {
+        held.insert(record.path.as_str(), verify_file(source, record, true)?);
+    }
+    let source_manifest = SourceManifest::parse(&held[manifest.source_manifest.path.as_str()])?;
+    source_manifest.check_identity(&manifest)?;
+    let export = source_manifest
+        .check_attestation(&held[manifest.export_validation.path.as_str()], &manifest)?;
+    source_manifest.check_recipe(&manifest.assets, &export)?;
+    check_inventory(source, &listed)?;
 
-    let mut licence_bytes = Vec::new();
-    for asset in &all_assets {
-        if asset.path == licence_asset.path {
-            licence_bytes = verify_file(source, asset, true)?;
-        } else {
-            verify_file(source, asset, false)?;
+    for asset in &manifest.assets {
+        let keep = manifest::is_held(asset);
+        let bytes = verify_file(source, asset, keep)?;
+        if keep {
+            held.insert(asset.path.as_str(), bytes);
         }
     }
-    let licence = parse_licence(
-        &licence_bytes,
-        &manifest.package_version,
-        licence_asset.sha256,
-    )?;
+    let licence = manifest::licence(&held[manifest.licence.path.as_str()], &manifest)?;
+    check_pins(&manifest.assets, pins)?;
+    let components = source_manifest.components(&manifest.assets, &held)?;
+    let tables = tables::Tables::load(&manifest.assets, &held)?;
+    tables.check(&source_manifest, &export)?;
 
     Ok(VerifiedPackage {
         package: PackageIdentity {
-            id: manifest.package_id,
-            version: manifest.package_version,
-            release_state: manifest.release_state,
-            trust_basis: manifest.trust_basis,
+            id: manifest.package_id.clone(),
+            version: manifest.package_version.clone(),
+            release_state: manifest.release_state.clone(),
+            trust_basis: manifest.trust_basis.clone(),
             manifest_sha256,
         },
         licence,
@@ -214,23 +237,12 @@ impl VerifiedPackage {
         &self.licence
     }
 
-    pub fn components(&self) -> &[Component] {
+    pub fn components(&self) -> &[ReferenceComponent] {
         &self.components
     }
 
-    pub fn component(&self, id: &str) -> Option<&Component> {
+    pub fn component(&self, id: &str) -> Option<&ReferenceComponent> {
         self.components.iter().find(|component| component.id == id)
-    }
-
-    /// Evidence is bound to a package by the digest of its manifest.
-    pub fn check_binding(&self, provenance: &Provenance) -> Result<(), PackageError> {
-        if provenance.reference_package_sha256 == self.package.manifest_sha256 {
-            return Ok(());
-        }
-        Err(PackageError::NotBound(format!(
-            "the evidence was searched against package {}, not the verified package {}",
-            provenance.reference_package_sha256, self.package.manifest_sha256
-        )))
     }
 
     pub fn to_value(&self) -> Value {
@@ -259,7 +271,7 @@ impl VerifiedPackage {
     }
 }
 
-impl Component {
+impl ReferenceComponent {
     fn to_value(&self) -> Value {
         let databases: Map<String, Value> = self
             .databases
@@ -267,7 +279,12 @@ impl Component {
             .map(|(file, asset)| (file.clone(), asset_value(asset)))
             .collect();
         let builds: Vec<Value> = self.builds.iter().map(asset_value).collect();
-        json!({ "databases": databases, "builds": builds })
+        json!({
+            "reference_role": self.reference_role,
+            "sequence_scope": self.sequence_scope,
+            "databases": databases,
+            "builds": builds,
+        })
     }
 }
 
@@ -280,39 +297,60 @@ fn asset_value(asset: &Asset) -> Value {
     })
 }
 
-fn parse_manifest(bytes: &[u8]) -> Result<Manifest, PackageError> {
+/// Parse a JSON record whose schema must be exactly `schema`. A record of another schema is
+/// incompatible; one with no schema, or one that does not fit the type, is inconsistent.
+fn json_record<T: DeserializeOwned>(
+    bytes: &[u8],
+    name: &str,
+    schema: &str,
+) -> Result<T, PackageError> {
     let value: Value = serde_json::from_slice(bytes)
-        .map_err(|error| incomplete(format!("{MANIFEST_PATH} is not JSON: {error}")))?;
+        .map_err(|error| inconsistent(format!("{name} is not JSON: {error}")))?;
     match value.get("schema_version").and_then(Value::as_str) {
-        Some(PACKAGE_SCHEMA) => {}
-        found => {
+        Some(found) if found == schema => {}
+        Some(found) => {
             return Err(PackageError::Incompatible(format!(
-                "expected package schema {PACKAGE_SCHEMA}, found {}",
-                found.unwrap_or("none")
+                "{name} has schema {found}, not {schema}"
             )))
         }
+        None => return Err(inconsistent(format!("{name} has no schema_version"))),
     }
     serde_json::from_value(value)
-        .map_err(|error| incomplete(format!("{MANIFEST_PATH} is incomplete: {error}")))
+        .map_err(|error| inconsistent(format!("{name} is malformed: {error}")))
+}
+
+fn role_asset<'a>(assets: &'a [Asset], role: &str) -> Result<&'a Asset, PackageError> {
+    let mut matches = assets
+        .iter()
+        .filter(|asset| asset.roles.iter().any(|r| r.as_str() == role));
+    let first = matches
+        .next()
+        .ok_or_else(|| inconsistent(format!("the manifest has no asset with role {role}")))?;
+    if matches.next().is_some() {
+        return Err(inconsistent(format!(
+            "the manifest has more than one asset with role {role}"
+        )));
+    }
+    Ok(first)
 }
 
 fn check_listings(assets: &[&Asset]) -> Result<(), PackageError> {
     let mut seen = HashSet::new();
     for asset in assets {
         if !is_safe_path(&asset.path) || asset.path == MANIFEST_PATH {
-            return Err(incomplete(format!(
+            return Err(inconsistent(format!(
                 "the manifest lists an unsafe path: {}",
                 asset.path
             )));
         }
         if !seen.insert(asset.path.as_str()) {
-            return Err(incomplete(format!(
+            return Err(inconsistent(format!(
                 "{} is listed more than once",
                 asset.path
             )));
         }
         if !is_sha256(&asset.sha256) {
-            return Err(incomplete(format!(
+            return Err(inconsistent(format!(
                 "{} has no valid SHA-256 digest",
                 asset.path
             )));
@@ -321,79 +359,45 @@ fn check_listings(assets: &[&Asset]) -> Result<(), PackageError> {
     Ok(())
 }
 
-/// Group the assets into the two components and find the one licence manifest.
-fn components_and_licence(assets: &[Asset]) -> Result<(Vec<Component>, Asset), PackageError> {
-    let mut by_id: BTreeMap<String, Component> = COMPONENTS
-        .iter()
-        .map(|id| {
-            let component = Component {
-                id: id.to_string(),
-                databases: BTreeMap::new(),
-                builds: Vec::new(),
-            };
-            (id.to_string(), component)
-        })
-        .collect();
-    let mut licence: Option<Asset> = None;
-
-    for asset in assets {
-        for role in &asset.roles {
-            let parts: Vec<&str> = role.split(':').collect();
-            match parts.as_slice() {
-                ["database", id, file] if DATABASE_FILES.contains(file) => {
-                    let component = component_entry(&mut by_id, id, role)?;
-                    if component
-                        .databases
-                        .insert(file.to_string(), asset.clone())
-                        .is_some()
-                    {
-                        return Err(incomplete(format!("{role} is listed more than once")));
-                    }
-                }
-                ["database", _, _] => {
-                    return Err(incomplete(format!("{role} names an unknown database file")))
-                }
-                ["build", id, _] => {
-                    component_entry(&mut by_id, id, role)?
-                        .builds
-                        .push(asset.clone());
-                }
-                ["licence", "manifest"] => {
-                    let previous = licence.replace(asset.clone());
-                    if previous.is_some() {
-                        return Err(incomplete("the package has more than one licence manifest"));
-                    }
-                }
-                _ => {}
-            }
-        }
+fn check_inventory(source: &dyn PackageSource, listed: &[&Asset]) -> Result<(), PackageError> {
+    let present = source.inventory().map_err(|error| io_error(".", error))?;
+    let mut known: HashSet<&str> = listed.iter().map(|asset| asset.path.as_str()).collect();
+    known.insert(MANIFEST_PATH);
+    match present.iter().find(|path| !known.contains(path.as_str())) {
+        Some(path) => Err(PackageError::Unlisted(format!(
+            "{path} is in the package but not in the manifest"
+        ))),
+        None => Ok(()),
     }
-
-    let mut components = Vec::with_capacity(COMPONENTS.len());
-    for id in COMPONENTS {
-        let component = by_id.remove(id).expect("every component was inserted");
-        for file in DATABASE_FILES {
-            if !component.databases.contains_key(file) {
-                return Err(incomplete(format!("component {id} has no database {file}")));
-            }
-        }
-        if component.builds.is_empty() {
-            return Err(incomplete(format!("component {id} has no build record")));
-        }
-        components.push(component);
-    }
-    let licence = licence.ok_or_else(|| incomplete("the package has no licence manifest"))?;
-    Ok((components, licence))
 }
 
-fn component_entry<'a>(
-    by_id: &'a mut BTreeMap<String, Component>,
-    id: &str,
-    role: &str,
-) -> Result<&'a mut Component, PackageError> {
-    by_id
-        .get_mut(id)
-        .ok_or_else(|| incomplete(format!("{role} names an unknown component")))
+fn check_pins(assets: &[Asset], pins: &RegistryPins) -> Result<(), PackageError> {
+    let wanted = [
+        (
+            "table:named_registry",
+            pins.named_registry_sha256.as_deref(),
+        ),
+        (
+            "table:lineage_registry",
+            pins.lineage_registry_sha256.as_deref(),
+        ),
+    ];
+    for (role, pin) in wanted {
+        let Some(pin) = pin else { continue };
+        let asset = assets
+            .iter()
+            .find(|asset| asset.roles.iter().any(|r| r.as_str() == role))
+            .ok_or_else(|| {
+                PackageError::Missing(format!("{role} is not listed in the manifest"))
+            })?;
+        if asset.sha256 != pin {
+            return Err(PackageError::Unexpected(format!(
+                "{} has SHA-256 {}, not the pinned {pin}",
+                asset.path, asset.sha256
+            )));
+        }
+    }
+    Ok(())
 }
 
 /// Check one listed file and return its bytes when `keep` is set. A file shorter than listed is
@@ -442,43 +446,6 @@ fn verify_file(
         )));
     }
     Ok(kept)
-}
-
-fn parse_licence(
-    bytes: &[u8],
-    package_version: &str,
-    sha256: String,
-) -> Result<Licence, PackageError> {
-    let value: Value = serde_json::from_slice(bytes)
-        .map_err(|error| incomplete(format!("licence manifest is not JSON: {error}")))?;
-    match value.get("schema_version").and_then(Value::as_str) {
-        Some(LICENCE_SCHEMA) => {}
-        found => {
-            return Err(PackageError::Incompatible(format!(
-                "expected licence schema {LICENCE_SCHEMA}, found {}",
-                found.unwrap_or("none")
-            )))
-        }
-    }
-    let licence: LicenceManifest = serde_json::from_value(value)
-        .map_err(|error| incomplete(format!("licence manifest is incomplete: {error}")))?;
-    if licence.package_version != package_version {
-        return Err(incomplete(format!(
-            "licence manifest is for version {}, not {package_version}",
-            licence.package_version
-        )));
-    }
-    if licence.ncbi_submitter_rights_disclaimer.trim().is_empty() {
-        return Err(incomplete(
-            "licence manifest has no NCBI submitter-rights disclaimer",
-        ));
-    }
-    Ok(Licence {
-        schema_version: licence.schema_version,
-        package_version: licence.package_version,
-        sha256,
-        ncbi_submitter_rights_disclaimer: licence.ncbi_submitter_rights_disclaimer,
-    })
 }
 
 fn read_all(source: &dyn PackageSource, path: &str) -> Result<Option<Vec<u8>>, PackageError> {

@@ -1,0 +1,6 @@
+accession	species_concept_id	subspecies_concept_id	coverage_category	species_reference_evidence_present	subspecies_reference_evidence_present	in_primary140	in_genomovar173	validated_automatic_assignment
+GCA_900000001	ECTX-SP-alpha		primary_reference	True	False	True	False	False
+GCA_900000002	ECTX-SP-alpha	ECTX-SS-beta	primary_reference	True	True	True	False	False
+GCA_900000003	ECTX-SP-alpha	ECTX-SS-beta	genomovar_definition_member	True	True	False	True	False
+GCA_900000004	ECTX-SP-alpha	ECTX-SS-beta	genomovar_definition_member	True	True	False	True	False
+GCA_900000009			context_only	False	False	False	False	False
