@@ -1,0 +1,33 @@
+[package]
+name = "mlst-feasibility-probes"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "Throwaway probes for issue #2 (MLST feasibility). Not production code."
+
+[features]
+default = []
+engine-minimap2 = ["dep:minimap2"]
+engine-exact-bio = ["dep:bio"]
+engine-exact-blockaligner = ["dep:block-aligner"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+minimap2 = { version = "=0.1.31", default-features = false, optional = true }
+bio = { version = "=2.3.0", optional = true, default-features = false }
+block-aligner = { version = "=0.5.0", optional = true }
+
+[[bin]]
+name = "mlst-probe"
+path = "src/main.rs"
+
+[[bin]]
+name = "empty"
+path = "src/empty.rs"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+opt-level = 3
