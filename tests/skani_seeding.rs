@@ -130,7 +130,7 @@ fn uppercase_and_lowercase_n_at_lane_boundaries_match_native_avx2() {
                 if start < 0 || start >= len as isize {
                     continue;
                 }
-                for base in [b'N', b'n'] {
+                for base in *b"Nn" {
                     for count in [1, 20, 21, 22] {
                         let mut seq = sequence(len);
                         seq[start as usize..(start as usize + count).min(len)].fill(base);
