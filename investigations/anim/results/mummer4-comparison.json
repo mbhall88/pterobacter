@@ -1,0 +1,4616 @@
+{
+  "cli4-vs-mummer3-matrix": {
+    "exact_pairs": 19,
+    "pairs": 20,
+    "gate_changed_pairs": 0,
+    "failed_orientations": 0,
+    "filtered_canonical_equal_orientations": 39,
+    "unfiltered_order_only_orientations": 0,
+    "filtered_order_only_orientations": 0,
+    "discrepancies": [
+      {
+        "fixture": "ambiguous",
+        "stratum": "other",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 2400,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 98.0,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 1789,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 98.50916666666667,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": false,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.5091666666666725,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        },
+        "unfiltered": {
+          "comparator_raw_sha256": "8030c046e73012c3068812cc8a21f061ee628ed91a0252a12ac397e5d4049f51",
+          "candidate_raw_sha256": "20f7d2c5fab96e79f0d1e07dc6deb7a5d49faa3ba7e56fc1644ed6b8f3de2b9f",
+          "normalized_order_equal": false,
+          "canonical_equal": false,
+          "comparator_canonical_sha256": "83ce86ccc322a111aa3f1a6105112db9bf96c71ab2d60db99786e2be9e6901d6",
+          "candidate_canonical_sha256": "7464ef9cf9197284a9c014c474678d97a87af0713dc9c78e68968af8185d980e"
+        },
+        "filtered": {
+          "comparator_raw_sha256": "8030c046e73012c3068812cc8a21f061ee628ed91a0252a12ac397e5d4049f51",
+          "candidate_raw_sha256": "20f7d2c5fab96e79f0d1e07dc6deb7a5d49faa3ba7e56fc1644ed6b8f3de2b9f",
+          "normalized_order_equal": false,
+          "canonical_equal": false,
+          "comparator_canonical_sha256": "83ce86ccc322a111aa3f1a6105112db9bf96c71ab2d60db99786e2be9e6901d6",
+          "candidate_canonical_sha256": "7464ef9cf9197284a9c014c474678d97a87af0713dc9c78e68968af8185d980e"
+        }
+      }
+    ],
+    "boundary_rows": [
+      {
+        "fixture": "af_799",
+        "stratum": "AF-boundary",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 191764,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 95882,
+          "query_covered": 95882,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 79.90166666666667,
+          "query_af": 79.90166666666667,
+          "identity_gt96": true,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 191764,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 95882,
+          "query_covered": 95882,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 79.90166666666667,
+          "query_af": 79.90166666666667,
+          "identity_gt96": true,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_799",
+        "stratum": "AF-boundary",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 191764,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 95882,
+          "query_covered": 95882,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 79.90166666666667,
+          "query_af": 79.90166666666667,
+          "identity_gt96": true,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 191764,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 95882,
+          "query_covered": 95882,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 79.90166666666667,
+          "query_af": 79.90166666666667,
+          "identity_gt96": true,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_800",
+        "stratum": "AF-boundary",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 192000,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96000,
+          "query_covered": 96000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.0,
+          "query_af": 80.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 192000,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96000,
+          "query_covered": 96000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.0,
+          "query_af": 80.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_800",
+        "stratum": "AF-boundary",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 192000,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96000,
+          "query_covered": 96000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.0,
+          "query_af": 80.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 192000,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96000,
+          "query_covered": 96000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.0,
+          "query_af": 80.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_801",
+        "stratum": "AF-boundary",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 192240,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96120,
+          "query_covered": 96120,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.1,
+          "query_af": 80.1,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 192240,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96120,
+          "query_covered": 96120,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.1,
+          "query_af": 80.1,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_801",
+        "stratum": "AF-boundary",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 192240,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96120,
+          "query_covered": 96120,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.1,
+          "query_af": 80.1,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 192240,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96120,
+          "query_covered": 96120,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.1,
+          "query_af": 80.1,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_400",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4799,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 96.00083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4799,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 96.00083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_400",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4799,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 96.00083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4799,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 96.00083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_401",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4810,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.99166666666666,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4810,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.99166666666666,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_401",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4810,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.99166666666666,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4810,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.99166666666666,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_450",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5396,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.50333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5396,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.50333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_450",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5396,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.50333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5396,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.50333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_500",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5996,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.00333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5996,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.00333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_500",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5996,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.00333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5996,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.00333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_550",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 6599,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 94.50083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 6599,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 94.50083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_550",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 6599,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 94.50083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 6599,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 94.50083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      }
+    ]
+  },
+  "cli4-vs-mummer3-panel": {
+    "exact_pairs": 140,
+    "pairs": 140,
+    "gate_changed_pairs": 0,
+    "failed_orientations": 0,
+    "filtered_canonical_equal_orientations": 280,
+    "unfiltered_order_only_orientations": 0,
+    "filtered_order_only_orientations": 0,
+    "discrepancies": [],
+    "boundary_rows": []
+  },
+  "embedded4-vs-cli4-matrix": {
+    "exact_pairs": 20,
+    "pairs": 20,
+    "gate_changed_pairs": 0,
+    "failed_orientations": 0,
+    "filtered_canonical_equal_orientations": 40,
+    "unfiltered_order_only_orientations": 0,
+    "filtered_order_only_orientations": 0,
+    "discrepancies": [],
+    "boundary_rows": [
+      {
+        "fixture": "af_799",
+        "stratum": "AF-boundary",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 191764,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 95882,
+          "query_covered": 95882,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 79.90166666666667,
+          "query_af": 79.90166666666667,
+          "identity_gt96": true,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 191764,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 95882,
+          "query_covered": 95882,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 79.90166666666667,
+          "query_af": 79.90166666666667,
+          "identity_gt96": true,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_799",
+        "stratum": "AF-boundary",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 191764,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 95882,
+          "query_covered": 95882,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 79.90166666666667,
+          "query_af": 79.90166666666667,
+          "identity_gt96": true,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 191764,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 95882,
+          "query_covered": 95882,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 79.90166666666667,
+          "query_af": 79.90166666666667,
+          "identity_gt96": true,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_800",
+        "stratum": "AF-boundary",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 192000,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96000,
+          "query_covered": 96000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.0,
+          "query_af": 80.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 192000,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96000,
+          "query_covered": 96000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.0,
+          "query_af": 80.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_800",
+        "stratum": "AF-boundary",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 192000,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96000,
+          "query_covered": 96000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.0,
+          "query_af": 80.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 192000,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96000,
+          "query_covered": 96000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.0,
+          "query_af": 80.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_801",
+        "stratum": "AF-boundary",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 192240,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96120,
+          "query_covered": 96120,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.1,
+          "query_af": 80.1,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 192240,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96120,
+          "query_covered": 96120,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.1,
+          "query_af": 80.1,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_801",
+        "stratum": "AF-boundary",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 192240,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96120,
+          "query_covered": 96120,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.1,
+          "query_af": 80.1,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 192240,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96120,
+          "query_covered": 96120,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.1,
+          "query_af": 80.1,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_400",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4799,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 96.00083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4799,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 96.00083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_400",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4799,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 96.00083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4799,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 96.00083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_401",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4810,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.99166666666666,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4810,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.99166666666666,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_401",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4810,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.99166666666666,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4810,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.99166666666666,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_450",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5396,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.50333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5396,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.50333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_450",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5396,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.50333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5396,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.50333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_500",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5996,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.00333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5996,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.00333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_500",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5996,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.00333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5996,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.00333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_550",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 6599,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 94.50083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 6599,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 94.50083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_550",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 6599,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 94.50083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 6599,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 94.50083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      }
+    ]
+  },
+  "embedded4-vs-cli4-panel": {
+    "exact_pairs": 140,
+    "pairs": 140,
+    "gate_changed_pairs": 0,
+    "failed_orientations": 0,
+    "filtered_canonical_equal_orientations": 280,
+    "unfiltered_order_only_orientations": 0,
+    "filtered_order_only_orientations": 0,
+    "discrepancies": [],
+    "boundary_rows": []
+  },
+  "embedded4-vs-mummer3-matrix": {
+    "exact_pairs": 19,
+    "pairs": 20,
+    "gate_changed_pairs": 0,
+    "failed_orientations": 0,
+    "filtered_canonical_equal_orientations": 39,
+    "unfiltered_order_only_orientations": 0,
+    "filtered_order_only_orientations": 0,
+    "discrepancies": [
+      {
+        "fixture": "ambiguous",
+        "stratum": "other",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 2400,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 98.0,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 1789,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 98.50916666666667,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": false,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.5091666666666725,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        },
+        "unfiltered": {
+          "comparator_raw_sha256": "8030c046e73012c3068812cc8a21f061ee628ed91a0252a12ac397e5d4049f51",
+          "candidate_raw_sha256": "20f7d2c5fab96e79f0d1e07dc6deb7a5d49faa3ba7e56fc1644ed6b8f3de2b9f",
+          "normalized_order_equal": false,
+          "canonical_equal": false,
+          "comparator_canonical_sha256": "83ce86ccc322a111aa3f1a6105112db9bf96c71ab2d60db99786e2be9e6901d6",
+          "candidate_canonical_sha256": "7464ef9cf9197284a9c014c474678d97a87af0713dc9c78e68968af8185d980e"
+        },
+        "filtered": {
+          "comparator_raw_sha256": "8030c046e73012c3068812cc8a21f061ee628ed91a0252a12ac397e5d4049f51",
+          "candidate_raw_sha256": "20f7d2c5fab96e79f0d1e07dc6deb7a5d49faa3ba7e56fc1644ed6b8f3de2b9f",
+          "normalized_order_equal": false,
+          "canonical_equal": false,
+          "comparator_canonical_sha256": "83ce86ccc322a111aa3f1a6105112db9bf96c71ab2d60db99786e2be9e6901d6",
+          "candidate_canonical_sha256": "7464ef9cf9197284a9c014c474678d97a87af0713dc9c78e68968af8185d980e"
+        }
+      }
+    ],
+    "boundary_rows": [
+      {
+        "fixture": "af_799",
+        "stratum": "AF-boundary",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 191764,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 95882,
+          "query_covered": 95882,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 79.90166666666667,
+          "query_af": 79.90166666666667,
+          "identity_gt96": true,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 191764,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 95882,
+          "query_covered": 95882,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 79.90166666666667,
+          "query_af": 79.90166666666667,
+          "identity_gt96": true,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_799",
+        "stratum": "AF-boundary",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 191764,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 95882,
+          "query_covered": 95882,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 79.90166666666667,
+          "query_af": 79.90166666666667,
+          "identity_gt96": true,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 191764,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 95882,
+          "query_covered": 95882,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 79.90166666666667,
+          "query_af": 79.90166666666667,
+          "identity_gt96": true,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_800",
+        "stratum": "AF-boundary",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 192000,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96000,
+          "query_covered": 96000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.0,
+          "query_af": 80.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 192000,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96000,
+          "query_covered": 96000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.0,
+          "query_af": 80.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_800",
+        "stratum": "AF-boundary",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 192000,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96000,
+          "query_covered": 96000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.0,
+          "query_af": 80.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 192000,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96000,
+          "query_covered": 96000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.0,
+          "query_af": 80.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_801",
+        "stratum": "AF-boundary",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 192240,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96120,
+          "query_covered": 96120,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.1,
+          "query_af": 80.1,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 192240,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96120,
+          "query_covered": 96120,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.1,
+          "query_af": 80.1,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "af_801",
+        "stratum": "AF-boundary",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 192240,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96120,
+          "query_covered": 96120,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.1,
+          "query_af": 80.1,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 192240,
+          "E": 0,
+          "blocks": 1,
+          "reference_covered": 96120,
+          "query_covered": 96120,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 100.0,
+          "reference_af": 80.1,
+          "query_af": 80.1,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_400",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4799,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 96.00083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4799,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 96.00083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_400",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4799,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 96.00083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4799,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 96.00083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": true,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_401",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4810,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.99166666666666,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4810,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.99166666666666,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_401",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4810,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.99166666666666,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 4810,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.99166666666666,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_450",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5396,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.50333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5396,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.50333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_450",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5396,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.50333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5396,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.50333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_500",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5996,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.00333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5996,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.00333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_500",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5996,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.00333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 5996,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 95.00333333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_550",
+        "stratum": "rescue-band",
+        "orientation": "QR",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 6599,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 94.50083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 6599,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 94.50083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      },
+      {
+        "fixture": "sub_550",
+        "stratum": "rescue-band",
+        "orientation": "RQ",
+        "comparator": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 6599,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 94.50083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "candidate": {
+          "status": "aligned",
+          "D": 240000,
+          "E": 6599,
+          "blocks": 1,
+          "reference_covered": 120000,
+          "query_covered": 120000,
+          "reference_length": 120000,
+          "query_length": 120000,
+          "identity": 94.50083333333333,
+          "reference_af": 100.0,
+          "query_af": 100.0,
+          "identity_gt96": false,
+          "reference_af_ge80": true,
+          "query_af_ge80": true
+        },
+        "exact_integers": true,
+        "gate_changes": {
+          "identity_gt96": false,
+          "reference_af_ge80": false,
+          "query_af_ge80": false
+        },
+        "continuous_changes": {
+          "identity": 0.0,
+          "reference_af": 0.0,
+          "query_af": 0.0
+        }
+      }
+    ]
+  },
+  "embedded4-vs-mummer3-panel": {
+    "exact_pairs": 140,
+    "pairs": 140,
+    "gate_changed_pairs": 0,
+    "failed_orientations": 0,
+    "filtered_canonical_equal_orientations": 280,
+    "unfiltered_order_only_orientations": 0,
+    "filtered_order_only_orientations": 0,
+    "discrepancies": [],
+    "boundary_rows": []
+  },
+  "matrix_observations": [
+    {
+      "fixture": "af_799",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 191764,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 95882,
+        "query_covered": 95882,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 79.90166666666667,
+        "query_af": 79.90166666666667,
+        "identity_gt96": true,
+        "reference_af_ge80": false,
+        "query_af_ge80": false
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 191764,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 95882,
+        "query_covered": 95882,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 79.90166666666667,
+        "query_af": 79.90166666666667,
+        "identity_gt96": true,
+        "reference_af_ge80": false,
+        "query_af_ge80": false
+      }
+    },
+    {
+      "fixture": "af_800",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 192000,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 96000,
+        "query_covered": 96000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 80.0,
+        "query_af": 80.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 192000,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 96000,
+        "query_covered": 96000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 80.0,
+        "query_af": 80.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "af_801",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 192240,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 96120,
+        "query_covered": 96120,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 80.1,
+        "query_af": 80.1,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 192240,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 96120,
+        "query_covered": 96120,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 80.1,
+        "query_af": 80.1,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "ambiguous",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 2400,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 98.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 1789,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 98.50916666666667,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "fragmented",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 12,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 12,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "genome_5mb",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 10000000,
+        "E": 224914,
+        "blocks": 1,
+        "reference_covered": 5000000,
+        "query_covered": 5000000,
+        "reference_length": 5000000,
+        "query_length": 5000000,
+        "identity": 95.50172,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 10000000,
+        "E": 224914,
+        "blocks": 1,
+        "reference_covered": 5000000,
+        "query_covered": 5000000,
+        "reference_length": 5000000,
+        "query_length": 5000000,
+        "identity": 95.50172,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "identical",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "indel_tracts",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 239004,
+        "E": 0,
+        "blocks": 3,
+        "reference_covered": 119501,
+        "query_covered": 119501,
+        "reference_length": 120000,
+        "query_length": 119850,
+        "identity": 100.0,
+        "reference_af": 99.58416666666666,
+        "query_af": 99.70880267000418,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 239004,
+        "E": 0,
+        "blocks": 3,
+        "reference_covered": 119501,
+        "query_covered": 119501,
+        "reference_length": 119850,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 99.70880267000418,
+        "query_af": 99.58416666666666,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "inversion",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 3,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 3,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "no_alignment",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "no_alignment",
+        "D": 0,
+        "E": 0,
+        "blocks": 0,
+        "reference_covered": 0,
+        "query_covered": 0,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": null,
+        "reference_af": 0.0,
+        "query_af": 0.0,
+        "identity_gt96": false,
+        "reference_af_ge80": false,
+        "query_af_ge80": false
+      },
+      "RQ": {
+        "status": "no_alignment",
+        "D": 0,
+        "E": 0,
+        "blocks": 0,
+        "reference_covered": 0,
+        "query_covered": 0,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": null,
+        "reference_af": 0.0,
+        "query_af": 0.0,
+        "identity_gt96": false,
+        "reference_af_ge80": false,
+        "query_af_ge80": false
+      }
+    },
+    {
+      "fixture": "permutation",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 4,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 4,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "repeat_query",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 280002,
+        "E": 0,
+        "blocks": 2,
+        "reference_covered": 120000,
+        "query_covered": 140001,
+        "reference_length": 120000,
+        "query_length": 160000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 87.500625,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 280002,
+        "E": 0,
+        "blocks": 2,
+        "reference_covered": 140001,
+        "query_covered": 120000,
+        "reference_length": 160000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 87.500625,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "repeat_reference",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 280002,
+        "E": 0,
+        "blocks": 2,
+        "reference_covered": 140001,
+        "query_covered": 120000,
+        "reference_length": 160000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 87.500625,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 280002,
+        "E": 0,
+        "blocks": 2,
+        "reference_covered": 120000,
+        "query_covered": 140001,
+        "reference_length": 120000,
+        "query_length": 160000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 87.500625,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "reverse_complement",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "sub_400",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 4799,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 96.00083333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 4799,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 96.00083333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "sub_401",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 4810,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 95.99166666666666,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 4810,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 95.99166666666666,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "sub_450",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 5396,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 95.50333333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 5396,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 95.50333333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "sub_500",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 5996,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 95.00333333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 5996,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 95.00333333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "sub_550",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 6599,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 94.50083333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 6599,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 94.50083333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "sub_600",
+      "candidate": "cli-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 7191,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 94.0075,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 7191,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 94.0075,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "af_799",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 191764,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 95882,
+        "query_covered": 95882,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 79.90166666666667,
+        "query_af": 79.90166666666667,
+        "identity_gt96": true,
+        "reference_af_ge80": false,
+        "query_af_ge80": false
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 191764,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 95882,
+        "query_covered": 95882,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 79.90166666666667,
+        "query_af": 79.90166666666667,
+        "identity_gt96": true,
+        "reference_af_ge80": false,
+        "query_af_ge80": false
+      }
+    },
+    {
+      "fixture": "af_800",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 192000,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 96000,
+        "query_covered": 96000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 80.0,
+        "query_af": 80.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 192000,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 96000,
+        "query_covered": 96000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 80.0,
+        "query_af": 80.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "af_801",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 192240,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 96120,
+        "query_covered": 96120,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 80.1,
+        "query_af": 80.1,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 192240,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 96120,
+        "query_covered": 96120,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 80.1,
+        "query_af": 80.1,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "ambiguous",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 2400,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 98.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 1789,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 98.50916666666667,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "fragmented",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 12,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 12,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "genome_5mb",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 10000000,
+        "E": 224914,
+        "blocks": 1,
+        "reference_covered": 5000000,
+        "query_covered": 5000000,
+        "reference_length": 5000000,
+        "query_length": 5000000,
+        "identity": 95.50172,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 10000000,
+        "E": 224914,
+        "blocks": 1,
+        "reference_covered": 5000000,
+        "query_covered": 5000000,
+        "reference_length": 5000000,
+        "query_length": 5000000,
+        "identity": 95.50172,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "identical",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "indel_tracts",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 239004,
+        "E": 0,
+        "blocks": 3,
+        "reference_covered": 119501,
+        "query_covered": 119501,
+        "reference_length": 120000,
+        "query_length": 119850,
+        "identity": 100.0,
+        "reference_af": 99.58416666666666,
+        "query_af": 99.70880267000418,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 239004,
+        "E": 0,
+        "blocks": 3,
+        "reference_covered": 119501,
+        "query_covered": 119501,
+        "reference_length": 119850,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 99.70880267000418,
+        "query_af": 99.58416666666666,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "inversion",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 3,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 3,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "no_alignment",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "no_alignment",
+        "D": 0,
+        "E": 0,
+        "blocks": 0,
+        "reference_covered": 0,
+        "query_covered": 0,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": null,
+        "reference_af": 0.0,
+        "query_af": 0.0,
+        "identity_gt96": false,
+        "reference_af_ge80": false,
+        "query_af_ge80": false
+      },
+      "RQ": {
+        "status": "no_alignment",
+        "D": 0,
+        "E": 0,
+        "blocks": 0,
+        "reference_covered": 0,
+        "query_covered": 0,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": null,
+        "reference_af": 0.0,
+        "query_af": 0.0,
+        "identity_gt96": false,
+        "reference_af_ge80": false,
+        "query_af_ge80": false
+      }
+    },
+    {
+      "fixture": "permutation",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 4,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 4,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "repeat_query",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 280002,
+        "E": 0,
+        "blocks": 2,
+        "reference_covered": 120000,
+        "query_covered": 140001,
+        "reference_length": 120000,
+        "query_length": 160000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 87.500625,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 280002,
+        "E": 0,
+        "blocks": 2,
+        "reference_covered": 140001,
+        "query_covered": 120000,
+        "reference_length": 160000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 87.500625,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "repeat_reference",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 280002,
+        "E": 0,
+        "blocks": 2,
+        "reference_covered": 140001,
+        "query_covered": 120000,
+        "reference_length": 160000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 87.500625,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 280002,
+        "E": 0,
+        "blocks": 2,
+        "reference_covered": 120000,
+        "query_covered": 140001,
+        "reference_length": 120000,
+        "query_length": 160000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 87.500625,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "reverse_complement",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 0,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 100.0,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "sub_400",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 4799,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 96.00083333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 4799,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 96.00083333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": true,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "sub_401",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 4810,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 95.99166666666666,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 4810,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 95.99166666666666,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "sub_450",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 5396,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 95.50333333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 5396,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 95.50333333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "sub_500",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 5996,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 95.00333333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 5996,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 95.00333333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "sub_550",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 6599,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 94.50083333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 6599,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 94.50083333333333,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    },
+    {
+      "fixture": "sub_600",
+      "candidate": "embedded-mummer4",
+      "QR": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 7191,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 94.0075,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      },
+      "RQ": {
+        "status": "aligned",
+        "D": 240000,
+        "E": 7191,
+        "blocks": 1,
+        "reference_covered": 120000,
+        "query_covered": 120000,
+        "reference_length": 120000,
+        "query_length": 120000,
+        "identity": 94.0075,
+        "reference_af": 100.0,
+        "query_af": 100.0,
+        "identity_gt96": false,
+        "reference_af_ge80": true,
+        "query_af_ge80": true
+      }
+    }
+  ],
+  "thread_checks": [
+    {
+      "candidate": "cli-mummer4",
+      "threads": 1,
+      "rep": 1,
+      "fixture": "fragmented",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.11000000000000001,
+      "cpu_seconds": 0.06,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 1,
+      "rep": 1,
+      "fixture": "repeat_reference",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.13999999999999999,
+      "cpu_seconds": 0.11000000000000001,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 1,
+      "rep": 1,
+      "fixture": "genome_5mb",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 8.799999999999999,
+      "cpu_seconds": 8.68,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 1,
+      "rep": 2,
+      "fixture": "fragmented",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.15,
+      "cpu_seconds": 0.11000000000000001,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 1,
+      "rep": 2,
+      "fixture": "repeat_reference",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.13,
+      "cpu_seconds": 0.1,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 1,
+      "rep": 2,
+      "fixture": "genome_5mb",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 7.97,
+      "cpu_seconds": 7.839999999999999,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 2,
+      "rep": 1,
+      "fixture": "fragmented",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.1,
+      "cpu_seconds": 0.07,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 1
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 2,
+      "rep": 1,
+      "fixture": "repeat_reference",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.12,
+      "cpu_seconds": 0.08,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 2,
+      "rep": 1,
+      "fixture": "genome_5mb",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 7.529999999999999,
+      "cpu_seconds": 7.43,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 2,
+      "rep": 2,
+      "fixture": "fragmented",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.12000000000000001,
+      "cpu_seconds": 0.07,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 1
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 2,
+      "rep": 2,
+      "fixture": "repeat_reference",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.13999999999999999,
+      "cpu_seconds": 0.1,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 2,
+      "rep": 2,
+      "fixture": "genome_5mb",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 10.61,
+      "cpu_seconds": 10.48,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 4,
+      "rep": 1,
+      "fixture": "fragmented",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.12,
+      "cpu_seconds": 0.1,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 1
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 4,
+      "rep": 1,
+      "fixture": "repeat_reference",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.13999999999999999,
+      "cpu_seconds": 0.1,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 4,
+      "rep": 1,
+      "fixture": "genome_5mb",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 7.4399999999999995,
+      "cpu_seconds": 7.33,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 4,
+      "rep": 2,
+      "fixture": "fragmented",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.11000000000000001,
+      "cpu_seconds": 0.07,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 1
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 4,
+      "rep": 2,
+      "fixture": "repeat_reference",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.14,
+      "cpu_seconds": 0.11000000000000001,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "cli-mummer4",
+      "threads": 4,
+      "rep": 2,
+      "fixture": "genome_5mb",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 9.29,
+      "cpu_seconds": 9.18,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 1,
+      "rep": 1,
+      "fixture": "fragmented",
+      "original_parser_errors": 2,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.08,
+      "cpu_seconds": 0.07,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 1,
+      "rep": 1,
+      "fixture": "repeat_reference",
+      "original_parser_errors": 2,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.12000000000000001,
+      "cpu_seconds": 0.10999999999999999,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 1,
+      "rep": 1,
+      "fixture": "genome_5mb",
+      "original_parser_errors": 2,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 7.21,
+      "cpu_seconds": 7.119999999999999,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 1,
+      "rep": 2,
+      "fixture": "fragmented",
+      "original_parser_errors": 2,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.1,
+      "cpu_seconds": 0.07,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 1,
+      "rep": 2,
+      "fixture": "repeat_reference",
+      "original_parser_errors": 2,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.09,
+      "cpu_seconds": 0.07,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 1,
+      "rep": 2,
+      "fixture": "genome_5mb",
+      "original_parser_errors": 2,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 7.67,
+      "cpu_seconds": 7.57,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 2,
+      "rep": 1,
+      "fixture": "fragmented",
+      "original_parser_errors": 2,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.08,
+      "cpu_seconds": 0.06,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 2,
+      "rep": 1,
+      "fixture": "repeat_reference",
+      "original_parser_errors": 2,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.09,
+      "cpu_seconds": 0.07,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 2,
+      "rep": 1,
+      "fixture": "genome_5mb",
+      "original_parser_errors": 2,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 9.46,
+      "cpu_seconds": 9.36,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 2,
+      "rep": 2,
+      "fixture": "fragmented",
+      "original_parser_errors": 2,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.09,
+      "cpu_seconds": 0.07,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 2,
+      "rep": 2,
+      "fixture": "repeat_reference",
+      "original_parser_errors": 2,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.1,
+      "cpu_seconds": 0.07,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 2,
+      "rep": 2,
+      "fixture": "genome_5mb",
+      "original_parser_errors": 2,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 12.04,
+      "cpu_seconds": 11.93,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 4,
+      "rep": 1,
+      "fixture": "fragmented",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.07,
+      "cpu_seconds": 0.06,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 4,
+      "rep": 1,
+      "fixture": "repeat_reference",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.09,
+      "cpu_seconds": 0.07,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 4,
+      "rep": 1,
+      "fixture": "genome_5mb",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 7.88,
+      "cpu_seconds": 7.79,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 4,
+      "rep": 2,
+      "fixture": "fragmented",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.1,
+      "cpu_seconds": 0.08,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 1
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 4,
+      "rep": 2,
+      "fixture": "repeat_reference",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 0.12,
+      "cpu_seconds": 0.1,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    },
+    {
+      "candidate": "embedded-mummer4",
+      "threads": 4,
+      "rep": 2,
+      "fixture": "genome_5mb",
+      "original_parser_errors": 0,
+      "exact": true,
+      "canonical_equal": true,
+      "wall_seconds": 10.51,
+      "cpu_seconds": 10.399999999999999,
+      "unfiltered_canonical_equal": true,
+      "unfiltered_order_changed_directions": 0
+    }
+  ],
+  "independent_objects": [
+    {
+      "fixture": "fragmented",
+      "orientation": "QR",
+      "main_exact": true,
+      "duplicate_exact": true,
+      "canonical_equal": true
+    },
+    {
+      "fixture": "fragmented",
+      "orientation": "RQ",
+      "main_exact": true,
+      "duplicate_exact": true,
+      "canonical_equal": true
+    },
+    {
+      "fixture": "repeat_reference",
+      "orientation": "QR",
+      "main_exact": true,
+      "duplicate_exact": true,
+      "canonical_equal": true
+    },
+    {
+      "fixture": "repeat_reference",
+      "orientation": "RQ",
+      "main_exact": true,
+      "duplicate_exact": true,
+      "canonical_equal": true
+    },
+    {
+      "fixture": "genome_5mb",
+      "orientation": "QR",
+      "main_exact": true,
+      "duplicate_exact": true,
+      "canonical_equal": true
+    },
+    {
+      "fixture": "genome_5mb",
+      "orientation": "RQ",
+      "main_exact": true,
+      "duplicate_exact": true,
+      "canonical_equal": true
+    }
+  ],
+  "indexes": {
+    "R": {
+      "construction": {
+        "exit_code": 0,
+        "wall_seconds": 0.8,
+        "cpu_seconds": 0.77,
+        "peak_kib": 65536,
+        "sampled_tree_peak_kib": 71044
+      },
+      "files": {
+        "R.lcp": {
+          "bytes": 5000019,
+          "sha256": "740daceffa0ff3b494cd00346b1be80ba1a1e774d6ed66bd77bb96c045105acb"
+        },
+        "R.sa": {
+          "bytes": 20000028,
+          "sha256": "9d981dfaf611b1250bcc9f83ed9774a7dde0bdac833bdba00b3911c8903267f0"
+        },
+        "R.aux": {
+          "bytes": 49,
+          "sha256": "f6d0a0c780a122de76bea8915ddef41624b8a4b33d9a2ebad437318e891aae98"
+        },
+        "R.kmer": {
+          "bytes": 8388612,
+          "sha256": "595dcab6973b63852c60924538f12808768d58ba011edcdeaf95c73683525fda"
+        },
+        "R.isa": {
+          "bytes": 20000028,
+          "sha256": "e3f7c103d71a4a3cc0df94f98b694fca426e9d8c7d2b8f4370ecaad8f588c57b"
+        }
+      }
+    },
+    "Q": {
+      "construction": {
+        "exit_code": 0,
+        "wall_seconds": 0.53,
+        "cpu_seconds": 0.51,
+        "peak_kib": 65348,
+        "sampled_tree_peak_kib": 72308
+      },
+      "files": {
+        "Q.sa": {
+          "bytes": 20000028,
+          "sha256": "ce9356b00daabaeffe3db33ffffd30a62b449f950e836720e6f02d057d94c695"
+        },
+        "Q.aux": {
+          "bytes": 49,
+          "sha256": "f6d0a0c780a122de76bea8915ddef41624b8a4b33d9a2ebad437318e891aae98"
+        },
+        "Q.isa": {
+          "bytes": 20000028,
+          "sha256": "d0b43d581dfc76e02735c00931514cd964a2e90cc6aeddfe2d2596b87beb1ea3"
+        },
+        "Q.lcp": {
+          "bytes": 5000019,
+          "sha256": "2372f3ae87657db8d2783a6713785a9f25e7301951f5a4281708f45893430486"
+        },
+        "Q.kmer": {
+          "bytes": 8388612,
+          "sha256": "15ed3d1e0c5b2b1a13b7e8137c011d5cb59b886ba73dd8b7ff73faf0c5702f7e"
+        }
+      }
+    },
+    "save": {
+      "wall_seconds": 7.44,
+      "cpu_seconds": 7.33,
+      "peak_kib": 83712,
+      "exact": true,
+      "canonical_equal": true
+    },
+    "load": {
+      "wall_seconds": 6.48,
+      "cpu_seconds": 6.35,
+      "peak_kib": 84748,
+      "exact": true,
+      "canonical_equal": true
+    }
+  },
+  "costs": {
+    "cli-mummer4": {
+      "pair": {
+        "wall_seconds": 7.22,
+        "cpu_seconds": 7.119999999999999,
+        "peak_kib": 86968,
+        "sampled_tree_peak_kib": 92132
+      },
+      "panel": {
+        "candidate": "cli-mummer4",
+        "pairs": 140,
+        "planned_pairs": 140,
+        "workers": 8,
+        "wall_seconds": 35.14799796324223,
+        "cpu_seconds": 162.76,
+        "sampled_worker_peak_kib": 295216,
+        "sampling_interval_seconds": 0.05,
+        "maximum_pair_peak_kib": 34000,
+        "failed_orientations": 0
+      }
+    },
+    "embedded-mummer4": {
+      "pair": {
+        "wall_seconds": 7.390000000000001,
+        "cpu_seconds": 7.3,
+        "peak_kib": 85120,
+        "sampled_tree_peak_kib": 89196
+      },
+      "panel": {
+        "candidate": "embedded-mummer4",
+        "pairs": 140,
+        "planned_pairs": 140,
+        "workers": 8,
+        "wall_seconds": 34.61244974564761,
+        "cpu_seconds": 159.18,
+        "sampled_worker_peak_kib": 228684,
+        "sampling_interval_seconds": 0.05,
+        "maximum_pair_peak_kib": 30004,
+        "failed_orientations": 280
+      }
+    }
+  },
+  "budget": {
+    "limit": 7200,
+    "conservative_charged_seconds": 759.2944398475811,
+    "measured_cpu_seconds": 485.84,
+    "entries": 370,
+    "unfinished": [],
+    "cleanup_bound_exceeded": []
+  },
+  "binary_sizes": {
+    "build/bridge-fresh-target/release/mummer4-feasibility-probe": {
+      "bytes": 706664,
+      "sha256": "50eeb57d7d52fbb7e5ba688f41675586e75dc81afaa37111ffb537fd60e42c4d"
+    },
+    "build/empty-non-pie": {
+      "bytes": 295288,
+      "sha256": "bde046dc752688c713d6c6a9bc03f5710fc7ebe34257cdc066a80eccb6d51ca5"
+    },
+    "build/cli/nucmer": {
+      "bytes": 444680,
+      "sha256": "94b763e962f280ff85b3bb049a2a3a48090451cab17683d3d9b8949d851e37a9"
+    },
+    "build/cli/delta-filter": {
+      "bytes": 88680,
+      "sha256": "44597403ec795f748228e64db924d724189973e4f8e5bfe1bb16480cbd0aeb78"
+    },
+    "build/cli/.libs/libumdmummer.a": {
+      "bytes": 382640,
+      "sha256": "ccc064eb4da380e97151cb9a25727f095d33af86eccb7fe9de1964d1b5926bd8"
+    }
+  },
+  "limitations": [
+    "Primary library metrics reparse captured filtered stdout; initial file-adapter failures remain immutable. Repaired output-file adapter executed on the declared remaining thread subset, independent objects and runtime checks; no full primary alignment rerun.",
+    "Index diagnostics overlapped the resumed thread checks on the 8CPU allocation; native affinity remained within those CPUs, but requested widths could sum to9 and compete. Their timing is contention-sensitive. Later harness admission rejects such concurrent reservations. Primary matrix/panel timings were separate.",
+    "Synthetic cluster COST/SPEC evidence only. Mac/browser and arbitrary-genome equivalence unverified. GPL component notices require resolution before distribution."
+  ]
+}

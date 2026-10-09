@@ -136,3 +136,66 @@ fn a_repeated_reference_id_is_rejected() {
         e["ranked_reference_evidence"][1]["reference_id"] = "ref-a".into();
     });
 }
+
+#[test]
+fn historical_unresolved_labels_are_rejected() {
+    for field in [
+        "species_id",
+        "species_name",
+        "subspecies_id",
+        "subspecies_name",
+        "lineage_id",
+        "genomovar_id",
+    ] {
+        rejects("empty taxon fields", |e| {
+            e["assignment"]["status"] = "unresolved".into();
+            e["assignment"][field] = "retained-label".into();
+        });
+    }
+}
+#[test]
+fn both_query_digest_layouts_work_but_conflicting_digests_are_rejected() {
+    let mut e = valid();
+    e["provenance"]
+        .as_object_mut()
+        .unwrap()
+        .remove("query_sha256");
+    e["provenance"]["sha256"] = serde_json::json!({"query":"b".repeat(64)});
+    SavedEvidence::from_json(&e.to_string()).unwrap();
+    e["provenance"]["query_sha256"] = "c".repeat(64).into();
+    assert!(SavedEvidence::from_json(&e.to_string()).is_err());
+}
+#[test]
+fn a_different_engine_or_sequence_scope_cannot_use_the_frozen_policy() {
+    rejects("skani 0.3.2", |e| {
+        e["provenance"]["engine_version"] = "0.3.3".into()
+    });
+    rejects("whole-assembly", |e| {
+        e["provenance"]["sequence_scope"] = "chromosome_only".into()
+    });
+}
+#[test]
+fn subspecies_metadata_cannot_invent_a_parent_or_reuse_a_species_id() {
+    rejects("parent species", |e| {
+        let r = &mut e["ranked_reference_evidence"][0];
+        r["species_id"] = "".into();
+        r["species_name"] = "".into();
+        r["reference_role"] = "context_only".into();
+        r["subspecies_id"] = "SS1".into();
+        r["subspecies_name"] = "subspecies one".into();
+    });
+    rejects("multiple ranks", |e| {
+        let r = &mut e["ranked_reference_evidence"][0];
+        r["subspecies_id"] = "SP1".into();
+        r["subspecies_name"] = "subspecies one".into();
+    });
+}
+
+#[test]
+fn unmapped_references_must_be_context_only_before_they_can_supply_a_contrast() {
+    rejects("context_only", |e| {
+        let r = &mut e["ranked_reference_evidence"][1];
+        r["species_id"] = "".into();
+        r["species_name"] = "".into();
+    });
+}

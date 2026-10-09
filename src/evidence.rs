@@ -7,6 +7,8 @@ use std::cmp::Reverse;
 use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Deserializer};
+use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 
 /// Schema identifier of the frozen 0.2.0 saved-evidence records this module reads.
 pub const EVIDENCE_SCHEMA: &str = "2.0.0-dev-evidence";
@@ -44,6 +46,10 @@ impl Percent {
     /// For display only; never compare these values.
     pub fn as_f64(self) -> f64 {
         f64::from(self.0) / 100.0
+    }
+
+    pub(crate) fn gap(self, other: Self) -> i64 {
+        i64::from(self.0) - i64::from(other.0)
     }
 
     fn parse(text: &str) -> Option<Self> {
@@ -85,6 +91,9 @@ pub struct Reference {
     pub id: String,
     pub species: Option<Taxon>,
     pub lineage_id: Option<String>,
+    pub subspecies: Option<Taxon>,
+    pub reference_role: String,
+    pub name_status: String,
     pub ani: Percent,
     pub af_query: Percent,
     pub af_reference: Percent,
@@ -111,6 +120,16 @@ pub struct Provenance {
 pub struct SavedEvidence {
     references: Vec<Reference>,
     provenance: Provenance,
+    source_sha256: String,
+    scope: Value,
+    original_assignment: Value,
+    reference_count: usize,
+    not_returned_count: usize,
+    diagnostics: Vec<Value>,
+    problem_warnings: Vec<Value>,
+    annotated: bool,
+    diagnostics_supplied: bool,
+    warnings_supplied: bool,
 }
 
 impl SavedEvidence {
@@ -120,7 +139,54 @@ impl SavedEvidence {
     /// search, rows that are not canonically ranked, or counts that show a truncated panel.
     pub fn from_json(text: &str) -> Result<Self, EvidenceError> {
         let raw: RawEvidence = serde_json::from_str(text)?;
-        raw.validate()
+        let mut evidence = raw.validate()?;
+        evidence.source_sha256 = format!("{:x}", Sha256::digest(text.as_bytes()));
+        Ok(evidence)
+    }
+
+    pub fn source_sha256(&self) -> &str {
+        &self.source_sha256
+    }
+    pub fn original_assignment(&self) -> &Value {
+        &self.original_assignment
+    }
+    pub fn scope(&self) -> &Value {
+        &self.scope
+    }
+    pub fn reference_count(&self) -> usize {
+        self.reference_count
+    }
+    pub fn not_returned_count(&self) -> usize {
+        self.not_returned_count
+    }
+    pub fn diagnostics(&self) -> &[Value] {
+        &self.diagnostics
+    }
+    pub fn problem_warnings(&self) -> &[Value] {
+        &self.problem_warnings
+    }
+
+    pub fn diagnostics_supplied(&self) -> bool {
+        self.diagnostics_supplied
+    }
+    pub fn warnings_supplied(&self) -> bool {
+        self.warnings_supplied
+    }
+    pub(crate) fn annotations_attached(&self) -> bool {
+        self.annotated
+    }
+    pub(crate) fn set_annotations(
+        &mut self,
+        diagnostics: Vec<Value>,
+        warnings: Vec<Value>,
+        methods_supplied: bool,
+        problems_supplied: bool,
+    ) {
+        self.annotated = true;
+        self.diagnostics_supplied = methods_supplied;
+        self.warnings_supplied = problems_supplied;
+        self.diagnostics = diagnostics;
+        self.problem_warnings = warnings;
     }
 
     pub fn references(&self) -> &[Reference] {
@@ -138,7 +204,8 @@ struct RawEvidence {
     record_type: String,
     input_kind: String,
     units: RawUnits,
-    assignment: RawAssignment,
+    assignment: Value,
+    scope_assessment: Option<Value>,
     provenance: RawProvenance,
     evidence_status: String,
     reference_count: usize,
@@ -157,17 +224,15 @@ struct RawUnits {
 }
 
 #[derive(Deserialize)]
-struct RawAssignment {
-    status: String,
-}
-
-#[derive(Deserialize)]
 struct RawProvenance {
     input_kind: String,
     engine_version: String,
     reference_component_id: String,
     reference_package_sha256: String,
-    query_sha256: String,
+    query_sha256: Option<String>,
+    #[serde(default)]
+    sha256: HashMap<String, String>,
+    sequence_scope: String,
     search_exit_code: i64,
 }
 
@@ -176,6 +241,10 @@ struct RawReference {
     reference_id: String,
     species_id: String,
     species_name: String,
+    subspecies_id: String,
+    subspecies_name: String,
+    reference_role: String,
+    name_status: String,
     lineage_id: String,
     ani_percent: Percent,
     aligned_fraction_query_percent: Percent,
@@ -183,7 +252,7 @@ struct RawReference {
     minimum_directional_af_percent: Percent,
 }
 
-fn is_sha256(text: &str) -> bool {
+pub(crate) fn is_sha256(text: &str) -> bool {
     text.len() == 64 && text.bytes().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
 }
 
@@ -201,8 +270,24 @@ impl RawEvidence {
         if self.units.ani != "percent" || self.units.aligned_fraction != "percent" {
             return invalid("ANI and aligned fraction must both be in percent");
         }
-        if !UNASSIGNED_STATES.contains(&self.assignment.status.as_str()) {
-            return invalid("saved evidence must carry an unassigned input state");
+        if !self.assignment["status"]
+            .as_str()
+            .is_some_and(|s| UNASSIGNED_STATES.contains(&s))
+            || self.assignment["reason"]
+                .as_str()
+                .is_none_or(|s| s.trim().is_empty())
+            || [
+                "species_id",
+                "species_name",
+                "subspecies_id",
+                "subspecies_name",
+                "lineage_id",
+                "genomovar_id",
+            ]
+            .iter()
+            .any(|k| self.assignment.get(k) != Some(&Value::Null))
+        {
+            return invalid("saved evidence must carry an unassigned input state with empty taxon fields and a reason");
         }
         let provenance = &self.provenance;
         if provenance.search_exit_code != 0 {
@@ -211,14 +296,38 @@ impl RawEvidence {
         if provenance.reference_component_id != PRIMARY_COMPONENT {
             return invalid("species evidence requires the primary whole-assembly component");
         }
-        if provenance.engine_version.is_empty() {
-            return invalid("the search engine version is required");
+        if provenance.engine_version != "0.3.2"
+            || provenance.sequence_scope != "whole_assembly_as_supplied"
+        {
+            return invalid("v1 requires whole-assembly skani 0.3.2 evidence");
         }
-        if !is_sha256(&provenance.reference_package_sha256) || !is_sha256(&provenance.query_sha256)
+        let query_sha256 = provenance
+            .query_sha256
+            .as_ref()
+            .or(provenance.sha256.get("query"));
+        if !is_sha256(&provenance.reference_package_sha256)
+            || !query_sha256.is_some_and(|s| is_sha256(s))
+            || provenance
+                .query_sha256
+                .as_ref()
+                .zip(provenance.sha256.get("query"))
+                .is_some_and(|(a, b)| a != b)
         {
             return invalid("reference package and query must be bound by SHA-256 digests");
         }
 
+        let query_sha256 = query_sha256.expect("validated query hash").clone();
+        let scope = self.scope_assessment.clone().unwrap_or_else(|| json!({
+            "outcome": "not_assessed", "reason": "No scope assessment supplied; coverage alone does not explain extra sequence."
+        }));
+        if self.scope_assessment.is_some() {
+            check_scope(&scope, &query_sha256)?;
+        }
+        if self.assignment["reason"] == "unexplained_residual_sequence"
+            && scope["outcome"] != "unexplained_after_checks"
+        {
+            return invalid("unexplained assignment reason requires its bound scope veto");
+        }
         let mut references = Vec::with_capacity(self.ranked_reference_evidence.len());
         for row in &self.ranked_reference_evidence {
             references.push(row.to_reference()?);
@@ -232,8 +341,18 @@ impl RawEvidence {
             provenance: Provenance {
                 engine_version: self.provenance.engine_version,
                 reference_package_sha256: self.provenance.reference_package_sha256,
-                query_sha256: self.provenance.query_sha256,
+                query_sha256,
             },
+            source_sha256: String::new(),
+            scope,
+            original_assignment: self.assignment,
+            reference_count: self.reference_count,
+            not_returned_count: self.not_returned_reference_count,
+            diagnostics: vec![],
+            problem_warnings: vec![],
+            annotated: false,
+            diagnostics_supplied: false,
+            warnings_supplied: false,
         })
     }
 }
@@ -243,6 +362,29 @@ impl RawReference {
         let id = &self.reference_id;
         if id.is_empty() {
             return invalid("every reference needs an identifier");
+        }
+        if !["type_anchor", "diversity", "boundary", "context_only"]
+            .contains(&self.reference_role.as_str())
+            || self.name_status.trim().is_empty()
+            || [
+                &self.reference_id,
+                &self.species_id,
+                &self.species_name,
+                &self.subspecies_id,
+                &self.subspecies_name,
+                &self.lineage_id,
+                &self.name_status,
+            ]
+            .iter()
+            .any(|s| s.trim() != s.as_str())
+        {
+            return invalid(format!("{id}: invalid reference metadata"));
+        }
+        if self.species_id.is_empty()
+            && self.lineage_id.is_empty()
+            && self.reference_role != "context_only"
+        {
+            return invalid(format!("{id}: an unmapped reference must be context_only"));
         }
         let zero = Percent(0);
         if self.aligned_fraction_query_percent == zero
@@ -267,6 +409,23 @@ impl RawReference {
                 }
             },
             lineage_id: (!self.lineage_id.is_empty()).then(|| self.lineage_id.clone()),
+            subspecies: match (
+                self.subspecies_id.is_empty(),
+                self.subspecies_name.is_empty(),
+            ) {
+                (true, true) => None,
+                (false, false) if !self.species_id.is_empty() => Some(Taxon {
+                    id: self.subspecies_id.clone(),
+                    name: self.subspecies_name.clone(),
+                }),
+                _ => {
+                    return invalid(format!(
+                        "{id}: subspecies requires a parent species and both ID and name"
+                    ))
+                }
+            },
+            reference_role: self.reference_role.clone(),
+            name_status: self.name_status.clone(),
             ani: self.ani_percent,
             af_query: self.aligned_fraction_query_percent,
             af_reference: self.aligned_fraction_reference_percent,
@@ -296,9 +455,58 @@ fn check_ranking(references: &[Reference]) -> Result<(), EvidenceError> {
 fn check_reference_identities(references: &[Reference]) -> Result<(), EvidenceError> {
     let mut ids = HashSet::new();
     let mut species_names: HashMap<&str, &str> = HashMap::new();
+    let mut subspecies: HashMap<&str, (&str, &str)> = HashMap::new();
+    let mut ranks: HashMap<&str, &str> = HashMap::new();
+    let mut lineages = HashMap::new();
     for reference in references {
         if !ids.insert(reference.id.as_str()) {
             return invalid(format!("{}: reference IDs must be unique", reference.id));
+        }
+        for (id, rank) in [
+            (reference.species.as_ref().map(|s| s.id.as_str()), "species"),
+            (
+                reference.subspecies.as_ref().map(|s| s.id.as_str()),
+                "subspecies",
+            ),
+            (reference.lineage_id.as_deref(), "lineage"),
+        ] {
+            if let Some(id) = id {
+                if ranks
+                    .insert(id, rank)
+                    .is_some_and(|previous| previous != rank)
+                {
+                    return invalid("one concept ID cannot represent multiple ranks");
+                }
+            }
+        }
+        if let Some(taxon) = &reference.subspecies {
+            let interpretation = (
+                reference
+                    .species
+                    .as_ref()
+                    .expect("validated parent")
+                    .id
+                    .as_str(),
+                taxon.name.as_str(),
+            );
+            if subspecies
+                .insert(&taxon.id, interpretation)
+                .is_some_and(|previous| previous != interpretation)
+            {
+                return invalid("conflicting subspecies parent/display name");
+            }
+        }
+        if let Some(lineage) = &reference.lineage_id {
+            let interpretation = (
+                reference.species.as_ref().map(|s| &s.id),
+                reference.subspecies.as_ref().map(|s| &s.id),
+            );
+            if lineages
+                .insert(lineage, interpretation)
+                .is_some_and(|previous| previous != interpretation)
+            {
+                return invalid("conflicting lineage parent");
+            }
         }
         if let Some(taxon) = &reference.species {
             let name = species_names.entry(&taxon.id).or_insert(&taxon.name);
@@ -341,6 +549,40 @@ fn check_panel_summary(raw: &RawEvidence, references: &[Reference]) -> Result<()
     };
     if raw.evidence_status != status {
         return invalid("evidence status does not match the rows supplied");
+    }
+    Ok(())
+}
+
+fn check_scope(scope: &Value, query: &str) -> Result<(), EvidenceError> {
+    let Some(checks) = scope["checks"].as_array() else {
+        return invalid("scope checks required");
+    };
+    let outcome = scope["outcome"].as_str().unwrap_or("");
+    if scope["schema_version"] != "1.0.0-scope-assessment"
+        || scope["query_sha256"] != query
+        || !scope["evidence_sha256"].as_str().is_some_and(is_sha256)
+        || scope["reason"].as_str().is_none_or(|s| s.trim().is_empty())
+        || ![
+            "not_assessed",
+            "explained_after_checks",
+            "unexplained_after_checks",
+        ]
+        .contains(&outcome)
+        || checks.is_empty() != (outcome == "not_assessed")
+    {
+        return invalid("invalid scope outcome or provenance binding");
+    }
+    let mut ids = HashSet::new();
+    for check in checks {
+        if check["status"] != "completed"
+            || ["check_id", "method", "method_version", "artifact_path"]
+                .iter()
+                .any(|k| check[k].as_str().is_none_or(|s| s.trim().is_empty()))
+            || !check["sha256"].as_str().is_some_and(is_sha256)
+            || !ids.insert(check["check_id"].as_str())
+        {
+            return invalid("duplicate or incomplete scope check provenance");
+        }
     }
     Ok(())
 }

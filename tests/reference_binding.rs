@@ -6,9 +6,9 @@ mod common;
 use common::package::{Synthetic, DISCLAIMER, PACKAGE_VERSION};
 use common::{evidence_json, row};
 use serde_json::Value;
-use terobacter::decision::{decide, Policy};
+use terobacter::decision::{decide, decide_bound, Policy};
 use terobacter::evidence::SavedEvidence;
-use terobacter::reference::PackageErrorKind;
+use terobacter::reference::{PackageErrorKind, VerifiedPackage};
 
 fn evidence_bound_to(package_sha256: &str) -> SavedEvidence {
     let mut json = evidence_json(&[row("GCF_000000001", Some("cloacae"), 98.5, 95.0, 96.0)]);
@@ -16,11 +16,8 @@ fn evidence_bound_to(package_sha256: &str) -> SavedEvidence {
     SavedEvidence::from_json(&json.to_string()).expect("evidence loads")
 }
 
-fn decision_json(
-    evidence: &SavedEvidence,
-    package: Option<&terobacter::reference::VerifiedPackage>,
-) -> Value {
-    let decision = decide(evidence, package, &Policy::v1()).expect("evidence is bound");
+fn bound_decision_json(evidence: &SavedEvidence, package: &VerifiedPackage) -> Value {
+    let decision = decide_bound(evidence, package, &Policy::v1()).expect("evidence is bound");
     serde_json::from_str(&decision.to_json()).expect("decision is JSON")
 }
 
@@ -29,7 +26,7 @@ fn evidence_bound_to_the_verified_package_records_its_identity_and_components() 
     let package = Synthetic::new().verify().expect("package verifies");
     let digest = &package.package().manifest_sha256;
     let evidence = evidence_bound_to(digest);
-    let decision = decision_json(&evidence, Some(&package));
+    let decision = bound_decision_json(&evidence, &package);
 
     let report = &decision["reference_package"];
     assert_eq!(report["status"], "verified");
@@ -51,14 +48,15 @@ fn evidence_bound_to_another_package_is_not_bound() {
     let package = Synthetic::new().verify().expect("package verifies");
     let evidence = evidence_bound_to(&"c".repeat(64));
 
-    let error = decide(&evidence, Some(&package), &Policy::v1()).expect_err("not bound");
+    let error = decide_bound(&evidence, &package, &Policy::v1()).expect_err("not bound");
     assert_eq!(error.kind(), PackageErrorKind::NotBound, "{error}");
 }
 
 #[test]
 fn without_a_package_the_reference_is_reported_as_not_verified() {
     let evidence = evidence_bound_to(&"c".repeat(64));
-    let decision = decision_json(&evidence, None);
+    let decision: Value =
+        serde_json::from_str(&decide(&evidence, &Policy::v1()).to_json()).unwrap();
 
     assert_eq!(decision["reference_package"]["status"], "not_verified");
 }
