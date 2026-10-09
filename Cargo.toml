@@ -40,6 +40,7 @@ serde = { version = "1.0.229", features = ["derive"] }
 # arbitrary_precision keeps a number's literal text, so evidence with more than two decimals
 # is rejected instead of being rounded through an f64.
 serde_json = { version = "1.0.151", features = ["arbitrary_precision"] }
+sha2 = "0.10.9"
 thiserror = "2.0.21"
 
 [dev-dependencies]

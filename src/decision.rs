@@ -13,6 +13,7 @@ use std::collections::HashSet;
 use serde_json::{json, Value};
 
 use crate::evidence::{Percent, Provenance, Reference, SavedEvidence, Taxon};
+use crate::reference::{PackageError, VerifiedPackage};
 
 /// Identifier of the approved v1 calling policy, as recorded in the frozen 0.2.0 reports.
 pub const V1_POLICY_ID: &str = "conservative-assembly-v1";
@@ -96,6 +97,7 @@ pub struct Decision {
     policy: &'static str,
     provenance: Provenance,
     species: SpeciesCall,
+    package: Option<VerifiedPackage>,
 }
 
 /// What distinguishes one parent taxon from another when looking for competitors. A reference
@@ -153,13 +155,22 @@ fn call_species(references: &[Reference], policy: &Policy) -> SpeciesCall {
     }
 }
 
-/// Decide the v1 species call for validated saved evidence.
-pub fn decide(evidence: &SavedEvidence, policy: &Policy) -> Decision {
-    Decision {
+/// Decide the v1 species call for validated saved evidence. Given a verified reference package,
+/// the evidence must be bound to it; without one the decision reports the reference as not verified.
+pub fn decide(
+    evidence: &SavedEvidence,
+    package: Option<&VerifiedPackage>,
+    policy: &Policy,
+) -> Result<Decision, PackageError> {
+    if let Some(package) = package {
+        package.check_binding(evidence.provenance())?;
+    }
+    Ok(Decision {
         policy: policy.id(),
         provenance: evidence.provenance().clone(),
         species: call_species(evidence.references(), policy),
-    }
+        package: package.cloned(),
+    })
 }
 
 impl Decision {
@@ -183,6 +194,7 @@ impl Decision {
                 "reference_package_sha256": self.provenance.reference_package_sha256,
                 "query_sha256": self.provenance.query_sha256,
             },
+            "reference_package": self.reference_package_value(),
             "v1_checks_not_applied": V1_CHECKS_NOT_APPLIED,
             "species": self.species_value(),
             "subspecies": {
@@ -190,6 +202,13 @@ impl Decision {
                 "reason": "subspecies_rank_not_implemented_in_this_build",
             },
         })
+    }
+
+    fn reference_package_value(&self) -> Value {
+        match &self.package {
+            Some(package) => package.to_value(),
+            None => json!({ "status": "not_verified" }),
+        }
     }
 
     fn species_value(&self) -> Value {

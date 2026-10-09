@@ -8,6 +8,10 @@ Vocabulary for the Terobacter tool, which classifies Enterobacter isolate assemb
 
 **Reference panel**: The references a query is compared against. Every returned row is a competitor, not a vote.
 
+**Reference package**: The versioned set of files that holds the reference panel's data, listed with their lengths and SHA-256 digests. A package is authenticated against its listing before any decision uses it, and evidence is bound to the package by the SHA-256 of its manifest.
+
+**Reference component**: One of the two components a reference package carries, `primary_whole` or `genomovar_chromosome`. Each has its own databases and build records. Species evidence comes from `primary_whole`.
+
 **Calling policy**: The numerical gates and rules that turn evidence into a call. v1 is `conservative-assembly-v1`, frozen from the 0.2.0 release.
 
 **Decision**: The result of applying a calling policy to saved evidence. Species and subspecies are decided and reported separately.

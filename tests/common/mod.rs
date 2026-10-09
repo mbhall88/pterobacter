@@ -1,6 +1,8 @@
 //! Helpers shared by the integration tests.
 #![allow(dead_code)] // each test crate uses a different subset
 
+pub mod package;
+
 use serde_json::{json, Value};
 use terobacter::decision::{decide, Policy};
 use terobacter::evidence::SavedEvidence;
@@ -135,7 +137,8 @@ pub fn evidence_text_with_literals(
 /// The decision JSON for evidence text that is expected to load.
 pub fn decision_from_text(evidence: &str) -> Value {
     let evidence = SavedEvidence::from_json(evidence).expect("evidence should load");
-    serde_json::from_str(&decide(&evidence, &Policy::v1()).to_json()).expect("decision is JSON")
+    serde_json::from_str(&decide(&evidence, None, &Policy::v1()).unwrap().to_json())
+        .expect("decision is JSON")
 }
 
 pub fn decision_for(rows: &[Row]) -> Value {
