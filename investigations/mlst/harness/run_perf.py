@@ -12,7 +12,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from common import MLST_ENV, timed
+from common import MLST_ENV, BudgetExceeded, is_crash, timed
 
 
 def main(package, fixtures, comp, bins, out):
@@ -24,27 +24,42 @@ def main(package, fixtures, comp, bins, out):
     files = [fixtures / "perf" / "5mb_1contig.fna", fixtures / "perf" / "5mb_200contigs.fna"]
     panel = sorted((fixtures / "perf" / "panel").glob("*.fna"))
     results = []
+    stopped = {}  # label -> first crashed input; a crashed candidate is not scheduled again (protocol stop rule)
+    def guarded(argv, d, e):
+        try:
+            return timed(argv, stdout=d / "stdout", stderr=d / "stderr", env=e)
+        except BudgetExceeded as ex:
+            stopped["*"] = str(ex)
+            return dict(argv=[str(x) for x in argv], exit_code=None, not_run="cpu_budget_spent", detail=str(ex), wall_seconds=None, max_rss_kib=None)
     def run_one(label, fa, which):
+        if label in stopped or stopped.get("*"):
+            return
         d = work / label / fa.stem; d.mkdir(parents=True, exist_ok=True)
         if label == "comparator":
             with tempfile.TemporaryDirectory(prefix="mlstperf-", dir="/tmp") as tmp:
                 argv = ["mlst", "--scheme", "ecloacae", "--datadir", package / "pubmlst", "--blastdb", comp / "blastdb" / "mlst.fa", "--minid", "95",
                         "--mincov", "50", "--threads", "1", "--full", "--nopath", fa]
-                rec = timed(argv, stdout=d / "stdout", stderr=d / "stderr", env=dict(env, TMPDIR=tmp))
+                rec = guarded(argv, d, dict(env, TMPDIR=tmp))
         else:
             b = bins[label]
             argv = [b["bin"], "--engine", b["engine"], "--package", pk, "--query", fa, *b.get("extra", [])]
-            rec = timed(argv, stdout=d / "stdout", stderr=d / "stderr")
+            rec = guarded(argv, d, None)
         rec.update(label=label, input=str(fa), group=which)
         results.append(rec)
         Path(out).write_text(json.dumps(results, indent=1))
         print(label, fa.name, rec["exit_code"], rec["wall_seconds"], rec["max_rss_kib"], flush=True)
+        if is_crash(rec):
+            stopped.setdefault(label, fa.name)
     for label in ["comparator", *bins]:
         for fa in files:
             run_one(label, fa, "single")
     for label in ["comparator", *[b for b in bins if not b.endswith(("asm5", "asm10", "only"))]]:
         for fa in panel:
             run_one(label, fa, "panel")
+    if stopped:
+        Path(out).with_suffix(".STOPPED.json").write_text(json.dumps(stopped, indent=1))
+        print("STOPPED:", stopped, file=sys.stderr)
+        sys.exit(3)
 
 
 if __name__ == "__main__":

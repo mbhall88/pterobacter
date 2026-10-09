@@ -9,6 +9,7 @@ Diagnostic only: the probe default (13) is what every reported result uses. Cost
 import argparse
 import csv
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -25,11 +26,14 @@ def main():
     a = ap.parse_args()
     work = Path(a.work)
     work.mkdir(parents=True, exist_ok=True)
+    # every driver started below shares one CPU ledger (inherit the caller's if set), so the allowance does not reset per value
+    env = dict(os.environ)
+    env.setdefault("MLST_BUDGET_LEDGER", str(work / "cpu-ledger.json"))
     rows = []
     for v in a.values:
         cand = work / f"xdrop{v}"
         subprocess.run([sys.executable, "-I", str(HERE / "run_candidate.py"), a.probe, "ungapped", a.scheme, a.fixtures, str(cand), "--extra", f"--xdrop {v}"],
-                       check=True, stdout=subprocess.DEVNULL)
+                       check=True, stdout=subprocess.DEVNULL, env=env)
         subprocess.run([sys.executable, "-I", str(HERE / "compare.py"), a.scheme, a.comparator, str(cand), str(work / f"cmp_xdrop{v}")],
                        check=True, stdout=subprocess.DEVNULL)
         res = [r for r in json.loads((work / f"cmp_xdrop{v}.json").read_text()) if r["kind"] == "valid"]

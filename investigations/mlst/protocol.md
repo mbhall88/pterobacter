@@ -88,3 +88,10 @@ Four changes, none altering the fixture list, presets or any reported measuremen
 - **Retained diagnostics.** `harness/xdrop_sweep.py` and `harness/order_audit.py` re-derive the X-drop bracket and the report-order check from saved comparator output (route D rerun at ten X-drop values, about 1.7 CPU-minutes). The retained order audit counts 102,827 pairs (not 104,913): it groups by contig and locus and leaves out the invalid duplicate-contig-id input. The probe gained a diagnostic `--xdrop` option; the default and every reported result still use 13.
 - **Importer check.** `harness/importer_diagnostic.py` passes saved comparator and route D outputs through the real, unchanged Enterobacter importer, with reconstructed (not historical) receipts and the comparator's prepared command for route D. It does not give route D an execution receipt.
 - **Size baseline.** The "core" binary is the route-D-capable baseline, not an engine-free build; the column is renamed.
+
+## Addendum E (9 October 2026, after the second coordinator review)
+
+- **Correction.** Addendum D says the X-drop sweep used ten values; it used nine (10, 11, 12, 13, 14, 15, 20, 30, 59). Addendum D is kept as written.
+- **Budget.** Addendum D's stop controls kept the CPU allowance per process, so it reset between drivers. It is now a run-level ledger (`MLST_BUDGET_LEDGER`) with bounded admission: a run is admitted only if its reserved CPU cap fits, and drivers sharing the ledger share the allowance. Without the variable the budget is per process, and a hard cap across unrelated invocations is not claimed. The bound assumes single-threaded runs.
+- **Launch.** Resource limits are set by a helper process instead of `preexec_fn`, because launches come from a thread pool.
+- **Performance runs** now stop scheduling a candidate after its first crash and retain the failure record, as the candidate runner does.
