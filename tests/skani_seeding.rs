@@ -1,17 +1,10 @@
 //! Direct tests of the pinned seeding contract, using native AVX2 as an independent oracle.
 use skani::params::SketchParams;
 use skani::types::Sketch;
+mod common;
 
 fn sequence(len: usize) -> Vec<u8> {
-    let mut state = 123456789_u64;
-    (0..len)
-        .map(|_| {
-            state ^= state << 13;
-            state ^= state >> 7;
-            state ^= state << 17;
-            b"ACGT"[(state & 3) as usize]
-        })
-        .collect()
+    common::dna(len, 123456789)
 }
 
 fn digest(sketch: &Sketch) -> u64 {

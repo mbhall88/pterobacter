@@ -3,19 +3,12 @@ use skani::sketch_db::SketchDbWriter;
 use skani::types::Sketch;
 use std::fs;
 use terobacter::skani::{SearchSettings, SeedingMode, SkaniDatabase};
+mod common;
 
 fn fixture() -> (tempfile::TempDir, std::path::PathBuf) {
     let dir = tempfile::tempdir().unwrap();
     let params = SketchParams::new(1000, 125, 15, false, false);
-    let mut state = 42_u64;
-    let seq: Vec<u8> = (0..200_003)
-        .map(|_| {
-            state ^= state << 13;
-            state ^= state >> 7;
-            state ^= state << 17;
-            b"ACGT"[(state & 3) as usize]
-        })
-        .collect();
+    let seq = common::dna(200_003, 42);
     let query = dir.path().join("query.fa");
     fs::write(&query, [b">synthetic\n".as_slice(), &seq, b"\n"].concat()).unwrap();
     let mut writer = SketchDbWriter::new(dir.path().to_str().unwrap()).unwrap();
@@ -84,14 +77,8 @@ fn genomovar_keeps_low_af_rows_that_primary_reporting_floor_omits() {
     let (dir, query) = fixture();
     let db = SkaniDatabase::open(dir.path()).unwrap();
     let mut fasta = fs::read(&query).unwrap();
-    let mut state = 7654321_u64;
     // Keep 20 kb shared; replace the rest with independently generated DNA.
-    for base in &mut fasta[11 + 20_000..11 + 200_003] {
-        state ^= state << 13;
-        state ^= state >> 7;
-        state ^= state << 17;
-        *base = b"ACGT"[(state & 3) as usize];
-    }
+    fasta[11 + 20_000..11 + 200_003].copy_from_slice(&common::dna(180_003, 7654321));
     fs::write(&query, fasta).unwrap();
     let primary = db
         .search(&query, SearchSettings::Primary, 2, SeedingMode::Portable)
