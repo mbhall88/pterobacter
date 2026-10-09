@@ -2,7 +2,7 @@
 
 mod common;
 
-use common::{evidence_json, row};
+use common::{evidence_json, evidence_text_with_literals, row};
 use serde_json::Value;
 use terobacter::evidence::SavedEvidence;
 
@@ -83,6 +83,37 @@ fn more_than_two_decimals_are_rejected_not_rounded() {
     rejects("two decimals", |e| {
         e["ranked_reference_evidence"][0]["ani_percent"] = 95.999.into();
     });
+}
+
+/// Each literal has more than two decimals and sits just beside a calling threshold. Read through
+/// an f64 it would round onto the threshold and decide, so these are written into the JSON text
+/// as given rather than built from numbers.
+#[test]
+fn literals_with_more_than_two_decimals_are_rejected_even_beside_a_threshold() {
+    let rows = [
+        row("ref-a", Some("SP1"), 96.0, 80.0, 80.0),
+        row("ref-b", Some("SP2"), 90.0, 90.0, 90.0),
+    ];
+    let cases = [
+        ("ani_percent", "95.999999999999999"),
+        ("ani_percent", "96.000000000000001"),
+        ("aligned_fraction_query_percent", "79.999999999999999"),
+        ("aligned_fraction_query_percent", "80.000000000000001"),
+        ("aligned_fraction_reference_percent", "79.999999999999999"),
+        ("aligned_fraction_reference_percent", "80.000000000000001"),
+    ];
+
+    for (field, literal) in cases {
+        let text = evidence_text_with_literals(&rows, 0, &[(field, literal)]);
+
+        let error = SavedEvidence::from_json(&text)
+            .expect_err(&format!("{field} = {literal} should be rejected"));
+
+        assert!(
+            error.to_string().contains("two decimals"),
+            "{field} = {literal}: {error}"
+        );
+    }
 }
 
 #[test]

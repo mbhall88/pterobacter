@@ -15,5 +15,5 @@ The seam for tests is the pair `SavedEvidence::from_json` and `decide`, plus the
 ## Consequences
 
 - Saved evidence is passed as text, so a browser front end can supply it without a filesystem.
-- Percentages are held as integer hundredths and compared exactly, because skani reports two decimals and the frozen rules use exactly those decimals. Evidence with more than two decimals is rejected, not rounded.
+- Percentages are held as integer hundredths and compared exactly, because skani reports two decimals and the frozen rules use exactly those decimals. Evidence with more than two decimals is rejected, not rounded. That check reads the number's literal text, so `serde_json` is built with `arbitrary_precision`; read as an f64, `95.999999999999999` would become 96.0 and pass the species gate.
 - Later tickets add reference-package authentication, the remaining v1 checks and the subspecies rank behind the same seam.
