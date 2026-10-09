@@ -8,7 +8,7 @@ use std::path::Path;
 
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
-use terobacter::reference::PackageSource;
+use terobacter::reference::{verify_package, PackageError, PackageSource, VerifiedPackage};
 
 pub const PACKAGE_VERSION: &str = "2026-10-09.test1";
 pub const DISCLAIMER: &str = "Synthetic test disclaimer.";
@@ -119,6 +119,11 @@ impl Synthetic {
 
     pub fn manifest_sha256(&self) -> String {
         sha256_hex(&self.manifest_bytes())
+    }
+
+    /// Verify against the manifest digest this package has now, as an operator who vouches for it would.
+    pub fn verify(&self) -> Result<VerifiedPackage, PackageError> {
+        verify_package(&self.source(), &self.manifest_sha256())
     }
 
     pub fn source(&self) -> MemorySource {

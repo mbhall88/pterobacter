@@ -36,29 +36,30 @@ Evaluation-only operations live in `terobacter-dev`. It is built only on request
 
 ```sh
 cargo run --features dev --bin terobacter-dev -- saved-evidence tests/fixtures/v1-species-assigned/evidence.json
-cargo run --features dev --bin terobacter-dev -- reference-package <DIR>
-cargo run --features dev --bin terobacter-dev -- saved-evidence <EVIDENCE> --reference-package <DIR>
+cargo run --features dev --bin terobacter-dev -- reference-package <DIR> --expected-sha256 <SHA256>
+cargo run --features dev --bin terobacter-dev -- saved-evidence <EVIDENCE> --reference-package <DIR> --expected-sha256 <SHA256>
 ```
 
 `saved-evidence` reads a frozen 0.2.0 saved-evidence file and prints its v1 species call as JSON. The v1 decision is a tracer: it applies the species rule only, and reports the subspecies as not evaluated.
 
-`reference-package` authenticates a reference package directory. Every file listed in its `portable.json` must be present with the listed length and SHA-256. Both components (`primary_whole` and `genomovar_chromosome`) must be complete, and the package must carry a licence manifest with the NCBI submitter-rights disclaimer. On success it prints the package identity, licence and components as JSON, including the SHA-256 of each database.
+`reference-package` authenticates a reference package directory against `--expected-sha256`, the SHA-256 that its `portable.json` must have. A manifest with any other digest is refused before its listing is read. Every file listed in the manifest must be present with the listed length and SHA-256, and no listed path may be a symbolic link. Both components (`primary_whole` and `genomovar_chromosome`) must be complete, and the package must carry a licence manifest with the NCBI submitter-rights disclaimer. On success it prints the package identity, licence and components as JSON, including the SHA-256 of each database.
 
-`--reference-package` authenticates the package first, then requires the evidence to be bound to it: the evidence's reference package digest must equal the verified manifest digest. Without the flag the decision reports `reference_package.status` as `not_verified`.
+`--reference-package` authenticates the package in the same way, then requires the evidence to be bound to it: the evidence's reference package digest must equal the verified manifest digest. The two flags must be given together. Without `--reference-package` the decision reports `reference_package.status` as `not_verified`.
 
 ### Exit codes
 
 | Code | Meaning |
 |---|---|
 | 0 | Success. |
-| 1 | Failure: an unreadable file, invalid saved evidence, or an I/O error reading a package. |
-| 2 | Usage error: an unknown option or a missing argument. |
+| 1 | Failure: an unreadable file, invalid saved evidence, an I/O error reading a package, or a listed path that is a symbolic link. |
+| 2 | Usage error: an unknown option, a missing argument, or a malformed `--expected-sha256`. |
 | 3 | Missing: the manifest, or a file it lists, is not in the package. |
 | 4 | Altered: a file's length or SHA-256 differs from the manifest, or it is longer than listed. |
 | 5 | Truncated: a file is shorter than its listed length. |
 | 6 | Incompatible: the package or licence schema is not one this build reads. |
 | 7 | Incomplete: the manifest, a component, the licence manifest or a listed path is incomplete or unsafe. |
 | 8 | Not bound: the saved evidence was searched against a different reference package. |
+| 9 | Unexpected: `portable.json` does not have the SHA-256 given by `--expected-sha256`. |
 
 Every rejection prints `error:` followed by a message that names the file or field at fault, and prints no decision.
 

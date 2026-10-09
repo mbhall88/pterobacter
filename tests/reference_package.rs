@@ -12,7 +12,9 @@ use serde_json::json;
 use terobacter::reference::{verify_package, PackageErrorKind};
 
 fn assert_rejected(synthetic: &Synthetic, kind: PackageErrorKind, names: &str) {
-    let error = verify_package(&synthetic.source()).expect_err("the package should be rejected");
+    let error = synthetic
+        .verify()
+        .expect_err("the package should be rejected");
     assert_eq!(error.kind(), kind, "{error}");
     assert!(error.to_string().contains(names), "{error}");
 }
@@ -20,11 +22,17 @@ fn assert_rejected(synthetic: &Synthetic, kind: PackageErrorKind, names: &str) {
 #[test]
 fn a_complete_package_verifies_with_its_identity_components_and_licence() {
     let synthetic = Synthetic::new();
-    let package = verify_package(&synthetic.source()).expect("a complete package verifies");
+    let package = synthetic.verify().expect("a complete package verifies");
 
-    assert_eq!(package.package.manifest_sha256, synthetic.manifest_sha256());
-    assert_eq!(package.package.version, PACKAGE_VERSION);
-    assert_eq!(package.licence.ncbi_submitter_rights_disclaimer, DISCLAIMER);
+    assert_eq!(
+        package.package().manifest_sha256,
+        synthetic.manifest_sha256()
+    );
+    assert_eq!(package.package().version, PACKAGE_VERSION);
+    assert_eq!(
+        package.licence().ncbi_submitter_rights_disclaimer,
+        DISCLAIMER
+    );
     for id in ["primary_whole", "genomovar_chromosome"] {
         let component = package.component(id).expect("both components are present");
         assert_eq!(component.databases.len(), 3, "{id}");
@@ -78,10 +86,33 @@ fn a_listed_file_that_is_absent_is_rejected_as_missing() {
 fn a_package_without_a_manifest_is_rejected_as_missing() {
     let mut files = Synthetic::new().files();
     files.remove(MANIFEST);
-    let error = verify_package(&MemorySource(files)).expect_err("no manifest");
+    let expected = Synthetic::new().manifest_sha256();
+    let error = verify_package(&MemorySource(files), &expected).expect_err("no manifest");
 
     assert_eq!(error.kind(), PackageErrorKind::Missing);
     assert!(error.to_string().contains(MANIFEST), "{error}");
+}
+
+#[test]
+fn a_manifest_that_is_consistent_but_not_the_expected_one_is_unexpected() {
+    let expected = Synthetic::new().manifest_sha256();
+    let mut replaced = Synthetic::new();
+    replaced.set_manifest("package_id", json!("terobacter-reference-replacement"));
+    let error =
+        verify_package(&replaced.source(), &expected).expect_err("a replaced manifest is refused");
+
+    assert_eq!(error.kind(), PackageErrorKind::Unexpected, "{error}");
+    assert!(error.to_string().contains(&expected), "{error}");
+}
+
+#[test]
+fn the_expected_digest_is_checked_before_the_manifest_is_parsed() {
+    let expected = Synthetic::new().manifest_sha256();
+    let mut damaged = Synthetic::new();
+    damaged.replace_manifest_bytes(b"{ not json");
+    let error = verify_package(&damaged.source(), &expected).expect_err("a damaged manifest");
+
+    assert_eq!(error.kind(), PackageErrorKind::Unexpected, "{error}");
 }
 
 #[test]

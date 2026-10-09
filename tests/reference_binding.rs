@@ -8,7 +8,7 @@ use common::{evidence_json, row};
 use serde_json::Value;
 use terobacter::decision::{decide, Policy};
 use terobacter::evidence::SavedEvidence;
-use terobacter::reference::{verify_package, PackageErrorKind};
+use terobacter::reference::PackageErrorKind;
 
 fn evidence_bound_to(package_sha256: &str) -> SavedEvidence {
     let mut json = evidence_json(&[row("GCF_000000001", Some("cloacae"), 98.5, 95.0, 96.0)]);
@@ -26,25 +26,20 @@ fn decision_json(
 
 #[test]
 fn evidence_bound_to_the_verified_package_records_its_identity_and_components() {
-    let package = verify_package(&Synthetic::new().source()).expect("package verifies");
-    let evidence = evidence_bound_to(&package.package.manifest_sha256);
+    let package = Synthetic::new().verify().expect("package verifies");
+    let digest = &package.package().manifest_sha256;
+    let evidence = evidence_bound_to(digest);
     let decision = decision_json(&evidence, Some(&package));
 
     let report = &decision["reference_package"];
     assert_eq!(report["status"], "verified");
     assert_eq!(report["package"]["version"], PACKAGE_VERSION);
-    assert_eq!(
-        report["package"]["manifest_sha256"],
-        package.package.manifest_sha256
-    );
+    assert_eq!(report["package"]["manifest_sha256"], *digest);
     assert_eq!(
         report["licence"]["ncbi_submitter_rights_disclaimer"],
         DISCLAIMER
     );
-    assert_eq!(
-        decision["input"]["reference_package_sha256"],
-        package.package.manifest_sha256
-    );
+    assert_eq!(decision["input"]["reference_package_sha256"], *digest);
     for id in ["primary_whole", "genomovar_chromosome"] {
         let index = &report["components"][id]["databases"]["index.db"];
         assert_eq!(index["sha256"].as_str().map(str::len), Some(64), "{id}");
@@ -53,7 +48,7 @@ fn evidence_bound_to_the_verified_package_records_its_identity_and_components() 
 
 #[test]
 fn evidence_bound_to_another_package_is_not_bound() {
-    let package = verify_package(&Synthetic::new().source()).expect("package verifies");
+    let package = Synthetic::new().verify().expect("package verifies");
     let evidence = evidence_bound_to(&"c".repeat(64));
 
     let error = decide(&evidence, Some(&package), &Policy::v1()).expect_err("not bound");

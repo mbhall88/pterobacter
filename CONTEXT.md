@@ -8,7 +8,7 @@ Vocabulary for the Terobacter tool, which classifies Enterobacter isolate assemb
 
 **Reference panel**: The references a query is compared against. Every returned row is a competitor, not a vote.
 
-**Reference package**: The versioned set of files that holds the reference panel's data, listed with their lengths and SHA-256 digests. A package is authenticated against its listing before any decision uses it, and evidence is bound to the package by the SHA-256 of its manifest.
+**Reference package**: The versioned set of files that holds the reference panel's data, listed with their lengths and SHA-256 digests. A package is authenticated before any decision uses it: its manifest must have the SHA-256 the operator expects, and every listed file must match the listing. Evidence is bound to the package by that same manifest SHA-256.
 
 **Reference component**: One of the two components a reference package carries, `primary_whole` or `genomovar_chromosome`. Each has its own databases and build records. Species evidence comes from `primary_whole`.
 

@@ -1,10 +1,11 @@
 //! Reference package authentication.
 //!
 //! A reference package is a directory whose `portable.json` lists files with their byte lengths
-//! and SHA-256 digests. Verification checks every listed file against that listing, and checks
-//! that the listing describes both components and a licence manifest. Bytes arrive through
-//! [`PackageSource`], so this module never opens a path itself. Files the listing does not name
-//! are not inspected.
+//! and SHA-256 digests. The operator supplies the SHA-256 that the manifest must have, and
+//! verification refuses any other manifest before it reads the listing. It then checks every
+//! listed file against that listing, and checks that the listing describes both components and a
+//! licence manifest. Bytes arrive through [`PackageSource`], so this module never opens a path
+//! itself. Files the listing does not name are not inspected.
 
 use std::collections::{BTreeMap, HashSet};
 use std::io::{self, Read};
@@ -31,6 +32,7 @@ pub trait PackageSource {
 /// The category of a rejection, for a front end that maps rejections to exit codes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PackageErrorKind {
+    Unexpected,
     Missing,
     Altered,
     Truncated,
@@ -42,6 +44,8 @@ pub enum PackageErrorKind {
 
 #[derive(Debug, thiserror::Error)]
 pub enum PackageError {
+    #[error("unexpected: {0}")]
+    Unexpected(String),
     #[error("missing: {0}")]
     Missing(String),
     #[error("altered: {0}")]
@@ -61,6 +65,7 @@ pub enum PackageError {
 impl PackageError {
     pub fn kind(&self) -> PackageErrorKind {
         match self {
+            Self::Unexpected(_) => PackageErrorKind::Unexpected,
             Self::Missing(_) => PackageErrorKind::Missing,
             Self::Altered(_) => PackageErrorKind::Altered,
             Self::Truncated(_) => PackageErrorKind::Truncated,
@@ -117,11 +122,17 @@ pub struct Component {
     pub builds: Vec<Asset>,
 }
 
+/// A package that has passed [`verify_package`], so its fields are private.
+///
+/// ```compile_fail,E0451
+/// use terobacter::reference::VerifiedPackage;
+/// let _ = VerifiedPackage { package: todo!(), licence: todo!(), components: Vec::new() };
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VerifiedPackage {
-    pub package: PackageIdentity,
-    pub licence: Licence,
-    pub components: Vec<Component>,
+    package: PackageIdentity,
+    licence: Licence,
+    components: Vec<Component>,
 }
 
 #[derive(Deserialize)]
@@ -142,12 +153,21 @@ struct LicenceManifest {
     ncbi_submitter_rights_disclaimer: String,
 }
 
-/// Authenticate a package: every listed file must be present with its listed length and digest,
-/// the components and licence manifest must be complete, and the schema must be the one this
-/// build reads.
-pub fn verify_package(source: &dyn PackageSource) -> Result<VerifiedPackage, PackageError> {
+/// Authenticate a package against the SHA-256 its manifest must have. Every listed file must be
+/// present with its listed length and digest, the components and licence manifest must be
+/// complete, and the schema must be the one this build reads.
+pub fn verify_package(
+    source: &dyn PackageSource,
+    expected_sha256: &str,
+) -> Result<VerifiedPackage, PackageError> {
     let manifest_bytes = read_all(source, MANIFEST_PATH)?
         .ok_or_else(|| PackageError::Missing(format!("{MANIFEST_PATH} is not in the package")))?;
+    let manifest_sha256 = hex(&Sha256::digest(&manifest_bytes));
+    if manifest_sha256 != expected_sha256 {
+        return Err(PackageError::Unexpected(format!(
+            "{MANIFEST_PATH} has SHA-256 {manifest_sha256}, not the expected {expected_sha256}"
+        )));
+    }
     let manifest = parse_manifest(&manifest_bytes)?;
 
     let all_assets: Vec<&Asset> = manifest
@@ -178,7 +198,7 @@ pub fn verify_package(source: &dyn PackageSource) -> Result<VerifiedPackage, Pac
             version: manifest.package_version,
             release_state: manifest.release_state,
             trust_basis: manifest.trust_basis,
-            manifest_sha256: hex(&Sha256::digest(&manifest_bytes)),
+            manifest_sha256,
         },
         licence,
         components,
@@ -186,6 +206,18 @@ pub fn verify_package(source: &dyn PackageSource) -> Result<VerifiedPackage, Pac
 }
 
 impl VerifiedPackage {
+    pub fn package(&self) -> &PackageIdentity {
+        &self.package
+    }
+
+    pub fn licence(&self) -> &Licence {
+        &self.licence
+    }
+
+    pub fn components(&self) -> &[Component] {
+        &self.components
+    }
+
     pub fn component(&self, id: &str) -> Option<&Component> {
         self.components.iter().find(|component| component.id == id)
     }
@@ -473,7 +505,7 @@ fn is_safe_path(path: &str) -> bool {
         })
 }
 
-fn is_sha256(text: &str) -> bool {
+pub(crate) fn is_sha256(text: &str) -> bool {
     text.len() == 64 && text.bytes().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
 }
 

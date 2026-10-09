@@ -6,6 +6,8 @@
 mod common;
 
 use std::fs;
+use std::path::Path;
+use std::process::Output;
 
 use assert_cmd::cargo::cargo_bin_cmd;
 use common::package::{Synthetic, LICENCE_PATH, MANIFEST, PACKAGE_VERSION};
@@ -16,6 +18,18 @@ fn package_on_disk(synthetic: &Synthetic) -> TempDir {
     let dir = tempfile::tempdir().unwrap();
     synthetic.write_to(dir.path());
     dir
+}
+
+// The operator vouches for the manifest digest the package has now, so a damaged package
+// reaches its own rejection rather than the expected-digest check.
+fn reference_package_run(directory: &Path, expected: &str) -> Output {
+    cargo_bin_cmd!("terobacter-dev")
+        .arg("reference-package")
+        .arg(directory)
+        .arg("--expected-sha256")
+        .arg(expected)
+        .output()
+        .unwrap()
 }
 
 #[test]
@@ -76,11 +90,7 @@ fn a_verified_reference_package_prints_its_identity_and_components() {
     let synthetic = Synthetic::new();
     let dir = package_on_disk(&synthetic);
 
-    let output = cargo_bin_cmd!("terobacter-dev")
-        .arg("reference-package")
-        .arg(dir.path())
-        .output()
-        .unwrap();
+    let output = reference_package_run(dir.path(), &synthetic.manifest_sha256());
 
     assert!(
         output.status.success(),
@@ -137,11 +147,7 @@ fn each_rejected_reference_package_exits_with_its_own_code_and_names_the_fault()
         damage(&mut synthetic);
         let dir = package_on_disk(&synthetic);
 
-        let output = cargo_bin_cmd!("terobacter-dev")
-            .arg("reference-package")
-            .arg(dir.path())
-            .output()
-            .unwrap();
+        let output = reference_package_run(dir.path(), &synthetic.manifest_sha256());
 
         let stderr = String::from_utf8_lossy(&output.stderr);
         assert_eq!(output.status.code(), Some(code), "{case}: {stderr}");
@@ -157,15 +163,73 @@ fn each_rejected_reference_package_exits_with_its_own_code_and_names_the_fault()
 }
 
 #[test]
+fn a_manifest_that_is_not_the_expected_one_exits_with_its_own_code() {
+    let expected = Synthetic::new().manifest_sha256();
+    let mut replaced = Synthetic::new();
+    replaced.set_manifest("package_id", json!("terobacter-reference-replacement"));
+    let dir = package_on_disk(&replaced);
+
+    let output = reference_package_run(dir.path(), &expected);
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(output.status.code(), Some(9), "{stderr}");
+    assert!(
+        output.stdout.is_empty(),
+        "a rejected package prints no identity"
+    );
+    assert!(
+        stderr.starts_with("error:") && stderr.contains(&expected),
+        "{stderr}"
+    );
+}
+
+#[test]
+fn the_expected_digest_is_required_and_must_be_lowercase_hex() {
+    let synthetic = Synthetic::new();
+    let dir = package_on_disk(&synthetic);
+    let path = dir.path().to_str().unwrap();
+    let digest = synthetic.manifest_sha256();
+    let upper = digest.to_uppercase();
+
+    let cases: Vec<Vec<&str>> = vec![
+        vec!["reference-package", path],
+        vec!["reference-package", path, "--expected-sha256", "abc"],
+        vec![
+            "reference-package",
+            path,
+            "--expected-sha256",
+            upper.as_str(),
+        ],
+        vec![
+            "saved-evidence",
+            common::FIXTURE_PATH,
+            "--expected-sha256",
+            digest.as_str(),
+        ],
+        vec![
+            "saved-evidence",
+            common::FIXTURE_PATH,
+            "--reference-package",
+            path,
+        ],
+    ];
+    for args in cases {
+        let output = cargo_bin_cmd!("terobacter-dev")
+            .args(&args)
+            .output()
+            .unwrap();
+
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert_eq!(output.status.code(), Some(2), "{args:?}: {stderr}");
+    }
+}
+
+#[test]
 fn a_directory_without_a_manifest_is_missing() {
     let dir = package_on_disk(&Synthetic::new());
     fs::remove_file(dir.path().join(MANIFEST)).unwrap();
 
-    let output = cargo_bin_cmd!("terobacter-dev")
-        .arg("reference-package")
-        .arg(dir.path())
-        .output()
-        .unwrap();
+    let output = reference_package_run(dir.path(), &Synthetic::new().manifest_sha256());
 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert_eq!(output.status.code(), Some(3), "{stderr}");
@@ -173,6 +237,29 @@ fn a_directory_without_a_manifest_is_missing() {
         stderr.contains("missing") && stderr.contains(MANIFEST),
         "{stderr}"
     );
+}
+
+#[cfg(unix)]
+#[test]
+fn a_listed_file_that_is_a_symbolic_link_is_refused() {
+    let synthetic = Synthetic::new();
+    let dir = package_on_disk(&synthetic);
+    let listed = "databases/primary_whole/index.db";
+    let outside = tempfile::tempdir().unwrap();
+    let target = outside.path().join("index.db");
+    fs::write(&target, synthetic.files()[listed].as_slice()).unwrap();
+    fs::remove_file(dir.path().join(listed)).unwrap();
+    std::os::unix::fs::symlink(&target, dir.path().join(listed)).unwrap();
+
+    let output = reference_package_run(dir.path(), &synthetic.manifest_sha256());
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(output.status.code(), Some(1), "{stderr}");
+    assert!(
+        output.stdout.is_empty(),
+        "a refused read prints no identity"
+    );
+    assert!(stderr.contains("symbolic link"), "{stderr}");
 }
 
 #[test]
@@ -190,6 +277,8 @@ fn evidence_bound_to_the_verified_package_is_decided_and_reports_it() {
         .arg(&evidence_path)
         .arg("--reference-package")
         .arg(package_dir.path())
+        .arg("--expected-sha256")
+        .arg(synthetic.manifest_sha256())
         .output()
         .unwrap();
 
@@ -205,13 +294,16 @@ fn evidence_bound_to_the_verified_package_is_decided_and_reports_it() {
 
 #[test]
 fn saved_evidence_bound_to_another_package_is_not_bound() {
-    let package_dir = package_on_disk(&Synthetic::new());
+    let synthetic = Synthetic::new();
+    let package_dir = package_on_disk(&synthetic);
 
     let output = cargo_bin_cmd!("terobacter-dev")
         .arg("saved-evidence")
         .arg(common::FIXTURE_PATH)
         .arg("--reference-package")
         .arg(package_dir.path())
+        .arg("--expected-sha256")
+        .arg(synthetic.manifest_sha256())
         .output()
         .unwrap();
 
