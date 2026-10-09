@@ -19,6 +19,10 @@ class BudgetExhausted(RuntimeError):
     pass
 
 
+class CandidateStopped(RuntimeError):
+    pass
+
+
 class Budget:
     def __init__(self, path, limit=7200):
         self.path = pathlib.Path(path)
@@ -43,10 +47,21 @@ class Budget:
     def charged(data):
         return sum(e.get('charged_seconds', e['reserved_seconds']) for e in data['entries'])
 
-    def reserve(self, label, seconds, cpus, clock=time.monotonic):
+    def candidate_failure(self, candidate):
+        with self.transaction() as data:
+            return data.get('candidate_stops', {}).get(candidate)
+
+    def stop_candidate(self, candidate, failure):
+        with self.transaction() as data:
+            # Preserve the first failure, including across harness invocations.
+            return data.setdefault('candidate_stops', {}).setdefault(candidate, failure)
+
+    def reserve(self, label, seconds, cpus, clock=time.monotonic, candidate=None):
         reservation = (seconds + 2) * cpus
         key = uuid.uuid4().hex
         with self.transaction() as data:
+            if candidate in data.get('candidate_stops', {}):
+                raise CandidateStopped('candidate stopped after prior failure: ' + candidate)
             if any(e.get('cleanup_bound_exceeded') for e in data['entries']):
                 raise BudgetExhausted('prior cleanup exceeded reserved headroom; stop for review')
             if self.charged(data) + reservation > self.limit:
@@ -54,7 +69,7 @@ class Budget:
             if sum(e['cpus'] for e in data['entries'] if e['status']=='running') + cpus > self.cpu_limit:
                 raise BudgetExhausted('concurrent reservations exceed the allocation; defer this invocation')
             data['entries'].append(dict(id=key, label=label, reserved_seconds=reservation,
-                                        cpus=cpus, status='running', pid=os.getpid(),
+                                        cpus=cpus, candidate=candidate, status='running', pid=os.getpid(),
                                         started_utc=datetime.datetime.now(datetime.timezone.utc).isoformat()))
         return Lease(self, key, seconds, cpus, clock)
 

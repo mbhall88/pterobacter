@@ -13,7 +13,7 @@ import sys
 import queue
 from collections import defaultdict
 from metrics import delta_metrics, paf_metrics
-from budget import Budget, BudgetExhausted
+from budget import Budget, BudgetExhausted, CandidateStopped
 
 
 def fasta_lengths(path):
@@ -51,6 +51,7 @@ class Runner:
         self.active = set()
         self.lock = threading.Lock()
         self.local = threading.local()
+        self.candidate_stops = {}
         self.budget = Budget(args.budget_ledger) if getattr(args, 'budget_ledger', None) else None
         self.workers = getattr(args, 'workers', 8)
         self.threads = getattr(args, 'threads', 1)
@@ -63,7 +64,26 @@ class Runner:
         for start in range(0, self.workers * self.threads, self.threads):
             self.slots.put(cpus[start:start + self.threads])
 
+    def candidate_failure(self, candidate):
+        with self.lock:
+            failure = self.candidate_stops.get(candidate)
+        return failure or (self.budget.candidate_failure(candidate) if self.budget else None)
+
+    def check_candidate(self, candidate):
+        if candidate is not None and self.candidate_failure(candidate):
+            raise CandidateStopped('candidate stopped after prior failure: ' + candidate)
+
+    def stop_candidate(self, candidate, failure):
+        if candidate is None:
+            return
+        with self.lock:
+            first = self.candidate_stops.setdefault(candidate, failure)
+        if self.budget:
+            self.budget.stop_candidate(candidate, first)
+
     def timed(self, argv, directory, label, stdout, timeout_seconds=1800):
+        candidate = getattr(self.local, 'candidate', None)
+        self.check_candidate(candidate)
         lease = getattr(self.local, 'lease', None)
         if self.budget and lease is None:
             # Invalid-input/native diagnostic calls also use the same ledger.
@@ -80,8 +100,12 @@ class Runner:
         with stdout.open('wb') as out, stderr.open('wb') as err:
             if lease:
                 lease.remaining()  # include command/output setup in the deadline
-            child = subprocess.Popen(full, stdout=out, stderr=err, start_new_session=True)
             with self.lock:
+                # A stopped sibling must not launch another stage. Already
+                # running stages may finish within their existing bounds.
+                if candidate in self.candidate_stops:
+                    raise CandidateStopped('candidate stopped after prior failure: ' + candidate)
+                child = subprocess.Popen(full, stdout=out, stderr=err, start_new_session=True)
                 self.active.add(child.pid)
             peak = [0]
             stop = threading.Event()
@@ -107,7 +131,9 @@ class Runner:
             except RuntimeError as error:
                 os.killpg(child.pid, signal.SIGKILL)
                 child.wait()
-                (directory / (label + '.failure.json')).write_text(json.dumps(dict(argv=list(map(str, argv)), error=str(error), status='error')) + '\n')
+                failure = dict(argv=list(map(str, argv)), error=str(error), status='error')
+                (directory / (label + '.failure.json')).write_text(json.dumps(failure) + '\n')
+                self.stop_candidate(candidate, failure)
                 raise
             finally:
                 stop.set()
@@ -119,23 +145,36 @@ class Runner:
         values = timing.read_text().splitlines()[-1].split('\t')
         if lease:
             lease.cpu += float(values[1]) + float(values[2])
-        return dict(argv=list(map(str, argv)), exit_code=code, wall_seconds=float(values[0]),
+        receipt = dict(argv=list(map(str, argv)), exit_code=code, wall_seconds=float(values[0]),
                     cpu_seconds=float(values[1]) + float(values[2]), peak_kib=int(values[3]), sampled_tree_peak_kib=peak[0] if sampler else None)
+        # GNU time encodes child signals as 128+signal; raw Popen signals are
+        # negative. Neither represents controlled input validation.
+        signalled = code < 0 or code >= 128
+        if signalled or (code and label != 'invalid'):
+            failure = dict(status='error', failure_kind='signal' if signalled else 'native_exit', receipt=receipt)
+            (directory / (label + '.failure.json')).write_text(json.dumps(failure) + '\n')
+            self.stop_candidate(candidate, failure)
+        return receipt
 
-    def standalone(self, argv, directory, label, stdout, seconds):
+    def standalone(self, argv, directory, label, stdout, seconds, candidate=None):
+        previous_candidate = getattr(self.local, 'candidate', None)
+        candidate = candidate or previous_candidate
         cpus = self.slots.get()
         lease = None
         failed = True
         try:
-            lease = self.budget.reserve(str(directory / label), seconds, self.threads)
+            self.check_candidate(candidate)
+            lease = self.budget.reserve(str(directory / label), seconds, self.threads, candidate=candidate)
+            self.local.candidate = candidate
             self.local.lease, self.local.cpus = lease, cpus
             result = self.timed(argv, directory, label, stdout, seconds)
-            failed = False
+            failed = bool(result['exit_code'] and (label != 'invalid' or result['exit_code'] < 0 or result['exit_code'] >= 128))
             return result
         finally:
             if lease:
                 lease.finish(failed)
             self.local.lease = None
+            self.local.candidate = previous_candidate
             self.slots.put(cpus)
 
     def orientation(self, candidate, reference, query, directory):
@@ -161,11 +200,16 @@ class Runner:
                       cpu_seconds=sum(r['cpu_seconds'] for r in receipts), peak_kib=max(r['peak_kib'] for r in receipts), sampled_tree_peak_kib=max((r['sampled_tree_peak_kib'] or 0) for r in receipts) if self.args.sample_pairs else None)
         if any(r['exit_code'] for r in receipts):
             result['metrics'] = dict(status='error')
+            signalled = any(r['exit_code'] < 0 or r['exit_code'] >= 128 for r in receipts)
+            failure = dict(status='error', failure_kind='signal' if signalled else 'native_exit', receipts=receipts)
+            (directory / 'failure.json').write_text(json.dumps(failure, indent=2) + '\n')
+            self.stop_candidate(candidate, failure)
         else:
             try:
                 result['metrics'] = parser(raw, ref_lengths, query_lengths)
             except ValueError as error:
                 result['metrics'] = dict(status='error', message=str(error))
+                self.stop_candidate(candidate, dict(status='error', message=str(error)))
             result['alignment_sha256'] = sha(raw)
             if parser == delta_metrics:
                 result['normalized_delta_sha256'] = hashlib.sha256('\n'.join(raw.read_text().splitlines()[1:]).encode()).hexdigest()
@@ -179,8 +223,10 @@ class Runner:
         lease = None
         failed = True
         try:
+            self.local.candidate = candidate
+            self.check_candidate(candidate)
             if self.budget:
-                lease = self.budget.reserve(str(directory), self.pair_seconds, self.threads)
+                lease = self.budget.reserve(str(directory), self.pair_seconds, self.threads, candidate=candidate)
             self.local.lease, self.local.cpus = lease, cpus
             # One deadline includes input parsing, both orientations and all stages.
             # Even legacy callers without a ledger share the pair deadline.
@@ -188,18 +234,25 @@ class Runner:
                 from budget import Lease
                 self.local.lease = Lease(None, None, self.pair_seconds, self.threads, time.monotonic)
             for direction, ref, qry in [('QR', reference, query), ('RQ', query, reference)]:
+                self.check_candidate(candidate)
                 self.local.lease.remaining()
                 result[direction] = self.orientation(candidate, ref, qry, directory / direction)
+                if result[direction]['metrics']['status'] == 'error':
+                    self.stop_candidate(candidate, dict(status='error', fixture=case['id'], direction=direction, result=result[direction]))
+                    self.check_candidate(candidate)
             failed = False
         except (RuntimeError, ValueError, OSError) as error:
+            if not isinstance(error, (BudgetExhausted, CandidateStopped)):
+                self.stop_candidate(candidate, dict(status='error', message=str(error), fixture=case['id']))
             for direction in ('QR', 'RQ'):
                 if direction not in result:
-                    result[direction] = dict(metrics=dict(status='not_run' if isinstance(error, BudgetExhausted) else 'error', message=str(error)),
+                    result[direction] = dict(metrics=dict(status='not_run' if isinstance(error, (BudgetExhausted, CandidateStopped)) else 'error', message=str(error)),
                                              wall_seconds=0, cpu_seconds=0, peak_kib=0, sampled_tree_peak_kib=None)
         finally:
             if lease:
                 lease.finish(failed)
             self.local.lease = None
+            self.local.candidate = None
             self.slots.put(cpus)
         directory.mkdir(parents=True, exist_ok=True)
         result['wall_seconds'] = result['QR']['wall_seconds'] + result['RQ']['wall_seconds']
@@ -243,11 +296,13 @@ class Runner:
             results = []
             with ThreadPoolExecutor(max_workers=self.workers) as pool:
                 for start_at in range(0, len(cases), self.workers):
+                    if self.candidate_failure(candidate):
+                        break
                     batch = cases[start_at:start_at + self.workers]
                     futures = [pool.submit(self.pair, candidate, case, destination) for case in batch]
                     completed = [future.result() for future in as_completed(futures)]
                     results.extend(completed)
-                    if any(r[o]['metrics']['status'] == 'not_run' for r in completed for o in ('QR', 'RQ')):
+                    if self.candidate_failure(candidate) or any(r[o]['metrics']['status'] == 'not_run' for r in completed for o in ('QR', 'RQ')):
                         break
         finally:
             stop.set()
@@ -255,10 +310,53 @@ class Runner:
         summary = dict(candidate=candidate, pairs=len(results), planned_pairs=len(cases), workers=self.workers, wall_seconds=time.monotonic() - start,
                        cpu_seconds=sum(r['cpu_seconds'] for r in results),
                        sampled_worker_peak_kib=peak[0], sampling_interval_seconds=.05,
-                       maximum_pair_peak_kib=max(r['peak_kib'] for r in results),
+                       maximum_pair_peak_kib=max((r['peak_kib'] for r in results), default=0),
+                       stop_reason=self.candidate_failure(candidate),
                        failed_orientations=sum(r[o]['metrics']['status'] not in ('aligned', 'no_alignment') for r in results for o in ('QR', 'RQ')))
+        (destination / candidate).mkdir(parents=True, exist_ok=True)
         (destination / candidate / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
         return summary
+
+    def invalid(self, candidate, case, destination):
+        directory = destination / candidate / case['id']
+        directory.mkdir(parents=True)
+        ref, query = [self.args.fixtures / case[k] for k in ('reference', 'query')]
+        result = dict(fixture=case['id'], candidate=candidate)
+        try:
+            self.check_candidate(candidate)
+            try:
+                fasta_lengths(ref)
+                fasta_lengths(query)
+                expected = None
+            except (ValueError, FileNotFoundError) as error:
+                expected = str(error)
+            if candidate in ('comparator', 'cli-mummer4'):
+                result.update(status='invalid_input' if expected else 'unexpected_success', message=expected,
+                              guard='development contract validation before native execution')
+            else:
+                argv = [self.args.mummer_probe, ref, query, directory / 'x', *([str(self.threads)] if candidate == 'embedded-mummer4' else [])] if candidate in ('embedded-mummer3', 'embedded-mummer4') else [self.args.minimap_probe, candidate, ref, query]
+                self.local.candidate = candidate
+                receipt = self.timed(argv, directory, 'invalid', directory / 'stdout')
+                result['receipt'] = receipt
+                stderr = (directory / 'invalid.stderr').read_text()
+                messages = ('invalid nucleotide alphabet', 'duplicate or invalid FASTA ID',
+                            'empty FASTA file or record', 'empty FASTA record',
+                            'empty FASTA ID', 'sequence before FASTA header')
+                missing = any(not path.exists() and str(path) in stderr and
+                              'No such file or directory' in stderr for path in (ref, query))
+                controlled = expected and receipt['exit_code'] == (1 if candidate == 'embedded-mummer4' else 2) and (missing or any(message in stderr for message in messages))
+                result.update(status='invalid_input' if controlled else 'unexpected_success' if receipt['exit_code'] == 0 else 'error',
+                              receipt=receipt, message=stderr)
+            if result['status'] != 'invalid_input':
+                self.stop_candidate(candidate, result)
+        except (RuntimeError, ValueError, OSError) as error:
+            result.update(status='not_run' if isinstance(error, (BudgetExhausted, CandidateStopped)) else 'error', message=str(error))
+            if result['status'] == 'error':
+                self.stop_candidate(candidate, result)
+        finally:
+            self.local.candidate = None
+        (directory / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
+        return result
 
 
 def main():
@@ -287,6 +385,8 @@ def main():
     results = []
     for candidate in candidates:
         for case in manifest['cases']:
+            if runner.candidate_failure(candidate):
+                break
             if case['valid']:
                 result = runner.pair(candidate, case, args.output / 'matrix')
                 results.append(result)
@@ -294,23 +394,10 @@ def main():
                 if any(result[o]['metrics']['status'] == 'not_run' for o in ('QR', 'RQ')):
                     break
             else:
-                directory = args.output / 'invalid' / candidate / case['id']
-                directory.mkdir(parents=True)
-                ref, query = [args.fixtures / case[k] for k in ('reference', 'query')]
-                if candidate in ('comparator', 'cli-mummer4'):
-                    # The comparator's input guard is the supported integrity contract.
-                    try:
-                        fasta_lengths(ref)
-                        fasta_lengths(query)
-                        raise AssertionError('invalid fixture accepted')
-                    except (ValueError, FileNotFoundError) as error:
-                        result = dict(fixture=case['id'], candidate=candidate, status='invalid_input', message=str(error), guard='development contract validation before native execution')
-                else:
-                    argv = [args.mummer_probe, ref, query, directory / 'x', *([str(args.threads)] if candidate == 'embedded-mummer4' else [])] if candidate in ('embedded-mummer3', 'embedded-mummer4') else [args.minimap_probe, candidate, ref, query]
-                    receipt = runner.timed(argv, directory, 'invalid', directory / 'stdout')
-                    result = dict(fixture=case['id'], candidate=candidate, status='invalid_input' if receipt['exit_code'] != 0 else 'unexpected_success', receipt=receipt)
-                (directory / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
+                runner.invalid(candidate, case, args.output / 'invalid')
     (args.output / 'matrix.json').write_text(json.dumps(results, indent=2) + '\n')
+    stops = {candidate: failure for candidate in candidates if (failure := runner.candidate_failure(candidate))}
+    (args.output / 'candidate-stops.json').write_text(json.dumps(stops, indent=2) + '\n')
     if args.panel:
         summaries = []
         for candidate in candidates:
@@ -318,6 +405,8 @@ def main():
             summaries.append(summary)
             print(json.dumps(summary), flush=True)
         (args.output / 'panel.json').write_text(json.dumps(summaries, indent=2) + '\n')
+        stops = {candidate: failure for candidate in candidates if (failure := runner.candidate_failure(candidate))}
+        (args.output / 'candidate-stops.json').write_text(json.dumps(stops, indent=2) + '\n')
 
 if __name__ == '__main__':
     main()

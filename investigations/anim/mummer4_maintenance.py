@@ -215,7 +215,7 @@ def main():
         jobs_path.write_text('\n'.join(jobs)+'\n')
         receipt = runner(run, fixtures, native/'nucmer', native/'delta-filter',
                          executable, width).standalone([run/'build/driver', jobs_path, str(width)],
-                         directory, 'batch', directory/'stdout', 90)
+                         directory, 'batch', directory/'stdout', 90, candidate='embedded-mummer4')
         receipts = (directory/'stdout').read_text().splitlines()
         if receipt['exit_code'] or len(receipts) != 16 or any(line.split('\t')[1] != '0' for line in receipts):
             raise RuntimeError('in-process diagnostic failed: retained batch receipts')

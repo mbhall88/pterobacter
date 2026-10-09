@@ -55,7 +55,7 @@ class BudgetTests(unittest.TestCase):
             runner = Runner(types.SimpleNamespace(fixtures=root, workers=1, sample_pairs=False, pair_seconds=30, budget_ledger=root/'ledger.json'))
             clock = [0.0]
             reserve = runner.budget.reserve
-            runner.budget.reserve = lambda label, seconds, cpus: reserve(label, seconds, cpus, lambda: clock[0])
+            runner.budget.reserve = lambda label, seconds, cpus, **kwargs: reserve(label, seconds, cpus, lambda: clock[0], **kwargs)
             def orientation(*args):
                 clock[0] = 30
                 return dict(metrics={'status':'no_alignment'}, wall_seconds=30, cpu_seconds=0, peak_kib=0, sampled_tree_peak_kib=None)
