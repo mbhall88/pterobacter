@@ -184,3 +184,15 @@ pub fn decision_from_text(evidence: &str) -> Value {
 pub fn decision_for(rows: &[Row]) -> Value {
     decision_from_text(&evidence_json(rows).to_string())
 }
+
+/// Stable synthetic DNA generation shared by measurement fixtures.
+pub fn dna(length: usize, mut state: u64) -> Vec<u8> {
+    (0..length)
+        .map(|_| {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            b"ACGT"[(state & 3) as usize]
+        })
+        .collect()
+}

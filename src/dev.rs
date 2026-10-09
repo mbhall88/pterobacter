@@ -3,6 +3,7 @@ use crate::decision::{decide, Policy, V1_POLICY_ID};
 use crate::evidence::{sha256_hex, SavedEvidence};
 use crate::panel::Panel;
 use crate::rescue::{AnimRecords, BoundAnim, RescueInput, Thresholds, V2_POLICY_ID};
+use crate::skani::{SearchSettings, SeedingMode, SkaniDatabase};
 use clap::{Args, Parser, Subcommand};
 use serde_json::{json, Value};
 use std::fmt::Display;
@@ -43,6 +44,21 @@ enum DevCommand {
         inputs: Inputs,
         #[command(flatten)]
         v2: V2Inputs,
+    },
+    /// Measure one assembly with the embedded skani compatibility profile
+    SkaniSearch {
+        #[arg(long)]
+        database: PathBuf,
+        #[arg(long)]
+        query: PathBuf,
+        #[arg(long, default_value_t = 1)]
+        threads: usize,
+        /// Use the genomovar zero reporting floor and retain every returned row
+        #[arg(long)]
+        genomovar: bool,
+        /// Exercise the portable path even on an AVX2 CPU
+        #[arg(long)]
+        portable: bool,
     },
 }
 #[derive(Debug, Args)]
@@ -307,6 +323,30 @@ fn execute(command: DevCommand) -> Result<String, String> {
                 .clone();
             value["input"]["anim_record_files"] = files;
             value
+        }
+        DevCommand::SkaniSearch {
+            database,
+            query,
+            threads,
+            genomovar,
+            portable,
+        } => {
+            let settings = if genomovar {
+                SearchSettings::Genomovar
+            } else {
+                SearchSettings::Primary
+            };
+            let mode = if portable {
+                SeedingMode::Portable
+            } else {
+                SeedingMode::Auto
+            };
+            return SkaniDatabase::open(&database)
+                .and_then(|db| db.search(&query, settings, threads, mode))
+                .map_err(|e| e.to_string())
+                .and_then(|report| {
+                    serde_json::to_string_pretty(&report).map_err(|e| e.to_string())
+                });
         }
         DevCommand::RescuePlan { inputs, v2 } => {
             let (rescue, bound, files) = rescue_inputs(&inputs, &v2, &mut pins)?;

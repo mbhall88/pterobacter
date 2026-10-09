@@ -1,5 +1,13 @@
 PROJECT := "terobacter"
 
+# regenerate redistribution notices with cargo-bundle-licenses 4.2.0
+licenses:
+    python3 scripts/bundle_licenses.py
+
+# reject changes to the locked dependency notices without rewriting files
+licenses-check:
+    python3 scripts/bundle_licenses.py --check
+
 # run clippy to check for linting issues
 lint:
     cargo clippy --all-features --all-targets -- -D warnings

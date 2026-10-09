@@ -6,7 +6,7 @@
 use std::cmp::Reverse;
 use std::collections::{HashMap, HashSet};
 
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 
@@ -58,7 +58,7 @@ impl Percent {
         i64::from(self.0) - i64::from(other.0)
     }
 
-    fn parse(text: &str) -> Option<Self> {
+    pub(crate) fn parse(text: &str) -> Option<Self> {
         let (whole, fraction) = text.split_once('.').unwrap_or((text, ""));
         let digits = |s: &str| s.bytes().all(|b| b.is_ascii_digit());
         if whole.is_empty() || whole.len() > 3 || fraction.len() > 2 {
@@ -71,6 +71,23 @@ impl Percent {
         let fraction: u32 = format!("{fraction:0<2}").parse().ok()?;
         let hundredths = whole * 100 + fraction;
         (hundredths <= 10_000).then_some(Percent(hundredths))
+    }
+}
+
+impl std::fmt::Display for Percent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}.{:02}", self.0 / 100, self.0 % 100)
+    }
+}
+
+impl Serialize for Percent {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        // Preserve the emitted decimal rather than serializing through a float.
+        let number: serde_json::Number = self
+            .to_string()
+            .parse()
+            .map_err(serde::ser::Error::custom)?;
+        number.serialize(serializer)
     }
 }
 

@@ -1,2 +1,4 @@
-tests/fixtures/** linguist-vendored
-justfile linguist-vendored
+# Preserve upstream licence and source whitespace when importing third-party files.
+THIRDPARTY.json linguist-generated=true
+THIRD-PARTY-NOTICES.txt linguist-generated=true -whitespace
+vendor/** -whitespace

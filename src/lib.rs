@@ -13,3 +13,4 @@ pub mod dev;
 pub mod evidence;
 pub mod panel;
 pub mod rescue;
+pub mod skani;
