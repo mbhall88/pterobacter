@@ -17,7 +17,7 @@ Parser tests also derive inclusive overlap, reverse and weighted cases from the 
 
 `cropped.q.fa` takes the first 96000 bases from `identical.q.fa` and renames the record to Q. Its SHA-256 is `01ddd8ba4830379eba1e8169367122fac75f014f667cfc07179aa33547bc59ee`. This derivation exposes asymmetric whole-input lengths without adding new sequence evidence.
 
-The P1 filtered-delta fixtures below are byte-for-byte copies from the frozen issue #20 contract. They use native IDs R and Q; overlap declares lengths 20/20 and reverse/weighted declare 40/40. Weighted is an abstract metric fixture whose unequal spans have a zero offset terminator; the parser preserves its header metrics.
+The P1 filtered-delta fixtures below are byte-for-byte copies from the frozen `mbhall88/Enterobacter#20` contract. They use native IDs R and Q; overlap declares lengths 20/20 and reverse/weighted declare 40/40. Weighted is an abstract metric fixture whose unequal spans have a zero offset terminator; the parser preserves its header metrics.
 
 | File | SHA-256 |
 | --- | --- |
