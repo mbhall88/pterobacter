@@ -97,7 +97,7 @@ For [MLST feasibility #2](https://github.com/mbhall88/terobacter/issues/2):
 
 ## Reproduce the development measurements
 
-Prerequisites: Rust/Cargo, Python 3, GCC/G++, GNU nm/objcopy/ld/ar and GNU time on Linux. For embedded builds, supply an isolated MUMmer **3.23** source copy; source provenance is part of the caller's research receipt. Do not use MUMmer 4. Probes are a separate, unpublished development package, independent of the production crate ticket.
+Prerequisites: Rust/Cargo, Python 3, GCC/G++, GNU nm/objcopy/ld/ar and GNU time on Linux. For the original embedded probe, supply an isolated MUMmer **3.23** source copy; source provenance is part of the caller's research receipt. The separately authorized [MUMmer4 continuation](mummer4.md) has its own probe, frozen addendum and results. Probes are separate, unpublished development packages, independent of the production crate ticket.
 
 ```bash
 python -m unittest discover -s investigations/anim -p 'test_*.py'
@@ -115,6 +115,7 @@ python investigations/anim/measure.py \
   --delta-filter /absolute/path/to/pinned/delta-filter \
   --mummer-probe investigations/anim/probes/target/release/mummer3-probe \
   --minimap-probe investigations/anim/probes/target/release/minimap2-probe \
+  --budget-ledger /absolute/path/to/same-experiment/budget.json \
   --panel --sample-pairs
 python investigations/anim/summarize.py \
   --first /absolute/path/to/new-measurements \
@@ -126,3 +127,5 @@ python investigations/anim/summarize.py \
 Validation: 11 metric/harness tests pass, including error-row publication and termination of timed-out descendants; Clippy with warnings denied, Rust formatting and Git whitespace checks pass. The code review found two harness defects, both corrected before handoff.
 
 The existing research run retains raw deltas/PAF, both binding API passes, command arrays, input/source/executable hashes, timing/RSS records, build logs, frozen-context verification, failure diagnostics and manuscript contribution. Those receipts contain local research paths and stay out of this repository. This repo contains synthetic observations and reusable development probe sources only. The handoff on issue #1 locates the private research receipt. Scientific acceptance, macOS execution and the production implementation remain separate review steps.
+
+The continuation corrects review R1 without replacing those measurements: a single reciprocal-pair deadline and persistent conservative admission ledger cover matrix, panel and diagnostic passes. Native descendants inherit bounded CPU affinity/memory; incomplete budget admissions remain explicit. See [MUMmer4 report](mummer4.md) for the separately authorized comparison, retained adapter failures and licensing/method gates. No route selected.
