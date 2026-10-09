@@ -15,6 +15,6 @@ pub enum AnimError {
 }
 mod runtime;
 pub use runtime::{
-    hash_bytes, hash_file, measure_pair, run_worker_if_requested, verify_pair, InputBinding,
-    Method, Orientation, PairRecord, PairRequest, Receipt, AMENDMENT, METHOD_PROFILE,
+    hash_bytes, hash_file, measure_pair, run_worker_if_requested, verify_pair, ExpectedPair,
+    InputBinding, Method, Orientation, PairRecord, PairRequest, Receipt, AMENDMENT, METHOD_PROFILE,
 };

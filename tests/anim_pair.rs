@@ -2,7 +2,7 @@
 use assert_cmd::cargo::cargo_bin_cmd;
 use serde_json::Value;
 use std::path::{Path, PathBuf};
-use terobacter::anim::{hash_file, verify_pair, PairRecord};
+use terobacter::anim::{hash_file, verify_pair, ExpectedPair, PairRecord};
 
 fn fixture(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -32,8 +32,176 @@ fn pair(query: &Path, reference: &Path, output: &Path) -> std::process::Output {
     }
     result
 }
+fn expected_pair(query_sha256: &str, reference_sha256: &str) -> ExpectedPair {
+    ExpectedPair {
+        query_id: "Q".into(),
+        query_sha256: query_sha256.into(),
+        reference_id: "R".into(),
+        reference_sha256: reference_sha256.into(),
+        reference_component: "primary-whole-assembly".into(),
+        reference_concept_ids: vec![],
+    }
+}
 fn record(output: &Path) -> PairRecord {
     serde_json::from_slice(&std::fs::read(output.join("result.json")).unwrap()).unwrap()
+}
+#[test]
+fn saved_pair_requires_expected_identities_component_and_concepts() {
+    let dir = tempfile::tempdir().unwrap();
+    let out = dir.path().join("result");
+    let query = fixture("identical.q.fa");
+    let reference = fixture("identical.r.fa");
+    let result = cargo_bin_cmd!("terobacter-dev")
+        .args([
+            "anim-pair",
+            "--query-id",
+            "Q",
+            "--reference-id",
+            "R",
+            "--reference-component",
+            "primary-whole-assembly",
+            "--reference-concept-id",
+            "concept-a",
+            "--reference-concept-id",
+            "concept-b",
+        ])
+        .arg("--query")
+        .arg(&query)
+        .arg("--reference")
+        .arg(&reference)
+        .arg("--output")
+        .arg(&out)
+        .output()
+        .unwrap();
+    assert!(result.status.success());
+    let qhash = hash_file(&query).unwrap();
+    let rhash = hash_file(&reference).unwrap();
+    let expected = ExpectedPair {
+        reference_concept_ids: vec!["concept-a".into(), "concept-b".into()],
+        ..expected_pair(&qhash, &rhash)
+    };
+    assert!(verify_pair(&out, &expected).is_ok());
+    for mismatched in [
+        ExpectedPair {
+            query_id: "wrong-query".into(),
+            ..expected.clone()
+        },
+        ExpectedPair {
+            query_sha256: "0".repeat(64),
+            ..expected.clone()
+        },
+        ExpectedPair {
+            reference_id: "wrong-reference".into(),
+            ..expected.clone()
+        },
+        ExpectedPair {
+            reference_sha256: "0".repeat(64),
+            ..expected.clone()
+        },
+        ExpectedPair {
+            reference_component: "wrong-component".into(),
+            ..expected.clone()
+        },
+        ExpectedPair {
+            reference_concept_ids: vec!["fabricated-concept".into()],
+            ..expected.clone()
+        },
+        ExpectedPair {
+            reference_concept_ids: vec!["concept-a".into()],
+            ..expected.clone()
+        },
+    ] {
+        assert!(
+            verify_pair(&out, &mismatched).is_err(),
+            "mismatched expected context accepted: {mismatched:?}"
+        );
+    }
+    let original = std::fs::read(out.join("result.json")).unwrap();
+    for (role, field, value) in [
+        (
+            "reference",
+            "component",
+            serde_json::json!("wrong-component"),
+        ),
+        (
+            "reference",
+            "concept_ids",
+            serde_json::json!(["fabricated-concept"]),
+        ),
+        ("reference", "id", serde_json::json!("wrong-reference")),
+        ("query", "id", serde_json::json!("wrong-query")),
+        ("query", "component", serde_json::json!("wrong-component")),
+        (
+            "query",
+            "concept_ids",
+            serde_json::json!(["fabricated-concept"]),
+        ),
+    ] {
+        let mut altered: Value = serde_json::from_slice(&original).unwrap();
+        altered[role][field] = value;
+        std::fs::write(
+            out.join("result.json"),
+            serde_json::to_vec(&altered).unwrap(),
+        )
+        .unwrap();
+        assert!(
+            verify_pair(&out, &expected).is_err(),
+            "altered {role} {field} accepted"
+        );
+    }
+    std::fs::write(out.join("result.json"), &original).unwrap();
+    let request = std::fs::read(out.join("request.json")).unwrap();
+    for (field, value) in [
+        ("query_id", serde_json::json!("wrong-query")),
+        ("reference_id", serde_json::json!("wrong-reference")),
+        ("reference_component", serde_json::json!("wrong-component")),
+        (
+            "reference_concept_ids",
+            serde_json::json!(["fabricated-concept"]),
+        ),
+        ("expect_query_sha256", serde_json::json!("0".repeat(64))),
+        ("expect_reference_sha256", serde_json::json!("0".repeat(64))),
+    ] {
+        let mut altered: Value = serde_json::from_slice(&request).unwrap();
+        altered[field] = value;
+        std::fs::write(
+            out.join("request.json"),
+            serde_json::to_vec(&altered).unwrap(),
+        )
+        .unwrap();
+        assert!(
+            verify_pair(&out, &expected).is_err(),
+            "altered request {field} accepted"
+        );
+    }
+    std::fs::write(out.join("request.json"), &request).unwrap();
+    assert!(verify_pair(&out, &expected).is_ok());
+}
+
+#[test]
+fn saved_pair_resolves_default_identities_from_input_bytes() {
+    let dir = tempfile::tempdir().unwrap();
+    let out = dir.path().join("result");
+    let query = fixture("identical.q.fa");
+    let reference = fixture("identical.r.fa");
+    cargo_bin_cmd!("terobacter-dev")
+        .arg("anim-pair")
+        .arg("--query")
+        .arg(&query)
+        .arg("--reference")
+        .arg(&reference)
+        .arg("--output")
+        .arg(&out)
+        .assert()
+        .success();
+    let qhash = hash_file(&query).unwrap();
+    let rhash = hash_file(&reference).unwrap();
+    let expected = ExpectedPair {
+        query_id: qhash.clone(),
+        reference_id: rhash.clone(),
+        ..expected_pair(&qhash, &rhash)
+    };
+    assert!(verify_pair(&out, &expected).is_ok());
 }
 #[test]
 fn stale_input_hash_returns_incomplete_evidence_without_native_measurement() {
@@ -72,7 +240,7 @@ fn reciprocal_native_pair_binds_roles_and_rejects_stale_receipts() {
     );
     let qhash = hash_file(&query).unwrap();
     let rhash = hash_file(&reference).unwrap();
-    let report = verify_pair(&output_dir, &qhash, &rhash).unwrap();
+    let report = verify_pair(&output_dir, &expected_pair(&qhash, &rhash)).unwrap();
     for direction in ["QR", "RQ"] {
         let orientation = &report.orientations[direction];
         let metrics = orientation.metrics.as_ref().unwrap();
@@ -93,7 +261,7 @@ fn reciprocal_native_pair_binds_roles_and_rejects_stale_receipts() {
     }
     assert_eq!(report.orientations["QR"].native_reference_id, "R");
     assert_eq!(report.orientations["RQ"].native_reference_id, "Q");
-    assert!(verify_pair(&output_dir, &"0".repeat(64), &rhash).is_err());
+    assert!(verify_pair(&output_dir, &expected_pair(&"0".repeat(64), &rhash)).is_err());
     let original = std::fs::read(output_dir.join("result.json")).unwrap();
     let mut stale: Value = serde_json::from_slice(&original).unwrap();
     stale["method"]["build_sha256"] = Value::String("0".repeat(64));
@@ -102,10 +270,10 @@ fn reciprocal_native_pair_binds_roles_and_rejects_stale_receipts() {
         serde_json::to_vec(&stale).unwrap(),
     )
     .unwrap();
-    assert!(verify_pair(&output_dir, &qhash, &rhash).is_err());
+    assert!(verify_pair(&output_dir, &expected_pair(&qhash, &rhash)).is_err());
     std::fs::write(output_dir.join("result.json"), &original).unwrap();
     std::fs::write(output_dir.join("QR/native.filter"), "corrupt").unwrap();
-    assert!(verify_pair(&output_dir, &qhash, &rhash).is_err());
+    assert!(verify_pair(&output_dir, &expected_pair(&qhash, &rhash)).is_err());
     // Output directories are never reused, even when an existing result is stale.
     assert!(!pair(&query, &reference, &output_dir).status.success());
     assert_eq!(
@@ -218,6 +386,36 @@ fn en4_development_parser_uses_the_production_weighted_metric_reader() {
 }
 
 #[test]
+fn en4_malformed_record_headers_fail_without_metrics_or_panic() {
+    let dir = tempfile::tempdir().unwrap();
+    let refs = dir.path().join("refs.json");
+    let queries = dir.path().join("queries.json");
+    let delta = dir.path().join("malformed.filter");
+    std::fs::write(&refs, "{\"r\":100}").unwrap();
+    std::fs::write(&queries, "{\"q\":100}").unwrap();
+    for header in ["unknown q nope 100", "r unknown 100 nope"] {
+        for block in ["", "1 10 1 10 0 0 0\n0\n"] {
+            std::fs::write(&delta, format!("r.fa q.fa\nNUCMER\n>{header}\n{block}")).unwrap();
+            let output = cargo_bin_cmd!("terobacter-dev")
+                .arg("anim-parse")
+                .arg("--filtered-delta")
+                .arg(&delta)
+                .arg("--reference-lengths")
+                .arg(&refs)
+                .arg("--query-lengths")
+                .arg(&queries)
+                .output()
+                .unwrap();
+            assert_eq!(output.status.code(), Some(1));
+            assert!(output.stdout.is_empty());
+            let stderr = String::from_utf8(output.stderr).unwrap();
+            assert!(stderr.contains("invalid ANIm evidence"));
+            assert!(!stderr.contains("panicked"));
+        }
+    }
+}
+
+#[test]
 fn sigterm_cancellation_retains_incomplete_pair_and_stops_native_worker() {
     use std::process::{Command, Stdio};
     use std::time::{Duration, Instant};
@@ -282,8 +480,7 @@ fn crlf_and_surrounding_whitespace_preserve_identical_whole_sequences() {
     assert!(result.status.success());
     let report = verify_pair(
         &out,
-        &hash_file(&query).unwrap(),
-        &hash_file(&reference).unwrap(),
+        &expected_pair(&hash_file(&query).unwrap(), &hash_file(&reference).unwrap()),
     )
     .unwrap();
     for orientation in report.orientations.values() {

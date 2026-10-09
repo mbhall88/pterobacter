@@ -139,7 +139,7 @@ pub fn parse_delta(
     {
         return Err(invalid("delta header"));
     }
-    let mut context: Option<(String, String)> = None;
+    let mut context: Option<(String, String, u64, u64)> = None;
     let mut remaining: Option<(u64, u64)> = None;
     let mut ri: BTreeMap<String, Vec<(u64, u64)>> = BTreeMap::new();
     let mut qi: BTreeMap<String, Vec<(u64, u64)>> = BTreeMap::new();
@@ -149,13 +149,30 @@ pub fn parse_delta(
                 return Err(invalid("unterminated delta block"));
             }
             let parts: Vec<_> = context_line.split_whitespace().collect();
-            if parts.len() != 4
-                || refs.get(parts[0]).copied() != parts[2].parse::<u64>().ok()
-                || queries.get(parts[1]).copied() != parts[3].parse::<u64>().ok()
-            {
+            if parts.len() != 4 {
                 return Err(invalid("delta record ID/length mismatch"));
             }
-            context = Some((parts[0].to_owned(), parts[1].to_owned()));
+            let reference_length = parts[2]
+                .parse::<u64>()
+                .map_err(|_| invalid("invalid delta reference length"))?;
+            let query_length = parts[3]
+                .parse::<u64>()
+                .map_err(|_| invalid("invalid delta query length"))?;
+            let expected_reference = refs
+                .get(parts[0])
+                .ok_or_else(|| invalid("unknown delta reference ID"))?;
+            let expected_query = queries
+                .get(parts[1])
+                .ok_or_else(|| invalid("unknown delta query ID"))?;
+            if *expected_reference != reference_length || *expected_query != query_length {
+                return Err(invalid("delta record ID/length mismatch"));
+            }
+            context = Some((
+                parts[0].to_owned(),
+                parts[1].to_owned(),
+                reference_length,
+                query_length,
+            ));
         } else if let Some((mut r, mut q)) = remaining {
             if line.split_whitespace().count() != 1 {
                 return Err(invalid("invalid delta offset"));
@@ -188,7 +205,7 @@ pub fn parse_delta(
                 remaining = Some((r, q));
             }
         } else {
-            let (rid, qid) = context
+            let (rid, qid, reference_length, query_length) = context
                 .as_ref()
                 .ok_or_else(|| invalid("block without delta context"))?;
             let values = line
@@ -206,8 +223,8 @@ pub fn parse_delta(
                 || re == 0
                 || qs == 0
                 || qe == 0
-                || rs.max(re) > refs[rid]
-                || qs.max(qe) > queries[qid]
+                || rs.max(re) > *reference_length
+                || qs.max(qe) > *query_length
             {
                 return Err(invalid("coordinate out of bounds"));
             }
