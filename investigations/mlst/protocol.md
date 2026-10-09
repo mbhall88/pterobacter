@@ -53,3 +53,17 @@ Stop after this fixed matrix and the performance workloads. Limits: 1 CPU-hour o
 ## Recorded for every run
 
 Exact argv, exit codes, input/source/binary hashes, time and peak RSS; hit tables from the comparator and each candidate. Build and runtime on Linux; macOS stated honestly as unavailable if untested; licences of each dependency and of the scheme data (PubMLST terms, section 3, records submitted through 31 December 2024 with scientific citation); browser-portability obstacles.
+
+## Addendum A (9 October 2026, after comparator-only runs, before any candidate was run on the full matrix)
+
+The fixed fixtures were run through the comparator alone and its `--debug` hit rows read. This shows three rules the source reading above missed, so the shared rule layer implements them and candidates are not penalised for not guessing them. None changes the fixture list, stop rule or presets.
+
+1. **Report order.** Hits come out per contig in input order, then per subject by best HSP score descending, ties by database order **descending** (the highest allele id first among equal scores). `||=` therefore shows the highest-id allele among the best-scoring ones. Rule layer sorts HSPs the same way; the 32-allele selection in route 2 ranks by shared seeds then allele id descending (amends "ties by allele id").
+2. **HSP trimming.** Ungapped extension scores +1/−2 and keeps the first maximum: a substitution followed by two or fewer matches is trimmed off, so a base change 1–3 bases from an allele end is a partial hit (`n?`), not `~n`. X-drop is 10 (blastn's 20 bits at lambda 1.28).
+3. **Seed.** An HSP needs an exact 32-base run; `-perc_identity 95` applies to the HSP, not the allele. The e-value filter is inert here: the shortest allele is 249 bases, so a passing hit has at least 125 identical bases, far above the score needed for 1E-20.
+
+**Route D added.** Because the comparator never computes a gapped alignment, route 2's alignment crate and route 1's gapped alignments only nominate diagonals; the ungapped finishing is the same shared code for every route. Route D is the same finisher driven by exact 32-mer seeding of the allele set, with no alignment library. It is measured on the identical fixtures and stop rule as a third route found necessary by the comparator analysis, not a replacement for routes 1–3.
+
+**Disclosure.** During development of the shared rule layer, route D was run on eight fixtures (`exact_st1`, `inexact_mid`, `partial_51`, `indel_ins1`, `tie_two_alleles`, `dup_two_alleles`, `inexact_end3`, `amb_N1`) and matched. The rule layer was written from the comparator source and the observations above, not adjusted after a mismatch. Matches on this fixed matrix show tested equivalence, not proof for arbitrary assemblies.
+
+Parity for the importer-level state, candidate ST and exact-hit locations is derived by the harness from allele tokens and exact-hit locations identically for the comparator and every candidate. Host limits: 2 GiB per worker; the host has about 3 GiB.
