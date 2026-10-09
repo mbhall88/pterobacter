@@ -66,3 +66,11 @@ The real version 2 package came from the same conversion, run on a private copy 
 - Package and definition dates. The source has none, so the fixture has none.
 - Rules for the `partition`, `named_target`, `selection_reason`, `chromosome_original_source` and `chromosome_source_basis` columns. They are carried as written.
 - The disclaimer. A real package needs the NCBI wording, and a disclaimer is not approval to distribute.
+
+## Native whole-assembly workflow extension
+
+`tests/assembly.rs` derives a temporary native primary database from this fixture's checked reference labels and metadata. It keeps the committed fixture unchanged. The starting manifest is pinned above as `d594ff403cf479ce677b39ff018cdceb3e5f08582610c6f519e927c16de9f797`.
+
+The first reference uses `common::dna` with seed 42 and length 200,003. Other references mutate this synthetic sequence with xorshift state 927 and an 8% selection rate. The embedded pinned skani seeder and database writer generate actual sketches, markers and index entries. The helper re-lists their byte lengths and hashes, updates their source-manifest records and index entries, and rebinds the export and licence records. The checked package then exercises the public command through native skani to v1 calls. A short plasmid-labelled record is added to the query to verify whole-input scope.
+
+These are synthetic porting fixtures derived from the existing package structure. Full derivation commands and source hashes stay in the research provenance run.

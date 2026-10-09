@@ -76,7 +76,7 @@ fn help_shows_the_approved_interface_without_subcommands() {
     let output = command("tero").arg("--help").output().unwrap();
     let help = String::from_utf8(output.stdout).unwrap();
 
-    assert!(help.contains("Usage: tero <ASSEMBLY>..."), "{help}");
+    assert!(help.contains("Usage: tero [OPTIONS] --reference-package <REFERENCE_PACKAGE> --expected-sha256 <EXPECTED_SHA256> <ASSEMBLY>..."), "{help}");
     assert!(
         !help.contains("Commands:"),
         "the public command has no subcommands:\n{help}"
@@ -84,22 +84,13 @@ fn help_shows_the_approved_interface_without_subcommands() {
 }
 
 #[test]
-fn an_assembly_run_fails_loudly_until_classification_exists() {
+fn an_assembly_run_requires_an_explicit_reference_package_and_digest() {
     for name in COMMANDS {
         let output = command(name).arg("query.fa").output().unwrap();
-
-        assert_eq!(
-            output.status.code(),
-            Some(1),
-            "{name} must not look successful"
-        );
-        assert!(
-            output.stdout.is_empty(),
-            "{name} printed a result it did not compute"
-        );
-        assert!(
-            String::from_utf8_lossy(&output.stderr).contains("not implemented"),
-            "{name} should say why it stopped"
-        );
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty());
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(stderr.contains("--reference-package"), "{stderr}");
+        assert!(stderr.contains("--expected-sha256"), "{stderr}");
     }
 }
