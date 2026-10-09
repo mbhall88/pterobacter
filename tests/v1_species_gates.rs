@@ -113,7 +113,10 @@ fn a_tie_between_species_at_the_top_is_withheld() {
         row("ref-b", Some("SP2"), 98.0, 90.0, 90.0),
     ];
 
-    assert_eq!(reason(&rows), "different_species_nearest_tie");
+    assert_eq!(
+        reason(&rows),
+        "different_species_nearest_tie;two_parent_support_alert"
+    );
 }
 
 #[test]
@@ -183,22 +186,15 @@ fn an_estimate_free_panel_is_withheld_as_no_estimate() {
 }
 
 #[test]
-fn an_assignment_lists_the_v1_checks_this_build_has_not_applied() {
+fn two_named_parents_with_reference_af_support_withhold_even_with_low_query_af() {
     let decision = decision_for(&[
         row("ref-a", Some("SP1"), 99.0, 90.0, 90.0),
-        row("ref-b", Some("SP2"), 97.0, 90.0, 85.0),
+        row("ref-b", Some("SP2"), 96.0, 20.0, 80.0),
     ]);
-
-    // Frozen v1 withholds this pair as a two-parent alert; the tracer does not check it yet,
-    // so it must not look like a complete v1 result.
-    let not_applied: Vec<_> = decision["v1_checks_not_applied"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|c| c.as_str().unwrap())
-        .collect();
-    assert!(
-        not_applied.contains(&"two_parent_support_alert"),
-        "{not_applied:?}"
+    assert_eq!(status_and_id(&decision), ("unresolved", None));
+    assert_eq!(
+        decision["blocking_reasons"],
+        serde_json::json!(["two_parent_support_alert"])
     );
+    assert_eq!(decision["species"]["reason"], "two_parent_support_alert");
 }

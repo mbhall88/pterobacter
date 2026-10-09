@@ -4,6 +4,7 @@
 //! pure, so command-line, browser and GUI front ends can share it. Terminal parsing, files
 //! and process exit codes live in [`cli`], and in `dev` for the feature-gated development binary.
 
+pub mod annotations;
 pub mod cli;
 pub mod decision;
 #[cfg(feature = "dev")]
