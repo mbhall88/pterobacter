@@ -1,0 +1,21 @@
+--- a/src/umd/nucmer.cc
++++ b/src/umd/nucmer.cc
+@@ -161 +161 @@
+-  replace_n_random_letter(sequence);
++  // Exploratory profile: preserve reference ambiguity bases.
+--- a/src/tigr/delta.cc
++++ b/src/tigr/delta.cc
+@@ -1341 +1341 @@
+-  cout
++  out
+@@ -1361 +1361 @@
+-                  cout
++                  out
+@@ -1379 +1379 @@
+-              cout
++              out
+--- a/include/mummer/nucmer.hpp
++++ b/include/mummer/nucmer.hpp
+@@ -401 +401 @@
+-    threads.push_back(std::thread(trampoline_align_file<AlignmentOut>, this, &parser, alignments));
++    threads.push_back(std::thread(trampoline_align_file<sequence_parser, AlignmentOut>, this, &parser, alignments));
