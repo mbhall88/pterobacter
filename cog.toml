@@ -1,0 +1,14 @@
+ignore_merge_commits = true
+
+[commit_types]
+chore = { changelog_title = "Chore", omit_from_changelog = true }
+ci = { changelog_title = "Continuous Integration", omit_from_changelog = true }
+
+[changelog]
+template = "remote"
+remote = "github.com"
+repository = "terobacter"
+owner = "mbhall88"
+authors = [
+    { signature = "Michael Hall", username = "mbhall88" },
+]
