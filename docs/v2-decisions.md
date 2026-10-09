@@ -46,7 +46,7 @@ Records use the `terobacter-anim-pair-v1` format from the per-pair ANIm operatio
 
 The schema is `3.0.0-conditional-assembly-report`. Every v2 result carries the following fields:
 
-- `policy_id`, `contract_revision`, `policy_mode`, `validation_status` and `thresholds`.
+- `policy_id`, `contract_revision`, `policy_mode`, `validation_status`, `thresholds` and `settings_sha256`.
 - `status`, `species_id`, `subspecies_id`, `subspecies_reason`, `call_basis` (`skani`, `ANIm_assisted` or null) and `reasons`.
 - `trigger`, `trigger_state`, `nearest_parent`, `rescue_status` (`not_triggered`, `rescued`, `incomplete` or `withheld`), `competitor_evaluation` and `evaluation_status`.
 - `counts`: required, attempted, completed, no-alignment, failed (an orientation failed), missing-orientation (a direction has no record) and not-run reciprocal pairs, plus pairs supplied outside the plan. Attempted pairs are completed, failed or missing an orientation.
@@ -69,12 +69,30 @@ terobacter-dev rescue-plan evidence.json --reference-inventory inventory.json \
 terobacter-dev saved-evidence evidence.json --policy conservative-assembly-anim-v2 \
   --reference-inventory inventory.json [--reference-inventory-sha256 HASH] \
   [--anim-records records.jsonl|records/ --anim-method-profile PROFILE] \
-  [--exclude-references mask.txt]
+  [--exclude-references mask.txt] [--species-ani T] [--subspecies-ani S]
 ```
 
 `--anim-records` takes JSON Lines files, single-record `.json` files or directories of `.jsonl` files, and both commands bind records by the dry-plan rule. A mask file lists one reference ID per line. `rescue-plan` takes no sequence input and runs no alignment. A valid decision exits 0 even when the rescue is incomplete; `rescue_status` and `evaluation_status` say so. v1 refuses `--anim-records` and `--exclude-references`.
 
+## Custom ANI thresholds
+
+Both development commands accept `--species-ani T` and `--subspecies-ani S`. Omitted values use T=96 and S=98. Overrides must be finite decimal percentages with 80 ≤ T ≤ S ≤ 100. Threshold arithmetic preserves decimal precision. Exponents, NaN and infinity are rejected with an error and no result.
+
+Supplying either flag, even `--species-ani 96` or `--subspecies-ani 98`, sets `policy_mode: custom` and `validation_status: custom_unvalidated`. Effective thresholds and literal supplied text appear in `thresholds`. `settings_sha256` hashes the canonical JSON of the policy ID, contract revision, mode, validation status and effective thresholds, excluding `supplied`. Trailing zeros and explicitly supplying an otherwise omitted default do not change that digest. Custom and default modes have different digests.
+
+The trigger becomes max(80, T − 1.5) ≤ maximum skani ANI < T. Both reciprocal ANIm identities must be strictly above T. Ordinary skani species and subspecies gates use ≥T and ≥S; conflicts use min(96, T). AF80, margin1, raw-nearest and veto rules, the legacy v1 result and genomovar definitions retain their existing contracts. v1 rejects either threshold flag.
+
+For example:
+
+```sh
+terobacter-dev saved-evidence evidence.json --policy conservative-assembly-anim-v2 \
+  --reference-inventory inventory.json --species-ani 95.5 --subspecies-ani 97
+terobacter-dev rescue-plan evidence.json --reference-inventory inventory.json \
+  --species-ani 97
+```
+
+The public aliases also parse these flags with `--assignment-policy conservative-assembly-anim-v2`; their default policy is v1. Whole-assembly classification is still pending, so a valid public request reports that limitation and exits nonzero without a result.
+
 ## Not covered here
 
-- Command-line threshold overrides, with their messages and provenance digest, belong to issue #10. The core already accepts custom thresholds, because six P1 cases use them.
 - Running skani or ANIm for a whole assembly, and nonzero exits for incomplete required work, belong to issue #11.

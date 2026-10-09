@@ -2,7 +2,7 @@
 use crate::decision::{decide, Policy, V1_POLICY_ID};
 use crate::evidence::{sha256_hex, SavedEvidence};
 use crate::panel::Panel;
-use crate::rescue::{AnimRecords, BoundAnim, RescueInput, Thresholds, V2_POLICY_ID};
+use crate::rescue::{AnimRecords, BoundAnim, RescueInput, V2_POLICY_ID};
 use crate::skani::{SearchSettings, SeedingMode, SkaniDatabase};
 use clap::{Args, Parser, Subcommand};
 use serde_json::{json, Value};
@@ -93,6 +93,8 @@ struct Inputs {
 }
 #[derive(Debug, Args)]
 struct V2Inputs {
+    #[command(flatten)]
+    thresholds: crate::cli::ThresholdArgs,
     /// Saved ANIm pair records: JSON Lines, one pretty-printed `.json` record, or a directory
     /// of `.jsonl` files. Only records for this query and for pairs the dry plan requests are
     /// bound
@@ -350,6 +352,7 @@ fn rescue_inputs(
     v2: &V2Inputs,
     pins: &mut Pins,
 ) -> Result<(RescueInput, BoundAnim, Value), String> {
+    let thresholds = v2.thresholds.for_policy(V2_POLICY_ID)?;
     let saved = load(inputs, None, pins)?;
     let Some(inventory) = &inputs.reference_inventory else {
         return Err(format!(
@@ -371,8 +374,7 @@ fn rescue_inputs(
             .collect(),
         None => vec![],
     };
-    let rescue =
-        RescueInput::new(saved, panel, &mask, Thresholds::standard()).map_err(|e| e.to_string())?;
+    let rescue = RescueInput::new(saved, panel, &mask, thresholds).map_err(|e| e.to_string())?;
     let mut records = AnimRecords::default();
     let mut files = Vec::new();
     for path in record_files(&v2.anim_records)? {
@@ -412,6 +414,7 @@ fn execute(command: DevCommand) -> Result<String, String> {
             diagnostics_sha256,
             v2,
         } if policy == V1_POLICY_ID => {
+            v2.thresholds.for_policy(V1_POLICY_ID)?;
             if !v2.anim_records.is_empty() || v2.exclude_references.is_some() {
                 return Err(format!(
                     "--anim-records and --exclude-references need --policy {V2_POLICY_ID}; \

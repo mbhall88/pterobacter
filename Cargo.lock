@@ -1791,6 +1791,7 @@ dependencies = [
  "clap 4.6.7",
  "libc",
  "needletail",
+ "num-bigint",
  "rayon",
  "serde",
  "serde_json",

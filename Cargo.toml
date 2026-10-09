@@ -35,6 +35,7 @@ path = "src/bin/terobacter-dev.rs"
 required-features = ["dev"]
 
 [dependencies]
+num-bigint = "0.4.8"
 skani = { path = "vendor/skani" }
 bincode = "1.3.3"
 needletail = "0.7.3"

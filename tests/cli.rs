@@ -76,7 +76,10 @@ fn help_shows_the_approved_interface_without_subcommands() {
     let output = command("tero").arg("--help").output().unwrap();
     let help = String::from_utf8(output.stdout).unwrap();
 
-    assert!(help.contains("Usage: tero <ASSEMBLY>..."), "{help}");
+    assert!(
+        help.contains("Usage: tero [OPTIONS] <ASSEMBLY>..."),
+        "{help}"
+    );
     assert!(
         !help.contains("Commands:"),
         "the public command has no subcommands:\n{help}"
@@ -101,5 +104,42 @@ fn an_assembly_run_fails_loudly_until_classification_exists() {
             String::from_utf8_lossy(&output.stderr).contains("not implemented"),
             "{name} should say why it stopped"
         );
+    }
+}
+
+#[test]
+fn both_public_commands_validate_custom_settings_before_the_assembly_stub() {
+    for name in COMMANDS {
+        for flag in ["--species-ani=96", "--subspecies-ani=98"] {
+            let out = command(name).args([flag, "query.fa"]).output().unwrap();
+            assert!(!out.status.success());
+            assert!(out.stdout.is_empty());
+            assert!(String::from_utf8_lossy(&out.stderr).contains("v1 rejects threshold overrides"));
+        }
+        let out = command(name)
+            .args([
+                "--assignment-policy",
+                "conservative-assembly-anim-v2",
+                "--species-ani",
+                "79.99",
+                "query.fa",
+            ])
+            .output()
+            .unwrap();
+        assert!(!out.status.success());
+        assert!(String::from_utf8_lossy(&out.stderr).contains("80 <="));
+        let out = command(name)
+            .args([
+                "--assignment-policy",
+                "conservative-assembly-anim-v2",
+                "--species-ani",
+                "96",
+                "query.fa",
+            ])
+            .output()
+            .unwrap();
+        assert!(!out.status.success());
+        assert!(out.stdout.is_empty());
+        assert!(String::from_utf8_lossy(&out.stderr).contains("not implemented"));
     }
 }

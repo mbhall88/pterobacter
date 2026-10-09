@@ -29,3 +29,7 @@ This is development evidence that was already exposed. Passing it shows the impl
 The cases are synthetic metric records, not genomes. `tests/common/p1.rs` turns each one into production inputs: 0.2.0 saved evidence, a primary inventory, bound warnings and scope, and integer ANIm pair records whose exact rational values equal the case's decimals. One case gives skani ANI as `94.49999`. skani emits two decimals and saved evidence with more is rejected, so the adapter writes `94.49`, the nearest value below the trigger that skani can emit. `tests/v2_decision.rs` checks that the original literal is rejected rather than rounded.
 
 Passing these cases shows the implementation follows the contract. It says nothing about accuracy.
+
+## Custom-threshold endpoints
+
+`tests/custom_thresholds.rs` and `tests/custom_thresholds_cli.rs` extend the frozen P1-r1 custom cases with literal boundary values at 80 and 100, fractional trigger endpoints, strict reciprocal identity gates, AF80, margin1 and foreign-parent challenges. The derivation is the arithmetic and unchanged safeguards in section 4 of the frozen P1-r1 calling contract, SHA-256 `82a53552a8b57ebaaa60a0e13ed5e90d7a72a60156e7a871d02b2cc4dc53cf00`, together with the acceptance cases pinned above. They use the same synthetic adapter; no genome measurements or new evaluation outcomes are included.

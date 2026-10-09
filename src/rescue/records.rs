@@ -51,11 +51,11 @@ impl Orientation {
         }
     }
 
-    fn identity_vs(&self, threshold: Exact) -> Option<Ordering> {
+    fn identity_vs(&self, threshold: &Exact) -> Option<Ordering> {
         let (num, den) = self.identity()?;
         let order = threshold
             .cmp_ratio(num, den)
-            .expect("u64 metrics and a 12-decimal threshold fit in u128");
+            .expect("aligned metrics have a nonzero denominator");
         Some(order.reverse())
     }
 
@@ -71,7 +71,7 @@ impl Orientation {
     }
 
     /// The old method gate: identity ≥ T and both AFs ≥ 80.
-    pub(crate) fn gate(&self, threshold: Exact) -> bool {
+    pub(crate) fn gate(&self, threshold: &Exact) -> bool {
         self.both_af_80()
             && self
                 .identity_vs(threshold)
@@ -79,12 +79,12 @@ impl Orientation {
     }
 
     /// The rescue gate: identity strictly > T and both AFs ≥ 80.
-    pub(crate) fn strict(&self, threshold: Exact) -> bool {
+    pub(crate) fn strict(&self, threshold: &Exact) -> bool {
         self.both_af_80() && self.identity_vs(threshold) == Some(Ordering::Greater)
     }
 
     /// Support for another parent: identity ≥ the conflict ANI and reference AF ≥ 80.
-    pub(crate) fn challenges(&self, conflict: Exact) -> bool {
+    pub(crate) fn challenges(&self, conflict: &Exact) -> bool {
         self.reference_af_80()
             && self
                 .identity_vs(conflict)
