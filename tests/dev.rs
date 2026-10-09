@@ -103,3 +103,253 @@ fn bound_problem_warnings_are_verified_and_changed_artifacts_produce_no_decision
     assert!(output.stdout.is_empty());
     assert!(String::from_utf8_lossy(&output.stderr).contains("artifact SHA-256 mismatch"));
 }
+
+mod v2 {
+    use super::common::p1::{self, hit, reciprocal, unreturned, PROFILE};
+    use assert_cmd::cargo::cargo_bin_cmd;
+    use serde_json::{json, Value};
+    use std::path::{Path, PathBuf};
+
+    /// Species A nearest at 95.5 with a B contrast and an unreturned C reference.
+    fn input() -> Value {
+        json!({"references": [hit("A1", Some("A"), "95.5", "85", "85"),
+                hit("B1", Some("B"), "90", "85", "85"), unreturned("C1", Some("C"))],
+            "anim": {"A1": reciprocal("96.2", "85", "85"), "B1": reciprocal("90", "85", "85"),
+                "C1": reciprocal("97", "85", "85")}})
+    }
+
+    struct Files {
+        _dir: tempfile::TempDir,
+        evidence: PathBuf,
+        inventory: PathBuf,
+        records: PathBuf,
+        mask: PathBuf,
+    }
+
+    fn files(input: &Value) -> Files {
+        let dir = tempfile::tempdir().unwrap();
+        let write = |name: &str, text: &str| {
+            let path = dir.path().join(name);
+            std::fs::write(&path, text).unwrap();
+            path
+        };
+        Files {
+            evidence: write("evidence.json", &p1::evidence_text("dev", input)),
+            inventory: write("inventory.json", &p1::inventory_text(input)),
+            records: write("records.jsonl", &p1::records_text(input)),
+            mask: write("mask.txt", "C1\n"),
+            _dir: dir,
+        }
+    }
+
+    fn run(args: &[&str], paths: &[&Path]) -> (Option<i32>, Value, String) {
+        let mut command = cargo_bin_cmd!("terobacter-dev");
+        command.args(args);
+        let output = command.args(paths).output().unwrap();
+        let stdout = serde_json::from_slice(&output.stdout).unwrap_or(Value::Null);
+        (
+            output.status.code(),
+            stdout,
+            String::from_utf8_lossy(&output.stderr).into(),
+        )
+    }
+
+    fn arg<'a>(f: &'a Files, name: &str) -> &'a Path {
+        match name {
+            "evidence" => &f.evidence,
+            "inventory" => &f.inventory,
+            "records" => &f.records,
+            _ => &f.mask,
+        }
+    }
+
+    /// Run `terobacter-dev <command>` with options naming files from `f`.
+    fn dev(command: &str, f: &Files, options: &[(&str, &str)]) -> (Option<i32>, Value, String) {
+        let mut c = cargo_bin_cmd!("terobacter-dev");
+        c.arg(command).arg(&f.evidence);
+        for (flag, value) in options {
+            c.arg(flag);
+            if ["evidence", "inventory", "records", "mask"].contains(value) {
+                c.arg(arg(f, value));
+            } else {
+                c.arg(value);
+            }
+        }
+        let output = c.output().unwrap();
+        let stdout = serde_json::from_slice(&output.stdout).unwrap_or(Value::Null);
+        (
+            output.status.code(),
+            stdout,
+            String::from_utf8_lossy(&output.stderr).into(),
+        )
+    }
+
+    #[test]
+    fn saved_evidence_decides_v2_with_a_mask_and_plan_bound_anim() {
+        let f = files(&input());
+        let options = [
+            ("--policy", "conservative-assembly-anim-v2"),
+            ("--reference-inventory", "inventory"),
+            ("--anim-records", "records"),
+            ("--anim-method-profile", PROFILE),
+        ];
+        let (code, d, stderr) = dev("saved-evidence", &f, &options);
+        assert_eq!(code, Some(0), "{stderr}");
+        assert_eq!(d["reasons"], json!(["foreign_parent_challenge"]));
+
+        let mut masked = options.to_vec();
+        masked.push(("--exclude-references", "mask"));
+        let (code, d, stderr) = dev("saved-evidence", &f, &masked);
+        assert_eq!(code, Some(0), "{stderr}");
+        assert_eq!(d["species_id"], "A");
+        assert_eq!(d["call_basis"], "ANIm_assisted");
+        assert_eq!(d["input"]["anim"]["binding"], "dry_plan_requested_pairs");
+        assert_eq!(d["input"]["mask"]["excluded_reference_ids"], json!(["C1"]));
+        assert_eq!(d["validation_status"], "not_yet_validated");
+        assert_eq!(d["legacy_v1_result"]["status"], "unresolved");
+    }
+
+    #[test]
+    fn v2_options_are_refused_where_they_do_not_apply() {
+        let f = files(&input());
+        let v1 = [
+            ("--anim-records", "records"),
+            ("--anim-method-profile", PROFILE),
+            ("--reference-inventory", "inventory"),
+        ];
+        let (code, d, stderr) = dev("saved-evidence", &f, &v1);
+        assert_eq!(code, Some(1));
+        assert_eq!(d, Value::Null);
+        assert!(stderr.contains("conservative-assembly-anim-v2"), "{stderr}");
+        let no_profile = [
+            ("--policy", "conservative-assembly-anim-v2"),
+            ("--reference-inventory", "inventory"),
+            ("--anim-records", "records"),
+        ];
+        let (code, _, stderr) = dev("saved-evidence", &f, &no_profile);
+        assert_ne!(code, Some(0));
+        assert!(stderr.contains("anim-method-profile"), "{stderr}");
+        let (code, _, stderr) = dev(
+            "saved-evidence",
+            &f,
+            &[("--policy", "conservative-assembly-anim-v2")],
+        );
+        assert_ne!(code, Some(0));
+        assert!(stderr.contains("reference-inventory"), "{stderr}");
+    }
+
+    #[test]
+    fn rescue_plan_reports_witnesses_then_outstanding_competitors() {
+        let mut first = input();
+        first["anim"] = json!({});
+        let f = files(&first);
+        let (code, p, stderr) = dev("rescue-plan", &f, &[("--reference-inventory", "inventory")]);
+        assert_eq!(code, Some(0), "{stderr}");
+        assert_eq!(p["trigger_state"], "triggered_with_witness_candidate");
+        assert_eq!(p["nearest_parent"]["concept_id"], "A");
+        assert_eq!(p["outstanding_witnesses"], json!(["A1"]));
+
+        let mut witness = input();
+        witness["anim"] = json!({"A1": reciprocal("96.2", "85", "85")});
+        let f = files(&witness);
+        let (code, p, stderr) = dev(
+            "rescue-plan",
+            &f,
+            &[
+                ("--reference-inventory", "inventory"),
+                ("--anim-records", "records"),
+                ("--anim-method-profile", PROFILE),
+            ],
+        );
+        assert_eq!(code, Some(0), "{stderr}");
+        assert_eq!(p["stage"], "competitor_panel");
+        assert_eq!(p["outstanding_competitors"], json!(["B1", "C1"]));
+    }
+
+    #[test]
+    fn rescue_plan_runs_no_alignment() {
+        // The plan takes no sequence input, needs no executable on PATH, and leaves its
+        // working directory untouched.
+        let f = files(&input());
+        let work = tempfile::tempdir().unwrap();
+        let output = cargo_bin_cmd!("terobacter-dev")
+            .env_clear()
+            .current_dir(work.path())
+            .arg("rescue-plan")
+            .arg(&f.evidence)
+            .arg("--reference-inventory")
+            .arg(&f.inventory)
+            .arg("--anim-records")
+            .arg(&f.records)
+            .args(["--anim-method-profile", PROFILE])
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let p: Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(p["anim_executed"], false);
+        assert_eq!(p["counts"]["completed"], 3);
+        assert_eq!(std::fs::read_dir(work.path()).unwrap().count(), 0);
+
+        let (code, _, stderr) = run(&["rescue-plan", "--query"], &[&f.evidence, &f.evidence]);
+        assert_eq!(code, Some(2));
+        assert!(stderr.contains("unexpected argument"), "{stderr}");
+    }
+
+    #[test]
+    fn a_records_directory_is_read_whole_and_a_changed_input_hash_is_refused() {
+        let f = files(&input());
+        let dir = tempfile::tempdir().unwrap();
+        let text = std::fs::read_to_string(&f.records).unwrap();
+        let mut lines = text.lines();
+        std::fs::write(dir.path().join("wave-0001.jsonl"), lines.next().unwrap()).unwrap();
+        std::fs::write(
+            dir.path().join("wave-0002.jsonl"),
+            lines.collect::<Vec<_>>().join("\n"),
+        )
+        .unwrap();
+        let (code, d, stderr) = run(
+            &[
+                "saved-evidence",
+                "--policy",
+                "conservative-assembly-anim-v2",
+                "--anim-method-profile",
+                PROFILE,
+                "--reference-inventory-sha256",
+                &"0".repeat(64),
+            ],
+            &[
+                &f.evidence,
+                Path::new("--reference-inventory"),
+                &f.inventory,
+                Path::new("--anim-records"),
+                dir.path(),
+            ],
+        );
+        assert_eq!(code, Some(1));
+        assert_eq!(d, Value::Null);
+        assert!(stderr.contains("SHA-256 mismatch"), "{stderr}");
+        let (code, d, stderr) = run(
+            &[
+                "saved-evidence",
+                "--policy",
+                "conservative-assembly-anim-v2",
+                "--anim-method-profile",
+                PROFILE,
+            ],
+            &[
+                &f.evidence,
+                Path::new("--reference-inventory"),
+                &f.inventory,
+                Path::new("--anim-records"),
+                dir.path(),
+            ],
+        );
+        assert_eq!(code, Some(0), "{stderr}");
+        assert_eq!(d["counts"]["completed"], 3);
+        assert_eq!(d["input"]["anim_record_files"].as_array().unwrap().len(), 2);
+    }
+}
