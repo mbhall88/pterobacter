@@ -30,6 +30,7 @@ Regenerate after changing `Cargo.lock` with `python3 scripts/generate_license_no
 | bit-vec | 0.6.3 | MIT/Apache-2.0 | [notice](licenses/bit-vec-0.6.3.txt) |
 | bitflags | 1.3.2 | MIT/Apache-2.0 | [notice](licenses/bitflags-1.3.2.txt) |
 | bitflags | 2.13.2 | MIT OR Apache-2.0 | [notice](licenses/bitflags-2.13.2.txt) |
+| block-buffer | 0.10.4 | MIT OR Apache-2.0 | [notice](licenses/block-buffer-0.10.4.txt) |
 | buffer-redux | 1.1.0 | MIT OR Apache-2.0 | [notice](licenses/buffer-redux-1.1.0.txt) |
 | bv | 0.11.1 | MIT/Apache-2.0 | [notice](licenses/bv-0.11.1.txt) |
 | bytecount | 0.6.9 | Apache-2.0/MIT | [notice](licenses/bytecount-0.6.9.txt) |
@@ -49,14 +50,17 @@ Regenerate after changing `Cargo.lock` with `python3 scripts/generate_license_no
 | clap_lex | 1.1.1 | MIT OR Apache-2.0 | [notice](licenses/clap_lex-1.1.1.txt) |
 | cloudabi | 0.0.3 | BSD-2-Clause | [notice](licenses/cloudabi-0.0.3.txt) |
 | colorchoice | 1.0.5 | MIT OR Apache-2.0 | [notice](licenses/colorchoice-1.0.5.txt) |
+| cpufeatures | 0.2.17 | MIT OR Apache-2.0 | [notice](licenses/cpufeatures-0.2.17.txt) |
 | crc32fast | 1.5.2 | MIT OR Apache-2.0 | [notice](licenses/crc32fast-1.5.2.txt) |
 | crossbeam-deque | 0.8.8 | MIT OR Apache-2.0 | [notice](licenses/crossbeam-deque-0.8.8.txt) |
 | crossbeam-epoch | 0.9.21 | MIT OR Apache-2.0 | [notice](licenses/crossbeam-epoch-0.9.21.txt) |
 | crossbeam-utils | 0.8.23 | MIT OR Apache-2.0 | [notice](licenses/crossbeam-utils-0.8.23.txt) |
+| crypto-common | 0.1.7 | MIT OR Apache-2.0 | [notice](licenses/crypto-common-0.1.7.txt) |
 | csv | 1.4.0 | Unlicense/MIT | [notice](licenses/csv-1.4.0.txt) |
 | csv-core | 0.1.13 | Unlicense/MIT | [notice](licenses/csv-core-0.1.13.txt) |
 | custom_derive | 0.1.7 | MIT/Apache-2.0 | [notice](licenses/custom_derive-0.1.7.txt) |
 | derive-new | 0.6.0 | MIT | [notice](licenses/derive-new-0.6.0.txt) |
+| digest | 0.10.7 | MIT OR Apache-2.0 | [notice](licenses/digest-0.10.7.txt) |
 | editdistancek | 1.0.2 | MIT | [notice](licenses/editdistancek-1.0.2.txt) |
 | either | 1.19.0 | MIT OR Apache-2.0 | [notice](licenses/either-1.19.0.txt) |
 | enum-map | 1.1.1 | MIT/Apache-2.0 | [notice](licenses/enum-map-1.1.1.txt) |
@@ -74,6 +78,7 @@ Regenerate after changing `Cargo.lock` with `python3 scripts/generate_license_no
 | fxhash | 0.2.1 | Apache-2.0/MIT | [notice](licenses/fxhash-0.2.1.txt) |
 | gbdt | 0.1.1 | Apache-2.0 | [notice](licenses/gbdt-0.1.1.txt) |
 | gcollections | 1.5.0 | MIT/Apache-2.0 | [notice](licenses/gcollections-1.5.0.txt) |
+| generic-array | 0.14.7 | MIT | [notice](licenses/generic-array-0.14.7.txt) |
 | getrandom | 0.2.17 | MIT OR Apache-2.0 | [notice](licenses/getrandom-0.2.17.txt) |
 | getrandom | 0.4.3 | MIT OR Apache-2.0 | [notice](licenses/getrandom-0.4.3.txt) |
 | getset | 0.1.2 | MIT | [notice](licenses/getset-0.1.2.txt) |
@@ -164,6 +169,7 @@ Regenerate after changing `Cargo.lock` with `python3 scripts/generate_license_no
 | serde_core | 1.0.229 | MIT OR Apache-2.0 | [notice](licenses/serde_core-1.0.229.txt) |
 | serde_derive | 1.0.229 | MIT OR Apache-2.0 | [notice](licenses/serde_derive-1.0.229.txt) |
 | serde_json | 1.0.151 | MIT OR Apache-2.0 | [notice](licenses/serde_json-1.0.151.txt) |
+| sha2 | 0.10.9 | MIT OR Apache-2.0 | [notice](licenses/sha2-0.10.9.txt) |
 | shlex | 2.0.1 | MIT OR Apache-2.0 | [notice](licenses/shlex-2.0.1.txt) |
 | simba | 0.6.0 | Apache-2.0 | [notice](licenses/simba-0.6.0.txt) |
 | simba | 0.9.1 | Apache-2.0 | [notice](licenses/simba-0.9.1.txt) |

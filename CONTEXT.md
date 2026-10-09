@@ -22,4 +22,6 @@ Vocabulary for the Terobacter tool, which classifies Enterobacter isolate assemb
 
 **Development binary**: `terobacter-dev`, built only with the `dev` feature, hosting evaluation-only operations. It shares the implementation with `tero` and `terobacter` but is not part of the user-facing tool.
 
-**Tracer**: A thin end-to-end slice that proves the layers connect before the full behaviour exists. The current v1 decision is a tracer: it applies the species rule only and reports the subspecies as not evaluated.
+**Method diagnostic**: A bound reciprocal ANIm comparison supplied alongside saved skani evidence. Under v1, a disagreement at the species ANI/AF gate withholds the assignment. It cannot rescue one.
+
+**Problem warning**: A bound external concern that withholds the assignment. An explained scope assessment cannot clear it.

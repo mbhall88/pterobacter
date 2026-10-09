@@ -1,0 +1,10 @@
+# Recorded diagnostic changes
+
+9 October 2026. The fixture set, preset choices and integer equivalence criterion are unchanged.
+
+1. Initial build diagnostics: enable static zlib/minimap2 through `minimap2-sys/static`, avoiding the high-level `static` feature that activates optional HTSlib and libclang. Correct native suffix-tree compilation to use upstream STREEHUGE and the upstream object list. These precede successful candidate measurement.
+2. The first minimap2 pass exported the binding's `cigar_str`, which unconditionally contains SAM soft clips. The metric reader initially rejected these. Reparse retained raw alignments with validated terminal clips excluded from aligned spans, and export the numerical CIGAR in the final probe. No alignment was rerun to correct this reader defect.
+3. The initial in-memory index API `with_seqs_and_ids` returned no alignment in the fragmented fixture's reverse orientation for all three presets, despite all contigs being exact matches. Source inspection also found a hardcoded `mid_occ=1000` instead of the file API's `mm_mapopt_update`. Before any file-API diagnostic measurement, switch to `with_index`, the binding's normal file-index path, retaining asm5/asm10/asm20 and the no-secondary/CIGAR options. Repeat the same fixed synthetic matrix and panel for these three profiles only. Retain the initial in-memory results as diagnostic evidence; do not merge their timings/profile into the final file-API results or infer a proven root cause from the discrepancy.
+4. GNU time reports zero RSS on short embedded worker processes on this host. Record those as unavailable rather than zero memory. Add a sampled process-tree RSS diagnostic for the fixed small matrix (not new fixtures), retaining original alignment/timing evidence. Panel sampling and the 5-Mb pair have nonzero measurements.
+
+These are instrument/API diagnostics, not result-driven preset tuning, new biological evaluation or an amendment of P1/P4a. Both API passes remain within the two-CPU-hour stop budget. File-API cross-platform parity remains unproved.

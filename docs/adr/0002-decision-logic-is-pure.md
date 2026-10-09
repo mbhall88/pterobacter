@@ -8,7 +8,7 @@ The same decisions must be reachable from the command line now and, possibly, fr
 
 ## Decision
 
-`src/evidence.rs` and `src/decision.rs` take text and values and return values. They never read files, parse arguments, print, or exit. `src/cli.rs` and, for the development binary, `src/dev.rs` own all of that and call the pure modules.
+`src/evidence.rs`, `src/annotations.rs` and `src/decision.rs` take text and values and return values. They never read files, parse arguments, print, or exit. `src/cli.rs` and, for the development binary, `src/dev.rs` own all of that and call the pure modules.
 
 The seam for tests is the pair `SavedEvidence::from_json` and `decide`, plus the executables as processes. Tests do not reach into private helpers.
 
@@ -16,4 +16,4 @@ The seam for tests is the pair `SavedEvidence::from_json` and `decide`, plus the
 
 - Saved evidence is passed as text, so a browser front end can supply it without a filesystem.
 - Percentages are held as integer hundredths and compared exactly, because skani reports two decimals and the frozen rules use exactly those decimals. Evidence with more than two decimals is rejected, not rounded. That check reads the number's literal text, so `serde_json` is built with `arbitrary_precision`; read as an f64, `95.999999999999999` would become 96.0 and pass the species gate.
-- Later tickets add reference-package authentication, the remaining v1 checks and the subspecies rank behind the same seam.
+- Issue #5 adds the remaining v1 checks and subspecies rank behind this seam, with bound annotations supplied through `SavedEvidence::with_annotations`. Package authentication remains a separate responsibility.
