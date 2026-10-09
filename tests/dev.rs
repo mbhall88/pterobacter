@@ -385,6 +385,55 @@ fn saved_evidence_bound_to_another_package_is_unresolved() {
     );
 }
 
+/// An edit to a JSON record, named by what it changes.
+type Edit = fn(&mut Value);
+
+#[test]
+fn saved_evidence_contradicting_the_package_metadata_is_unresolved() {
+    let synthetic = Synthetic::new();
+    let package_dir = package_on_disk(&synthetic);
+    let evidence_dir = tempfile::tempdir().unwrap();
+    let edits: [(&str, Edit); 3] = [
+        ("subsp. altera", |row| {
+            row["subspecies_name"] = "Enterobacter syntheticus subsp. altera".into()
+        }),
+        ("name status", |row| {
+            row["name_status"] = "validly_published_correct_name".into()
+        }),
+        ("role diversity", |row| {
+            row["reference_role"] = "diversity".into()
+        }),
+    ];
+    for (names, edit) in edits {
+        let mut evidence = common::packaged_evidence(&synthetic.manifest_sha256());
+        for row in evidence["ranked_reference_evidence"]
+            .as_array_mut()
+            .unwrap()
+            .iter_mut()
+            .filter(|row| row["subspecies_id"] == "SYN-SS02")
+        {
+            edit(row);
+        }
+        let evidence_path = evidence_dir.path().join("evidence.json");
+        fs::write(&evidence_path, evidence.to_string()).unwrap();
+
+        let output = cargo_bin_cmd!("terobacter-dev")
+            .arg("saved-evidence")
+            .arg(&evidence_path)
+            .arg("--reference-package")
+            .arg(package_dir.path())
+            .arg("--expected-sha256")
+            .arg(synthetic.manifest_sha256())
+            .output()
+            .unwrap();
+
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert_eq!(output.status.code(), Some(8), "{names}: {stderr}");
+        assert!(output.stdout.is_empty(), "{names}: no decision is printed");
+        assert!(stderr.contains(names), "{names}: {stderr}");
+    }
+}
+
 #[test]
 fn bound_problem_warnings_are_verified_and_changed_artifacts_produce_no_decision() {
     use sha2::{Digest, Sha256};

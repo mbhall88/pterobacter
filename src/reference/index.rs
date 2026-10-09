@@ -35,8 +35,10 @@ pub(super) fn parse(bytes: &[u8], sketches_len: u64) -> Result<Vec<Entry>, Packa
             .to_string();
         let offset = reader.u64()?;
         let size = reader.u64()?;
-        if label.is_empty() {
-            return Err(inconsistent("the skani index has an empty label"));
+        if !label.starts_with('/') || label.contains('\0') {
+            return Err(inconsistent(format!(
+                "the skani index has a label that is not an absolute archived path: {label:?}"
+            )));
         }
         if !labels.insert(label.clone()) {
             return Err(inconsistent(format!("the skani index repeats {label}")));
@@ -48,7 +50,8 @@ pub(super) fn parse(bytes: &[u8], sketches_len: u64) -> Result<Vec<Entry>, Packa
         }
         next_offset = next_offset
             .checked_add(size)
-            .ok_or_else(|| inconsistent("the skani index sizes overflow"))?;
+            .filter(|end| *end <= sketches_len)
+            .ok_or_else(|| inconsistent("the skani index sizes do not cover sketches.db"))?;
         entries.push(Entry {
             label,
             offset,
@@ -66,19 +69,21 @@ pub(super) fn parse(bytes: &[u8], sketches_len: u64) -> Result<Vec<Entry>, Packa
     Ok(entries)
 }
 
+/// The index of a component must name exactly that component's search labels.
 pub(super) fn check_membership(
     entries: &[Entry],
     expected: &BTreeSet<&str>,
+    component: &str,
 ) -> Result<(), PackageError> {
     let indexed: BTreeSet<&str> = entries.iter().map(|entry| entry.label.as_str()).collect();
     if let Some(unknown) = indexed.iter().find(|label| !expected.contains(**label)) {
         return Err(inconsistent(format!(
-            "the skani index names {unknown}, which is not a component reference"
+            "the skani index of {component} names {unknown}, which is not a reference of {component}"
         )));
     }
     if let Some(missing) = expected.iter().find(|label| !indexed.contains(**label)) {
         return Err(inconsistent(format!(
-            "the skani index does not name {missing}"
+            "the skani index of {component} does not name {missing}"
         )));
     }
     Ok(())

@@ -185,25 +185,49 @@ pub fn decision_for(rows: &[Row]) -> Value {
     decision_from_text(&evidence_json(rows).to_string())
 }
 
-/// Saved evidence over the packaged primary references, bound to `package_sha256`.
+/// Saved evidence over every primary reference in the committed fixture, bound to
+/// `package_sha256`. Each row says what the package says about its reference, as the research
+/// reporter writes it: the species and subspecies concepts with their display names, the name
+/// status of the most specific of them, and the reference's role. Rows are ranked in reference
+/// order with falling ANI.
 pub fn packaged_evidence(package_sha256: &str) -> Value {
-    let mut evidence = evidence_json(&[
-        row(
-            "primary_whole:GCA_900000002",
-            Some("ECTX-SP-alpha"),
-            98.5,
-            95.0,
-            96.0,
-        )
-        .subspecies("ECTX-SS-beta"),
-        row(
-            "primary_whole:GCA_900000001",
-            Some("ECTX-SP-alpha"),
-            98.4,
-            95.0,
-            96.0,
-        ),
-    ]);
+    let package = package::Synthetic::new()
+        .verify()
+        .expect("the fixture verifies");
+    let component = package
+        .component("primary_whole")
+        .expect("a packaged component");
+    let concept = |id: &str| package.concept(id).expect("a packaged concept");
+    let references: Vec<Value> = component
+        .references
+        .iter()
+        .enumerate()
+        .map(|(rank, reference)| {
+            let species = concept(&reference.species_id);
+            let subspecies = reference.subspecies_id.as_deref().map(concept);
+            let ani = 99.0 - rank as f64 / 10.0;
+            json!({
+                "reference_id": reference.reference_id,
+                "species_id": species.id,
+                "species_name": species.display_name,
+                "lineage_id": "",
+                "subspecies_id": subspecies.map_or("", |c| c.id.as_str()),
+                "subspecies_name": subspecies.map_or("", |c| c.display_name.as_str()),
+                "reference_role": if reference.type_anchor { "type_anchor" } else { "diversity" },
+                "name_status": subspecies.unwrap_or(species).nomenclature_status,
+                "ani_percent": ani,
+                "aligned_fraction_query_percent": 95.0,
+                "aligned_fraction_reference_percent": 96.0,
+                "minimum_directional_af_percent": 95.0,
+            })
+        })
+        .collect();
+    let mut evidence = evidence_json(&[]);
     evidence["provenance"]["reference_package_sha256"] = package_sha256.into();
+    evidence["reference_count"] = references.len().into();
+    evidence["raw_hit_count"] = references.len().into();
+    evidence["unique_hit_count"] = references.len().into();
+    evidence["nearest_reference_ids"] = json!([references[0]["reference_id"]]);
+    evidence["ranked_reference_evidence"] = references.into();
     evidence
 }

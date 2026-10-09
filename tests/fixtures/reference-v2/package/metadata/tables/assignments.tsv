@@ -1,6 +1,14 @@
-accession	project_species	project_subspecies	assignment_status	usage_restrictions	genomovar_id	genomovar_version	genomovar_rule
-GCA_900000001	Enterobacter alpha		synthetic_reviewed				
-GCA_900000002	Enterobacter alpha	beta	synthetic_reviewed				
-GCA_900000003	Enterobacter alpha	beta	synthetic_reviewed		GV01	syn1	synthetic_definition_rule_v1
-GCA_900000004	Enterobacter alpha	beta	synthetic_reviewed		GV01	syn1	synthetic_definition_rule_v1
-GCA_900000009	Enterobacter alpha		synthetic_context	context_only			
+accession	record_role	assignment_status	project_species	project_subspecies	usage_restrictions	genomovar_id	genomovar_rule	genomovar_version
+GCA_900000001.1	reference	approved_review_treatment	Enterobacter syntheticus	syntheticus				
+GCA_900000002.1	reference	retained_formal_type_anchor	Enterobacter syntheticus	alter		GV01	synthetic_chromosome_ANI_group_rule	2026-01-01-v1
+GCA_900000003.1	reference	approved_review_treatment	Enterobacter syntheticus	alter		GV02	synthetic_chromosome_ANI_group_rule	2026-01-01-v1
+GCA_900000004.1	reference	retained_formal_type_anchor	Enterobacter fictus					
+GCA_900000005.1	reference	source_name_retained_not_individually_adjudicated	Enterobacter fictus					
+GCA_900000006.1	reference	approved_review_treatment	Enterobacter syntheticus	alter		GV01	synthetic_chromosome_ANI_group_rule	2026-01-01-v1
+GCA_900000007.1	reference	approved_review_treatment	Enterobacter syntheticus	syntheticus		GV03	synthetic_chromosome_ANI_group_rule	2026-01-01-v1
+GCA_900000020.1	study_context	retained_context_restriction			no_named_classifier_reference			
+GCA_900000021.1	study_context	retained_context_restriction			no_named_classifier_reference			
+GCA_900000030.1	study	approved_review_treatment	Enterobacter syntheticus	syntheticus				
+GCA_900000031.1	study	approved_review_treatment	Enterobacter absentis					
+GCA_900000032.1	study	approved_review_treatment						
+GCA_900000040.1	study	approved_review_treatment	Enterobacter syntheticus					

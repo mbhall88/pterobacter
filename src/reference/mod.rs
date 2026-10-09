@@ -3,14 +3,18 @@
 //! A reference package is a directory whose `portable.json` lists its files with their byte
 //! lengths and SHA-256 digests. The operator supplies the digest that the manifest must have, and
 //! verification refuses any other manifest before it reads the listing. The attested records (the
-//! source manifest, the export attestation and the licence) are verified first because they
-//! describe the other files. The listing is then checked against the source manifest's recipe,
-//! the directory is checked for unlisted files, and every listed file is verified. The registry
-//! tables, skani indexes and references are cross-checked last. Bytes arrive through
-//! [`PackageSource`], so this module never opens a path itself.
+//! source manifest, the export attestation, the licence and, for a converted package, the version
+//! 1 manifest it came from) are verified first because they describe the other files. The listing
+//! must be exactly the files the source manifest's recipe names, the directory must hold nothing
+//! else, and every listed file is verified. Last, the source manifest must equal the record its
+//! packaged tables, recipe and skani indexes derive, so the concepts, references and components the
+//! package exposes are the ones its registry gives. Bytes arrive through [`PackageSource`], so this
+//! module never opens a path itself.
 
+mod derive;
 mod index;
 mod manifest;
+mod model;
 mod resolve;
 mod source;
 mod tables;
@@ -24,6 +28,11 @@ use sha2::{Digest, Sha256};
 
 use manifest::Portable;
 use source::SourceManifest;
+
+pub use model::{
+    ArchivedFile, Concept, GenomovarDefinition, IndexEntry, PackageCounts, PackageReference, Rank,
+    ReferenceComponent,
+};
 
 pub const MANIFEST_PATH: &str = "portable.json";
 
@@ -109,15 +118,22 @@ pub struct RegistryPins {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct PackageIdentity {
     pub id: String,
     pub version: String,
+    pub schema_version: String,
     pub release_state: String,
     pub trust_basis: String,
     pub manifest_sha256: String,
+    pub source_manifest_sha256: String,
+    pub export_validation_sha256: String,
+    /// The SHA-256 of the version 1 manifest this package was converted from, if it was.
+    pub converted_from_sha256: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct Licence {
     pub schema_version: String,
     pub package_version: String,
@@ -125,49 +141,30 @@ pub struct Licence {
     pub ncbi_submitter_rights_disclaimer: String,
 }
 
+/// A file the manifest lists: where it is in the package, its length and digest, the roles it
+/// plays and the archived path it was copied from.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Asset {
     pub path: String,
     pub bytes: u64,
     pub sha256: String,
-    #[serde(default)]
     pub roles: Vec<String>,
-    /// Where the file was taken from when the package was built. Only listed assets carry one.
-    #[serde(default)]
-    pub source_path: Option<String>,
-}
-
-/// A reference of a component, as the source manifest describes it.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PackageReference {
-    pub reference_id: String,
-    pub accession: String,
-    pub species_id: String,
-    pub subspecies_id: Option<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ReferenceComponent {
-    pub id: String,
-    pub reference_role: String,
-    pub sequence_scope: String,
-    /// Keyed by file name: `index.db`, `markers.bin` and `sketches.db`.
-    pub databases: BTreeMap<String, Asset>,
-    pub builds: Vec<Asset>,
-    pub references: Vec<PackageReference>,
+    pub source_path: String,
 }
 
 /// A package that has passed [`verify_package`], so its fields are private.
 ///
 /// ```compile_fail,E0451
 /// use terobacter::reference::VerifiedPackage;
-/// let _ = VerifiedPackage { package: todo!(), licence: todo!(), components: Vec::new() };
+/// let _ = VerifiedPackage { package: todo!(), licence: todo!(), metadata: todo!() };
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VerifiedPackage {
     package: PackageIdentity,
     licence: Licence,
-    components: Vec<ReferenceComponent>,
+    metadata: model::Metadata,
 }
 
 /// Authenticate a package against the SHA-256 its manifest must have. Every listed file must be
@@ -187,19 +184,24 @@ pub fn verify_package(
         )));
     }
     let manifest = Portable::parse(&manifest_bytes)?;
-    let attested = manifest.attested();
-    let listed: Vec<&Asset> = manifest.assets.iter().chain(attested).collect();
+    let raw: Value = serde_json::from_slice(&manifest_bytes)
+        .map_err(|error| inconsistent(format!("{MANIFEST_PATH} is not JSON: {error}")))?;
+    let attested: Vec<Asset> = manifest.attested().iter().map(|r| r.as_asset()).collect();
+    let listed: Vec<&Asset> = manifest.assets.iter().chain(&attested).collect();
     check_listings(&listed)?;
 
     let mut held: BTreeMap<&str, Vec<u8>> = BTreeMap::new();
-    for record in attested {
+    for record in &attested {
         held.insert(record.path.as_str(), verify_file(source, record, true)?);
+    }
+    if let Some(record) = &manifest.converted_from {
+        manifest.check_conversion(&held[record.path.as_str()], &raw)?;
     }
     let source_manifest = SourceManifest::parse(&held[manifest.source_manifest.path.as_str()])?;
     source_manifest.check_identity(&manifest)?;
-    let export = source_manifest
+    source_manifest
         .check_attestation(&held[manifest.export_validation.path.as_str()], &manifest)?;
-    source_manifest.check_recipe(&manifest.assets, &export)?;
+    source_manifest.check_listing(&raw["assets"])?;
     check_inventory(source, &listed)?;
 
     for asset in &manifest.assets {
@@ -211,20 +213,24 @@ pub fn verify_package(
     }
     let licence = manifest::licence(&held[manifest.licence.path.as_str()], &manifest)?;
     check_pins(&manifest.assets, pins)?;
-    let components = source_manifest.components(&manifest.assets, &held)?;
     let tables = tables::Tables::load(&manifest.assets, &held)?;
-    tables.check(&source_manifest, &export)?;
+    derive::check(&source_manifest.value, &tables, &manifest.assets, &held)?;
+    let metadata = model::Metadata::from_checked(&source_manifest.value, &manifest.assets)?;
 
     Ok(VerifiedPackage {
         package: PackageIdentity {
             id: manifest.package_id.clone(),
             version: manifest.package_version.clone(),
+            schema_version: manifest::PACKAGE_SCHEMA.to_string(),
             release_state: manifest.release_state.clone(),
             trust_basis: manifest.trust_basis.clone(),
             manifest_sha256,
+            source_manifest_sha256: manifest.source_manifest.sha256.clone(),
+            export_validation_sha256: manifest.export_validation.sha256.clone(),
+            converted_from_sha256: manifest.converted_from.as_ref().map(|r| r.sha256.clone()),
         },
         licence,
-        components,
+        metadata,
     })
 }
 
@@ -238,27 +244,83 @@ impl VerifiedPackage {
     }
 
     pub fn components(&self) -> &[ReferenceComponent] {
-        &self.components
+        &self.metadata.components
     }
 
     pub fn component(&self, id: &str) -> Option<&ReferenceComponent> {
-        self.components.iter().find(|component| component.id == id)
+        self.metadata
+            .components
+            .iter()
+            .find(|component| component.id == id)
+    }
+
+    /// Every concept, in ID order, including context lineages and genomovars.
+    pub fn concepts(&self) -> &[Concept] {
+        &self.metadata.concepts
+    }
+
+    pub fn concept(&self, id: &str) -> Option<&Concept> {
+        self.metadata
+            .concepts
+            .binary_search_by(|concept| concept.id.as_str().cmp(id))
+            .ok()
+            .map(|at| &self.metadata.concepts[at])
+    }
+
+    /// Every reference scope record of both components.
+    pub fn references(&self) -> impl Iterator<Item = &PackageReference> {
+        self.metadata
+            .components
+            .iter()
+            .flat_map(|component| &component.references)
+    }
+
+    pub fn reference(&self, id: &str) -> Option<&PackageReference> {
+        self.metadata
+            .components
+            .iter()
+            .find_map(|component| component.reference(id))
+    }
+
+    /// The historical type crosswalk rows, in taxon-name order.
+    pub fn historical_types(&self) -> &[BTreeMap<String, String>] {
+        &self.metadata.historical_types
+    }
+
+    /// The development context records that are deliberately not packaged references.
+    pub fn context_records(&self) -> &[BTreeMap<String, String>] {
+        &self.metadata.context_records
+    }
+
+    /// Cohort rows by coverage category, as the source records them.
+    pub fn cohort_coverage_summary(&self) -> &BTreeMap<String, u64> {
+        &self.metadata.cohort_coverage_summary
+    }
+
+    pub fn counts(&self) -> &PackageCounts {
+        &self.metadata.counts
     }
 
     pub fn to_value(&self) -> Value {
         let components: Map<String, Value> = self
+            .metadata
             .components
             .iter()
-            .map(|component| (component.id.clone(), component.to_value()))
+            .map(|component| (component.id.clone(), component_value(component)))
             .collect();
+        let counts = &self.metadata.counts;
         json!({
             "status": "verified",
             "package": {
                 "id": self.package.id,
                 "version": self.package.version,
+                "schema_version": self.package.schema_version,
                 "release_state": self.package.release_state,
                 "trust_basis": self.package.trust_basis,
                 "manifest_sha256": self.package.manifest_sha256,
+                "source_manifest_sha256": self.package.source_manifest_sha256,
+                "export_validation_sha256": self.package.export_validation_sha256,
+                "converted_from_sha256": self.package.converted_from_sha256,
             },
             "licence": {
                 "schema_version": self.licence.schema_version,
@@ -266,26 +328,42 @@ impl VerifiedPackage {
                 "sha256": self.licence.sha256,
                 "ncbi_submitter_rights_disclaimer": self.licence.ncbi_submitter_rights_disclaimer,
             },
+            "counts": {
+                "primary_whole_references": counts.primary_whole_references,
+                "historical_chromosome_definition_references": counts.historical_chromosome_definition_references,
+                "unique_accessions": counts.unique_accessions,
+                "reference_scope_records": counts.reference_scope_records,
+                "named_concepts": counts.named_concepts,
+                "context_lineage_concepts": counts.context_lineage_concepts,
+                "genomovar_concepts": counts.genomovar_concepts,
+                "development_context_records_not_packaged": counts.development_context_records_not_packaged,
+                "eligible_cohort_records": counts.eligible_cohort_records,
+                "eligible_species_reference_represented": counts.eligible_species_reference_represented,
+                "primary_historical_type_accessions": counts.primary_historical_type_accessions,
+            },
+            "cohort_coverage_summary": self.metadata.cohort_coverage_summary,
             "components": components,
         })
     }
 }
 
-impl ReferenceComponent {
-    fn to_value(&self) -> Value {
-        let databases: Map<String, Value> = self
-            .databases
-            .iter()
-            .map(|(file, asset)| (file.clone(), asset_value(asset)))
-            .collect();
-        let builds: Vec<Value> = self.builds.iter().map(asset_value).collect();
-        json!({
-            "reference_role": self.reference_role,
-            "sequence_scope": self.sequence_scope,
-            "databases": databases,
-            "builds": builds,
-        })
-    }
+fn component_value(component: &ReferenceComponent) -> Value {
+    let databases: Map<String, Value> = component
+        .databases
+        .iter()
+        .map(|(file, asset)| (file.clone(), asset_value(asset)))
+        .collect();
+    let builds: Vec<Value> = component.builds.iter().map(asset_value).collect();
+    json!({
+        "reference_role": component.reference_role,
+        "sequence_scope": component.sequence_scope,
+        "engine": component.engine,
+        "engine_version": component.engine_version,
+        "database_format": component.database_format,
+        "reference_count": component.references.len(),
+        "databases": databases,
+        "builds": builds,
+    })
 }
 
 fn asset_value(asset: &Asset) -> Value {

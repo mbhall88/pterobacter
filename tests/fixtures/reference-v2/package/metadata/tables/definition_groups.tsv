@@ -1,2 +1,4 @@
-genomovar_id	genomes	representative_accession
-GV01	2	GCA_900000003
+genomovar_id	genomes	representative_accession	within_ANI_min
+GV01	2	GCA_900000006.1	99.9
+GV02	1	GCA_900000003.1	99.9
+GV03	1	GCA_900000007.1	99.9

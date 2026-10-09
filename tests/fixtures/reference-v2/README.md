@@ -1,37 +1,68 @@
 # Reference package fixture (`reference-v2/`)
 
-A synthetic version 2 reference package for the authentication tests. It carries no real reference data and is not the frozen package. `tests/common/package.rs` loads it into memory and damages one thing at a time.
+A synthetic version 2 reference package for the authentication and binding tests. It carries no real reference data and is not the frozen package. `tests/common/package.rs` loads it into memory and damages one thing at a time.
+
+The fixture copies the structure of the frozen package as well as its file layout. The research project's own package builder and exporter built it, and the conversion used for the frozen package then converted it. The research validator accepted every invariant the tests rely on before the tests used it.
 
 ## Identity
 
 | Field | Value |
 |---|---|
 | Package id | `synthetic-enterobacter-reference` |
-| Package version | `2026-10-09.test1` |
-| SHA-256 of `package/portable.json` | `3c577a111960d9cd756541f1dde165bd2dc8f20048e4ff18cf7e1dcb1a33ea7d` |
-| Licence disclaimer | `Synthetic test disclaimer.` |
+| Package version | `2026-10-09.test2` |
+| SHA-256 of `package/portable.json` (version 2) | `d594ff403cf479ce677b39ff018cdceb3e5f08582610c6f519e927c16de9f797` |
+| SHA-256 of `package/conversion/source-portable.json` (the version 1 manifest) | `0a48da33dc2adef2feefa592ef7a9ed9e15a184168231bb8ca826f2df80f3b28` |
+| SHA-256 of `package/metadata/source-manifest.json` | `7ce3f86797b49b1e4735ee8739d33cbd574c3d96bfbf6321764ec78c4adee020` |
+| SHA-256 of `package/metadata/export-validation.json` | `f0992ea29b84705dc897dd3a72bf1a766057beeb57fb0b6913fe2cb4b6c7e639` |
+| SHA-256 of `package/licence/manifest.json` | `af0a36e88e315e6ae07e1f2b68618e1901ca339152cb1f98a8e5393c5846b657` |
+| Licence disclaimer | `Synthetic test disclaimer. A real package carries the NCBI molecular data usage statement.` |
 
-The digest is pinned as `PINNED_MANIFEST_SHA256` in `tests/common/package.rs`. A test checks the committed manifest against it, so a silent change to the fixture fails the suite.
+`tests/common/package.rs` pins the two manifest digests as `PINNED_MANIFEST_SHA256` and `CONVERTED_FROM_SHA256`. A test checks the committed files against them, so a silent change to the fixture fails the suite.
+
+## What it exercises
+
+The cases below occur in the frozen package. The earlier fixture had none of them.
+
+- Overlapping components. `GCA_900000002.1` and `GCA_900000003.1` are both primary references and genomovar definition members. Each is one accession with two scoped references, `primary_whole:<accession>` and `genomovar_chromosome:<accession>`. The package has 9 scope records over 7 accessions.
+- A cohort that is not the packaged references.
+  - `GCA_900000005.1` is a primary reference outside the cohort.
+  - `GCA_900000006.1` and `GCA_900000007.1` are cohort rows that are definition members only.
+  - `GCA_900000030.1` is a cohort row with a represented concept and no packaged reference.
+  - `GCA_900000031.1` names a species that has no reference.
+  - `GCA_900000032.1` names only a context lineage.
+  - `GCA_900000020.1` and `GCA_900000021.1` are development context records that are not packaged.
+  - The five coverage categories are summarised as written.
+- Concepts at every rank: three species, two subspecies, two context lineages and three genomovars with versioned definitions. One species has no reference.
+- A type anchor that fails QC (`GCA_900000002.1`, `type_QC_exception`) and a diversity reference with a quality flag (`GCA_900000005.1`).
+- A historical type with no represented accession, and an assignment row (`GCA_900000040.1`) that appears in no other table.
+- A CRLF assignments table, which the research reader accepts.
 
 ## Contents
 
-- `package/`: 26 files, with `portable.json` as the manifest.
-- `portable.json` lists 22 assets. The source manifest, the export attestation and the licence manifest are attested in their own entries, not in `assets`.
-- Two components, `primary_whole` and `genomovar_chromosome`. Each has a skani index, a sketch database and a marker file under `databases/`, and build and list records under `metadata/`.
-- Registry, reference and assignment tables under `metadata/tables/`.
-- `metadata/source-manifest.json` has a `verified_artifacts` list of 27 entries. The verifier does not use that list as a check. It checks the listed assets against the recipe in the source manifest.
+- `package/`: 27 files, with `portable.json` as the manifest.
+- `portable.json` lists 22 assets. Four records are attested in their own entries rather than in `assets`: the source manifest, the export attestation, the licence manifest and the conversion record.
+- Two components, `primary_whole` (5 references) and `genomovar_chromosome` (4 references). Each has a skani index, a sketch database and a marker file under `databases/`, and build and list records under `metadata/`.
+- The eleven research tables under `metadata/tables/`.
+- `conversion/source-portable.json`: the version 1 manifest, byte for byte.
 
 ## Derivation
 
-The fixture was generated from synthetic tables by a script that is not part of this repository, so it cannot be regenerated here.
+The fixture was derived in the research project. Each step is recorded below by SHA-256, not by path.
 
-The research project's validator accepts the same files under the version 1 contract. That validator does not read the version 2 schema, so it does not check the version 2 records.
+1. `make_synthetic_v1.py` (SHA-256 `70bdd0f3364c5988a01ce391cf8992d609f7041338255a11e568bcf78646bda7`) wrote the synthetic tables, sequences and skani stand-in databases. It then ran the research builder and exporter, pinned to these modules:
+   - `evidence.py`: `5b40228ee8f320473e90f61a10e9540724b8bebfd688794235356d2093cf5ee6`
+   - `reference_package.py`: `0455b57743f14acc2e472b0546023528f1fdac63967000d9f403b88a8150a34b`
+   - `portable_reference.py`: `1ecafd226e4bbd596c22473af2a0b5b51fd0d8b6ee9fa6b00d1c40ecee4745a2`
 
-The export attestation's `exporter_source` and `local_validator_source` records give the SHA-256 of two research-project Python modules. Their paths were relabelled to module-relative names, and the fixture does not contain those modules. The digests can be checked only against the research project.
+   The script ran in a private mount namespace with the work directory mounted at `/mnt`. That is why the archived paths in the tables, the skani indexes and the export attestation start with `/mnt/`. They are provenance labels only, and the verifier never opens them.
+2. The research loader accepted the version 1 export.
+3. `convert_v1_to_v2.py` (SHA-256 `aa2374569bcddd6c7cc50bc1ab305d90f49f01bf1f309d3156fa5393f042cac4`, conversion `terobacter-reference-v1-to-v2/1`) converted it. The disclaimer file had SHA-256 `3e41ffc769ac2a28cd5c00acb00d09e9ad27d2ad9974b5a5ea63da5c25c5872d`. The conversion copied 24 files byte for byte and added the licence manifest, the conversion record and the version 2 manifest.
+
+The real version 2 package came from the same conversion, run on a private copy of the frozen package. The fixture cannot be regenerated from this repository alone, because the builder is a research-project module.
 
 ## Not established by this fixture
 
+- skani compatibility. The databases are structurally valid stand-ins: their indexes decode and their offsets cover the sketches. They are not real skani sketches.
 - Package and definition dates. The source has none, so the fixture has none.
-- The `partition`, `qc_pass`, `named_target`, `selection_reason`, `chromosome_original_source` and `chromosome_source_basis` columns, and the evidence `lineage_id`, are not validated against any known rule.
-- The disclaimer. A real package needs the NCBI submitter-rights wording.
-- Equivalence with the frozen 0.2.0 package. This is a stand-in. The frozen package still needs a versioned version 2 conversion before it can be authenticated.
+- Rules for the `partition`, `named_target`, `selection_reason`, `chromosome_original_source` and `chromosome_source_basis` columns. They are carried as written.
+- The disclaimer. A real package needs the NCBI wording, and a disclaimer is not approval to distribute.

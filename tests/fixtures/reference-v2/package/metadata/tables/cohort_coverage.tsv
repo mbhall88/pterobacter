@@ -1,6 +1,12 @@
-accession	species_concept_id	subspecies_concept_id	coverage_category	species_reference_evidence_present	subspecies_reference_evidence_present	in_primary140	in_genomovar173	validated_automatic_assignment
-GCA_900000001	ECTX-SP-alpha		primary_reference	True	False	True	False	False
-GCA_900000002	ECTX-SP-alpha	ECTX-SS-beta	primary_reference	True	True	True	False	False
-GCA_900000003	ECTX-SP-alpha	ECTX-SS-beta	genomovar_definition_member	True	True	False	True	False
-GCA_900000004	ECTX-SP-alpha	ECTX-SS-beta	genomovar_definition_member	True	True	False	True	False
-GCA_900000009			context_only	False	False	False	False	False
+accession	project_species	record_role	coverage_category	species_concept_id	subspecies_concept_id	lineage_context_id	species_reference_evidence_present	subspecies_reference_evidence_present	in_primary140	in_genomovar173	usage_restrictions	validated_automatic_assignment
+GCA_900000001.1	Enterobacter syntheticus	study	named_Enterobacter_reference_evidence_present	SYN-SP01	SYN-SS01		True	True	True	False		False
+GCA_900000002.1	Enterobacter syntheticus	study	named_Enterobacter_reference_evidence_present	SYN-SP01	SYN-SS02		True	True	True	True		False
+GCA_900000003.1	Enterobacter syntheticus	study	named_Enterobacter_reference_evidence_present	SYN-SP01	SYN-SS02		True	True	True	True		False
+GCA_900000004.1	Enterobacter fictus	study	named_Enterobacter_reference_evidence_present	SYN-SP02			True	False	True	False		False
+GCA_900000006.1	Enterobacter syntheticus	study	named_Enterobacter_reference_evidence_present	SYN-SP01	SYN-SS02		True	True	False	True		False
+GCA_900000007.1	Enterobacter syntheticus	study	named_Enterobacter_reference_evidence_present	SYN-SP01	SYN-SS01		True	True	False	True		False
+GCA_900000030.1	Enterobacter syntheticus	study	named_Enterobacter_reference_evidence_present	SYN-SP01	SYN-SS01		True	True	False	False		False
+GCA_900000031.1	Enterobacter absentis	study	named_Enterobacter_reference_evidence_absent	SYN-SP03			False	False	False	False		False
+GCA_900000032.1		study	reviewed_unassigned_lineage_reference_absent			SYN-LN01	False	False	False	False		False
+GCA_900000020.1		study	restricted_or_out_of_genus_context_reference_absent				False	False	False	False		False
+GCA_900000021.1		study	named_other_genus_context_reference_absent				False	False	False	False		False

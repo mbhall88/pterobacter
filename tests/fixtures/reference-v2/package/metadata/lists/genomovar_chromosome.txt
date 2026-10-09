@@ -1,2 +1,4 @@
-/synthetic/sequences/genomovar/GCA_900000003.fna
-/synthetic/sequences/genomovar/GCA_900000004.fna
+/mnt/synthetic/sequences/chromosome/GCA_900000002.1.fna
+/mnt/synthetic/sequences/chromosome/GCA_900000003.1.fna
+/mnt/synthetic/sequences/chromosome/GCA_900000006.1.fna
+/mnt/synthetic/sequences/chromosome/GCA_900000007.1.fna

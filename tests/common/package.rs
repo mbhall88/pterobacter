@@ -18,13 +18,19 @@ pub const FIXTURE_DIR: &str = concat!(
     "/tests/fixtures/reference-v2/package"
 );
 pub const PINNED_MANIFEST_SHA256: &str =
-    "3c577a111960d9cd756541f1dde165bd2dc8f20048e4ff18cf7e1dcb1a33ea7d";
-pub const PACKAGE_VERSION: &str = "2026-10-09.test1";
-pub const DISCLAIMER: &str = "Synthetic test disclaimer.";
+    "d594ff403cf479ce677b39ff018cdceb3e5f08582610c6f519e927c16de9f797";
+/// The version 1 manifest the fixture was converted from.
+pub const CONVERTED_FROM_SHA256: &str =
+    "0a48da33dc2adef2feefa592ef7a9ed9e15a184168231bb8ca826f2df80f3b28";
+pub const PACKAGE_VERSION: &str = "2026-10-09.test2";
+pub const DISCLAIMER: &str =
+    "Synthetic test disclaimer. A real package carries the NCBI molecular data usage statement.";
 pub const MANIFEST: &str = "portable.json";
 pub const SOURCE_PATH: &str = "metadata/source-manifest.json";
 pub const EXPORT_PATH: &str = "metadata/export-validation.json";
 pub const LICENCE_PATH: &str = "licence/manifest.json";
+pub const CONVERTED_FROM_PATH: &str = "conversion/source-portable.json";
+const V1_SCHEMA: &str = "1.0.0-dev-portable-reference-package";
 pub const NAMED_REGISTRY: &str = "metadata/tables/named_registry.tsv";
 pub const LINEAGE_REGISTRY: &str = "metadata/tables/lineage_registry.tsv";
 pub const PRIMARY_INDEX: &str = "databases/primary_whole/index.db";
@@ -54,10 +60,15 @@ fn read_tree(root: &Path, dir: &Path, files: &mut BTreeMap<String, Vec<u8>>) {
 }
 
 /// The fixture as a set of files, with the manifest held apart so it can be edited.
+///
+/// The fixture was converted from a version 1 package, so it carries that manifest. An edit that
+/// re-seals the manifest re-seals that record too, as a conversion of the edited package would,
+/// unless a test has edited the conversion record itself.
 pub struct Synthetic {
     files: BTreeMap<String, Vec<u8>>,
     manifest: Value,
     manifest_bytes: Vec<u8>,
+    conversion_follows: bool,
 }
 
 impl Synthetic {
@@ -72,6 +83,7 @@ impl Synthetic {
             files,
             manifest,
             manifest_bytes,
+            conversion_follows: true,
         }
     }
 
@@ -182,6 +194,28 @@ impl Synthetic {
         self.write_manifest();
     }
 
+    /// Edit the version 1 manifest this package records it was converted from, and re-list it.
+    pub fn edit_conversion(&mut self, edit: impl FnOnce(&mut Value)) {
+        self.conversion_follows = false;
+        let mut value: Value = serde_json::from_slice(self.file(CONVERTED_FROM_PATH)).unwrap();
+        edit(&mut value);
+        self.files.insert(
+            CONVERTED_FROM_PATH.into(),
+            serde_json::to_vec_pretty(&value).unwrap(),
+        );
+        self.relist(CONVERTED_FROM_PATH);
+    }
+
+    /// The same package as a native version 2 export, without a conversion record.
+    pub fn without_conversion(&mut self) {
+        self.files.remove(CONVERTED_FROM_PATH);
+        self.manifest
+            .as_object_mut()
+            .unwrap()
+            .remove("converted_from");
+        self.write_manifest();
+    }
+
     /// Replace the manifest bytes without touching anything else, so the digest check sees them as is.
     pub fn replace_manifest_bytes(&mut self, bytes: &[u8]) {
         self.manifest_bytes = bytes.to_vec();
@@ -198,7 +232,12 @@ impl Synthetic {
                 record["sha256"] = json!(digest);
             }
         };
-        for key in ["source_manifest", "export_validation", "licence"] {
+        for key in [
+            "source_manifest",
+            "export_validation",
+            "licence",
+            "converted_from",
+        ] {
             update(&mut self.manifest[key]);
         }
         for asset in self.manifest["assets"]
@@ -211,6 +250,20 @@ impl Synthetic {
     }
 
     fn write_manifest(&mut self) {
+        if self.conversion_follows && self.manifest.get("converted_from").is_some() {
+            let mut v1 = self.manifest.clone();
+            let fields = v1.as_object_mut().unwrap();
+            fields.remove("licence");
+            fields.remove("converted_from");
+            fields.insert("schema_version".into(), json!(V1_SCHEMA));
+            let bytes = serde_json::to_vec_pretty(&v1).unwrap();
+            self.manifest["converted_from"] = json!({
+                "path": CONVERTED_FROM_PATH,
+                "bytes": bytes.len(),
+                "sha256": sha256_hex(&bytes),
+            });
+            self.files.insert(CONVERTED_FROM_PATH.into(), bytes);
+        }
         self.manifest_bytes = serde_json::to_vec_pretty(&self.manifest).unwrap();
     }
 }

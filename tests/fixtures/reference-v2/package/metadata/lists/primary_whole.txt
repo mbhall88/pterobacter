@@ -1,2 +1,5 @@
-/synthetic/sequences/primary/GCA_900000001.fna
-/synthetic/sequences/primary/GCA_900000002.fna
+/mnt/synthetic/sequences/whole/GCA_900000001.1.fna
+/mnt/synthetic/sequences/whole/GCA_900000002.1.fna
+/mnt/synthetic/sequences/whole/GCA_900000003.1.fna
+/mnt/synthetic/sequences/whole/GCA_900000004.1.fna
+/mnt/synthetic/sequences/whole/GCA_900000005.1.fna

@@ -1,223 +1,228 @@
 {
   "assets": [
     {
-      "bytes": 152,
+      "bytes": 324,
       "path": "databases/genomovar_chromosome/index.db",
       "roles": [
         "database:genomovar_chromosome:index.db"
       ],
-      "sha256": "35440209f799a3a66639fbb5353b8de813b5540471198c120ca916a3860c34da",
-      "source_path": "/synthetic/databases/genomovar_chromosome/index.db"
+      "sha256": "278c48d6119aff960dc85e7741922f5db2cdfbe20a57dc646d9c8983da9d117a",
+      "source_path": "/mnt/synthetic/databases/genomovar_chromosome/index.db"
     },
     {
-      "bytes": 38,
+      "bytes": 43,
       "path": "databases/genomovar_chromosome/markers.bin",
       "roles": [
         "database:genomovar_chromosome:markers.bin"
       ],
-      "sha256": "dce880756396deb46c5ee6b95ea7d229e1a1b557aad91639572177151b246542",
-      "source_path": "/synthetic/databases/genomovar_chromosome/markers.bin"
+      "sha256": "39f1d2e92d39c6294bb559bd738c0ae0d755e98ed567529535720457cadfb380",
+      "source_path": "/mnt/synthetic/databases/genomovar_chromosome/markers.bin"
     },
     {
-      "bytes": 112,
+      "bytes": 64,
       "path": "databases/genomovar_chromosome/sketches.db",
       "roles": [
         "database:genomovar_chromosome:sketches.db"
       ],
-      "sha256": "7d165707901015418024d1bf71c4cd71112f8a0ed2f89ab266263b4af5907e8e",
-      "source_path": "/synthetic/databases/genomovar_chromosome/sketches.db"
+      "sha256": "1c4672a4c6713bcb9495abba712be251bbeff723d79f001f81e5170b1d1627a5",
+      "source_path": "/mnt/synthetic/databases/genomovar_chromosome/sketches.db"
     },
     {
-      "bytes": 148,
+      "bytes": 378,
       "path": "databases/primary_whole/index.db",
       "roles": [
         "database:primary_whole:index.db"
       ],
-      "sha256": "f1e0ac91b49f3ef8a1568bdc9a412d456d6099f257ff10b6c2302998a72f54e5",
-      "source_path": "/synthetic/databases/primary_whole/index.db"
+      "sha256": "c065f3f3e169840135dd091f38feadda4f809d5dde8a6b2ef0e1d68b8fed0913",
+      "source_path": "/mnt/synthetic/databases/primary_whole/index.db"
     },
     {
-      "bytes": 31,
+      "bytes": 36,
       "path": "databases/primary_whole/markers.bin",
       "roles": [
         "database:primary_whole:markers.bin"
       ],
-      "sha256": "18ba0e68a252e43d3bedb83f010e914033b1f3def4aca6b1c5d6d2221ad32f15",
-      "source_path": "/synthetic/databases/primary_whole/markers.bin"
+      "sha256": "0dc2c5425264488e69ca46d2257ad2de8c466c0a8cb065fdadff5f7e9cb1e27c",
+      "source_path": "/mnt/synthetic/databases/primary_whole/markers.bin"
     },
     {
-      "bytes": 112,
+      "bytes": 80,
       "path": "databases/primary_whole/sketches.db",
       "roles": [
         "database:primary_whole:sketches.db"
       ],
-      "sha256": "8cbf664e426f80ce6691f19977e5d26d200862eacb38321f7edbf028ee7086eb",
-      "source_path": "/synthetic/databases/primary_whole/sketches.db"
+      "sha256": "b1d1a68efaee9083e1e43459e6ef9620320ba3eff096b2a96ef77956472c0e33",
+      "source_path": "/mnt/synthetic/databases/primary_whole/sketches.db"
     },
     {
-      "bytes": 48,
+      "bytes": 49,
       "path": "metadata/build/genomovar_chromosome/000.artifact",
       "roles": [
         "build:genomovar_chromosome:0"
       ],
-      "sha256": "333c2be76df939e47d1b300a02129c9bbfb030f3ebfe7aed050154c6e8a82738",
-      "source_path": "/synthetic/build/genomovar_chromosome/build-record.txt"
+      "sha256": "66ec9e46550f088c3741e096bf58937e502c04c29650326ff2e32970de9448dd",
+      "source_path": "/mnt/synthetic/records/genomovar_chromosome-build-record.txt"
     },
     {
-      "bytes": 41,
+      "bytes": 42,
       "path": "metadata/build/primary_whole/000.artifact",
       "roles": [
         "build:primary_whole:0"
       ],
-      "sha256": "ff9da555c9e67dd395eca2e857c3234b0bea75f86b478ee722357e5e66ab8347",
-      "source_path": "/synthetic/build/primary_whole/build-record.txt"
+      "sha256": "a51b23f351e14e249304cf490e8810aa24f586ae2d0365dbe6135c0b7ebf899a",
+      "source_path": "/mnt/synthetic/records/primary_whole-build-record.txt"
     },
     {
-      "bytes": 98,
+      "bytes": 224,
       "path": "metadata/lists/genomovar_chromosome.txt",
       "roles": [
         "source_list:genomovar_chromosome"
       ],
-      "sha256": "5b3e9c34650475bc5e285a2e7f62e58af66b99b54fbff1c70f4653cd36207469",
-      "source_path": "/synthetic/lists/genomovar_chromosome.txt"
+      "sha256": "4e3c182dcce68ae2eb44c98cf665c1ddeb5ba3c747d3bb16a1721d0c0c8ea120",
+      "source_path": "/mnt/synthetic/lists/genomovar_chromosome.list"
     },
     {
-      "bytes": 94,
+      "bytes": 255,
       "path": "metadata/lists/primary_whole.txt",
       "roles": [
         "source_list:primary_whole"
       ],
-      "sha256": "29f7d02a7ae0008d8085452e1979e1edd0988334611dce3004ea50b92a98a461",
-      "source_path": "/synthetic/lists/primary_whole.txt"
+      "sha256": "c5b9473dd0233ee28747149cb1a1278d4ad8daee653310a8bf9d114dfcbf9ba6",
+      "source_path": "/mnt/synthetic/lists/primary_whole.list"
     },
     {
-      "bytes": 28,
+      "bytes": 59,
       "path": "metadata/provenance/000.artifact",
       "roles": [
         "provenance:0"
       ],
-      "sha256": "d631c513a856071c5406466e249c9fe14b749175130285d0e29e1dfb3c1dffd5",
-      "source_path": "/synthetic/provenance/derivation-record.txt"
+      "sha256": "9ee44af0f4228ba120fa992d62e4d91eb64232e5dee60b368fe137eab64ade30",
+      "source_path": "/mnt/synthetic/records/derivation-record.txt"
     },
     {
-      "bytes": 508,
+      "bytes": 1475,
       "path": "metadata/tables/assignments.tsv",
       "roles": [
         "table:assignments"
       ],
-      "sha256": "0a3508958c7f15291f4badb24ddc246edec691023a16022351391636749e8d8e",
-      "source_path": "/synthetic/tables/assignments.tsv"
+      "sha256": "283240f3578e0a3553e28e1f11ca8397f622d18e6861ccc21934d64fda0796a1",
+      "source_path": "/mnt/synthetic/tables/assignments.tsv"
     },
     {
-      "bytes": 615,
+      "bytes": 1686,
       "path": "metadata/tables/cohort_coverage.tsv",
       "roles": [
         "table:cohort_coverage"
       ],
-      "sha256": "29e2d7812f589ba86949e5df212f4d4e81deffb667e0d0e1a7a5a39f9b59c582",
-      "source_path": "/synthetic/tables/cohort_coverage.tsv"
+      "sha256": "18aca695ac58e231a1bde315e967b6bc986c561de0988116405b227f99852cf1",
+      "source_path": "/mnt/synthetic/tables/cohort_coverage.tsv"
     },
     {
-      "bytes": 67,
+      "bytes": 145,
       "path": "metadata/tables/definition_groups.tsv",
       "roles": [
         "table:definition_groups"
       ],
-      "sha256": "858773815e54e1c81a688ac61f33736d9dad3825d582b527907142fc36be51eb",
-      "source_path": "/synthetic/tables/definition_groups.tsv"
+      "sha256": "390823855dd99e6b4505041fa11c113934fe6bce76de10e17ca71038321fe222",
+      "source_path": "/mnt/synthetic/tables/definition_groups.tsv"
     },
     {
-      "bytes": 306,
+      "bytes": 747,
       "path": "metadata/tables/definition_memberships.tsv",
       "roles": [
         "table:definition_memberships"
       ],
-      "sha256": "7decfb61f6ee95ea60571c1d7294578c179cba46d57d4d12174fac04ca9fe5af",
-      "source_path": "/synthetic/tables/definition_memberships.tsv"
+      "sha256": "b40ea0cb722a369fe41336c6a8b099bd8aebf777b759f6e44acbb468a77625e4",
+      "source_path": "/mnt/synthetic/tables/definition_memberships.tsv"
     },
     {
-      "bytes": 714,
+      "bytes": 1574,
       "path": "metadata/tables/definition_references.tsv",
       "roles": [
         "table:definition_references"
       ],
-      "sha256": "d9b528ba3c984a76e0871fa2e694d7cca9e92933fd737c60f11893234a9cd8d2",
-      "source_path": "/synthetic/tables/definition_references.tsv"
+      "sha256": "d87f4672205b0261539dbb4d8e0f389c8f21cab71c70cdc90397d0b7413a57af",
+      "source_path": "/mnt/synthetic/tables/definition_references.tsv"
     },
     {
-      "bytes": 240,
+      "bytes": 656,
       "path": "metadata/tables/development_context.tsv",
       "roles": [
         "table:development_context"
       ],
-      "sha256": "2829898f50b817eaaed401e41625be793e8533a377aabc232dad584e84b3dba0",
-      "source_path": "/synthetic/tables/development_context.tsv"
+      "sha256": "e5debc60c889cba99d7f586c0f88112a06d661a3a483da6b8cb52657e124d035",
+      "source_path": "/mnt/synthetic/tables/development_context.tsv"
     },
     {
-      "bytes": 210,
+      "bytes": 499,
       "path": "metadata/tables/genomovar_crosswalk.tsv",
       "roles": [
         "table:genomovar_crosswalk"
       ],
-      "sha256": "0503c51a832cc54b6b60c2de01e19033c749d26e5c2f529444c52764c626f8e3",
-      "source_path": "/synthetic/tables/genomovar_crosswalk.tsv"
+      "sha256": "e94438ab5da7c08fc936b03f58d61bdbfbc78df0205af837d679ff83717c94f9",
+      "source_path": "/mnt/synthetic/tables/genomovar_crosswalk.tsv"
     },
     {
-      "bytes": 178,
+      "bytes": 519,
       "path": "metadata/tables/historical_types.tsv",
       "roles": [
         "table:historical_types"
       ],
-      "sha256": "fc50147ef6969744273da26769dd7343c56ae1bddc5d8ebbf7138f812b866b0d",
-      "source_path": "/synthetic/tables/historical_types.tsv"
+      "sha256": "a1a01de6cff6e8e73d8a7c902dfc832057c24151dda100224287c14c22a3c716",
+      "source_path": "/mnt/synthetic/tables/historical_types.tsv"
     },
     {
-      "bytes": 260,
+      "bytes": 425,
       "path": "metadata/tables/lineage_registry.tsv",
       "roles": [
         "table:lineage_registry"
       ],
-      "sha256": "1a0df12b5eb971ddfcee95e408f6f44f809760008cd1e81abe31a604b33b25af",
-      "source_path": "/synthetic/tables/lineage_registry.tsv"
+      "sha256": "899790a9bd5aed7341e1669468974f3cd97b7d8e66d403df4aa1d05649d33ead",
+      "source_path": "/mnt/synthetic/tables/lineage_registry.tsv"
     },
     {
-      "bytes": 536,
+      "bytes": 1219,
       "path": "metadata/tables/named_registry.tsv",
       "roles": [
         "table:named_registry"
       ],
-      "sha256": "90bf91e5d078f10ed492ee2b5e45495bccb3ff5e5ace2c0db7080a215db6be4c",
-      "source_path": "/synthetic/tables/named_registry.tsv"
+      "sha256": "0a9e53ffa3a9c246c93837ca1616872830d3ead961150619eea01c181d6a6bd1",
+      "source_path": "/mnt/synthetic/tables/named_registry.tsv"
     },
     {
-      "bytes": 609,
+      "bytes": 1423,
       "path": "metadata/tables/primary_references.tsv",
       "roles": [
         "table:primary_references"
       ],
-      "sha256": "4b8783418e79e724ad1f5de98edae951601c47bd803dffcd5f6dcd32af732756",
-      "source_path": "/synthetic/tables/primary_references.tsv"
+      "sha256": "7ada53956b543576b2038b903341be750985c61a48eabc7e3d53da5a8f230eb9",
+      "source_path": "/mnt/synthetic/tables/primary_references.tsv"
     }
   ],
+  "converted_from": {
+    "bytes": 7480,
+    "path": "conversion/source-portable.json",
+    "sha256": "0a48da33dc2adef2feefa592ef7a9ed9e15a184168231bb8ca826f2df80f3b28"
+  },
   "export_validation": {
-    "bytes": 1310,
+    "bytes": 1329,
     "path": "metadata/export-validation.json",
-    "sha256": "ad53ae1baf9f3b970b92f62be43eff77b2240a59dabb20f9044110eb712aaa89"
+    "sha256": "f0992ea29b84705dc897dd3a72bf1a766057beeb57fb0b6913fe2cb4b6c7e639"
   },
   "licence": {
-    "bytes": 264,
+    "bytes": 328,
     "path": "licence/manifest.json",
-    "sha256": "ce0e65bfcfd6b6b590b5e7c6bb2ac840e11bd0c19f1e6881ae8deb4fc9aab84b"
+    "sha256": "af0a36e88e315e6ae07e1f2b68618e1901ca339152cb1f98a8e5393c5846b657"
   },
   "package_id": "synthetic-enterobacter-reference",
-  "package_version": "2026-10-09.test1",
+  "package_version": "2026-10-09.test2",
   "positive_calling_policy_enabled": false,
   "release_state": "development_proposal_not_distributable",
   "schema_version": "2.0.0-dev-portable-reference-package",
   "source_manifest": {
-    "bytes": 23897,
+    "bytes": 40426,
     "path": "metadata/source-manifest.json",
-    "sha256": "60537ade9eef6c80a08d9103db3f85ea1d58510ad1fd05ad8e93fec36a394ed6"
+    "sha256": "7ce3f86797b49b1e4735ee8739d33cbd574c3d96bfbf6321764ec78c4adee020"
   },
   "trust_basis": "expected_package_digest_and_export_attestation_not_authenticated_release"
 }

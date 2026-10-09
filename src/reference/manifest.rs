@@ -1,25 +1,57 @@
-//! The portable manifest, the three attested records it names, and the licence manifest.
+//! The portable manifest, the records it attests, and the licence manifest.
+//!
+//! Version 2 adds a licence manifest to the version 1 portable package. A package converted from
+//! version 1 also carries the exact version 1 manifest it was converted from, so evidence computed
+//! against that version 1 package can be traced to the same files.
 
 use serde::Deserialize;
+use serde_json::Value;
 
 use super::{inconsistent, json_record, Asset, Licence, PackageError, MANIFEST_PATH};
 
 pub(super) const PACKAGE_SCHEMA: &str = "2.0.0-dev-portable-reference-package";
+pub(super) const V1_PACKAGE_SCHEMA: &str = "1.0.0-dev-portable-reference-package";
 pub(super) const LICENCE_SCHEMA: &str = "2.0.0-reference-licence-manifest";
 pub(super) const RELEASE_STATE: &str = "development_proposal_not_distributable";
 pub(super) const TRUST_BASIS: &str =
     "expected_package_digest_and_export_attestation_not_authenticated_release";
 
+/// A file the manifest attests by its own entry rather than in `assets`.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(super) struct Record {
+    pub(super) path: String,
+    pub(super) bytes: u64,
+    pub(super) sha256: String,
+}
+
+impl Record {
+    pub(super) fn as_asset(&self) -> Asset {
+        Asset {
+            path: self.path.clone(),
+            bytes: self.bytes,
+            sha256: self.sha256.clone(),
+            roles: Vec::new(),
+            source_path: String::new(),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(super) struct Portable {
+    #[allow(dead_code)] // checked by json_record before the rest is read
+    schema_version: String,
     pub(super) package_id: String,
     pub(super) package_version: String,
     pub(super) release_state: String,
     pub(super) trust_basis: String,
     pub(super) positive_calling_policy_enabled: bool,
-    pub(super) source_manifest: Asset,
-    pub(super) export_validation: Asset,
-    pub(super) licence: Asset,
+    pub(super) source_manifest: Record,
+    pub(super) export_validation: Record,
+    pub(super) licence: Record,
+    #[serde(default)]
+    pub(super) converted_from: Option<Record>,
     pub(super) assets: Vec<Asset>,
 }
 
@@ -39,12 +71,57 @@ impl Portable {
         Ok(portable)
     }
 
-    pub(super) fn attested(&self) -> [&Asset; 3] {
+    /// The records attested outside `assets`, in the order they are verified.
+    pub(super) fn attested(&self) -> Vec<&Record> {
         [
-            &self.source_manifest,
-            &self.export_validation,
-            &self.licence,
+            Some(&self.source_manifest),
+            Some(&self.export_validation),
+            Some(&self.licence),
+            self.converted_from.as_ref(),
         ]
+        .into_iter()
+        .flatten()
+        .collect()
+    }
+
+    /// A version 1 manifest this package was converted from must describe the same package with
+    /// the same files: only the schema, the licence and this record may differ.
+    pub(super) fn check_conversion(&self, bytes: &[u8], raw: &Value) -> Result<(), PackageError> {
+        let v1: Value = serde_json::from_slice(bytes).map_err(|error| {
+            inconsistent(format!("the converted-from manifest is not JSON: {error}"))
+        })?;
+        let Some(fields) = v1.as_object() else {
+            return Err(inconsistent("the converted-from manifest is not an object"));
+        };
+        if fields.get("schema_version").and_then(Value::as_str) != Some(V1_PACKAGE_SCHEMA) {
+            return Err(PackageError::Incompatible(format!(
+                "the converted-from manifest is not schema {V1_PACKAGE_SCHEMA}"
+            )));
+        }
+        let shared = [
+            "package_id",
+            "package_version",
+            "release_state",
+            "trust_basis",
+            "positive_calling_policy_enabled",
+            "source_manifest",
+            "export_validation",
+            "assets",
+        ];
+        if fields.len() != shared.len() + 1 {
+            return Err(inconsistent(
+                "the converted-from manifest has missing or unknown fields",
+            ));
+        }
+        if let Some(field) = shared
+            .iter()
+            .find(|key| fields.get(**key) != raw.get(**key))
+        {
+            return Err(inconsistent(format!(
+                "the converted-from manifest has another {field} than this package"
+            )));
+        }
+        Ok(())
     }
 }
 
@@ -56,7 +133,10 @@ pub(super) fn is_held(asset: &Asset) -> bool {
 }
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 struct LicenceRecord {
+    #[allow(dead_code)] // checked by json_record before the rest is read
+    schema_version: String,
     package_version: String,
     source_manifest_sha256: String,
     ncbi_submitter_rights_disclaimer: String,
