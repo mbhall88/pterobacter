@@ -1,0 +1,26 @@
+[package]
+name = "anim-feasibility-probes"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[features]
+embedded-mummer3 = []
+
+[dependencies]
+minimap2-sys = { version = "=0.1.30", features = ["static"] }
+minimap2 = { version = "=0.1.31", default-features = false, features = [] }
+
+[[bin]]
+name = "mummer3-probe"
+path = "src/bin/mummer3.rs"
+required-features = ["embedded-mummer3"]
+
+[[bin]]
+name = "minimap2-probe"
+path = "src/bin/minimap2.rs"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
