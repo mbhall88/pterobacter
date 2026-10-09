@@ -64,6 +64,7 @@ impl Method {
 pub struct InputBinding {
     pub id: String,
     pub sha256: String,
+    pub native_sha256: String,
     pub total_bases: u64,
     pub scope: String,
     pub component: String,
@@ -192,6 +193,26 @@ fn lengths(bytes: &[u8]) -> Result<BTreeMap<String, u64>, AnimError> {
     }
     Ok(records)
 }
+// Only formatting is removed. Every validated sequence byte, including Ns,
+// stays in its original record and order. Both native parsers see LF lines.
+fn native_fasta(bytes: &[u8]) -> Result<Vec<u8>, AnimError> {
+    let text = std::str::from_utf8(bytes).map_err(|_| invalid("FASTA is not UTF-8"))?;
+    let mut output = Vec::new();
+    for line in text.lines().map(str::trim).filter(|s| !s.is_empty()) {
+        if let Some(header) = line.strip_prefix('>') {
+            let id = header
+                .split_whitespace()
+                .next()
+                .ok_or_else(|| invalid("empty FASTA ID"))?;
+            output.push(b'>');
+            output.extend_from_slice(id.as_bytes());
+        } else {
+            output.extend_from_slice(line.as_bytes());
+        }
+        output.push(b'\n');
+    }
+    Ok(output)
+}
 fn snapshot(
     path: &Path,
     dest: &Path,
@@ -218,6 +239,8 @@ fn snapshot(
         return Err(invalid(format!("{role} SHA256 mismatch")));
     }
     let record_lengths = lengths(&bytes)?;
+    let native = native_fasta(&bytes)?;
+    write_new(&dest.with_extension("native.fa"), &native)?;
     let total_bases = record_lengths
         .values()
         .try_fold(0_u64, |a, b| a.checked_add(*b).ok_or(AnimError::Overflow))?;
@@ -228,6 +251,7 @@ fn snapshot(
     Ok(InputBinding {
         id: id.into(),
         sha256: digest,
+        native_sha256: hash_bytes(&native),
         total_bases,
         scope: "whole_assembly".into(),
         component: component.into(),
@@ -312,15 +336,15 @@ pub fn measure_pair(
             let work = (|| -> Result<(), AnimError> {
                 let worker = WorkerRequest {
                     reference: if direction == "QR" {
-                        "../inputs/reference.fa"
+                        "../inputs/reference.native.fa"
                     } else {
-                        "../inputs/query.fa"
+                        "../inputs/query.native.fa"
                     }
                     .into(),
                     query: if direction == "QR" {
-                        "../inputs/query.fa"
+                        "../inputs/query.native.fa"
                     } else {
-                        "../inputs/reference.fa"
+                        "../inputs/reference.native.fa"
                     }
                     .into(),
                     prefix: "native".into(),
@@ -379,6 +403,8 @@ pub fn measure_pair(
         }
         if hash_file(&root.join("inputs/query.fa"))? != query.sha256
             || hash_file(&root.join("inputs/reference.fa"))? != reference.sha256
+            || hash_file(&root.join("inputs/query.native.fa"))? != query.native_sha256
+            || hash_file(&root.join("inputs/reference.native.fa"))? != reference.native_sha256
         {
             return Err(invalid("snapshot changed during native execution"));
         }
@@ -715,7 +741,14 @@ pub fn verify_pair(
     }
     for (input, name) in [(query, "query.fa"), (reference, "reference.fa")] {
         let bytes = fs::read(directory.join("inputs").join(name))?;
+        let native = native_fasta(&bytes)?;
+        let native_path = directory
+            .join("inputs")
+            .join(name)
+            .with_extension("native.fa");
         if hash_bytes(&bytes) != input.sha256
+            || hash_bytes(&native) != input.native_sha256
+            || fs::read(native_path)? != native
             || lengths(&bytes)? != input.record_lengths
             || input.scope != "whole_assembly"
             || input
@@ -762,9 +795,9 @@ pub fn verify_pair(
         let worker: WorkerRequest =
             serde_json::from_slice(&fs::read(directory.join(direction).join("request.json"))?)?;
         let expected_paths = if direction == "QR" {
-            ("../inputs/reference.fa", "../inputs/query.fa")
+            ("../inputs/reference.native.fa", "../inputs/query.native.fa")
         } else {
-            ("../inputs/query.fa", "../inputs/reference.fa")
+            ("../inputs/query.native.fa", "../inputs/reference.native.fa")
         };
         if worker.reference != Path::new(expected_paths.0)
             || worker.query != Path::new(expected_paths.1)

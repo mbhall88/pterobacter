@@ -241,3 +241,44 @@ fn sigterm_cancellation_retains_incomplete_pair_and_stops_native_worker() {
         }
     }
 }
+
+#[test]
+fn crlf_and_surrounding_whitespace_preserve_identical_whole_sequences() {
+    let dir = tempfile::tempdir().unwrap();
+    let source = std::fs::read_to_string(fixture("identical.q.fa")).unwrap();
+    let sequence: String = source
+        .lines()
+        .filter(|line| !line.starts_with('>'))
+        .collect();
+    let query = dir.path().join("crlf.fa");
+    let reference = dir.path().join("whitespace.fa");
+    let mut q = String::from(">Q description\r\n");
+    let mut r = String::from(">R description\r\n");
+    for chunk in sequence.as_bytes().chunks(10) {
+        let bases = std::str::from_utf8(chunk).unwrap();
+        q.push_str(&format!("{bases}\r\n"));
+        r.push_str(&format!(" \t{bases} \t\r\n"));
+    }
+    std::fs::write(&query, q).unwrap();
+    std::fs::write(&reference, r).unwrap();
+    let out = dir.path().join("result");
+    let result = pair(&query, &reference, &out);
+    assert!(result.status.success());
+    let report = verify_pair(
+        &out,
+        &hash_file(&query).unwrap(),
+        &hash_file(&reference).unwrap(),
+    )
+    .unwrap();
+    for orientation in report.orientations.values() {
+        let m = orientation.metrics.as_ref().unwrap();
+        assert_eq!(
+            (m.d, m.e, m.reference_covered, m.query_covered),
+            (240000, 0, 120000, 120000)
+        );
+    }
+    assert_eq!(
+        std::fs::read(out.join("inputs/query.fa")).unwrap(),
+        std::fs::read(query).unwrap()
+    );
+}

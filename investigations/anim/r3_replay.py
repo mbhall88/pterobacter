@@ -32,6 +32,7 @@ def main():
     parser.add_argument('--fixtures', required=True, type=Path)
     parser.add_argument('--comparator', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
+    parser.add_argument('--budget', required=True, type=Path)
     args = parser.parse_args()
     args.output.mkdir(exist_ok=False)
     manifest = json.loads((args.fixtures / 'manifest.json').read_text())
@@ -39,7 +40,7 @@ def main():
     os.sched_setaffinity(0, cpus)
     start = time.monotonic()
     attempts = []
-    budget = Budget(args.output / "alignment-budget.json")
+    budget = Budget(args.budget)
 
     def run(item, group):
         lease = budget.reserve(group + "/" + item["id"], 90, 1)
