@@ -17,12 +17,13 @@ fn plan(input: &Value, anim: &[(&str, Value)]) -> Value {
     rescue.plan(&bound).to_value().clone()
 }
 
-/// Species A nearest at 95.5, two more A candidates, an A reference with low skani AF, a B
-/// contrast, an unnamed lineage and a reference skani did not return.
+/// Species A nearest at 95.5 (A2), two more A candidates, an A reference with low skani AF, a
+/// B contrast, an unnamed lineage and a reference skani did not return. Witness order (A2, A1,
+/// A3) differs from ID order, and the non-witness A0 sorts before every candidate.
 fn triggered() -> Value {
     json!({"references": [
-        hit("A2", Some("A"), "95.5", "85", "85"), hit("A1", Some("A"), "95.5", "85", "85"),
-        hit("A3", Some("A"), "94.5", "80", "80"), hit("A4", Some("A"), "95", "79.99", "85"),
+        hit("A1", Some("A"), "95", "85", "85"), hit("A2", Some("A"), "95.5", "85", "85"),
+        hit("A3", Some("A"), "94.5", "80", "80"), hit("A0", Some("A"), "95", "79.99", "85"),
         hit("B1", Some("B"), "93", "85", "85"),
         json!({"id": "L1", "species": null, "subspecies": null, "lineage": "LIN1", "ani": "92", "aq": "85", "ar": "85"}),
         unreturned("C1", Some("C"))]})
@@ -50,9 +51,10 @@ fn a_first_plan_requests_the_skani_witnesses_in_deterministic_order() {
     assert_eq!(p["nearest_parent"]["kind"], "species");
     assert_eq!(p["nearest_parent"]["concept_id"], "A");
     assert_eq!(p["stage"], "witness");
-    // Decreasing skani ANI, then reference ID; A4 fails a skani AF and cannot witness.
-    assert_eq!(ids(&p["witness_candidates"]), ["A1", "A2", "A3"]);
-    assert_eq!(ids(&p["outstanding_witnesses"]), ["A1", "A2", "A3"]);
+    // Decreasing skani ANI, then reference ID; A0 fails a skani AF and cannot witness.
+    assert_eq!(ids(&p["witness_candidates"]), ["A2", "A1", "A3"]);
+    assert_eq!(ids(&p["requested_pairs"]), ["A2", "A1", "A3"]);
+    assert_eq!(ids(&p["outstanding_witnesses"]), ["A2", "A1", "A3"]);
     assert_eq!(p["outstanding_competitors"], json!([]));
     assert!(p["requested_pairs"]
         .as_array()
@@ -61,7 +63,7 @@ fn a_first_plan_requests_the_skani_witnesses_in_deterministic_order() {
         .all(|r| r["stage"] == "witness" && r["status"] == "outstanding"));
     assert_eq!(
         p["requested_pairs"][0]["reference_sha256"],
-        p1::sha256("A1")
+        p1::sha256("A2")
     );
     assert_eq!(p["counts"]["required"], 3);
     assert_eq!(p["counts"]["not_run"], 3);
@@ -79,10 +81,11 @@ fn a_passing_witness_requests_every_remaining_panel_reference() {
     );
     assert_eq!(p["stage"], "competitor_panel");
     assert_eq!(p["passing_witness"], "A2");
-    // Unnamed, unreturned, low-AF same-species and the failed witness are all still required.
+    // Unnamed, unreturned, low-AF same-species and the failed witness are all still required:
+    // the remaining witness candidates first, in witness order, then the rest of the panel by ID.
     assert_eq!(
         ids(&p["outstanding_competitors"]),
-        ["A1", "A3", "A4", "B1", "C1", "L1"]
+        ["A1", "A3", "A0", "B1", "C1", "L1"]
     );
     let statuses: Vec<_> = p["requested_pairs"]
         .as_array()
@@ -122,10 +125,10 @@ fn a_known_foreign_challenge_is_reported_as_a_decisive_veto() {
 
 #[test]
 fn a_failed_witness_leaves_the_plan_at_the_witness_stage() {
-    let p = plan(&triggered(), &[("A1", statuses("error", "error"))]);
+    let p = plan(&triggered(), &[("A2", statuses("error", "error"))]);
     assert_eq!(p["stage"], "witness");
     assert_eq!(p["passing_witness"], Value::Null);
-    assert_eq!(ids(&p["outstanding_witnesses"]), ["A1", "A2", "A3"]);
+    assert_eq!(ids(&p["outstanding_witnesses"]), ["A2", "A1", "A3"]);
 }
 
 #[test]
@@ -200,7 +203,7 @@ fn a_hard_veto_blocks_the_plan_but_keeps_the_witness_candidates_visible() {
     assert_eq!(p["trigger_state"], "triggered_with_witness_candidate");
     assert_eq!(p["stage"], "blocked_before_anim");
     assert_eq!(p["blocking_reasons"], json!(["external_problem_warning"]));
-    assert_eq!(ids(&p["witness_candidates"]), ["A1", "A2", "A3"]);
+    assert_eq!(ids(&p["witness_candidates"]), ["A2", "A1", "A3"]);
     assert_eq!(p["requested_pairs"], json!([]));
 }
 
@@ -219,4 +222,30 @@ fn the_plan_does_not_depend_on_record_order() {
     };
     assert_eq!(plan_of(&text), plan_of(&reversed.join("\n")));
     assert_ne!(plan_of(&text), rescue.plan(&BoundAnim::none()).to_json());
+}
+
+#[test]
+fn a_pair_with_one_orientation_is_counted_apart_from_a_failed_one() {
+    let one_way = json!({"directions": [{"id": "QR", "status": "complete", "ani": "97", "aq": "85", "ar": "85"}]});
+    let p = plan(
+        &triggered(),
+        &[("A2", one_way), ("A1", statuses("complete", "error"))],
+    );
+    assert_eq!(p["stage"], "witness");
+    let status = |id: &str| {
+        p["requested_pairs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|r| r["reference_id"] == id)
+            .unwrap()["status"]
+            .clone()
+    };
+    assert_eq!(status("A2"), "missing_orientation");
+    assert_eq!(status("A1"), "failed");
+    assert_eq!(p["counts"]["attempted"], 2);
+    assert_eq!(p["counts"]["completed"], 0);
+    assert_eq!(p["counts"]["failed"], 1);
+    assert_eq!(p["counts"]["missing_orientation"], 1);
+    assert_eq!(p["counts"]["not_run"], 1);
 }

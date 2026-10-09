@@ -352,4 +352,28 @@ mod v2 {
         assert_eq!(d["counts"]["completed"], 3);
         assert_eq!(d["input"]["anim_record_files"].as_array().unwrap().len(), 2);
     }
+
+    #[test]
+    fn a_pretty_printed_json_record_file_is_read_as_one_record() {
+        let mut witness = input();
+        witness["anim"] = json!({"A1": reciprocal("96.2", "85", "85")});
+        let f = files(&witness);
+        let line = std::fs::read_to_string(&f.records).unwrap();
+        let record: Value = serde_json::from_str(line.trim()).unwrap();
+        let pretty = f.records.with_file_name("A1.json");
+        std::fs::write(&pretty, serde_json::to_string_pretty(&record).unwrap()).unwrap();
+        let (code, p, stderr) = run(
+            &["rescue-plan", "--anim-method-profile", PROFILE],
+            &[
+                &f.evidence,
+                Path::new("--reference-inventory"),
+                &f.inventory,
+                Path::new("--anim-records"),
+                &pretty,
+            ],
+        );
+        assert_eq!(code, Some(0), "{stderr}");
+        assert_eq!(p["passing_witness"], "A1");
+        assert_eq!(p["input"]["anim_record_files"][0]["records"], 1);
+    }
 }

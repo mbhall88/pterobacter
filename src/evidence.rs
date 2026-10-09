@@ -29,7 +29,7 @@ pub enum EvidenceError {
     Settings(String),
 }
 
-fn invalid<T>(message: impl Into<String>) -> Result<T, EvidenceError> {
+pub(crate) fn invalid<T>(message: impl Into<String>) -> Result<T, EvidenceError> {
     Err(EvidenceError::Invalid(message.into()))
 }
 

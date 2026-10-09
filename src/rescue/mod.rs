@@ -7,12 +7,12 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde_json::{json, Value};
 
 use crate::decision::{decide as decide_v1, Decision, Policy};
-use crate::evidence::{EvidenceError, Percent, Reference, SavedEvidence, Taxon};
+use crate::evidence::{invalid, EvidenceError, Percent, Reference, SavedEvidence, Taxon};
+use crate::panel::{Panel, PanelReference};
 
 mod records;
 mod thresholds;
 
-pub use crate::panel::{Panel, PanelReference};
 pub use records::AnimRecords;
 pub use thresholds::Thresholds;
 
@@ -26,10 +26,6 @@ const NOT_YET_VALIDATED: &str = "not_yet_validated";
 const CUSTOM_UNVALIDATED: &str = "custom_unvalidated";
 const NEAREST_BELOW: &str = "nearest_below_species_ANI";
 const INCOMPLETE_REASONS: [&str; 2] = ["ANIm_incomplete", "ANIm_competitor_incomplete"];
-
-fn invalid<T>(message: impl Into<String>) -> Result<T, EvidenceError> {
-    Err(EvidenceError::Invalid(message.into()))
-}
 
 /// A competitor's parent: its species, else its lineage, else the reference alone.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -91,10 +87,24 @@ impl Pair {
             .all(|o| o.is_some_and(|o| o.strict(threshold)))
     }
 
+    fn failed(&self) -> bool {
+        self.present().any(|o| !o.finished())
+    }
+
+    /// Both orientations, plus the lower identity and the lowest of the four AFs. Each
+    /// minimum is null unless both orientations measured it.
     fn to_json(self) -> Value {
         let side =
             |o: Option<Orientation>| o.map_or(json!({"status": "missing"}), Orientation::to_json);
-        json!({"QR": side(self.qr), "RQ": side(self.rq), "finished": self.finished()})
+        let least =
+            |values: Option<Vec<f64>>| values.map(|v| v.into_iter().fold(f64::INFINITY, f64::min));
+        let both = |f: fn(&Orientation) -> Option<Vec<f64>>| -> Option<Vec<f64>> {
+            let (qr, rq) = (f(&self.qr?)?, f(&self.rq?)?);
+            Some([qr, rq].concat())
+        };
+        json!({"QR": side(self.qr), "RQ": side(self.rq), "finished": self.finished(),
+            "minimum_identity_percent": least(both(|o| o.identity_percent().map(|i| vec![i]))),
+            "minimum_af_percent": least(both(|o| o.af_percents().map(Vec::from)))})
     }
 }
 
@@ -103,11 +113,13 @@ impl Pair {
 enum Rule {
     /// Every provenance-bound record for this query, as P1 treats supplied evidence.
     Supplied,
-    /// Only the pairs the dry plan requested under these settings (the P4a binding rule).
+    /// Only the pairs the dry plan requested under the same evidence, mask and thresholds.
     DryPlan,
 }
 
 /// ANIm records bound to one [`RescueInput`]: same query, panel reference hashes and profile.
+/// Records with no query or reference binding are counted as unattributed and never bound, so
+/// their pairs stay outstanding (`not_run`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BoundAnim {
     pairs: BTreeMap<String, Pair>,
@@ -129,6 +141,11 @@ impl BoundAnim {
             other_query: 0,
             unattributed: 0,
         }
+    }
+
+    /// Whether both orientations of the pair were measured, aligned or not.
+    fn finished(&self, id: &str) -> bool {
+        self.pairs.get(id).is_some_and(Pair::finished)
     }
 
     fn to_json(&self) -> Value {
@@ -211,11 +228,39 @@ impl Stage {
     }
 }
 
+/// The evaluation's trigger states. Under custom thresholds, the 96 in a name stands for T.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum TriggerState {
+    NoEstimate,
+    AtOrAboveSpecies,
+    BelowBand,
+    CrossParentTie,
+    UnnamedNearest,
+    NoMeasuredContrast,
+    NoSkaniWitness,
+    WitnessCandidate,
+}
+
+impl TriggerState {
+    fn as_str(self) -> &'static str {
+        match self {
+            TriggerState::NoEstimate => "no_estimate",
+            TriggerState::AtOrAboveSpecies => "at_or_above_96_v1_route",
+            TriggerState::BelowBand => "below_band_v1_route",
+            TriggerState::CrossParentTie => "triggered_cross_parent_tie",
+            TriggerState::UnnamedNearest => "triggered_unnamed_nearest",
+            TriggerState::NoMeasuredContrast => "triggered_no_measured_contrast",
+            TriggerState::NoSkaniWitness => "triggered_no_skani_witness",
+            TriggerState::WitnessCandidate => "triggered_with_witness_candidate",
+        }
+    }
+}
+
 /// Everything P1 derives from the evidence before the final call.
 struct Analysis<'a> {
     nearest: Option<&'a Reference>,
     band: bool,
-    state: &'static str,
+    state: TriggerState,
     candidates: Vec<&'a Reference>,
     witnesses: Vec<&'a Reference>,
     blocking: Vec<String>,
@@ -379,17 +424,26 @@ impl RescueInput {
         Ok(bound)
     }
 
-    fn requested(&self, analysis: &Analysis<'_>) -> BTreeSet<String> {
+    /// The pairs a decision needs at this stage: witness candidates in witness order, then,
+    /// for the competitor panel, every other panel reference by ID.
+    fn requested(&self, analysis: &Analysis<'_>) -> Vec<String> {
+        let mut ids: Vec<String> = analysis.candidates.iter().map(|r| r.id.clone()).collect();
         match analysis.stage {
-            Stage::Witness => analysis.candidates.iter().map(|r| r.id.clone()).collect(),
-            Stage::Panel => self
-                .panel
-                .references()
-                .iter()
-                .map(|r| r.id.clone())
-                .collect(),
-            _ => BTreeSet::new(),
+            Stage::Witness => {}
+            Stage::Panel => {
+                let mut rest: Vec<String> = self
+                    .panel
+                    .references()
+                    .iter()
+                    .map(|r| r.id.clone())
+                    .filter(|id| !ids.contains(id))
+                    .collect();
+                rest.sort();
+                ids.extend(rest);
+            }
+            _ => ids.clear(),
         }
+        ids
     }
 
     fn skani_policy(&self) -> Policy {
@@ -425,9 +479,9 @@ impl RescueInput {
             })
             .collect();
         let state = match nearest {
-            None => "no_estimate",
-            Some(n) if n.ani >= species_ani => "at_or_above_96_v1_route",
-            Some(n) if n.ani < lower => "below_band_v1_route",
+            None => TriggerState::NoEstimate,
+            Some(n) if n.ani >= species_ani => TriggerState::AtOrAboveSpecies,
+            Some(n) if n.ani < lower => TriggerState::BelowBand,
             Some(n) => {
                 let tied: BTreeSet<_> = hits
                     .iter()
@@ -435,15 +489,15 @@ impl RescueInput {
                     .map(hit_parent)
                     .collect();
                 if tied.len() > 1 {
-                    "triggered_cross_parent_tie"
+                    TriggerState::CrossParentTie
                 } else if n.species.is_none() {
-                    "triggered_unnamed_nearest"
+                    TriggerState::UnnamedNearest
                 } else if hits.iter().all(|r| Some(hit_parent(r)) == nearest_parent) {
-                    "triggered_no_measured_contrast"
+                    TriggerState::NoMeasuredContrast
                 } else if candidates.is_empty() {
-                    "triggered_no_skani_witness"
+                    TriggerState::NoSkaniWitness
                 } else {
-                    "triggered_with_witness_candidate"
+                    TriggerState::WitnessCandidate
                 }
             }
         };
@@ -544,19 +598,21 @@ impl RescueInput {
         }
     }
 
-    fn counts(&self, requested: &BTreeSet<String>, anim: &BoundAnim) -> Value {
+    /// Pair counts. Each attempted pair is completed, failed (an orientation failed) or
+    /// missing an orientation record; a required pair with no record is not run.
+    fn counts(&self, requested: &[String], anim: &BoundAnim) -> Value {
         let attempted: Vec<&Pair> = requested
             .iter()
             .filter_map(|id| anim.pairs.get(id))
             .collect();
-        let completed: Vec<_> = attempted.iter().filter(|p| p.finished()).collect();
-        let no_alignment = completed
-            .iter()
-            .filter(|p| p.present().any(|o| o == Orientation::NoAlignment))
-            .count();
+        let count = |f: fn(&Pair) -> bool| attempted.iter().filter(|p| f(p)).count();
+        let no_alignment =
+            count(|p| p.finished() && p.present().any(|o| o == Orientation::NoAlignment));
         json!({"unit": "reciprocal_pair", "required": requested.len(), "attempted": attempted.len(),
-            "completed": completed.len(), "no_alignment": no_alignment,
-            "failed": attempted.len() - completed.len(), "not_run": requested.len() - attempted.len(),
+            "completed": count(Pair::finished), "no_alignment": no_alignment,
+            "failed": count(Pair::failed),
+            "missing_orientation": count(|p| !p.finished() && !p.failed()),
+            "not_run": requested.len() - attempted.len(),
             "supplied_outside_plan": anim.pairs.keys().filter(|id| !requested.contains(*id)).count()})
     }
 
@@ -581,7 +637,7 @@ impl RescueInput {
     }
 
     fn trigger_json(&self, a: &Analysis<'_>) -> Value {
-        json!({"trigger": a.band, "trigger_state": a.state,
+        json!({"trigger": a.band, "trigger_state": a.state.as_str(),
         "max_skani_ani_percent": a.nearest.map(|n| percent(n.ani)),
         "nearest_parent": a.nearest.filter(|_| a.band).map(|n| {
             let mut parent = hit_parent(n).to_json();
@@ -605,7 +661,8 @@ impl RescueInput {
             let status = match anim.pairs.get(id) {
                 None => "outstanding",
                 Some(p) if p.finished() => "measured",
-                Some(_) => "failed",
+                Some(p) if p.failed() => "failed",
+                Some(_) => "missing_orientation",
             };
             json!({"reference_id": id, "reference_sha256": source(id),
                 "stage": if a.candidates.iter().any(|c| &c.id == id) { "witness" } else { pair_stage },
@@ -615,12 +672,9 @@ impl RescueInput {
             if a.stage != stage {
                 return vec![];
             }
-            requested
-                .iter()
-                .filter(|id| !anim.pairs.get(*id).is_some_and(|p| p.finished()))
-                .collect()
+            requested.iter().filter(|id| !anim.finished(id)).collect()
         };
-        let witnesses = if a.state == "triggered_with_witness_candidate" {
+        let witnesses = if a.state == TriggerState::WitnessCandidate {
             a.candidates.clone()
         } else {
             vec![]
@@ -674,10 +728,7 @@ impl RescueInput {
                     reasons.insert("skani_coverage_not_rescuable".into());
                 }
                 Stage::Witness => {
-                    let incomplete = a
-                        .candidates
-                        .iter()
-                        .any(|r| !anim.pairs.get(&r.id).is_some_and(|p| p.finished()));
+                    let incomplete = a.candidates.iter().any(|r| !anim.finished(&r.id));
                     reasons.insert(
                         if incomplete {
                             "ANIm_incomplete"
@@ -693,7 +744,7 @@ impl RescueInput {
                         .panel
                         .references()
                         .iter()
-                        .any(|r| !anim.pairs.get(&r.id).is_some_and(|p| p.finished()));
+                        .any(|r| !anim.finished(&r.id));
                     competitor_evaluation = if missing { "incomplete" } else { "complete" };
                     if missing {
                         reasons.insert("ANIm_competitor_incomplete".into());
@@ -752,7 +803,7 @@ impl RescueInput {
             let pair = anim.pairs.get(&r.id);
             json!({"reference_id": r.id, "skani": skani_triple(r), "anim": pair.map(|p| p.to_json()),
                 "strict_pass": pair.is_some_and(|p| p.strict(t.species())),
-                "finished": pair.is_some_and(|p| p.finished())})
+                "finished": anim.finished(&r.id)})
         }).collect();
         let mut value = json!({"schema": REPORT_SCHEMA,
             "implementation": {"name": env!("CARGO_PKG_NAME"), "version": env!("CARGO_PKG_VERSION")},
@@ -784,14 +835,22 @@ impl RescueInput {
         Decision::from_value(value)
     }
 
-    /// The five highest skani references, plus every exact tie at fifth place. Ties are
-    /// ordered by reference ID for display only.
-    fn top_references(&self, anim: &BoundAnim) -> Vec<Value> {
+    /// The five highest skani references, plus every exact tie at fifth place.
+    fn shown(&self) -> &[Reference] {
         let hits = self.evidence.references();
         let cut = hits.get(4).map(|r| r.ani);
+        let n = hits
+            .iter()
+            .take_while(|r| cut.is_none_or(|c| r.ani >= c))
+            .count();
+        &hits[..n]
+    }
+
+    /// The [`shown`](Self::shown) references. Ties are ordered by reference ID for display only.
+    fn top_references(&self, anim: &BoundAnim) -> Vec<Value> {
+        let hits = self.shown();
         let mut group = 0;
         hits.iter()
-            .take_while(|r| cut.is_none_or(|c| r.ani >= c))
             .enumerate()
             .map(|(i, r)| {
                 if i > 0 && hits[i - 1].ani != r.ani {
@@ -812,13 +871,7 @@ impl RescueInput {
     /// whether or not it reaches the displayed top references.
     fn panel_summary(&self, anim: &BoundAnim, a: &Analysis<'_>) -> Vec<Value> {
         let hits = self.evidence.references();
-        let shown: BTreeSet<&str> = {
-            let cut = hits.get(4).map(|r| r.ani);
-            hits.iter()
-                .take_while(|r| cut.is_none_or(|c| r.ani >= c))
-                .map(|r| r.id.as_str())
-                .collect()
-        };
+        let shown: BTreeSet<&str> = self.shown().iter().map(|r| r.id.as_str()).collect();
         let challenged: BTreeSet<&str> = a
             .challenges
             .iter()
@@ -832,7 +885,7 @@ impl RescueInput {
             let returned: Vec<&Reference> = hits.iter().filter(|h| members.iter().any(|m| m.id == h.id)).collect();
             let best = returned.first().map(|h| h.ani);
             let unmeasured: Vec<&String> = members.iter().map(|m| &m.id)
-                .filter(|id| !anim.pairs.get(*id).is_some_and(|p| p.finished())).collect();
+                .filter(|id| !anim.finished(id)).collect();
             (best, json!({"parent": parent.to_json(), "panel_reference_count": members.len(),
                 "returned_reference_count": returned.len(),
                 "best_skani_ani_percent": best.map(percent),

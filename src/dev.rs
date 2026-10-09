@@ -1,10 +1,10 @@
 //! Files, argument parsing and artifact verification for the feature-gated development binary.
 use crate::decision::{decide, Policy, V1_POLICY_ID};
-use crate::evidence::SavedEvidence;
-use crate::rescue::{AnimRecords, BoundAnim, Panel, RescueInput, Thresholds, V2_POLICY_ID};
+use crate::evidence::{sha256_hex, SavedEvidence};
+use crate::panel::Panel;
+use crate::rescue::{AnimRecords, BoundAnim, RescueInput, Thresholds, V2_POLICY_ID};
 use clap::{Args, Parser, Subcommand};
 use serde_json::{json, Value};
-use sha2::{Digest, Sha256};
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
@@ -66,8 +66,9 @@ struct Inputs {
 }
 #[derive(Debug, Args)]
 struct V2Inputs {
-    /// Saved ANIm pair records (JSON Lines), or a directory of `.jsonl` files. Only records
-    /// for this query and for pairs the dry plan requests are bound
+    /// Saved ANIm pair records: JSON Lines, one pretty-printed `.json` record, or a directory
+    /// of `.jsonl` files. Only records for this query and for pairs the dry plan requests are
+    /// bound
     #[arg(long, requires = "anim_method_profile")]
     anim_records: Vec<PathBuf>,
     /// The ANIm method profile every bound record must carry
@@ -98,7 +99,7 @@ type Pins = Vec<(PathBuf, String)>;
 
 fn read_bytes(path: &Path, expected: Option<&str>, pins: &mut Pins) -> Result<Vec<u8>, String> {
     let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
-    let hash = format!("{:x}", Sha256::digest(&bytes));
+    let hash = sha256_hex(&bytes);
     if expected.is_some_and(|digest| digest != hash) {
         return Err(format!("{}: SHA-256 mismatch", path.display()));
     }
@@ -111,7 +112,7 @@ fn read(path: &Path, expected: Option<&str>, pins: &mut Pins) -> Result<String, 
 }
 fn verify_artifact(path: &Path, expected: &str, pins: &mut Pins) -> Result<(), String> {
     let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
-    let actual = format!("{:x}", Sha256::digest(&bytes));
+    let actual = sha256_hex(&bytes);
     if actual != expected {
         return Err(format!("{}: artifact SHA-256 mismatch", path.display()));
     }
@@ -187,7 +188,7 @@ fn load(
     Ok(saved)
 }
 
-/// Every `.jsonl` file named, or found directly inside a named directory, in name order.
+/// Every file named, plus the `.jsonl` files directly inside a named directory, in name order.
 fn record_files(paths: &[PathBuf]) -> Result<Vec<PathBuf>, String> {
     let mut files = Vec::new();
     for path in paths {
@@ -240,8 +241,13 @@ fn rescue_inputs(
     let mut files = Vec::new();
     for path in record_files(&v2.anim_records)? {
         let text = read(&path, None, pins)?;
-        let parsed =
-            AnimRecords::from_jsonl(&text).map_err(|e| format!("{}: {e}", path.display()))?;
+        // A `.json` file holds one record as the per-pair operation writes it.
+        let parsed = if path.extension().is_some_and(|x| x == "json") {
+            AnimRecords::from_json(&text)
+        } else {
+            AnimRecords::from_jsonl(&text)
+        }
+        .map_err(|e| format!("{}: {e}", path.display()))?;
         files.push(
             json!({"file_name": path.file_name().map(|n| n.to_string_lossy()),
             "sha256": pins.last().expect("pinned").1, "records": parsed.len()}),
@@ -313,7 +319,7 @@ fn execute(command: DevCommand) -> Result<String, String> {
     // Recheck the originally pinned bytes before a successful result can leave this wrapper.
     for (path, hash) in &pins {
         let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
-        if format!("{:x}", Sha256::digest(bytes)) != *hash {
+        if sha256_hex(&bytes) != *hash {
             return Err(format!("{}: input changed during decision", path.display()));
         }
     }

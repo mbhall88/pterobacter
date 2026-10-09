@@ -61,6 +61,7 @@ fn every_v2_result_carries_the_p1_decision_completeness_count_and_comparator_fie
             "completed",
             "no_alignment",
             "failed",
+            "missing_orientation",
             "not_run",
         ] {
             assert!(d["counts"][key].is_u64(), "{id}: counts.{key}");
@@ -86,7 +87,11 @@ fn every_v2_result_carries_the_p1_decision_completeness_count_and_comparator_fie
 
 #[test]
 fn a_rescue_changes_species_only_and_reports_v1_beside_it() {
-    let d = decide(&rescuable());
+    let mut input = rescuable();
+    input["anim"]["A1"] = json!({"directions": [
+        {"id": "QR", "status": "complete", "ani": "96.4", "aq": "85", "ar": "86"},
+        {"id": "RQ", "status": "complete", "ani": "96.2", "aq": "81", "ar": "85"}]});
+    let d = decide(&input);
     assert_eq!(d["status"], "assigned");
     assert_eq!(d["species_id"], "A");
     assert_eq!(d["species_name"], "Synthetic A");
@@ -98,12 +103,16 @@ fn a_rescue_changes_species_only_and_reports_v1_beside_it() {
     assert_eq!(d["rescue_status"], "rescued");
     assert_eq!(d["witness"]["reference_id"], "A1");
     assert_eq!(d["witness"]["anim"]["QR"]["D"], 2_000_000_000_000u64);
+    // Conservative minima across both orientations, never an average.
+    assert_eq!(d["witness"]["anim"]["minimum_identity_percent"], 96.2);
+    assert_eq!(d["witness"]["anim"]["minimum_af_percent"], 81.0);
     assert_eq!(d["legacy_v1_result"]["status"], "unresolved");
     assert_eq!(d["legacy_v1_result"]["species_id"], Value::Null);
     assert_eq!(
         d["counts"],
         json!({"unit": "reciprocal_pair", "required": 3, "attempted": 3,
-        "completed": 3, "no_alignment": 0, "failed": 0, "not_run": 0, "supplied_outside_plan": 0})
+        "completed": 3, "no_alignment": 0, "failed": 0, "missing_orientation": 0, "not_run": 0,
+        "supplied_outside_plan": 0})
     );
 }
 

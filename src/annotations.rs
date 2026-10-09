@@ -1,7 +1,6 @@
 //! Optional frozen v1 method and problem-warning envelopes. Contract validation is pure;
 //! front ends verify the external artifact bytes before reporting success.
 use crate::evidence::{is_sha256, EvidenceError, Percent, SavedEvidence};
-use crate::panel::Panel;
 use serde_json::{json, Value};
 use std::collections::HashSet;
 
@@ -175,8 +174,70 @@ fn warnings(envelope: &Value, evidence: &SavedEvidence) -> Result<Vec<Value>, Ev
 fn diagnostics(
     envelope: &Value,
     evidence: &SavedEvidence,
-    panel: &Panel,
+    inventory: &Value,
 ) -> Result<Vec<Value>, EvidenceError> {
+    exact(
+        inventory,
+        &[
+            "schema_version",
+            "package_sha256",
+            "component_id",
+            "references",
+            "representation",
+        ],
+        "invalid inventory fields",
+    )?;
+    require(
+        inventory["schema_version"] == "1.0-shadow-primary-inventory"
+            && inventory["package_sha256"] == evidence.provenance().reference_package_sha256
+            && inventory["component_id"] == "primary_whole",
+        "invalid primary inventory binding",
+    )?;
+    let refs = inventory["references"]
+        .as_array()
+        .ok_or_else(|| EvidenceError::Invalid("inventory references required".into()))?;
+    require(
+        refs.len() == evidence.reference_count(),
+        "inventory count mismatch",
+    )?;
+    let mut inventory_ids = HashSet::new();
+    for r in refs {
+        require(
+            text(&r["reference_id"])
+                && inventory_ids.insert(r["reference_id"].as_str())
+                && r["source_sha256"].as_str().is_some_and(is_sha256),
+            "invalid or duplicate inventory reference",
+        )?;
+    }
+    for hit in evidence.references() {
+        let r = refs
+            .iter()
+            .find(|r| r["reference_id"] == hit.id)
+            .ok_or_else(|| EvidenceError::Invalid("reference outside primary inventory".into()))?;
+        for (key, expected) in [
+            (
+                "species_id",
+                hit.species.as_ref().map_or("", |s| s.id.as_str()),
+            ),
+            (
+                "species_name",
+                hit.species.as_ref().map_or("", |s| s.name.as_str()),
+            ),
+            (
+                "subspecies_id",
+                hit.subspecies.as_ref().map_or("", |s| s.id.as_str()),
+            ),
+            (
+                "subspecies_name",
+                hit.subspecies.as_ref().map_or("", |s| s.name.as_str()),
+            ),
+            ("lineage_id", hit.lineage_id.as_deref().unwrap_or("")),
+            ("name_status", hit.name_status.as_str()),
+            ("reference_role", hit.reference_role.as_str()),
+        ] {
+            require(r[key] == expected, "inventory concept/name/role mismatch")?;
+        }
+    }
     let mut ids = HashSet::new();
     items(envelope, "diagnostics", "1.0-shadow-diagnostics", evidence)?.iter().map(|d| {
         exact(d, &["diagnostic_id","method","method_version","reference_id","reference_source_sha256",
@@ -187,8 +248,8 @@ fn diagnostics(
             && d["skani_version"] == evidence.provenance().engine_version, "diagnostic scope/version mismatch")?;
         let hit = evidence.references().iter().find(|r| d["reference_id"] == r.id)
             .ok_or_else(|| EvidenceError::Invalid("diagnostic reference absent from returned skani evidence".into()))?;
-        let reference = panel.get(&hit.id).expect("inventory validated against the evidence");
-        require(d["reference_source_sha256"] == reference.source_sha256.as_str(), "diagnostic reference hash mismatch")?;
+        let reference = refs.iter().find(|r| r["reference_id"] == hit.id).expect("inventory validated");
+        require(d["reference_source_sha256"] == reference["source_sha256"], "diagnostic reference hash mismatch")?;
         exact(&d["skani"], &["ani_percent","af_query_percent","af_reference_percent"], "invalid skani triple fields")?;
         for (key, expected) in [("ani_percent",hit.ani),("af_query_percent",hit.af_query),("af_reference_percent",hit.af_reference)] {
             let value: Percent = serde_json::from_value(d["skani"][key].clone())?;
@@ -233,11 +294,7 @@ impl SavedEvidence {
             "diagnostics and reference inventory must be paired",
         )?;
         let method = if let (Some(d), Some(i)) = (method_json, inventory_json) {
-            diagnostics(
-                &serde_json::from_str(d)?,
-                &self,
-                &Panel::from_json(i, &self)?,
-            )?
+            diagnostics(&serde_json::from_str(d)?, &self, &serde_json::from_str(i)?)?
         } else {
             vec![]
         };

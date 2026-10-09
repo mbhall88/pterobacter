@@ -8,7 +8,8 @@ use serde_json::{json, Number, Value};
 use sha2::{Digest, Sha256};
 use std::str::FromStr;
 use terobacter::evidence::{EvidenceError, SavedEvidence};
-use terobacter::rescue::{AnimRecords, Panel, RescueInput, Thresholds};
+use terobacter::panel::Panel;
+use terobacter::rescue::{AnimRecords, RescueInput, Thresholds};
 
 pub const PROFILE: &str = "synthetic-anim-profile";
 pub const QUERY_SHA256: &str = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
@@ -175,8 +176,27 @@ pub fn warnings_text(evidence: &SavedEvidence, ids: &[&str]) -> String {
     .to_string()
 }
 
-/// One ANIm orientation as an integer record in biological roles.
-pub fn orientation(status: &str, ani: &str, aq: &str, ar: &str) -> Value {
+/// One ANIm orientation as an integer record in biological roles. `QR` has the reference as
+/// its native reference; `RQ` swaps the native axes.
+pub fn orientation(
+    direction: &str,
+    reference: &str,
+    status: &str,
+    ani: &str,
+    aq: &str,
+    ar: &str,
+) -> Value {
+    let (native_reference, native_query) = match direction {
+        "QR" => (reference, "query"),
+        _ => ("query", reference),
+    };
+    let mut out = orientation_metrics(status, ani, aq, ar);
+    out["native_reference_id"] = native_reference.into();
+    out["native_query_id"] = native_query.into();
+    out
+}
+
+fn orientation_metrics(status: &str, ani: &str, aq: &str, ar: &str) -> Value {
     match status {
         "complete" => {
             // identity = 100 (D - 2E) / D = 100 (LENGTH - E) / LENGTH with D = 2 * LENGTH, and
@@ -202,9 +222,10 @@ pub fn orientation(status: &str, ani: &str, aq: &str, ar: &str) -> Value {
 pub fn pair_record(reference: &str, finished: bool, orientations: &str) -> String {
     let record = json!({"schema": "terobacter-anim-pair-v1",
         "status": if finished { "complete" } else { "incomplete" },
-        "query": {"id": "query", "sha256": QUERY_SHA256, "total_bases": LENGTH},
+        "query": {"id": "query", "sha256": QUERY_SHA256, "total_bases": LENGTH,
+            "scope": "whole_assembly", "component": "query-whole-assembly"},
         "reference": {"id": reference, "sha256": sha256(reference), "total_bases": LENGTH,
-            "component": "primary_whole"},
+            "scope": "whole_assembly", "component": "primary_whole"},
         "method": {"profile": PROFILE}, "orientations": "@orientations@", "error": null});
     record
         .to_string()
@@ -220,6 +241,8 @@ pub fn records_text(input: &Value) -> String {
             .iter()
             .map(|d| {
                 let o = orientation(
+                    d["id"].as_str().unwrap(),
+                    reference,
                     d["status"].as_str().unwrap(),
                     d["ani"].as_str().unwrap_or("0"),
                     d["aq"].as_str().unwrap_or("0"),

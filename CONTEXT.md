@@ -32,7 +32,7 @@ Vocabulary for the Terobacter tool, which classifies Enterobacter isolate assemb
 
 **Witness**: The reference that satisfies the ANI and aligned-fraction gates for the called species. It is evidence for the call, not the call itself. All of a witness's gates must pass on that one reference.
 
-**Parent**: The taxon a reference belongs to for the purpose of finding competitors: its species, else its lineage, else the reference alone. Unmapped references are never merged into one parent.
+**Parent**: The taxon a reference belongs to for the purpose of finding competitors: its species, else its lineage, else the reference alone (reported as `untyped_reference`). Unmapped references are never merged into one parent.
 
 **Front end**: Code that turns user input into evidence and a decision into output: the command line today, possibly a browser or GUI later. Front ends call the decision logic and never contain it.
 

@@ -158,3 +158,48 @@ fn bindings_follow_the_mask_setting() {
     assert_eq!(d["reasons"], json!(["ANIm_incomplete"]));
     assert_eq!(d["rescue_status"], "incomplete");
 }
+
+#[test]
+fn records_with_unknown_states_swapped_roles_or_another_scope_are_rejected() {
+    let case = p1::case("strict_above_promotes");
+    let text = p1::records_text(&case["input"]);
+    let first = text.lines().next().unwrap();
+    assert!(AnimRecords::from_jsonl(first).is_ok());
+    for (from, to, expected) in [
+        (
+            "\"native_reference_id\":\"A1\",\"status\":\"aligned\"}",
+            "\"native_reference_id\":\"A1\",\"status\":\"alligned\"}",
+            "unknown ANIm orientation status",
+        ),
+        (
+            "\"native_query_id\":\"query\"",
+            "\"native_query_id\":\"A1\"",
+            "native reference and query",
+        ),
+        (
+            "\"scope\":\"whole_assembly\"",
+            "\"scope\":\"chromosome\"",
+            "binding",
+        ),
+        (
+            "\"component\":\"primary_whole\"",
+            "\"component\":\"historical_chromosomes\"",
+            "component",
+        ),
+    ] {
+        let changed = first.replacen(from, to, 1);
+        assert_ne!(changed, first, "{from}");
+        let error = AnimRecords::from_jsonl(&changed).unwrap_err();
+        assert!(error.to_string().contains(expected), "{expected}: {error}");
+    }
+}
+
+#[test]
+fn a_single_pretty_printed_pair_record_is_read() {
+    let case = p1::case("strict_above_promotes");
+    let text = p1::records_text(&case["input"]);
+    let first: Value = serde_json::from_str(text.lines().next().unwrap()).unwrap();
+    let pretty = serde_json::to_string_pretty(&first).unwrap();
+    assert!(AnimRecords::from_jsonl(&pretty).is_err());
+    assert_eq!(AnimRecords::from_json(&pretty).unwrap().len(), 1);
+}

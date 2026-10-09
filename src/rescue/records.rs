@@ -1,4 +1,5 @@
-//! Saved reciprocal ANIm pair records: exact integers in biological roles, one line per pair.
+//! Saved reciprocal ANIm pair records: exact integers in biological roles, one record per line
+//! or one per file.
 //!
 //! This reads the subset of the per-pair record (`terobacter-anim-pair-v1`) that a decision
 //! needs. Receipts and native artifacts are the producer's concern; fields not listed here are
@@ -7,15 +8,13 @@ use std::cmp::Ordering;
 
 use serde::Deserialize;
 
-use crate::evidence::{is_sha256, EvidenceError};
+use crate::evidence::{invalid, is_sha256, EvidenceError};
 
 use super::thresholds::Exact;
 
 pub(crate) const PAIR_SCHEMA: &str = "terobacter-anim-pair-v1";
-
-fn invalid<T>(message: impl Into<String>) -> Result<T, EvidenceError> {
-    Err(EvidenceError::Invalid(message.into()))
-}
+const WHOLE_ASSEMBLY: &str = "whole_assembly";
+const PRIMARY_COMPONENT: &str = "primary_whole";
 
 /// One ANIm orientation, as measured.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -92,8 +91,32 @@ impl Orientation {
                 .is_some_and(|o| o != Ordering::Less)
     }
 
+    /// Identity for display; `None` unless aligned.
+    pub(crate) fn identity_percent(&self) -> Option<f64> {
+        self.identity().map(|(n, d)| n as f64 / d as f64)
+    }
+
+    /// Query and reference AF for display; zero with no alignment, `None` when failed.
+    pub(crate) fn af_percents(&self) -> Option<[f64; 2]> {
+        let percent = |covered: u64, length: u64| 100.0 * covered as f64 / length as f64;
+        match *self {
+            Orientation::Aligned {
+                query_covered,
+                query_length,
+                reference_covered,
+                reference_length,
+                ..
+            } => Some([
+                percent(query_covered, query_length),
+                percent(reference_covered, reference_length),
+            ]),
+            Orientation::NoAlignment => Some([0.0, 0.0]),
+            Orientation::Failed => None,
+        }
+    }
+
     pub(crate) fn to_json(self) -> serde_json::Value {
-        let percent = |n: u128, d: u128| n as f64 / d as f64;
+        let [af_query, af_reference] = self.af_percents().unwrap_or([0.0, 0.0]);
         match self {
             Orientation::Aligned {
                 d,
@@ -102,16 +125,14 @@ impl Orientation {
                 query_length,
                 reference_covered,
                 reference_length,
-            } => {
-                let (num, den) = self.identity().expect("aligned");
-                serde_json::json!({"status": "aligned", "identity_percent": percent(num, den),
-                    "af_query_percent": percent(100 * u128::from(query_covered), u128::from(query_length)),
-                    "af_reference_percent": percent(100 * u128::from(reference_covered), u128::from(reference_length)),
-                    "D": d, "E": e, "query_covered": query_covered, "query_length": query_length,
-                    "reference_covered": reference_covered, "reference_length": reference_length})
-            }
+            } => serde_json::json!({"status": "aligned",
+                "identity_percent": self.identity_percent(),
+                "af_query_percent": af_query, "af_reference_percent": af_reference,
+                "D": d, "E": e, "query_covered": query_covered, "query_length": query_length,
+                "reference_covered": reference_covered, "reference_length": reference_length}),
             Orientation::NoAlignment => serde_json::json!({"status": "no_alignment",
-                "identity_percent": null, "af_query_percent": 0, "af_reference_percent": 0}),
+                "identity_percent": null, "af_query_percent": af_query,
+                "af_reference_percent": af_reference}),
             Orientation::Failed => serde_json::json!({"status": "failed"}),
         }
     }
@@ -153,6 +174,8 @@ struct RawInput {
     id: Option<String>,
     sha256: String,
     total_bases: u64,
+    scope: String,
+    component: String,
 }
 
 #[derive(Deserialize)]
@@ -172,6 +195,8 @@ struct RawOrientations {
 #[derive(Deserialize)]
 struct RawOrientation {
     method_profile: String,
+    native_reference_id: String,
+    native_query_id: String,
     status: String,
     metrics: Option<RawMetrics>,
 }
@@ -191,14 +216,27 @@ struct RawMetrics {
     query_length: u64,
 }
 
-fn orientation(
-    raw: RawOrientation,
-    profile: &str,
+/// The pair's inputs: method profile, base counts and the native (reference, query) IDs this
+/// orientation must name. Metrics are in biological roles whatever the native axes.
+struct Expected<'a> {
+    profile: &'a str,
     query_bases: Option<u64>,
     reference_bases: Option<u64>,
-) -> Result<Orientation, EvidenceError> {
+    native: Option<(&'a str, &'a str)>,
+}
+
+fn orientation(raw: RawOrientation, expected: &Expected<'_>) -> Result<Orientation, EvidenceError> {
+    let Expected {
+        profile,
+        query_bases,
+        reference_bases,
+        native,
+    } = *expected;
     if raw.method_profile != profile {
         return invalid("an orientation's method profile differs from its pair");
+    }
+    if native.is_some_and(|(r, q)| raw.native_reference_id != r || raw.native_query_id != q) {
+        return invalid("an orientation's native reference and query do not match its direction");
     }
     let metrics = |status: &str| -> Result<RawMetrics, EvidenceError> {
         let Some(m) = raw.metrics else {
@@ -248,13 +286,14 @@ fn orientation(
             }
             Ok(Orientation::NoAlignment)
         }
-        _ => Ok(Orientation::Failed),
+        "error" | "not_run" => Ok(Orientation::Failed),
+        other => invalid(format!("unknown ANIm orientation status {other}")),
     }
 }
 
 fn input(raw: Option<RawInput>, role: &str) -> Result<Option<RawInput>, EvidenceError> {
     if let Some(i) = &raw {
-        if !is_sha256(&i.sha256) || i.total_bases == 0 {
+        if !is_sha256(&i.sha256) || i.total_bases == 0 || i.scope != WHOLE_ASSEMBLY {
             return invalid(format!("invalid {role} binding in ANIm record"));
         }
     }
@@ -271,7 +310,11 @@ impl AnimRecords {
             .filter(|(_, l)| !l.trim().is_empty())
         {
             let at = |e: EvidenceError| {
-                EvidenceError::Invalid(format!("ANIm record line {}: {e}", n + 1))
+                let detail = match e {
+                    EvidenceError::Invalid(message) => message,
+                    other => other.to_string(),
+                };
+                EvidenceError::Invalid(format!("ANIm record line {}: {detail}", n + 1))
             };
             let raw: RawRecord = serde_json::from_str(line).map_err(|e| at(e.into()))?;
             records.push(Self::record(raw).map_err(at)?);
@@ -301,16 +344,34 @@ impl AnimRecords {
             query.as_ref().map(|q| q.total_bases),
             reference.as_ref().map(|r| r.total_bases),
         );
+        if reference
+            .as_ref()
+            .is_some_and(|r| r.component != PRIMARY_COMPONENT)
+        {
+            return invalid("ANIm reference is not from the primary whole-assembly component");
+        }
         let profile = raw.method.profile;
+        // QR aligns the query to the reference as native reference; RQ swaps the axes.
+        let native_ids = query
+            .as_ref()
+            .and_then(|q| q.id.as_deref())
+            .zip(reference.as_ref().and_then(|r| r.id.as_deref()))
+            .map(|(q, r)| (r, q));
+        let expected = |native| Expected {
+            profile: &profile,
+            query_bases: qb,
+            reference_bases: rb,
+            native,
+        };
         let qr = raw
             .orientations
             .qr
-            .map(|o| orientation(o, &profile, qb, rb))
+            .map(|o| orientation(o, &expected(native_ids)))
             .transpose()?;
         let rq = raw
             .orientations
             .rq
-            .map(|o| orientation(o, &profile, qb, rb))
+            .map(|o| orientation(o, &expected(native_ids.map(|(r, q)| (q, r)))))
             .transpose()?;
         let finished = [qr, rq].iter().all(|o| o.is_some_and(|o| o.finished()));
         if (raw.status == "complete") != finished {
@@ -325,6 +386,14 @@ impl AnimRecords {
             profile,
             qr,
             rq,
+        })
+    }
+
+    /// Parse one pair record, as the per-pair operation writes it.
+    pub fn from_json(text: &str) -> Result<Self, EvidenceError> {
+        let raw: RawRecord = serde_json::from_str(text)?;
+        Ok(AnimRecords {
+            records: vec![Self::record(raw)?],
         })
     }
 

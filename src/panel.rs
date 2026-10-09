@@ -5,13 +5,9 @@ use std::collections::{BTreeSet, HashSet};
 
 use serde::Deserialize;
 
-use crate::evidence::{is_sha256, EvidenceError, SavedEvidence, Taxon};
+use crate::evidence::{invalid, is_sha256, EvidenceError, SavedEvidence, Taxon};
 
 const INVENTORY_SCHEMA: &str = "1.0-shadow-primary-inventory";
-
-fn invalid<T>(message: impl Into<String>) -> Result<T, EvidenceError> {
-    Err(EvidenceError::Invalid(message.into()))
-}
 
 /// One primary reference, whether or not skani returned it.
 #[derive(Debug, Clone, PartialEq, Eq)]
