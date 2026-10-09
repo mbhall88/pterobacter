@@ -2,7 +2,7 @@
 
 Redistribute binaries with Terobacter's own [LICENSE](LICENSE), the generated [THIRDPARTY.json](THIRDPARTY.json) bundle and [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt). Only dependencies selected for a build are linked into its binary.
 
-[cargo-bundle-licenses](https://github.com/sstadick/cargo-bundle-licenses) 4.2.0 collects licence texts for the locked runtime graph, including target-specific dependencies. The supplement retains source authors and repositories, transitive build dependency notices and source texts absent from the bundle. These include native code bundled with lzma-sys, bzip2-sys and tikv-jemalloc-sys, and miniprot's MIT notice for skani's DNA tables and hashing code. The two files replace the individual files formerly in `licenses/`.
+[cargo-bundle-licenses](https://github.com/sstadick/cargo-bundle-licenses) 4.2.0 collects licence texts for the locked runtime graph, including target-specific dependencies. The supplement retains source authors and repositories, transitive build dependency notices and source texts absent from the bundle. These include native code bundled with liblzma-sys, zstd-sys and tikv-jemalloc-sys, and miniprot's MIT notice for skani's DNA tables and hashing code. The two files replace the individual files formerly in `licenses/`.
 
 skani 0.3.2 is vendored from `22da4ae9e44b2e3e686c8e5c71fcd16cec2b9791`, with its supplied MIT licence. partitions is vendored from `adf36eeaa4bb2b0042daa14cef28be36ac9be5da`, Apache-2.0. Both retain their original licence files. See [the fork notes](vendor/README.md) for modified files and compatibility semantics.
 

@@ -26,7 +26,7 @@ fxhash = "0"
 partitions = { path = "../partitions" }
 #partitions = "0.2"
 num-traits = "0"
-needletail = "0.5"
+needletail = "0.7.3"
 simple-logging= "2"
 log = "0.4"
 rayon = "1.5"
