@@ -111,3 +111,5 @@ python investigations/anim/measure.py \
 ```
 
 Inspect CLI comparison before library work. Every subsequent invocation uses the **same** ledger; never delete/reset it to gain budget. `compare_mummer4.py` reads retained data only; `mummer4_diagnostics.py` implements the frozen thread/index/runtime subset and does not replace prior outputs. Cargo watches native source/build trees, records native input hashes and uses a fresh target for this probe; MUMmer3 source-tree invalidation is also corrected (review N1).
+
+Validation:20 Python metric/resource/complete-block tests pass; Clippy with warnings denied for both native probes, Rust formatting and Git whitespace checks pass. Independent Standards/Spec review found a failed-cleanup accounting defect, corrected with an overrun-and-stop fake-clock regression; both rechecks report zero outstanding findings. All15734 artifacts in the original run's manifest verify unchanged. Coordinator acceptance and Michael's backend decision remain pending.
