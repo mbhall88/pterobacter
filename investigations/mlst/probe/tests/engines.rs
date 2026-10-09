@@ -2,7 +2,7 @@
 use mlst_feasibility_probes::engines::{ungapped, Oriented};
 use mlst_feasibility_probes::fasta::{read_assembly, Contig};
 use mlst_feasibility_probes::hsp::revcomp;
-use mlst_feasibility_probes::package::{Allele, Package, LOCI};
+use mlst_feasibility_probes::package::{Allele, Package};
 use mlst_feasibility_probes::rules::{call, Call, Params};
 use std::collections::HashMap;
 use std::io::Write;
@@ -117,5 +117,4 @@ fn assembly_validation_rejects_malformed_input_and_maps_ambiguity_to_n() {
     assert!(read_assembly(&dir.join("missing.fa")).is_err());
     let ok = read_assembly(&write("ok.fa", ">a desc\nacgRn\nT\n")).unwrap();
     assert_eq!((ok[0].name.as_str(), ok[0].seq.as_slice()), ("a", b"ACGNNT".as_slice()));
-    let _ = LOCI;
 }

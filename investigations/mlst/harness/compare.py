@@ -33,7 +33,7 @@ def load_package(pkg):
     return alleles, profiles
 
 
-def derive(tokens, st, exact_locs, alleles, profiles):
+def derive(tokens, exact_locs, alleles, profiles):
     """Importer-level state and profile-compatible candidate ST (mirrors the Enterobacter importer)."""
     codes = [tokens[l] for l in LOCI]
     if any("," in c for c in codes):
@@ -53,12 +53,8 @@ def derive(tokens, st, exact_locs, alleles, profiles):
         if "," in code:
             seqs = {alleles[(l, a)] for a in ids}
             locs = {(x[2], x[3], x[4]) for x in exact_locs if x[0] == l}
-            if len(seqs) > 1 or len(ids) > 1:
-                pass
-            elif len(locs) > 1:
-                repeated.append(l)
-            else:
-                unconfirmed.append(l)
+            if len(seqs) == 1 and len(ids) == 1:  # one allele repeated: copy-supported only at distinct locations
+                (repeated if len(locs) > 1 else unconfirmed).append(l)
     cand = profiles.get(tuple(signature)) if repeated and not unconfirmed and all(s is not None for s in signature) else None
     return state, cand
 
@@ -104,8 +100,8 @@ def main(pkg, comp, cand, prefix):
             rows.append(row)
             continue
         k_call, k_hits, k_exact, raw = read_candidate(d)
-        c_state, c_cand = derive(c_call["tokens"], c_call["ST"], c_exact_to_list(c_exact), alleles, profiles)
-        k_state, k_cand = derive(k_call["tokens"], k_call["ST"], c_exact_to_list(k_exact), alleles, profiles)
+        c_state, c_cand = derive(c_call["tokens"], c_exact_to_list(c_exact), alleles, profiles)
+        k_state, k_cand = derive(k_call["tokens"], c_exact_to_list(k_exact), alleles, profiles)
         diffs = []
         for l in LOCI:
             if c_call["tokens"][l] != k_call["tokens"][l]:

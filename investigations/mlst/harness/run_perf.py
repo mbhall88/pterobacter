@@ -43,9 +43,8 @@ def main(package, fixtures, comp, bins, out):
         for fa in files:
             run_one(label, fa, "single")
     for label in ["comparator", *[b for b in bins if not b.endswith(("asm5", "asm10", "only"))]]:
-        if True:
-            for fa in panel:
-                run_one(label, fa, "panel")
+        for fa in panel:
+            run_one(label, fa, "panel")
 
 
 if __name__ == "__main__":

@@ -83,6 +83,10 @@ All routes except exact-only gave the comparator's call on all 22 performance as
 - **Browser.** The `wasm32` target is not installed here, so none was built. Route D, `bio` and `block-aligner` (`simd_wasm`) are pure Rust with no filesystem need and look WebAssembly-compatible. Obstacles: the allele seed index costs about 100 MiB at start (it could be precomputed into the package); the minimap2 C binding needs a wasm C toolchain plus zlib; both minimap2 variants as used here need a temporary file to index the contigs; `mlst`/BLAST are not an option.
 - **Self-containment.** The minimap2 variant links `libz.so` dynamically; a self-contained build would need static zlib. Routes D and 2 have no native dependencies.
 
+## Other crates surveyed (protocol candidate 3)
+
+A short `cargo info` survey (versions and licences only, no build): `parasail-rs` 0.9.2 (BSD-3-Clause, FFI to C parasail), `edlib_rs` 0.1.2 (MIT/Apache-2.0, FFI to C++), `sassy` 0.2.6 (MIT, SIMD approximate matching), `hyalite` 0.4.0 (MIT, SIMD Smith-Waterman with runtime dispatch), `rust_wfa` 1.0.0 (MIT, pure Rust wavefront), `ksw2-sys` 0.1.0 (MIT, FFI to C ksw2), `cyanea-align` 0.1.1 (Apache-2.0). None was built or measured, because the comparator is ungapped (see "What the comparator does"): a gapped or global aligner only nominates diagonals, and route D shows the diagonal can be found with exact 32-mer seeds, so these add dependency and portability cost (the FFI ones also need a C/C++ toolchain per target) for no parity gain. Only `rust-bio` and `block-aligner` were built, as the route 2 aligners. The raw survey output is in the Enterobacter run.
+
 ## Findings
 
 - The minimap2 binding's `with_seqs_and_ids` passes a `Vec<CString>` pointer where a `*const *const c_char` array is expected (its own doc comment says it works for one sequence but not several), which fits a crash on every assembly with more than one contig. I did not confirm the cause under a debugger. Indexing from a file avoids it.
@@ -92,6 +96,14 @@ All routes except exact-only gave the comparator's call on all 22 performance as
 
 ## Limits
 
+- Cutoff parity is trivial here: the cutoff limitation text comes from the same package and importer on both sides and no engine touches it, so there is nothing to diverge. It is not a measured result.
+- Importer state and candidate ST come from `compare.py`'s `derive()`, a harness reimplementation of the Enterobacter importer's rules applied to both sides. It was not checked against the real importer, and it tests the engine's tokens and exact-hit locations, not an independent state of the candidate. Only `dup_same_twice` and `dup_same_rev` produce a candidate ST (column `comparator_candidate_ST` in `parity-per-fixture.tsv`); every other fixture shows none.
+- The within-locus BLAST report-order check (104,913 adjacent pairs, 0 violations) and the X-drop sweep (11–15; 10, 20, 30 and 59 on seven fixtures; candidate runs deleted afterwards) were ad hoc checks with no script or table kept, here or in the Enterobacter run beyond a note in its commands log. Treat them as reported, not reproducible from here.
+- Route D's 100,002 matched HSPs are in-sample: X-drop 13 was chosen on those same HSPs. The fixtures give no holdout.
+- Route 2's "the aligner adds nothing" is inferred from route D matching, not shown by ablation. Hit-level agreement is reported only for D; other routes report missing-HSP counts.
+- minimap2 was run with the three protocol presets only (asm5, asm10, asm20) and no other tuning, so route 1's sensitivity floor is for those presets.
+- The fixture matrix grew beyond the protocol list (`fragment_60`, `dup_diverged_96`, `dup_same_rev`, `tie_broken_by_one_snp`, `exact_st1648` were added after the list was written; addenda A and B). The list fixed before measurement therefore did not fully bind.
+- `probe/` is a working matcher of roughly 1,300 lines. It is investigation code, not production code, and is not wired into any workspace.
 - Fixtures are synthetic and mine; the rule constants were fitted on them (addenda A, B). Equivalence is tested, not proved.
 - One scheme (*Enterobacter*), one locus family, 249–648-base loci.
 - Candidate engines were measured on one run each; times are indicative.
