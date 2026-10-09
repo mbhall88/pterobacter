@@ -1,0 +1,4 @@
+genomovar_id	parent_concept_id	status	definition_member_count	historical_rule	version	new_query_membership_validated	representative_accession
+GV01	SYN-SS02	informal_operational_ANI_group	2	synthetic_chromosome_ANI_group_rule	2026-01-01-v1	False	GCA_900000006.1
+GV02	SYN-SS02	informal_operational_ANI_group	1	synthetic_chromosome_ANI_group_rule	2026-01-01-v1	False	GCA_900000003.1
+GV03	SYN-SS01	informal_operational_ANI_group	1	synthetic_chromosome_ANI_group_rule	2026-01-01-v1	False	GCA_900000007.1

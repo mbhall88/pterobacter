@@ -1,0 +1,5 @@
+historical_taxon_name	historical_rank	represented_name_bearing_accessions	current_project_species	current_project_stratum	source_date
+Enterobacter syntheticus	species	GCA_900000001.1	Enterobacter syntheticus	Enterobacter syntheticus subsp. syntheticus	2026-01-01
+Enterobacter alter	species	GCA_900000002.1	Enterobacter syntheticus	Enterobacter syntheticus subsp. alter	2026-01-01
+Enterobacter fictus	species	GCA_900000004.1	Enterobacter fictus	Enterobacter fictus	2026-01-01
+Enterobacter orphanus	species				2026-01-01

@@ -33,3 +33,7 @@ Passing these cases shows the implementation follows the contract. It says nothi
 ## Custom-threshold endpoints
 
 `tests/custom_thresholds.rs` and `tests/custom_thresholds_cli.rs` extend the frozen P1-r1 custom cases with literal boundary values at 80 and 100, fractional trigger endpoints, strict reciprocal identity gates, AF80, margin1 and foreign-parent challenges. The derivation is the arithmetic and unchanged safeguards in section 4 of the frozen P1-r1 calling contract, SHA-256 `82a53552a8b57ebaaa60a0e13ed5e90d7a72a60156e7a871d02b2cc4dc53cf00`, together with the acceptance cases pinned above. They use the same synthetic adapter; no genome measurements or new evaluation outcomes are included.
+
+## `reference-v2/`
+
+A synthetic version 2 reference package for the authentication tests. It carries no real reference data. See [its README](reference-v2/README.md) for its contents, derivation and limits.

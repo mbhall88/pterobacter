@@ -1,0 +1,3 @@
+concept_id	rank	project_label	approved_reported_species	nomenclature_status	primary140_reference_count	genomovar173_reference_count	represented_reference_evidence	validated_supported_caller_rank	development_release_scope
+SYN-LN01	lineage	Synthetic lineage L1		informal_reviewed_context_lineage	0	0	False	False	context_only
+SYN-LN02	lineage	Synthetic lineage L2		informal_reviewed_context_lineage	0	0	False	False	context_only

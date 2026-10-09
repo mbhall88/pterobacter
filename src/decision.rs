@@ -5,6 +5,7 @@ use std::collections::HashSet;
 use serde_json::{json, Value};
 
 use crate::evidence::{Percent, Reference, SavedEvidence, Taxon};
+use crate::reference::{PackageError, VerifiedPackage};
 
 pub const V1_POLICY_ID: &str = "conservative-assembly-v1";
 const ASSIGNED: &str = "conditional_assembly_assignment";
@@ -390,8 +391,27 @@ fn rank_output(call: &RankCall<'_>, permitted: bool, reason: &str) -> Value {
     out
 }
 
-/// Apply v1. Missing optional assessments are explicit; they never establish purity.
+/// Apply v1 without a reference package; the reference is reported as not verified.
 pub fn decide(evidence: &SavedEvidence, policy: &Policy) -> Decision {
+    assess(evidence, policy, None)
+}
+
+/// Apply v1 to evidence bound to a verified reference package; other evidence is refused.
+pub fn decide_bound(
+    evidence: &SavedEvidence,
+    package: &VerifiedPackage,
+    policy: &Policy,
+) -> Result<Decision, PackageError> {
+    package.check_evidence(evidence)?;
+    Ok(assess(evidence, policy, Some(package)))
+}
+
+/// Apply v1. Missing optional assessments are explicit; they never establish purity.
+fn assess(
+    evidence: &SavedEvidence,
+    policy: &Policy,
+    package: Option<&VerifiedPackage>,
+) -> Decision {
     let rows: Vec<_> = evidence.references().iter().collect();
     let species = species_rank(&rows, policy);
     let subspecies = subspecies_rank(&rows, species.candidate, policy);
@@ -464,6 +484,7 @@ pub fn decide(evidence: &SavedEvidence, policy: &Policy) -> Decision {
             "query_sha256": provenance.query_sha256, "evidence_sha256": evidence.source_sha256(),
             "verification": "pure_contract_checks; external_artifacts_and_origin_require_file_wrapper"},
         "assignment": assignment,
+        "reference_package": package.map_or_else(|| json!({"status": "not_verified"}), VerifiedPackage::to_value),
         "species": rank_output(&species, assigned, &reason),
         "subspecies": rank_output(&subspecies, assigned, subspecies.reason()),
         "rank_evidence": {"species": species.evidence, "subspecies": subspecies.evidence},

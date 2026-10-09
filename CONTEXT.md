@@ -8,6 +8,10 @@ Vocabulary for the Terobacter tool, which classifies Enterobacter isolate assemb
 
 **Reference panel**: The references a query is compared against. Every returned row is a competitor, not a vote.
 
+**Reference package**: The versioned set of files that holds the reference panel's data, listed with their lengths and SHA-256 digests. A package is authenticated before any decision uses it: its manifest must have the SHA-256 the operator expects, and every listed file must match the listing. Evidence is bound to the package by that same manifest SHA-256, and each reference it names must be one of the package's, with the taxa, names, name status and role the package gives it.
+
+**Reference component**: One of the two components a reference package carries, `primary_whole` or `genomovar_chromosome`. Each has its own databases and build records. Species evidence comes from `primary_whole`.
+
 **Calling policy**: The numerical gates and rules that turn evidence into a call. v1 is `conservative-assembly-v1`, frozen from the 0.2.0 release. v2 is `conservative-assembly-anim-v2`, the P1-r1 contract: v1 plus a species-only ANIm rescue, not yet validated.
 
 **Trigger band**: 94.5 ≤ maximum returned skani ANI < 96.0 (with custom T, max(80, T − 1.5) ≤ ANI < T). Only queries in the band can be rescued.
