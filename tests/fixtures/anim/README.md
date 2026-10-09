@@ -24,3 +24,5 @@ The P1 filtered-delta fixtures below are byte-for-byte copies from the frozen is
 | `overlap.filter` | `62ad9c6a9421986f2f6221874941d21469001e7831ca1ee67b31648bad0a7b7e` |
 | `reverse.filter` | `fcda4be8817e924ece9b3bd85221d884483241e0a8f6ee4c8d83f887ec63c8e3` |
 | `weighted.filter` | `1f8776b68a2c06070e334847ddc28062772298e3cf4d75840d85d98e54080442` |
+
+The CRLF regression rewraps the frozen identical query sequence to ten bases per line and surrounds the reference sequence lines with spaces and tabs. It retains all 120000 bases, descriptions and original-byte hashes, and expects full identical coverage in both orientations.
