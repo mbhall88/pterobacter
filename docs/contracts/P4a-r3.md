@@ -1,6 +1,6 @@
 # P4a-r3 command binding
 
-This binding accompanies `P1-ANIM-MUMMER4-r1`. It leaves the frozen P4a command plan unchanged and maps its R3 placeholder to the development binary. Issue #25 must bind the actual source/build/executable digests and parser fixtures before launching validation.
+This binding accompanies `P1-ANIM-MUMMER4-r1`. It leaves the frozen P4a command plan unchanged and maps its R3 placeholder to the development binary. `mbhall88/Enterobacter#25` must bind the actual source/build/executable digests and parser fixtures before launching validation.
 
 ```sh
 cargo build --locked --features dev --bin terobacter-dev
