@@ -2,6 +2,16 @@
 
 Issue [#1](https://github.com/mbhall88/terobacter/issues/1), 9 October 2026. Investigator: Codex, GPT-6 (the exact backend identifier is not exposed). This directory contains development probes and synthetic engineering measurements, not the production classifier.
 
+**Current compatibility decision, 9 October 2026:** Michael chose to match
+MUMmer3 output for now, accepting the known risk of long N stretches. The
+[maintained MUMmer4 candidate](mummer4-maintenance.md#accepted-compatibility-target)
+already matches all 20 matrix pairs and remains the candidate for further
+integration review. Preserve reference Ns and the frozen column-five identity
+and coverage definitions; do not introduce ambiguity exclusion or switch to
+similarity errors. The [literature check](ani-ambiguity-literature.md) explains
+the upstream long-N workaround. The original comparison below remains historical
+evidence; this decision settles the output target, not production acceptance.
+
 **Recommend embedding MUMmer 3.23 to preserve P1.** The native-stage probe matched the comparator's integers and normalized filtered deltas on all **160 synthetic pairs / 320 orientations**. Minimap2 is faster on these workloads but changes measurements and threshold outcomes. Selecting minimap2 requires a new method profile and explicit scientific change control. Michael retains the route decision.
 
 The preregistered [protocol](protocol.md) fixes fixtures, stop rules and the exact-integer equivalence criterion. [Diagnostic deviations](protocol-deviations.md) retain reader/API problems rather than hiding them. All inputs are generated synthetic DNA. No new biological evaluation, reference-package export, classifier implementation or scientific-policy amendment was performed.

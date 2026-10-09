@@ -5,6 +5,28 @@ requested further exploration because MUMmer4's integration and maintenance may
 outweigh strict upstream compatibility. This extends the [earlier comparison](mummer4.md),
 which remains unchanged. No backend or new scientific method is selected.
 
+## Accepted compatibility target
+
+On 9 October 2026, after reviewing the [ambiguity literature and upstream
+history](ani-ambiguity-literature.md), Michael instructed us to match MUMmer3
+output for now and accept the known long-N risk. Continue with this report's
+maintained MUMmer4 candidate, which preserves reference Ns. Retain literal
+N-to-N equality, the fifth delta-header error field, the P1 span formula and
+inclusive interval-union coverage against all input bases. Do not add a
+known-base denominator or substitute similarity errors.
+
+Upstream introduced reference-N randomization in 2020 to prevent very long N
+stretches from aligning. Removing it may restore that problem; the existing
+fixtures do not establish protection against long N-only anchors. This risk is
+accepted for the current compatibility target, rather than a requirement to
+change the metric now. If it becomes a practical issue, review seed masking
+separately from identity accounting and record any resulting method change.
+
+The existing patch and measurements already implement this target on the
+20-pair matrix, so this decision requires no new alignment run. The modified
+140-reference panel remains unmeasured. Production backend acceptance,
+engineering/platform validation and distribution review remain pending.
+
 **Recommend advancing a small maintained MUMmer4 candidate to review.** Five
 changed upstream lines across three files remove reference-N randomization,
 honor the delta output stream, and repair the public alignment template. The
@@ -57,8 +79,9 @@ This is the stated reason for one new reciprocal CLI3 comparator execution.
 Both directions agree in this self-comparison. Preserving Ns reproduces
 MUMmer3's exact-character treatment; it does not make unknown bases positive
 biological evidence. Using similarity errors instead would alter the frozen
-column-five method. Neither choice is adopted here, and coverage/denominators
-remain unchanged. The earlier preference for MUMmer3 should therefore be read
+column-five method. This diagnostic originally left that choice open; Michael's
+subsequent decision above retains MUMmer3 identity and unchanged
+coverage/denominators. The earlier preference for MUMmer3 should therefore be read
 as a compatibility preference, not a claim that it solves all ambiguity semantics.
 
 ## Shared-process concurrency
@@ -97,9 +120,10 @@ and verify it on upgrades. No maintainer contact or permanent fork was created.
 
 Before accepting a production route:
 
-- Agree on ambiguity treatment, including N–N versus N–base identity and the
-  desired handling of other IUPAC symbols/long masked tracts. Keep the existing
-  P1 comparator and historical results; accept a versioned candidate profile.
+- Use the agreed MUMmer3 output target and keep the P1 comparator and historical
+  results. Bind a reviewed candidate build/profile; parity on other IUPAC symbols
+  and arbitrary masked tracts remains unproven. The known long-N risk is accepted
+  for now, with future fixes subject to explicit compatibility review.
 - Isolate filter RNG and audit native fatal errors/worker exceptions, cancellation
   and resource bounds. The outer catch does not contain upstream exit calls or
   exceptions escaping native worker threads.
