@@ -21,6 +21,9 @@ struct Public {
 
 /// Run the public command: `tero [OPTIONS] <ASSEMBLY>...`, with no subcommands.
 pub fn run_public() -> ExitCode {
+    if let Some(status) = crate::anim::run_worker_if_requested() {
+        return status;
+    }
     let args = Public::parse();
     eprintln!(
         "error: whole-assembly classification is not implemented in this build \

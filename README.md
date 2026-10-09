@@ -19,7 +19,7 @@ There are no subcommands. Whole-assembly classification is not implemented yet: 
 
 ## Build, test, install
 
-You need a recent stable Rust toolchain and [`just`](https://github.com/casey/just).
+You need a recent stable Rust toolchain and [`just`](https://github.com/casey/just). Native ANIm also requires GNU C++ with C++17 support. On macOS, install Homebrew GCC and set `CXX` to its `g++` executable.
 
 ```sh
 just test            # tests as a default build, then with the development feature
@@ -39,6 +39,14 @@ cargo run --features dev --bin terobacter-dev -- saved-evidence tests/fixtures/v
 ```
 
 This reads frozen 0.2.0 saved evidence and prints the v1 species/subspecies decision as JSON, including raw nearest evidence, competitors, scope assessments and all withholding reasons. It runs no new comparisons. See [the v1 contract](docs/v1-decisions.md) for optional bound method/problem envelopes and the supported API boundary.
+
+The reciprocal ANIm development operation measures one pair with the approved maintained MUMmer4 profile. It writes input snapshots, native artifacts and exact integer evidence to a fresh directory:
+
+```sh
+cargo run --features dev --bin terobacter-dev -- anim-pair --query QUERY.fa --reference REFERENCE.fa --output NEW_DIRECTORY
+```
+
+See [the method amendment](docs/contracts/P1-ANIM-MUMMER4-r1.md) and [P4a-r3 command binding](docs/contracts/P4a-r3.md) for provenance, parser replay, resource limits and remaining acceptance gates.
 
 ## Layout
 

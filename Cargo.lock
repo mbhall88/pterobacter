@@ -1787,7 +1787,9 @@ version = "0.0.0"
 dependencies = [
  "assert_cmd",
  "bincode",
+ "cc",
  "clap 4.6.7",
+ "libc",
  "needletail",
  "rayon",
  "serde",

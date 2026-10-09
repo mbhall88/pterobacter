@@ -1,0 +1,5 @@
+R.fasta Q.fasta
+NUCMER
+>R Q 40 40
+10 1 20 11 0 0 0
+0

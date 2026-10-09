@@ -45,6 +45,11 @@ serde = { version = "1.0.229", features = ["derive"] }
 # is rejected instead of being rounded through an f64.
 serde_json = { version = "1.0.151", features = ["arbitrary_precision"] }
 thiserror = "2.0.21"
+libc = "0.2.190"
+sha2 = "0.10.9"
+
+[build-dependencies]
+cc = "1.4.0"
 sha2 = "0.10.9"
 
 [dev-dependencies]

@@ -22,6 +22,17 @@ struct Dev {
 }
 #[derive(Debug, Subcommand)]
 enum DevCommand {
+    /// Measure a reciprocal ANIm pair with the approved maintained MUMmer4 method
+    AnimPair(Box<AnimPairArgs>),
+    /// Parse filtered delta evidence using supplied whole-input length maps
+    AnimParse {
+        #[arg(long)]
+        filtered_delta: PathBuf,
+        #[arg(long)]
+        reference_lengths: PathBuf,
+        #[arg(long)]
+        query_lengths: PathBuf,
+    },
     /// Decide species/subspecies from saved 0.2.0 evidence; no new measurements
     SavedEvidence {
         #[command(flatten)]
@@ -96,19 +107,128 @@ struct V2Inputs {
     exclude_references: Option<PathBuf>,
 }
 
-/// Run the development binary. Failure produces no decision on stdout.
+#[derive(Debug, clap::Args)]
+struct AnimPairArgs {
+    #[arg(long)]
+    query: PathBuf,
+    #[arg(long)]
+    reference: PathBuf,
+    #[arg(long)]
+    output: PathBuf,
+    #[arg(long)]
+    query_id: Option<String>,
+    #[arg(long)]
+    reference_id: Option<String>,
+    #[arg(long, default_value = "primary-whole-assembly")]
+    reference_component: String,
+    #[arg(long)]
+    reference_concept_id: Vec<String>,
+    #[arg(long)]
+    expect_query_sha256: Option<String>,
+    #[arg(long)]
+    expect_reference_sha256: Option<String>,
+    #[arg(long, default_value_t = 1800)]
+    timeout_seconds: u64,
+    #[arg(long, default_value_t = 6144)]
+    memory_mib: u64,
+}
+
+/// Run the development binary.
 pub fn run() -> ExitCode {
-    let Dev { command } = Dev::parse();
-    match execute(command) {
-        Ok(json) => {
-            println!("{json}");
-            ExitCode::SUCCESS
+    if let Some(status) = crate::anim::run_worker_if_requested() {
+        return status;
+    }
+    match Dev::parse().command {
+        DevCommand::AnimParse {
+            filtered_delta,
+            reference_lengths,
+            query_lengths,
+        } => {
+            let result = (|| -> Result<_, crate::anim::AnimError> {
+                let refs = serde_json::from_slice(&std::fs::read(reference_lengths)?)?;
+                let queries = serde_json::from_slice(&std::fs::read(query_lengths)?)?;
+                crate::anim::parse_delta(&std::fs::read_to_string(filtered_delta)?, &refs, &queries)
+            })();
+            match result {
+                Ok(metrics) => {
+                    println!("{}", serde_json::to_string_pretty(&metrics).unwrap());
+                    ExitCode::SUCCESS
+                }
+                Err(error) => {
+                    eprintln!("error: {error}");
+                    ExitCode::FAILURE
+                }
+            }
         }
-        Err(message) => {
-            eprintln!("error: {message}");
-            ExitCode::FAILURE
+        command @ (DevCommand::SavedEvidence { .. }
+        | DevCommand::SkaniSearch { .. }
+        | DevCommand::RescuePlan { .. }) => match execute(command) {
+            Ok(json) => {
+                println!("{json}");
+                ExitCode::SUCCESS
+            }
+            Err(message) => {
+                eprintln!("error: {message}");
+                ExitCode::FAILURE
+            }
+        },
+        DevCommand::AnimPair(args) => {
+            let AnimPairArgs {
+                query,
+                reference,
+                output,
+                query_id,
+                reference_id,
+                reference_component,
+                reference_concept_id,
+                expect_query_sha256,
+                expect_reference_sha256,
+                timeout_seconds,
+                memory_mib,
+            } = *args;
+            let request = crate::anim::PairRequest {
+                query,
+                reference,
+                output,
+                query_id,
+                reference_id,
+                reference_component,
+                reference_concept_ids: reference_concept_id,
+                expect_query_sha256,
+                expect_reference_sha256,
+                timeout: std::time::Duration::from_secs(timeout_seconds),
+                memory_mib,
+            };
+            unsafe {
+                libc::signal(
+                    libc::SIGINT,
+                    cancel_signal as *const () as libc::sighandler_t,
+                );
+                libc::signal(
+                    libc::SIGTERM,
+                    cancel_signal as *const () as libc::sighandler_t,
+                );
+            }
+            match crate::anim::measure_pair(&request, &CANCELLED) {
+                Ok(report) => {
+                    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+                    if report.status == "complete" {
+                        ExitCode::SUCCESS
+                    } else {
+                        ExitCode::FAILURE
+                    }
+                }
+                Err(error) => {
+                    eprintln!("error: {error}");
+                    ExitCode::FAILURE
+                }
+            }
         }
     }
+}
+static CANCELLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+extern "C" fn cancel_signal(_: libc::c_int) {
+    CANCELLED.store(true, std::sync::atomic::Ordering::SeqCst);
 }
 
 type Pins = Vec<(PathBuf, String)>;
@@ -282,6 +402,9 @@ fn rescue_inputs(
 fn execute(command: DevCommand) -> Result<String, String> {
     let mut pins = Vec::new();
     let mut result = match command {
+        DevCommand::AnimPair(_) | DevCommand::AnimParse { .. } => {
+            return Err("ANIm command must be dispatched through run".into());
+        }
         DevCommand::SavedEvidence {
             inputs,
             policy,
