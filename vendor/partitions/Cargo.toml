@@ -1,0 +1,26 @@
+[package]
+name = "partitions"
+version = "0.2.4"
+authors = ["DDOtten <daniel@otten.co>"]
+description = "A disjoint-sets/union-find implementation that allows for efficient iteration over elements of a set."
+license = "Apache-2.0"
+repository = "https://github.com/DDOtten/partitions.git"
+keywords = ["union-find", "disjoint-sets"]
+categories = ["algorithms", "data-structures"]
+readme = "README.md"
+documentation = "https://docs.rs/partitions"
+
+[features]
+default = ["rayon", "proptest"]
+compact = []
+
+[dependencies]
+bit-vec = { version = "0.5" }
+rayon = { version = "1.0", optional = true }
+proptest = { version = "0.8", optional = true }
+
+[badges]
+is-it-maintained-issue-resolution = { repository = "DDOtten/partitions" }
+is-it-maintained-open-issues = { repository = "DDOtten/partitions" }
+maintenance = { status = "actively-developed" }
+travis-ci = { repository = "DDOtten/partitions", branch = "master" }
