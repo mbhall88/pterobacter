@@ -113,6 +113,25 @@ pub fn evidence_json(rows: &[Row]) -> Value {
     })
 }
 
+/// Evidence text for `rows` in which each `(field, literal)` of the reference at `index` is
+/// written as `literal`, exactly as given. Building such a number through a `Value` would pass it
+/// through an f64 first and hide any rounding the parser does.
+pub fn evidence_text_with_literals(
+    rows: &[Row],
+    index: usize,
+    overrides: &[(&str, &str)],
+) -> String {
+    let mut evidence = evidence_json(rows);
+    for (n, (field, _)) in overrides.iter().enumerate() {
+        evidence["ranked_reference_evidence"][index][*field] = format!("@literal-{n}@").into();
+    }
+    let mut text = evidence.to_string();
+    for (n, (_, literal)) in overrides.iter().enumerate() {
+        text = text.replace(&format!("\"@literal-{n}@\""), literal);
+    }
+    text
+}
+
 /// The decision JSON for evidence text that is expected to load.
 pub fn decision_from_text(evidence: &str) -> Value {
     let evidence = SavedEvidence::from_json(evidence).expect("evidence should load");

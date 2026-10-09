@@ -5,7 +5,9 @@
 
 mod common;
 
-use common::{decision_for, evidence_json, row, Row};
+use common::{
+    decision_for, decision_from_text, evidence_json, evidence_text_with_literals, row, Row,
+};
 use serde_json::Value;
 
 fn status_and_id(decision: &Value) -> (&str, Option<&str>) {
@@ -28,6 +30,45 @@ fn species_gates_are_inclusive_at_exactly_96_ani_and_80_both_af() {
     ]);
 
     assert_eq!(status_and_id(&decision), ("assigned", Some("SP1")));
+}
+
+#[test]
+fn two_decimal_literals_beside_the_thresholds_decide_exactly() {
+    let rows = [
+        row("ref-a", Some("SP1"), 96.0, 80.0, 80.0),
+        row("ref-b", Some("SP2"), 90.0, 90.0, 90.0),
+    ];
+    let assigned = "conditional_assembly_assignment";
+    let below_ani = "nearest_below_species_ANI";
+    let below_af = "species_coverage_not_met";
+    // The minimum aligned fraction is restated wherever a part drops below its base value of 80.
+    let cases: [(&[(&str, &str)], &str); 7] = [
+        (&[("ani_percent", "95.99")], below_ani),
+        (&[("ani_percent", "96.00")], assigned),
+        (&[("ani_percent", "96")], assigned),
+        (
+            &[
+                ("aligned_fraction_query_percent", "79.99"),
+                ("minimum_directional_af_percent", "79.99"),
+            ],
+            below_af,
+        ),
+        (&[("aligned_fraction_query_percent", "80.00")], assigned),
+        (
+            &[
+                ("aligned_fraction_reference_percent", "79.99"),
+                ("minimum_directional_af_percent", "79.99"),
+            ],
+            below_af,
+        ),
+        (&[("aligned_fraction_reference_percent", "80")], assigned),
+    ];
+
+    for (overrides, expected) in cases {
+        let decision = decision_from_text(&evidence_text_with_literals(&rows, 0, overrides));
+
+        assert_eq!(decision["species"]["reason"], expected, "{overrides:?}");
+    }
 }
 
 #[test]
