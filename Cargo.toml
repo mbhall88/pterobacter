@@ -1,0 +1,51 @@
+[package]
+name = "terobacter"
+description = "Standalone, self-contained Enterobacter isolate classification"
+version = "0.0.0"
+authors = ["Michael Hall <michael@mbh.sh>"]
+edition = "2021"
+repository = "https://github.com/mbhall88/terobacter"
+homepage = "https://github.com/mbhall88/terobacter"
+readme = "README.md"
+keywords = ["bioinformatics", "enterobacter", "classification", "ani", "taxonomy"]
+categories = ["science", "command-line-utilities"]
+license-file = "LICENSE"
+# Public release is a later author decision, so accidental publication is blocked.
+publish = false
+exclude = ["investigations/*"]
+
+[features]
+# Evaluation-only operations (R2-R5). Built only on request; never part of a default build or install.
+dev = []
+
+[lib]
+name = "terobacter"
+path = "src/lib.rs"
+
+[[bin]]
+name = "tero"
+path = "src/bin/tero.rs"
+
+[[bin]]
+name = "terobacter"
+path = "src/bin/terobacter.rs"
+
+[[bin]]
+name = "terobacter-dev"
+path = "src/bin/terobacter-dev.rs"
+required-features = ["dev"]
+
+[dependencies]
+clap = { version = "4.6.7", features = ["derive"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+thiserror = "2.0.21"
+
+[dev-dependencies]
+assert_cmd = "2.2.2"
+tempfile = "3.27.0"
+
+[profile.release]
+strip = true   # https://github.com/johnthagen/min-sized-rust?tab=readme-ov-file#strip-symbols-from-binary
+debug = false
+lto = true # https://doc.rust-lang.org/cargo/reference/profiles.html
