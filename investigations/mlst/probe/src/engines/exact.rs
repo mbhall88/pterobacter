@@ -115,14 +115,14 @@ pub fn run(pkg: &Package, ori: &Oriented, contigs: &[Contig], pairwise: Pairwise
     stats.seed_index_seconds = t.elapsed().as_secs_f64();
     let t = Instant::now();
     // (locus, contig, minus) -> list of (diag, allele)
-    let mut seeds: HashMap<(usize, usize, bool), Vec<(i64, u32)>> = HashMap::new();
+    let mut seeds: HashMap<(usize, usize, bool), Vec<(i64, u32, usize)>> = HashMap::new();
     for (ci, c) in contigs.iter().enumerate() {
         kmers(&c.seq, SEED_K, |p, km| {
             for &post in index.get(km) {
                 let (a, minus, ap) = unpack(post);
                 let locus = pkg.alleles[a].locus;
                 if !has_exact[locus] {
-                    seeds.entry((locus, ci, minus)).or_default().push((p as i64 - ap as i64, a as u32));
+                    seeds.entry((locus, ci, minus)).or_default().push((p as i64 - ap as i64, a as u32, p));
                 }
             }
         });
@@ -145,7 +145,7 @@ pub fn run(pkg: &Package, ori: &Oriented, contigs: &[Contig], pairwise: Pairwise
             let cluster = &list[start..end];
             start = end;
             let mut counts: HashMap<u32, u32> = HashMap::new();
-            for &(_, a) in cluster { *counts.entry(a).or_default() += 1; }
+            for &(_, a, _) in cluster { *counts.entry(a).or_default() += 1; }
             let mut ranked: Vec<(u32, u32)> = counts.into_iter().collect();
             ranked.sort_by(|a, b| b.1.cmp(&a.1).then(b.0.cmp(&a.0)));
             ranked.truncate(TOP_ALLELES);
@@ -155,6 +155,7 @@ pub fn run(pkg: &Package, ori: &Oriented, contigs: &[Contig], pairwise: Pairwise
             let w0 = (dmin - WINDOW_SLOP).max(0);
             let w1 = (dmax + lmax + WINDOW_SLOP).min(clen);
             if w1 <= w0 { continue; }
+            #[cfg(feature = "engine-exact-bio")]
             let window = &contigs[ci].seq[w0 as usize..w1 as usize];
             for &(a, _) in &ranked {
                 let x = ori.seq(pkg, a as usize, minus);
@@ -163,7 +164,10 @@ pub fn run(pkg: &Package, ori: &Oriented, contigs: &[Contig], pairwise: Pairwise
                     #[cfg(feature = "engine-exact-bio")]
                     Pairwise::Bio => align_bio(&mut bio, x, window, w0, &mut found),
                     #[cfg(feature = "engine-exact-blockaligner")]
-                    Pairwise::BlockAligner => block_aligner_diags(x, window, w0, &mut found),
+                    Pairwise::BlockAligner => {
+                        let anchor = cluster.iter().filter(|s| s.1 == a).min_by_key(|s| s.2).unwrap();
+                        block_aligner_diags(x, &contigs[ci].seq, anchor.0, anchor.2, &mut found)
+                    }
                     Pairwise::None => {}
                 }
                 stats.alignments += 1;
@@ -176,7 +180,44 @@ pub fn run(pkg: &Package, ori: &Oriented, contigs: &[Contig], pairwise: Pairwise
     (hsps, stats)
 }
 
+/// Anchored X-drop extension (block-aligner has global and X-drop modes, not local) from one seed,
+/// to the right and, on reversed sequences, to the left. `ap` = allele position of the anchor seed.
 #[cfg(feature = "engine-exact-blockaligner")]
-fn block_aligner_diags(_x: &[u8], _y: &[u8], _y_off: i64, _out: &mut Vec<(i64, i64)>) {
-    unimplemented!("block-aligner adapter is written in a later step")
+fn block_aligner_diags(x: &[u8], contig: &[u8], d0: i64, cp: usize, out: &mut Vec<(i64, i64)>) {
+    use block_aligner::{cigar::*, scan_block::*, scores::*};
+    let ap = (cp as i64 - d0) as usize;
+    let gaps = Gaps { open: -5, extend: -2 };
+    let matrix = NucMatrix::new_simple(1, -2);
+    let (min_b, max_b) = (32usize, 64usize);
+    for reverse in [false, true] {
+        let (q, r): (Vec<u8>, Vec<u8>) = if !reverse {
+            (x[ap..].to_vec(), contig[cp..(cp + (x.len() - ap) + 32).min(contig.len())].to_vec())
+        } else {
+            (x[..ap].iter().rev().copied().collect(), contig[cp.saturating_sub(ap + 32)..cp].iter().rev().copied().collect())
+        };
+        if q.is_empty() || r.is_empty() { continue; }
+        let qp = PaddedBytes::from_bytes::<NucMatrix>(&q, max_b);
+        let rp = PaddedBytes::from_bytes::<NucMatrix>(&r, max_b);
+        let mut a = Block::<true, true>::new(q.len(), r.len(), max_b);
+        a.align(&qp, &rp, &matrix, gaps, min_b..=max_b, 20);
+        let res = a.res();
+        let mut cigar = Cigar::new(res.query_idx, res.reference_idx);
+        a.trace().cigar(res.query_idx, res.reference_idx, &mut cigar);
+        let (mut i, mut j) = (0i64, 0i64);
+        let mut in_block = false;
+        let mut ops = cigar.to_vec();
+        ops.retain(|o| o.len > 0 && o.op != Operation::Sentinel);
+        for o in ops {
+            let n = o.len as i64;
+            match o.op {
+                Operation::M | Operation::Eq | Operation::X => {
+                    if !in_block { out.push((if reverse { d0 - (j - i) } else { d0 + (j - i) }, 0)); in_block = true; }
+                    i += n; j += n;
+                }
+                Operation::I => { i += n; in_block = false; }
+                Operation::D => { j += n; in_block = false; }
+                Operation::Sentinel => {}
+            }
+        }
+    }
 }

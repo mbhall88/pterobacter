@@ -1,0 +1,14 @@
+route	description	fixtures	call_parity_pass	fail	crash	hsps_comparator	hsps_missing_in_candidate	hsps_extra_in_candidate
+ungapped	D: exact 32-mer seeding + ungapped X-drop (no alignment library)	52	52	0	0	100002	0	0
+mm2inmem_asm5	1: minimap2 C binding, in-memory index, asm5	52	42	2	8	86072	17927	0
+mm2inmem_asm10	1: minimap2 C binding, in-memory index, asm10	52	43	1	8	86072	693	0
+mm2inmem_asm20	1: minimap2 C binding, in-memory index, asm20	52	44	0	8	86072	33	0
+mm2file_asm5	1*: minimap2 C binding, file index, asm5 (supplementary)	52	50	2	0	100002	21315	0
+mm2file_asm10	1*: minimap2 C binding, file index, asm10 (supplementary)	52	51	1	0	100002	1311	0
+mm2file_asm20	1*: minimap2 C binding, file index, asm20 (supplementary)	52	52	0	0	100002	148	0
+pure_asm5	1b: minimap2-pure-rs, asm5	52	50	2	0	100002	21315	0
+pure_asm10	1b: minimap2-pure-rs, asm10	52	51	1	0	100002	1311	0
+pure_asm20	1b: minimap2-pure-rs, asm20	52	52	0	0	100002	148	0
+exact-bio	2: exact hash + seeds + rust-bio local alignment	52	52	0	0	100002	98740	0
+exact-ba	2: exact hash + seeds + block-aligner X-drop extension	52	52	0	0	100002	98740	0
+exact-only	2x: exact hash only (not parity by construction)	52	25	27	0	100002	99682	0

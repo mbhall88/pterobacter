@@ -8,6 +8,7 @@ description = "Throwaway probes for issue #2 (MLST feasibility). Not production 
 [features]
 default = []
 engine-minimap2 = ["dep:minimap2"]
+engine-minimap2-pure = ["dep:mm2pure"]
 engine-exact-bio = ["dep:bio"]
 engine-exact-blockaligner = ["dep:block-aligner"]
 
@@ -15,8 +16,9 @@ engine-exact-blockaligner = ["dep:block-aligner"]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 minimap2 = { version = "=0.1.31", default-features = false, optional = true }
+mm2pure = { package = "minimap2-pure-rs", version = "=0.5.3", optional = true }
 bio = { version = "=2.3.0", optional = true, default-features = false }
-block-aligner = { version = "=0.5.0", optional = true }
+block-aligner = { version = "=0.5.0", optional = true, features = ["simd_avx2"] }
 
 [[bin]]
 name = "mlst-probe"

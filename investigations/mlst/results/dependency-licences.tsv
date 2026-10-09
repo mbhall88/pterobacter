@@ -1,0 +1,120 @@
+package	licence	variants
+adler2 v2.0.1	0BSD OR MIT OR Apache-2.0	minimap2-pure
+aho-corasick v1.1.5	Unlicense OR MIT	exact-bio,minimap2-pure
+allocator-api2 v0.2.21	MIT OR Apache-2.0	minimap2-pure
+anstream v1.0.0	MIT OR Apache-2.0	minimap2-pure
+anstyle v1.0.14	MIT OR Apache-2.0	minimap2-pure
+anstyle-parse v1.0.0	MIT OR Apache-2.0	minimap2-pure
+anstyle-query v1.1.5	MIT OR Apache-2.0	minimap2-pure
+anyhow v1.0.104	MIT OR Apache-2.0	exact-bio
+approx v0.5.1	Apache-2.0	exact-bio
+bio v2.3.0	MIT	exact-bio
+bio-types v1.0.4	MIT	exact-bio
+bit-set v0.8.0	Apache-2.0 OR MIT	exact-bio
+bit-vec v0.8.0	Apache-2.0 OR MIT	exact-bio
+bitflags v2.13.2	MIT OR Apache-2.0	minimap2-pure
+block-aligner v0.5.0	MIT	exact-ba
+bv v0.11.1	MIT/Apache-2.0	exact-bio
+bytecount v0.6.9	Apache-2.0/MIT	exact-bio
+bytemuck v1.25.2	Zlib OR Apache-2.0 OR MIT	exact-bio
+byteorder v1.5.0	Unlicense OR MIT	exact-bio
+cfg-if v1.0.5	MIT OR Apache-2.0	exact-bio,minimap2-pure
+clap v4.6.7	MIT OR Apache-2.0	minimap2-pure
+clap_builder v4.6.7	MIT OR Apache-2.0	minimap2-pure
+clap_derive v4.6.7	MIT OR Apache-2.0	minimap2-pure
+clap_lex v1.1.1	MIT OR Apache-2.0	minimap2-pure
+colorchoice v1.0.5	MIT OR Apache-2.0	minimap2-pure
+crc32fast v1.5.2	MIT OR Apache-2.0	minimap2-pure
+crossbeam-deque v0.8.8	MIT OR Apache-2.0	minimap2-pure
+crossbeam-epoch v0.9.21	MIT OR Apache-2.0	minimap2-pure
+crossbeam-utils v0.8.23	MIT OR Apache-2.0	minimap2-pure
+csv v1.4.0	Unlicense/MIT	exact-bio
+csv-core v0.1.13	Unlicense/MIT	exact-bio
+custom_derive v0.1.7	MIT/Apache-2.0	exact-bio
+derive-new v0.6.0	MIT	exact-bio
+editdistancek v1.0.2	MIT	exact-bio
+either v1.19.0	MIT OR Apache-2.0	exact-bio,minimap2-pure
+enum-map v2.7.3	MIT OR Apache-2.0	exact-bio
+enum-map-derive v0.17.0	MIT OR Apache-2.0	exact-bio
+env_filter v2.0.0	MIT OR Apache-2.0	minimap2-pure
+env_logger v0.11.11	MIT OR Apache-2.0	minimap2-pure
+equivalent v1.0.2	Apache-2.0 OR MIT	exact-bio,minimap2-pure
+fixedbitset v0.5.7	MIT OR Apache-2.0	exact-bio
+flate2 v1.1.10	MIT OR Apache-2.0	minimap2-pure
+foldhash v0.1.5	Zlib	exact-bio
+foldhash v0.2.0	Zlib	minimap2-pure
+fxhash v0.2.1	Apache-2.0/MIT	exact-bio
+getrandom v0.2.17	MIT OR Apache-2.0	exact-bio
+hashbrown v0.15.5	MIT OR Apache-2.0	exact-bio
+hashbrown v0.16.1	MIT OR Apache-2.0	minimap2-pure
+hashbrown v0.17.1	MIT OR Apache-2.0	exact-bio
+heck v0.5.0	MIT OR Apache-2.0	exact-bio,minimap2-pure
+indexmap v2.14.2	Apache-2.0 OR MIT	exact-bio
+is_terminal_polyfill v1.70.2	MIT OR Apache-2.0	minimap2-pure
+itertools v0.14.0	MIT OR Apache-2.0	exact-bio
+itertools-num v0.1.3	MIT/Apache-2.0	exact-bio
+itoa v1.0.18	MIT OR Apache-2.0	core,exact-ba,exact-bio,minimap2,minimap2-pure
+jiff v0.2.38	Unlicense OR MIT	minimap2-pure
+jiff-core v0.1.1	Unlicense OR MIT	minimap2-pure
+lazy_static v1.5.1	MIT OR Apache-2.0	exact-bio
+libc v0.2.190	MIT OR Apache-2.0	exact-bio,minimap2
+libm v0.2.16	MIT	exact-bio
+libz-sys v1.1.29	MIT OR Apache-2.0	minimap2
+log v0.4.34	MIT OR Apache-2.0	minimap2-pure
+matrixmultiply v0.3.11	MIT/Apache-2.0	exact-bio
+memchr v2.8.3	Unlicense OR MIT	core,exact-ba,exact-bio,minimap2,minimap2-pure
+minimap2 v0.1.31+minimap2.2.30	MIT OR Apache-2.0	minimap2
+minimap2-pure-rs v0.5.3	MIT	minimap2-pure
+minimap2-sys v0.1.30+minimap2.2.30	MIT OR Apache-2.0	minimap2
+miniz_oxide v0.9.1	MIT OR Zlib OR Apache-2.0	minimap2-pure
+multimap v0.10.1	MIT OR Apache-2.0	exact-bio
+nalgebra v0.33.3	Apache-2.0	exact-bio
+ndarray v0.16.1	MIT OR Apache-2.0	exact-bio
+newtype_derive v0.1.6	MIT/Apache-2.0	exact-bio
+num-complex v0.4.6	MIT OR Apache-2.0	exact-bio
+num-integer v0.1.47	MIT OR Apache-2.0	exact-bio
+num-rational v0.4.2	MIT OR Apache-2.0	exact-bio
+num-traits v0.2.19	MIT OR Apache-2.0	exact-bio
+ordered-float v5.5.0	MIT	exact-bio
+paste v1.0.15	MIT OR Apache-2.0	exact-bio,minimap2
+petgraph v0.8.3	MIT OR Apache-2.0	exact-bio
+ppv-lite86 v0.2.21	MIT OR Apache-2.0	exact-bio
+proc-macro2 v1.0.107	MIT OR Apache-2.0	core,exact-ba,exact-bio,minimap2,minimap2-pure
+quote v1.0.47	MIT OR Apache-2.0	core,exact-ba,exact-bio,minimap2,minimap2-pure
+rand v0.8.8	MIT OR Apache-2.0	exact-bio
+rand_chacha v0.3.1	MIT OR Apache-2.0	exact-bio
+rand_core v0.6.4	MIT OR Apache-2.0	exact-bio
+rand_distr v0.4.3	MIT OR Apache-2.0	exact-bio
+rawpointer v0.2.1	MIT/Apache-2.0	exact-bio
+rayon v1.12.0	MIT OR Apache-2.0	minimap2-pure
+rayon-core v1.13.0	MIT OR Apache-2.0	minimap2-pure
+regex v1.13.1	MIT OR Apache-2.0	exact-bio,minimap2-pure
+regex-automata v0.4.18	MIT OR Apache-2.0	exact-bio,minimap2-pure
+regex-syntax v0.8.11	MIT OR Apache-2.0	exact-bio,minimap2-pure
+rustversion v1.0.23	MIT OR Apache-2.0	exact-bio
+ryu v1.0.23	Apache-2.0 OR BSL-1.0	exact-bio
+safe_arch v0.7.4	Zlib OR Apache-2.0 OR MIT	exact-bio
+serde v1.0.229	MIT OR Apache-2.0	core,exact-ba,exact-bio,minimap2,minimap2-pure
+serde_core v1.0.229	MIT OR Apache-2.0	core,exact-ba,exact-bio,minimap2,minimap2-pure
+serde_derive v1.0.229	MIT OR Apache-2.0	core,exact-ba,exact-bio,minimap2,minimap2-pure
+serde_json v1.0.151	MIT OR Apache-2.0	core,exact-ba,exact-bio,minimap2,minimap2-pure
+simba v0.9.1	Apache-2.0	exact-bio
+simd-adler32 v0.3.10	MIT	minimap2-pure
+statrs v0.18.0	MIT	exact-bio
+strsim v0.11.1	MIT	minimap2-pure
+strum v0.26.3	MIT	exact-bio
+strum_macros v0.26.4	MIT	exact-bio
+syn v2.0.119	MIT OR Apache-2.0	exact-bio
+syn v3.0.6	MIT OR Apache-2.0	core,exact-ba,exact-bio,minimap2,minimap2-pure
+thiserror v1.0.69	MIT OR Apache-2.0	exact-bio
+thiserror v2.0.21	MIT OR Apache-2.0	exact-bio,minimap2-pure
+thiserror-impl v1.0.69	MIT OR Apache-2.0	exact-bio
+thiserror-impl v2.0.21	MIT OR Apache-2.0	exact-bio,minimap2-pure
+triple_accel v0.4.0	MIT	exact-bio
+typenum v1.20.1	MIT OR Apache-2.0	exact-bio
+unicode-ident v1.0.26	(MIT OR Apache-2.0) AND Unicode-3.0	core,exact-ba,exact-bio,minimap2,minimap2-pure
+utf8parse v0.2.2	Apache-2.0 OR MIT	minimap2-pure
+vec_map v0.8.2	MIT/Apache-2.0	exact-bio
+wide v0.7.33	Zlib OR Apache-2.0 OR MIT	exact-bio
+zerocopy v0.8.62	BSD-2-Clause OR Apache-2.0 OR MIT	exact-bio
+zmij v1.0.23	MIT	core,exact-ba,exact-bio,minimap2,minimap2-pure

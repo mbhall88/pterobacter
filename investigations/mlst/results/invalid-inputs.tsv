@@ -1,0 +1,6 @@
+input	comparator_exit	probe_exit	note
+invalid_duplicate_ids	0	2	comparator accepts
+invalid_empty	1	2	comparator rejects
+invalid_missing_file	1	2	comparator rejects
+invalid_no_header	1	2	comparator rejects
+invalid_protein	0	2	comparator accepts
