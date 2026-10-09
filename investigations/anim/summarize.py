@@ -6,6 +6,26 @@ from pathlib import Path
 
 METRICS = ['status', 'D', 'E', 'reference_covered', 'query_covered', 'reference_length', 'query_length']
 GATES = ['identity_gt96', 'reference_af_ge80', 'query_af_ge80']
+OBSERVATION_FIELDS = METRICS + ['blocks', 'identity', 'reference_af', 'query_af'] + GATES
+
+
+def integer_equal(a, b):
+    return (a.get('status') in ('aligned', 'no_alignment')
+            and b.get('status') in ('aligned', 'no_alignment')
+            and all(a.get(k) == b.get(k) for k in METRICS))
+
+
+def delta_equal(a, b):
+    value = a.get('normalized_delta_sha256')
+    return value is not None and value == b.get('normalized_delta_sha256')
+
+
+def gate_difference(a, b, key):
+    return None if a.get(key) is None or b.get(key) is None else a[key] != b[key]
+
+
+def difference(a, b):
+    return None if a is None or b is None else a - b
 
 
 def load_pairs(root):
@@ -16,7 +36,7 @@ def table(path, rows):
     with path.open('w', newline='') as out:
         writer = csv.DictWriter(out, fieldnames=list(rows[0]), delimiter='\t', lineterminator='\n')
         writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows({k: 'NA' if v is None else v for k, v in row.items()} for row in rows)
 
 
 def summarize(first, fileapi, memorydiag, output):
@@ -34,31 +54,31 @@ def summarize(first, fileapi, memorydiag, output):
         exact = gate_changes = delta_matches = 0
         for row in rows:
             reference = base[row['fixture']]
-            exact += all(all(row[o]['metrics'][k] == reference[o]['metrics'][k] for k in METRICS) for o in ['QR', 'RQ'])
-            gate_changes += any(row[o]['metrics'][k] != reference[o]['metrics'][k] for o in ['QR', 'RQ'] for k in GATES)
-            delta_matches += all(row[o].get('normalized_delta_sha256') == reference[o].get('normalized_delta_sha256') for o in ['QR', 'RQ']) if candidate == 'embedded-mummer3' else 0
+            exact += all(integer_equal(row[o]['metrics'], reference[o]['metrics']) for o in ['QR', 'RQ'])
+            gate_changes += any(gate_difference(row[o]['metrics'], reference[o]['metrics'], k) is True for o in ['QR', 'RQ'] for k in GATES)
+            delta_matches += all(delta_equal(row[o], reference[o]) for o in ['QR', 'RQ']) if candidate == 'embedded-mummer3' else 0
             for orientation in ['QR', 'RQ']:
                 metric = row[orientation]['metrics']
                 # RQ native reference is biological Q; map coverage back explicitly.
-                biological_query_af = metric['query_af'] if orientation == 'QR' else metric['reference_af']
-                biological_reference_af = metric['reference_af'] if orientation == 'QR' else metric['query_af']
+                biological_query_af = metric.get('query_af') if orientation == 'QR' else metric.get('reference_af')
+                biological_reference_af = metric.get('reference_af') if orientation == 'QR' else metric.get('query_af')
                 diagnostic_peak = memory[row['fixture']][orientation]['sampled_tree_peak_kib'] if candidate == 'embedded-mummer3' else row[orientation].get('sampled_tree_peak_kib')
                 observations.append(dict(fixture=row['fixture'], stratum=row['stratum'], candidate=candidate, orientation=orientation,
-                                         **metric, biological_query_af=biological_query_af, biological_reference_af=biological_reference_af,
+                                         **{k: metric.get(k) for k in OBSERVATION_FIELDS}, biological_query_af=biological_query_af, biological_reference_af=biological_reference_af,
                                          wall_seconds=row[orientation]['wall_seconds'], cpu_seconds=row[orientation]['cpu_seconds'],
                                          gnu_peak_kib=row[orientation]['peak_kib'] or None,
                                          sampled_tree_peak_kib=diagnostic_peak))
                 if candidate != 'comparator':
                     cmp = reference[orientation]['metrics']
                     diff = dict(fixture=row['fixture'], stratum=row['stratum'], candidate=candidate, orientation=orientation,
-                                comparator_identity=cmp['identity'], candidate_identity=metric['identity'],
-                                identity_difference_pp=None if metric['identity'] is None or cmp['identity'] is None else metric['identity'] - cmp['identity'],
-                                biological_query_af_difference_pp=biological_query_af - (cmp['query_af'] if orientation == 'QR' else cmp['reference_af']),
-                                biological_reference_af_difference_pp=biological_reference_af - (cmp['reference_af'] if orientation == 'QR' else cmp['query_af']),
-                                exact_integer_equal=all(metric[k] == cmp[k] for k in METRICS),
-                                identity_gate_changed=metric['identity_gt96'] != cmp['identity_gt96'],
-                                native_reference_af_gate_changed=metric['reference_af_ge80'] != cmp['reference_af_ge80'],
-                                native_query_af_gate_changed=metric['query_af_ge80'] != cmp['query_af_ge80'])
+                                comparator_identity=cmp.get('identity'), candidate_identity=metric.get('identity'),
+                                identity_difference_pp=difference(metric.get('identity'), cmp.get('identity')),
+                                biological_query_af_difference_pp=difference(biological_query_af, cmp.get('query_af') if orientation == 'QR' else cmp.get('reference_af')),
+                                biological_reference_af_difference_pp=difference(biological_reference_af, cmp.get('reference_af') if orientation == 'QR' else cmp.get('query_af')),
+                                exact_integer_equal=integer_equal(metric, cmp),
+                                identity_gate_changed=gate_difference(metric, cmp, 'identity_gt96'),
+                                native_reference_af_gate_changed=gate_difference(metric, cmp, 'reference_af_ge80'),
+                                native_query_af_gate_changed=gate_difference(metric, cmp, 'query_af_ge80'))
                     differences.append(diff)
         summary[candidate] = dict(pairs=len(rows), exact_integer_pairs=exact, pairs_with_gate_changes=gate_changes,
                                   normalized_delta_equal_pairs=delta_matches if candidate == 'embedded-mummer3' else None,
@@ -73,9 +93,9 @@ def summarize(first, fileapi, memorydiag, output):
     for row in panels:
         root = first if row['candidate'] in ['comparator', 'embedded-mummer3'] else fileapi
         pairs = [r for r in panel_records[root] if r['candidate'] == row['candidate']]
-        row['exact_integer_pairs'] = sum(all(all(r[o]['metrics'][k] == baseline_panel[r['fixture']][o]['metrics'][k] for k in METRICS) for o in ['QR', 'RQ']) for r in pairs)
+        row['exact_integer_pairs'] = sum(all(integer_equal(r[o]['metrics'], baseline_panel[r['fixture']][o]['metrics']) for o in ['QR', 'RQ']) for r in pairs)
         if row['candidate'] == 'embedded-mummer3':
-            row['normalized_delta_equal_pairs'] = sum(all(r[o]['normalized_delta_sha256'] == baseline_panel[r['fixture']][o]['normalized_delta_sha256'] for o in ['QR', 'RQ']) for r in pairs)
+            row['normalized_delta_equal_pairs'] = sum(all(delta_equal(r[o], baseline_panel[r['fixture']][o]) for o in ['QR', 'RQ']) for r in pairs)
     table(output / 'observations.tsv', observations)
     table(output / 'differences.tsv', differences)
     table(output / 'rescue-band-differences.tsv', [r for r in differences if r['stratum'] == 'rescue-band'])
