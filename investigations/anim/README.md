@@ -20,7 +20,7 @@ Exact equivalence here means identical D/E, covered bases, whole lengths and sta
 | minimap2 asm20, file-index API | 8 | 4 | 27 | Needs change control |
 | Rust-Bio banded / WFA-style pairwise primitive | Not measured | Not measured | Not measured | Blocked as a bounded whole-genome P1 replacement; missing genome anchoring and one-to-one selection |
 
-[All directional observations](results/observations.tsv), [all differences](results/differences.tsv), and [machine-readable summary](results/summary.json) retain every matrix row, including successful no-alignment. The standalone AF tests confirm that overlaps count once and singleton/reverse intervals remain inclusive.
+[All directional observations](results/observations.tsv), [all differences](results/differences.tsv), and [machine-readable summary](results/summary.json) retain every matrix row, including successful no-alignment. The tables use `NA` for unavailable values; the status distinguishes failed execution from successful no-alignment. The standalone AF tests confirm that overlaps count once and singleton/reverse intervals remain inclusive.
 
 The five nominal 94.5–96% substitution cases are reported separately in [rescue-band differences](results/rescue-band-differences.tsv). These are nominal DNA mutation cases, not claims that measured skani activated a rescue. Highlights:
 
@@ -122,5 +122,7 @@ python investigations/anim/summarize.py \
   --memorydiag /absolute/path/to/new-measurements \
   --output /absolute/path/to/new-summary
 ```
+
+Validation: 11 metric/harness tests pass, including error-row publication and termination of timed-out descendants; Clippy with warnings denied, Rust formatting and Git whitespace checks pass. The code review found two harness defects, both corrected before handoff.
 
 The existing research run retains raw deltas/PAF, both binding API passes, command arrays, input/source/executable hashes, timing/RSS records, build logs, frozen-context verification, failure diagnostics and manuscript contribution. Those receipts contain local research paths and stay out of this repository. This repo contains synthetic observations and reusable development probe sources only. The handoff on issue #1 locates the private research receipt. Scientific acceptance, macOS execution and the production implementation remain separate review steps.

@@ -5,7 +5,7 @@ import hashlib
 import json
 import os
 import pathlib
-import resource
+import signal
 import subprocess
 import threading
 import time
@@ -48,13 +48,13 @@ class Runner:
         self.active = set()
         self.lock = threading.Lock()
 
-    def timed(self, argv, directory, label, stdout):
+    def timed(self, argv, directory, label, stdout, timeout_seconds=1800):
         timing = directory / (label + '.time')
         stderr = directory / (label + '.stderr')
         full = ['/usr/bin/time', '-f', '%e\t%U\t%S\t%M\t%x', '-o', str(timing), *map(str, argv)]
         (directory / (label + '.argv.json')).write_text(json.dumps(full) + '\n')
         with stdout.open('wb') as out, stderr.open('wb') as err:
-            child = subprocess.Popen(full, stdout=out, stderr=err)
+            child = subprocess.Popen(full, stdout=out, stderr=err, start_new_session=True)
             with self.lock:
                 self.active.add(child.pid)
             peak = [0]
@@ -66,9 +66,9 @@ class Runner:
             if sampler:
                 sampler.start()
             try:
-                code = child.wait(timeout=1800)
+                code = child.wait(timeout=timeout_seconds)
             except subprocess.TimeoutExpired:
-                child.kill()
+                os.killpg(child.pid, signal.SIGKILL)
                 child.wait()
                 raise RuntimeError('pair exceeded preregistered timeout')
             finally:

@@ -17,8 +17,8 @@ indel_tracts	other	embedded-mummer3	QR	100.0	100.0	0.0	0.0	0.0	True	False	False	
 indel_tracts	other	embedded-mummer3	RQ	100.0	100.0	0.0	0.0	0.0	True	False	False	False
 inversion	other	embedded-mummer3	QR	100.0	100.0	0.0	0.0	0.0	True	False	False	False
 inversion	other	embedded-mummer3	RQ	100.0	100.0	0.0	0.0	0.0	True	False	False	False
-no_alignment	other	embedded-mummer3	QR				0.0	0.0	True	False	False	False
-no_alignment	other	embedded-mummer3	RQ				0.0	0.0	True	False	False	False
+no_alignment	other	embedded-mummer3	QR	NA	NA	NA	0.0	0.0	True	False	False	False
+no_alignment	other	embedded-mummer3	RQ	NA	NA	NA	0.0	0.0	True	False	False	False
 permutation	other	embedded-mummer3	QR	100.0	100.0	0.0	0.0	0.0	True	False	False	False
 permutation	other	embedded-mummer3	RQ	100.0	100.0	0.0	0.0	0.0	True	False	False	False
 repeat_query	other	embedded-mummer3	QR	100.0	100.0	0.0	0.0	0.0	True	False	False	False
@@ -57,8 +57,8 @@ indel_tracts	other	asm5	QR	100.0	99.29122368146759	-0.708776318532415	0.29119732
 indel_tracts	other	asm5	RQ	100.0	99.29122368146759	-0.708776318532415	0.2911973299958248	0.41583333333333883	False	False	False	False
 inversion	other	asm5	QR	100.0	100.0	0.0	-0.13249999999999318	-0.13249999999999318	False	False	False	False
 inversion	other	asm5	RQ	100.0	100.0	0.0	-0.13249999999999318	-0.13249999999999318	False	False	False	False
-no_alignment	other	asm5	QR				0.0	0.0	True	False	False	False
-no_alignment	other	asm5	RQ				0.0	0.0	True	False	False	False
+no_alignment	other	asm5	QR	NA	NA	NA	0.0	0.0	True	False	False	False
+no_alignment	other	asm5	RQ	NA	NA	NA	0.0	0.0	True	False	False	False
 permutation	other	asm5	QR	100.0	60.0	-40.0	0.0	0.0	False	True	False	False
 permutation	other	asm5	RQ	100.0	60.0	-40.0	0.0	0.0	False	True	False	False
 repeat_query	other	asm5	QR	100.0	71.42857142857143	-28.57142857142857	12.499375	0.0	False	True	False	False
@@ -97,8 +97,8 @@ indel_tracts	other	asm10	QR	100.0	99.29122368146759	-0.708776318532415	0.2911973
 indel_tracts	other	asm10	RQ	100.0	99.29122368146759	-0.708776318532415	0.2911973299958248	0.41583333333333883	False	False	False	False
 inversion	other	asm10	QR	100.0	100.0	0.0	-0.13249999999999318	-0.13249999999999318	False	False	False	False
 inversion	other	asm10	RQ	100.0	100.0	0.0	-0.13249999999999318	-0.13249999999999318	False	False	False	False
-no_alignment	other	asm10	QR				0.0	0.0	True	False	False	False
-no_alignment	other	asm10	RQ				0.0	0.0	True	False	False	False
+no_alignment	other	asm10	QR	NA	NA	NA	0.0	0.0	True	False	False	False
+no_alignment	other	asm10	RQ	NA	NA	NA	0.0	0.0	True	False	False	False
 permutation	other	asm10	QR	100.0	60.0	-40.0	0.0	0.0	False	True	False	False
 permutation	other	asm10	RQ	100.0	60.0	-40.0	0.0	0.0	False	True	False	False
 repeat_query	other	asm10	QR	100.0	71.42857142857143	-28.57142857142857	12.499375	0.0	False	True	False	False
@@ -137,8 +137,8 @@ indel_tracts	other	asm20	QR	100.0	99.29122368146759	-0.708776318532415	0.2911973
 indel_tracts	other	asm20	RQ	100.0	99.29122368146759	-0.708776318532415	0.2911973299958248	0.41583333333333883	False	False	False	False
 inversion	other	asm20	QR	100.0	100.0	0.0	-0.1599999999999966	-0.1599999999999966	False	False	False	False
 inversion	other	asm20	RQ	100.0	100.0	0.0	-0.1599999999999966	-0.1599999999999966	False	False	False	False
-no_alignment	other	asm20	QR				0.0	0.0	True	False	False	False
-no_alignment	other	asm20	RQ				0.0	0.0	True	False	False	False
+no_alignment	other	asm20	QR	NA	NA	NA	0.0	0.0	True	False	False	False
+no_alignment	other	asm20	RQ	NA	NA	NA	0.0	0.0	True	False	False	False
 permutation	other	asm20	QR	100.0	60.0	-40.0	0.0	0.0	False	True	False	False
 permutation	other	asm20	RQ	100.0	60.0	-40.0	0.0	0.0	False	True	False	False
 repeat_query	other	asm20	QR	100.0	71.42857142857143	-28.57142857142857	12.499375	0.0	False	True	False	False
