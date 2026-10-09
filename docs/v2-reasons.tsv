@@ -1,0 +1,27 @@
+terobacter_reason	contract_reason	field	source
+no_estimate	no_estimate	reasons	P1-r1 acceptance model
+different_species_nearest_tie	different_species_nearest_tie	reasons	P1-r1 acceptance model
+nearest_reference_has_no_species	nearest_reference_has_no_species	reasons	P1-r1 acceptance model
+species_competitor_unmeasured	species_competitor_unmeasured	reasons	P1-r1 acceptance model
+nearest_below_species_ANI	nearest_below_species_ANI	reasons	P1-r1 acceptance model
+species_coverage_not_met	species_coverage_not_met	reasons	P1-r1 acceptance model
+two_parent_support_alert	two_parent_support_alert	reasons	P1-r1 acceptance model
+unexplained_residual_sequence	unexplained_residual_sequence	reasons	P1-r1 acceptance model
+external_problem_warning	external_problem_warning	reasons	P1-r1 acceptance model
+skani_coverage_not_rescuable	skani_coverage_not_rescuable	reasons	P1-r1 acceptance model
+ANIm_incomplete	ANIm_incomplete	reasons	P1-r1 acceptance model
+ANIm_no_strict_witness	ANIm_no_strict_witness	reasons	P1-r1 acceptance model
+ANIm_competitor_incomplete	ANIm_competitor_incomplete	reasons	P1-r1 acceptance model
+foreign_parent_challenge	foreign_parent_challenge	reasons	P1-r1 acceptance model
+method_gate_disagreement	method_gate_disagreement	reasons	P1-r1 acceptance model
+diagnostic_candidate_only	diagnostic_candidate_only	subspecies_reason	frozen 0.2.0 v1 rule, unchanged
+parent_species_unresolved	parent_species_unresolved	subspecies_reason	frozen 0.2.0 v1 rule, unchanged
+within_parent_nearest_group_tie	within_parent_nearest_group_tie	subspecies_reason	frozen 0.2.0 v1 rule, unchanged
+nearest_reference_has_no_subspecies	nearest_reference_has_no_subspecies	subspecies_reason	frozen 0.2.0 v1 rule, unchanged
+nearest_group_below_subspecies_ANI	nearest_group_below_subspecies_ANI	subspecies_reason	frozen 0.2.0 v1 rule, unchanged
+subspecies_coverage_not_met	subspecies_coverage_not_met	subspecies_reason	frozen 0.2.0 v1 rule, unchanged
+within_parent_competitor_unmeasured	within_parent_competitor_unmeasured	subspecies_reason	frozen 0.2.0 v1 rule, unchanged
+global_group_competitor_unmeasured	global_group_competitor_unmeasured	subspecies_reason	frozen 0.2.0 v1 rule, unchanged
+global_group_margin_below_guide	global_group_margin_below_guide	subspecies_reason	frozen 0.2.0 v1 rule, unchanged
+qualifying_reference_margin_below_guide	qualifying_reference_margin_below_guide	subspecies_reason	frozen 0.2.0 v1 rule, unchanged
+ANIm_species_rescue_does_not_establish_subspecies	ANIm_species_rescue_does_not_establish_subspecies	subspecies_reason	P1-r1 calling contract, section 2.6

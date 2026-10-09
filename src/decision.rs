@@ -18,6 +18,7 @@ pub struct Policy {
     both_af: Percent,
     subspecies_ani: Percent,
     subspecies_margin: i64,
+    alert_ani: Percent,
 }
 impl Policy {
     pub fn v1() -> Self {
@@ -27,6 +28,23 @@ impl Policy {
             both_af: Percent::from_whole(80),
             subspecies_ani: Percent::from_whole(98),
             subspecies_margin: 100,
+            alert_ani: Percent::from_whole(96),
+        }
+    }
+    /// The v1 skani rules at other ANI gates, for v2's ordinary skani route. Every other gate,
+    /// including AF 80 and the one-point margin, is unchanged.
+    pub(crate) fn skani_route(
+        id: &'static str,
+        species_ani: Percent,
+        subspecies_ani: Percent,
+        alert_ani: Percent,
+    ) -> Self {
+        Self {
+            id,
+            species_ani,
+            subspecies_ani,
+            alert_ani,
+            ..Self::v1()
         }
     }
     pub fn id(&self) -> &'static str {
@@ -48,6 +66,9 @@ impl Decision {
     }
     pub fn to_value(&self) -> &Value {
         &self.value
+    }
+    pub(crate) fn from_value(value: Value) -> Self {
+        Self { value }
     }
 }
 
@@ -395,7 +416,7 @@ fn assess(
     let species = species_rank(&rows, policy);
     let subspecies = subspecies_rank(&rows, species.candidate, policy);
     let triggers: Vec<_> = rows.iter().filter(|r| r.species.is_some()
-        && r.ani >= Percent::from_whole(96) && r.af_reference >= Percent::from_whole(80))
+        && r.ani >= policy.alert_ani && r.af_reference >= policy.both_af)
         .map(|r| json!({"reference_id": r.id, "species_id": r.species.as_ref().map(|s| &s.id),
             "ani_percent": r.ani.as_f64(), "af_query_percent": r.af_query.as_f64(), "af_reference_percent": r.af_reference.as_f64()})).collect();
     let alert = triggers

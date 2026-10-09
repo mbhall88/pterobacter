@@ -1,0 +1,15 @@
+{
+  "revision": "adf36eeaa4bb2b0042daa14cef28be36ac9be5da",
+  "sha256": {
+    "Cargo.toml": "51cbf68405572202fe4c5b7fb4e1a1a5cfd76932b5c68714174ffdab9bb036da",
+    "README.md": "6c44ee2561cde893d08e4fa6a9e068ae22aadffdd6805a996ec684ddd47b830a",
+    "src/disjoint_sets/metadata.rs": "e44d2abc543ebec52ae2da755ff38198e9feb3908977f7f275cf8ea59aeef0e2",
+    "src/disjoint_sets/mod.rs": "ccc4cbe4facbb6863148b27ec1caae1449deb69521afa7aa04b6a927fbe09260",
+    "src/disjoint_sets/partition_vec.rs": "3f08234f935ecf6c1a8483901459370e63dfe4da72bd2bb578b1dda58616b961",
+    "src/lib.rs": "b64485e61784e4b4ccf75ba2a71f2543f6a166f6805438603ceaa8541920327d",
+    "src/partition_map/mod.rs": "e4fd3ceef187266b838a9a98d1a0fcf9655e0da0057b4cd9dce3b42b99e99895",
+    "src/partition_map/partition_btree_map.rs": "5a322bd9a8067ca29f93a88a83f3838ff5e4fe32d3d98b7e39be8e4b7e34252e",
+    "src/partition_map/partition_hash_map.rs": "cb4bec9fd1c6a35f901bd32320701c1ed8f238dea79160e5e39691716e16cb89",
+    "LICENSE.txt": "a04d5c86a7a7541f1e78f0bb150ce6a45ae7e821a52c4f4b84f8d6897c93ee08"
+  }
+}

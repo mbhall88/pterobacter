@@ -1,6 +1,7 @@
 //! Helpers shared by the integration tests.
 #![allow(dead_code)] // each test crate uses a different subset
 
+pub mod p1;
 pub mod package;
 
 use serde_json::{json, Value};
@@ -230,4 +231,16 @@ pub fn packaged_evidence(package_sha256: &str) -> Value {
     evidence["nearest_reference_ids"] = json!([references[0]["reference_id"]]);
     evidence["ranked_reference_evidence"] = references.into();
     evidence
+}
+
+/// Stable synthetic DNA generation shared by measurement fixtures.
+pub fn dna(length: usize, mut state: u64) -> Vec<u8> {
+    (0..length)
+        .map(|_| {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            b"ACGT"[(state & 3) as usize]
+        })
+        .collect()
 }

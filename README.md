@@ -19,7 +19,7 @@ There are no subcommands. Whole-assembly classification is not implemented yet: 
 
 ## Build, test, install
 
-You need a recent stable Rust toolchain and [`just`](https://github.com/casey/just).
+You need a recent stable Rust toolchain and [`just`](https://github.com/casey/just). Native ANIm also requires GNU C++ with C++17 support. On macOS, install Homebrew GCC and set `CXX` to its `g++` executable.
 
 ```sh
 just test            # tests as a default build, then with the development feature
@@ -48,7 +48,7 @@ The source manifest must be exactly the record the package's eleven tables, reci
 
 A package converted from the version 1 format carries the version 1 `portable.json` as an attested conversion record. The verifier checks that the record lists the same package, source manifest, export attestation and assets as the version 2 manifest.
 
-`--reference-package` authenticates the package in the same way, then requires the evidence to be bound to it. The evidence's reference package digest must equal the verified manifest digest, or the digest of the attested version 1 manifest it was converted from. The evidence must cover the whole primary component. Each row must give what the package gives for its reference: the species and subspecies with their display names, the name status of the more specific of the two, the role (`type_anchor` or `diversity`), and no lineage. Contradictory evidence is refused, never corrected. The two flags must be given together. Without `--reference-package` the decision reports `reference_package.status` as `not_verified`.
+`--reference-package` authenticates the package in the same way, then requires the evidence to be bound to it. The evidence's reference package digest must equal the verified manifest digest, or the digest of the attested version 1 manifest it was converted from. The evidence must cover the whole primary component. Each row must give what the package gives for its reference: the species and subspecies with their display names, the name status of the more specific of the two, the role (`type_anchor` or `diversity`), and no lineage. Contradictory evidence is refused, never corrected. The two flags must be given together. Package binding applies to v1 decisions only; `--policy conservative-assembly-anim-v2` refuses `--reference-package`. Without `--reference-package` the decision reports `reference_package.status` as `not_verified`.
 
 ### Exit codes
 
@@ -67,6 +67,14 @@ A package converted from the version 1 format carries the version 1 `portable.js
 | 10 | Unlisted: a file in the package directory is not listed in the manifest. |
 
 Every rejection prints `error:` followed by the kind of rejection and a message that names the file or field at fault. It prints no decision.
+
+The reciprocal ANIm development operation measures one pair with the approved maintained MUMmer4 profile. It writes input snapshots, native artifacts and exact integer evidence to a fresh directory:
+
+```sh
+cargo run --features dev --bin terobacter-dev -- anim-pair --query QUERY.fa --reference REFERENCE.fa --output NEW_DIRECTORY
+```
+
+See [the method amendment](docs/contracts/P1-ANIM-MUMMER4-r1.md) and [P4a-r3 command binding](docs/contracts/P4a-r3.md) for provenance, parser replay, resource limits and remaining acceptance gates.
 
 ## Layout
 

@@ -6,7 +6,7 @@
 use std::cmp::Reverse;
 use std::collections::{HashMap, HashSet};
 
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 
@@ -25,9 +25,11 @@ pub enum EvidenceError {
     Json(#[from] serde_json::Error),
     #[error("invalid saved evidence: {0}")]
     Invalid(String),
+    #[error("invalid settings: {0}")]
+    Settings(String),
 }
 
-fn invalid<T>(message: impl Into<String>) -> Result<T, EvidenceError> {
+pub(crate) fn invalid<T>(message: impl Into<String>) -> Result<T, EvidenceError> {
     Err(EvidenceError::Invalid(message.into()))
 }
 
@@ -48,11 +50,15 @@ impl Percent {
         f64::from(self.0) / 100.0
     }
 
+    pub(crate) const fn from_hundredths(hundredths: u32) -> Self {
+        Percent(hundredths)
+    }
+
     pub(crate) fn gap(self, other: Self) -> i64 {
         i64::from(self.0) - i64::from(other.0)
     }
 
-    fn parse(text: &str) -> Option<Self> {
+    pub(crate) fn parse(text: &str) -> Option<Self> {
         let (whole, fraction) = text.split_once('.').unwrap_or((text, ""));
         let digits = |s: &str| s.bytes().all(|b| b.is_ascii_digit());
         if whole.is_empty() || whole.len() > 3 || fraction.len() > 2 {
@@ -65,6 +71,23 @@ impl Percent {
         let fraction: u32 = format!("{fraction:0<2}").parse().ok()?;
         let hundredths = whole * 100 + fraction;
         (hundredths <= 10_000).then_some(Percent(hundredths))
+    }
+}
+
+impl std::fmt::Display for Percent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}.{:02}", self.0 / 100, self.0 % 100)
+    }
+}
+
+impl Serialize for Percent {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        // Preserve the emitted decimal rather than serializing through a float.
+        let number: serde_json::Number = self
+            .to_string()
+            .parse()
+            .map_err(serde::ser::Error::custom)?;
+        number.serialize(serializer)
     }
 }
 
@@ -141,7 +164,7 @@ impl SavedEvidence {
     pub fn from_json(text: &str) -> Result<Self, EvidenceError> {
         let raw: RawEvidence = serde_json::from_str(text)?;
         let mut evidence = raw.validate()?;
-        evidence.source_sha256 = format!("{:x}", Sha256::digest(text.as_bytes()));
+        evidence.source_sha256 = sha256_hex(text.as_bytes());
         Ok(evidence)
     }
 
@@ -192,6 +215,27 @@ impl SavedEvidence {
 
     pub fn references(&self) -> &[Reference] {
         &self.references
+    }
+
+    /// The same evidence with the masked references removed from the rows and the panel
+    /// counts. `unreturned` is how many masked references skani had not returned.
+    pub(crate) fn without_references(
+        &self,
+        mask: &std::collections::BTreeSet<&str>,
+        unreturned: usize,
+    ) -> SavedEvidence {
+        let references: Vec<_> = self
+            .references
+            .iter()
+            .filter(|r| !mask.contains(r.id.as_str()))
+            .cloned()
+            .collect();
+        SavedEvidence {
+            reference_count: self.reference_count - mask.len(),
+            not_returned_count: self.not_returned_count - unreturned,
+            references,
+            ..self.clone()
+        }
     }
 
     pub fn provenance(&self) -> &Provenance {
@@ -251,6 +295,10 @@ struct RawReference {
     aligned_fraction_query_percent: Percent,
     aligned_fraction_reference_percent: Percent,
     minimum_directional_af_percent: Percent,
+}
+
+pub(crate) fn sha256_hex(bytes: &[u8]) -> String {
+    format!("{:x}", Sha256::digest(bytes))
 }
 
 pub(crate) fn is_sha256(text: &str) -> bool {
