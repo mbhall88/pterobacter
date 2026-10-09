@@ -1,0 +1,55 @@
+# MLST feasibility protocol — issue #2
+
+Recorded 9 October 2026 before any candidate or comparator measurement. This is a bounded development investigation, not production code or biological evaluation. Michael selects the route after review. Covers gate E-MLST and the evidence side of AC08.
+
+## Comparator
+
+`mlst 2.32.2` + `blastn 2.16.0+` + `any2fasta`, from the pinned `mlst` conda environment, run on the historical scheme package (PubMLST *Enterobacter* scheme, submissions through 31 December 2024; retrieved 2026; not a 2024 byte snapshot). Fixed invocation: `--scheme ecloacae --datadir <package>/pubmlst --blastdb <index built from the package> --minid 95 --mincov 50 --threads 1 --full --json --debug`. The comparator is preserved unchanged and is not an acceptable runtime dependency.
+
+Rules read from the `mlst` 2.32.2 source (before measurement) that a candidate must reproduce or explicitly diverge from:
+
+1. `blastn`: `-ungapped -dust no -word_size 32 -perc_identity 95 -evalue 1E-20 -max_target_seqs 100000`, megablast scoring, assembly contigs as query, alleles as database. So hits are **ungapped HSPs**, a gapped alignment becomes two or more partial HSPs, and short HSPs fail the e-value filter. N and other non-ACGT bases are mismatches.
+2. A hit is discarded unless `nident / allele_length >= mincov/100` (identity-weighted coverage, not alignment length).
+3. Exact: HSP length = allele length = nident. Each further exact hit at the same locus appends `,<id>` (a second copy of one allele gives `n,n`; two alleles give `a,b`); an exact hit replaces an earlier `~`/`?` token; later hits never replace an exact token.
+4. Inexact full-length ungapped HSP gives `~<id>`; partial gives `<id>?`. The first such hit in BLAST output order wins (`||=`), not the best allele.
+5. A missing locus is `-`. ST is looked up only from the exact signature (`-` otherwise).
+6. Score = `int((7 - 0.3 n(~) - 0.5 n(?) - 1.0 n(-)) * 90 / 7) + (10 if ST found)`. STATUS: `PERFECT` (ST found), `NONE` (score <= 0), `NOVEL` (no non-numeric token), `MIXED` (any `,`), `MISSING` (any `-`), `BAD` (score < 70), else `OK`.
+7. Importer-level states and the profile-compatible candidate ST follow the existing Enterobacter importer: ambiguous (any `,`), incomplete (any `-`), inexact (any `~`/`?`), exact-profile match or unmatched profile; a candidate ST needs each repeated exact allele to be a confirmed copy at distinct locations. Candidates must therefore emit exact-hit locations.
+
+## Candidates
+
+1. **minimap2** through the Rust binding crate, pinned dependency and lockfile. Contigs indexed, alleles as queries, base-level CIGAR, secondary alignments retained. Presets `asm5`, `asm10`, `asm20` only, all with the same fixed secondary-alignment settings; no other tuning. Alignments are converted to ungapped HSPs (split at indels, trim terminal mismatches) and fed to the shared comparator-rule layer.
+2. **Exact-allele hash plus alignment crate.** Exact two-strand allele lookup (Aho–Corasick), fixed-k seeding of inexact and partial candidates, then a pairwise aligner on seeded windows for the best 32 alleles per window (rank by shared seeds, ties by allele id). Primary aligner `bio` (rust-bio) pairwise; second `block-aligner` if it builds within the repair limit. Same HSP conversion and rule layer. An exact-only matcher is reported separately and is never presented as parity.
+3. **Survey** of other crates (licence, maintenance, WebAssembly, whether it provides seeding/alignment/filtering). A crate that only supplies a pairwise primitive is classified as such; measure it only if it plausibly changes the recommendation.
+
+The shared rule layer (items 2–7 above) is common to all candidates so that the engines are compared on hits, not on re-implemented scoring. Hit-level agreement with the comparator's `--debug` rows is a stronger, separate corroboration.
+
+## Fixture list fixed before measurements
+
+Deterministic synthetic assemblies, seed 20261009: random background (GC about 55%) with allele sequences from the package embedded. Development fixtures only; no genome, read set or real isolate is used. All fixtures are rebuilt from the package by script and are not committed.
+
+- exact: ST1, ST2480, ST3295 and one mid-table ST; all seven alleles forward; all reverse-complemented; strands mixed;
+- exact seven alleles that form no recorded profile (unmatched);
+- missing locus (one, three, all loci absent);
+- inexact full length: one substitution in the middle; one at 1, 3 and 10 bases from an allele end; 4.9% and 5.1% substitutions (identity 95.1/94.9); five loci at once;
+- tied nearest alleles: a variant of two alleles that differ by one base, to test which allele id is displayed;
+- partial: allele truncated to 70%, 51%, 49% and 30% of its length, and a 40-base fragment (e-value floor);
+- contig edges: allele ending exactly at contig end (exact); allele with 30% missing past the contig end; allele split across two contigs; allele in a one-contig-per-allele assembly;
+- indels: 1-base insertion and 1-base deletion near the middle, 3-base insertion, 1-base indel at 10 bases from an end (ungapped split rule);
+- duplicates: the same allele twice; two different exact alleles at one locus; exact plus inexact at one locus in both orders; one allele present in a diverged (90%) second copy;
+- ambiguous bases: one N inside an allele; 2% N; N at an allele end; IUPAC code (R/Y); lowercase/soft-masked allele;
+- 12-contig fragmentation of the exact ST1 assembly;
+- no alleles at all (random contigs): successful `NONE`;
+- invalid inputs: empty FASTA, missing file, non-nucleotide sequence, duplicate contig identifiers, unwritable output parent. The development harness validates FASTA consistently before any backend, separately from the comparator's permissiveness.
+
+Performance workloads: one 5,000,000-bp exact-ST assembly in one contig and in 200 contigs; a panel of 20 such assemblies with substitutions in a subset of alleles. Reported: wall time, CPU time, peak RSS, and added release-binary size against an empty release executable. Real-reference-panel cost from earlier exposed work may be quoted as context only.
+
+## Equivalence and stopping
+
+Parity per fixture requires exact equality of: every locus token, ST, STATUS, SCORE, scheme, importer state, candidate ST and the set of exact-hit locations, for the comparator and a candidate. Report hit-level agreement (locus, allele id, contig, start, end, strand, nident, alen) separately, and report discrepancies per fixture rather than as a pooled rate. A candidate that reports no hit where the comparator has one is a discrepancy, not an omitted row.
+
+Stop after this fixed matrix and the performance workloads. Limits: 1 CPU-hour of alignment in total, 10 minutes wall time per assembly, 4 parallel workers, 2 GiB per worker (this host has about 3 GiB). Stop a candidate on unsafe crashes, inability to build after two focused repairs, or absent whole-sequence seeding/filtering capability; retain evidence and report the blocker. Do not retune presets or seed settings against results, enlarge fixtures to chase parity, add real genomes, run holdout evaluations, select a production route or amend frozen scientific policy.
+
+## Recorded for every run
+
+Exact argv, exit codes, input/source/binary hashes, time and peak RSS; hit tables from the comparator and each candidate. Build and runtime on Linux; macOS stated honestly as unavailable if untested; licences of each dependency and of the scheme data (PubMLST terms, section 3, records submitted through 31 December 2024 with scientific citation); browser-portability obstacles.
