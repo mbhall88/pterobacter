@@ -14,7 +14,7 @@ use rayon::prelude::*;
 use serde::Serialize;
 use skani::params::{CommandParams, Mode, SketchParams, MIN_LENGTH_CONTIG};
 use skani::sketch_db::SketchDbReader;
-use skani::types::{AniEstResult, Sketch};
+use skani::types::{AniEstResult, SeedPosition, Sketch, TaggedIndex};
 use skani::{chain, regression, screen, seeding};
 
 use crate::evidence::Percent;
@@ -156,7 +156,8 @@ pub struct SkaniDatabase {
 
 impl SkaniDatabase {
     /// Open an authenticated, immutable database component. Reject malformed
-    /// files and marker/index mismatches rather than skipping references.
+    /// files and inconsistent reference metadata before any screening. Reference
+    /// payloads are checked once and released; search still reads them from mmap.
     pub fn open(directory: &Path) -> Result<Self, SkaniError> {
         let file = File::open(directory.join("markers.bin")).map_err(error)?;
         let limit = file.metadata().map_err(error)?.len();
@@ -189,14 +190,23 @@ impl SkaniDatabase {
         }
         let mut ids = HashSet::new();
         for (i, marker) in markers.iter().enumerate() {
+            validate_profile(marker, &params)?;
             if marker.file_name.is_empty()
                 || !ids.insert(&marker.file_name)
                 || reader.file_name(i) != Some(marker.file_name.as_str())
             {
-                return Err(error(
+                return Err(reference_error(
+                    marker,
                     "marker/index identities disagree or reference names are duplicated",
                 ));
             }
+            let (reference_params, reference) = reader
+                .get_sketch(i)
+                .map_err(|e| reference_error(marker, e))?;
+            if reference_params != params {
+                return Err(reference_error(marker, "sketch parameters disagree"));
+            }
+            validate_reference(&reference, marker, &params)?;
         }
         Ok(Self {
             params,
@@ -236,20 +246,10 @@ impl SkaniDatabase {
                     {
                         return Ok(None);
                     }
-                    let (params, reference) = self.reader.get_sketch(i).map_err(error)?;
-                    if params != self.params
-                        || reference.file_name != marker.file_name
-                        || reference.k != self.params.k
-                        || reference.c != self.params.c
-                        || reference.amino_acid
-                        || reference.kmer_seeds_k.is_none()
-                        || reference.contigs.is_empty()
-                        || reference.contigs.len() != reference.contig_lengths.len()
-                    {
-                        return Err(error(
-                            "reference sketch is inconsistent with its marker entry",
-                        ));
-                    }
+                    let (_, reference) = self
+                        .reader
+                        .get_sketch(i)
+                        .map_err(|e| reference_error(marker, e))?;
                     let map = chain::map_params_from_sketch(&reference, false, &cp, &model);
                     let result = chain::chain_seeds(&reference, &query, map);
                     if result.ani > 0.5 {
@@ -287,6 +287,103 @@ impl SkaniDatabase {
             not_returned_reference_files: missing,
         })
     }
+}
+
+fn reference_error(sketch: &Sketch, message: impl std::fmt::Display) -> SkaniError {
+    error(format!("reference {:?}: {message}", sketch.file_name))
+}
+
+fn validate_profile(sketch: &Sketch, params: &SketchParams) -> Result<(), SkaniError> {
+    // The pinned Sketch::new stores c in marker_c, even when params.marker_c
+    // differs. Check the serialized upstream value without changing that format.
+    if sketch.k != params.k
+        || sketch.c != params.c
+        || sketch.marker_c != params.c
+        || sketch.amino_acid
+    {
+        return Err(reference_error(sketch, "incompatible DNA sketch profile"));
+    }
+    Ok(())
+}
+
+fn validate_reference(
+    reference: &Sketch,
+    marker: &Sketch,
+    params: &SketchParams,
+) -> Result<(), SkaniError> {
+    validate_profile(reference, params)?;
+    if reference.file_name != marker.file_name
+        || reference.contigs != marker.contigs
+        || reference.total_sequence_length != marker.total_sequence_length
+        || reference.marker_seeds != marker.marker_seeds
+        || reference.contigs.is_empty()
+        || reference.contigs.len() >= 1 << 30
+        || reference.contigs.len() != reference.contig_lengths.len()
+    {
+        return Err(reference_error(marker, "sketch/marker metadata disagree"));
+    }
+    let total = reference
+        .contig_lengths
+        .iter()
+        .try_fold(0_usize, |sum, &len| {
+            if (len as usize) < MIN_LENGTH_CONTIG {
+                None
+            } else {
+                sum.checked_add(len as usize)
+            }
+        });
+    if total != Some(reference.total_sequence_length) {
+        return Err(reference_error(
+            marker,
+            "invalid contig lengths or total length",
+        ));
+    }
+    let seeds = reference
+        .kmer_seeds_k
+        .as_ref()
+        .ok_or_else(|| reference_error(marker, "missing seed positions"))?;
+    let validate_position = |position: &SeedPosition| {
+        let length = reference
+            .contig_lengths
+            .get(position.contig_index() as usize);
+        if position.contig_index_canonical & 0x8000_0000 != 0
+            || length.is_none_or(|&len| position.pos >= len)
+            || (position.pos as usize) < params.k - 1
+        {
+            return Err(reference_error(
+                marker,
+                "seed position lies outside its contig",
+            ));
+        }
+        Ok(())
+    };
+    for positions in &reference.multi_position_storage {
+        if positions.len() < 2 {
+            return Err(reference_error(
+                marker,
+                "multiple-position storage has fewer than two positions",
+            ));
+        }
+        for position in positions {
+            validate_position(position)?;
+        }
+    }
+    for &tag in seeds.values() {
+        if TaggedIndex::is_single(tag) {
+            validate_position(&TaggedIndex::get_single(tag))?;
+        } else {
+            let index = usize::try_from(tag >> 1)
+                .ok()
+                .and_then(|i| reference.multi_position_storage.get(i));
+            if index.is_none() {
+                return Err(reference_error(
+                    marker,
+                    "packed seed index lies outside position storage",
+                ));
+            }
+        }
+    }
+    Ok(())
 }
 
 fn sketch_query(

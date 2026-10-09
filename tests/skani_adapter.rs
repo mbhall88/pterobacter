@@ -1,6 +1,6 @@
 use skani::params::SketchParams;
-use skani::sketch_db::SketchDbWriter;
-use skani::types::Sketch;
+use skani::sketch_db::{SketchDbReader, SketchDbWriter};
+use skani::types::{SeedPosition, Sketch, TaggedIndex};
 use std::fs;
 use terobacter::skani::{SearchSettings, SeedingMode, SkaniDatabase};
 mod common;
@@ -139,13 +139,130 @@ fn database_corruption_is_an_error_instead_of_a_partial_result() {
     fs::write(index, bincode::serialize(&entries).unwrap()).unwrap();
     assert!(SkaniDatabase::open(dir.path()).is_err());
     let (dir, query) = fixture();
-    // Correct bounds, corrupt payload: fail the search rather than silently drop a hit.
+    // Correct bounds, corrupt payload: fail instead of silently dropping a hit.
     let payload = dir.path().join("sketches.db");
     let mut bytes = fs::read(&payload).unwrap();
     bytes[..8].fill(255);
     fs::write(payload, bytes).unwrap();
-    let db = SkaniDatabase::open(dir.path()).unwrap();
-    assert!(db
-        .search(&query, SearchSettings::Primary, 1, SeedingMode::Auto)
+    assert!(SkaniDatabase::open(dir.path())
+        .and_then(|db| db.search(&query, SearchSettings::Primary, 1, SeedingMode::Auto))
         .is_err());
+}
+
+#[test]
+fn incompatible_marker_profile_is_rejected_without_unwinding() {
+    let cases: [fn(&mut Sketch); 4] = [
+        |s| s.amino_acid = true,
+        |s| s.k = 14,
+        |s| s.c = 0,
+        |s| s.marker_c = 1000,
+    ];
+    for mutate in cases {
+        let (dir, query) = fixture();
+        let path = dir.path().join("markers.bin");
+        let (params, mut markers): (SketchParams, Vec<Sketch>) =
+            bincode::deserialize(&fs::read(&path).unwrap()).unwrap();
+        mutate(&mut markers[0]);
+        fs::write(path, bincode::serialize(&(params, markers)).unwrap()).unwrap();
+        assert_reference_error_without_unwinding(dir.path(), &query);
+    }
+}
+
+fn assert_reference_error_without_unwinding(dir: &std::path::Path, query: &std::path::Path) {
+    let result = std::panic::catch_unwind(|| {
+        SkaniDatabase::open(dir)
+            .and_then(|db| db.search(query, SearchSettings::Primary, 2, SeedingMode::Portable))
+    });
+    let error = result
+        .expect("malformed database must not panic")
+        .unwrap_err();
+    assert!(error.to_string().contains("ref-b"), "{error}");
+}
+
+fn mutate_reference(dir: &std::path::Path, mutate: impl FnOnce(&mut Sketch)) {
+    let reader = SketchDbReader::new(dir.to_str().unwrap()).unwrap();
+    let mut references: Vec<_> = (0..reader.len())
+        .map(|i| reader.get_sketch(i).unwrap())
+        .collect();
+    drop(reader);
+    mutate(&mut references[0].1);
+    let mut writer = SketchDbWriter::new(dir.to_str().unwrap()).unwrap();
+    for (params, sketch) in references {
+        writer.add_sketch(&params, &sketch).unwrap();
+    }
+    writer.finalize(dir.to_str().unwrap()).unwrap();
+}
+
+#[test]
+fn invalid_packed_seed_storage_is_an_error_without_unwinding_or_partial_results() {
+    let (dir, query) = fixture();
+    mutate_reference(dir.path(), |sketch| {
+        for tag in sketch.kmer_seeds_k.as_mut().unwrap().values_mut() {
+            *tag = TaggedIndex::multiple(999_999);
+        }
+    });
+    assert_reference_error_without_unwinding(dir.path(), &query);
+}
+
+#[test]
+fn invalid_single_and_multiple_seed_positions_are_rejected() {
+    for multiple in [false, true] {
+        for position in [
+            SeedPosition::new(20, 1, false),
+            SeedPosition::new(200_003, 0, true),
+            SeedPosition::new(0, 0, false),
+            SeedPosition {
+                pos: 20,
+                contig_index_canonical: 0x8000_0000,
+            },
+        ] {
+            // Single tags encode only 31 bits of contig/canonical metadata;
+            // the reserved high bit is representable only in stored positions.
+            if !multiple && position.contig_index_canonical & 0x8000_0000 != 0 {
+                continue;
+            }
+            let (dir, query) = fixture();
+            mutate_reference(dir.path(), |sketch| {
+                let tag = if multiple {
+                    sketch.multi_position_storage.push(
+                        [SeedPosition::new(20, 0, false), position.clone()]
+                            .as_slice()
+                            .into(),
+                    );
+                    TaggedIndex::multiple(sketch.multi_position_storage.len() - 1)
+                } else {
+                    TaggedIndex::single(&position)
+                };
+                for value in sketch.kmer_seeds_k.as_mut().unwrap().values_mut() {
+                    *value = tag;
+                }
+            });
+            assert_reference_error_without_unwinding(dir.path(), &query);
+        }
+    }
+}
+
+#[test]
+fn inconsistent_reference_metadata_is_rejected_even_when_query_would_not_screen() {
+    let cases: [fn(&mut Sketch); 10] = [
+        |s| s.amino_acid = true,
+        |s| s.marker_c = 1000,
+        |s| s.total_sequence_length += 1,
+        |s| s.contigs.clear(),
+        |s| s.contig_lengths.clear(),
+        |s| s.contig_lengths[0] = 0,
+        |s| s.contig_lengths[0] += 1,
+        |s| s.kmer_seeds_k = None,
+        |s| s.multi_position_storage.push(Default::default()),
+        |s| {
+            s.multi_position_storage
+                .push([SeedPosition::new(20, 0, false)].as_slice().into());
+        },
+    ];
+    for mutate in cases {
+        let (dir, query) = fixture();
+        mutate_reference(dir.path(), mutate);
+        fs::write(&query, b">short\nACGT\n").unwrap();
+        assert_reference_error_without_unwinding(dir.path(), &query);
+    }
 }
