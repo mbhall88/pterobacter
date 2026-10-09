@@ -11,6 +11,8 @@ fn main() {
     );
     let source = env::var("MUMMER3_SOURCE")
         .expect("set MUMMER3_SOURCE to an isolated MUMmer 3.23 source copy");
+    // Watch the entire supplied tree, including replacement at the same path.
+    println!("cargo:rerun-if-changed={source}");
     let out = PathBuf::from(env::var_os("OUT_DIR").unwrap());
     assert!(
         Command::new("python3")
