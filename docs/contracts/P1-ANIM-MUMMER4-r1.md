@@ -14,7 +14,7 @@ For each filtered block, sum both inclusive spans into D and the fifth header in
 
 All sums and cross products are checked. Identity uses a strict greater-than comparison; coverage uses an inclusive greater-than-or-equal comparison. Formatting percentages cannot decide a gate.
 
-QR makes the biological reference the native reference. RQ swaps the native inputs. In both result records, `query_covered`, `query_length`, `reference_covered` and `reference_length` name the biological roles. `native_reference_id` and `native_query_id` retain the native axes explicitly. A valid header-only empty filtered delta produces `no_alignment`, D=E=0, zero coverage and undefined identity. A failed or truncated operation produces an incomplete pair, never a biological negative.
+QR makes the biological reference the native reference. RQ swaps the native inputs. In both result records, `query_covered`, `query_length`, `reference_covered` and `reference_length` name the biological roles. `native_reference_id` and `native_query_id` retain the native axes explicitly. A valid header-only empty filtered delta produces `no_alignment`, D=E=0, zero coverage and undefined identity. Every record header must identify known contigs and declare their exact positive integer lengths, even when no blocks follow. Malformed headers return an error. A failed or truncated operation produces an incomplete pair, never a biological negative.
 
 ## Inputs and receipts
 
@@ -22,7 +22,7 @@ QR makes the biological reference the native reference. RQ swaps the native inpu
 
 A fresh output directory is required. `request.json`, input snapshots, QR/RQ raw and filtered delta files, worker stdout/stderr, exit/signal status, measured wall time, successful-worker CPU/RSS, and artifact hashes remain beside `result.json`. Failed input bytes are retained when readable within the input limit. Every started native process has a receipt; orientations skipped after failure are `not_run`. Worker failure must have both a successful process exit and a valid successful native completion record to become complete.
 
-`verify_pair` requires expected input hashes, the current source/build profile, retained snapshots and artifact hashes, correct native axes, and recomputed exact metrics. Executable hashes remain producer provenance; the public aliases and development binary can share a source/build profile while their executable bytes differ. This is a reuse validator, not a cache scheduler.
+`verify_pair` takes an `ExpectedPair` from the caller's current context: query and reference IDs and byte hashes, reference component, and the full ordered list of reference concept IDs. The caller must obtain this context independently of the saved result. Both saved input bindings and the retained top-level request must match it; omitted operation IDs resolve to input byte hashes. Query component and concepts must retain their whole-assembly values. Verification also requires the current source/build profile, retained snapshots and artifact hashes, correct native axes, and recomputed exact metrics. Executable hashes remain producer provenance; the public aliases and development binary can share a source/build profile while their executable bytes differ. Package authentication belongs to the caller. This is a reuse validator, not a cache scheduler.
 
 ## Containment and limits
 

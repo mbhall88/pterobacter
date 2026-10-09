@@ -1,6 +1,47 @@
 use std::collections::BTreeMap;
 use terobacter::anim::parse_delta;
 
+fn malformed_record_headers_return_errors(block: &str) {
+    use terobacter::anim::AnimError;
+    let refs = BTreeMap::from([("r".into(), 100)]);
+    let queries = BTreeMap::from([("q".into(), 100)]);
+    for header in [
+        "unknown q nope 100",
+        "r unknown 100 nope",
+        "unknown q 100 100",
+        "r unknown 100 100",
+        "r q nope 100",
+        "r q 100 nope",
+        "r q -1 100",
+        "r q 100 -1",
+        "r q 18446744073709551616 100",
+        "r q 100 18446744073709551616",
+        "r q 0 100",
+        "r q 100 0",
+        "r q 99 100",
+        "r q 100 99",
+    ] {
+        let text = format!("r.fa q.fa\nNUCMER\n>{header}\n{block}");
+        assert!(
+            matches!(
+                parse_delta(&text, &refs, &queries),
+                Err(AnimError::Invalid(_))
+            ),
+            "malformed header accepted: {header}"
+        );
+    }
+}
+
+#[test]
+fn malformed_record_headers_without_blocks_are_errors_not_no_alignment() {
+    malformed_record_headers_return_errors("");
+}
+
+#[test]
+fn malformed_record_headers_with_blocks_are_errors_without_panicking() {
+    malformed_record_headers_return_errors("1 10 1 10 0 0 0\n0\n");
+}
+
 #[test]
 fn span_identity_and_coverage_keep_overlap_reverse_and_singleton_semantics() {
     let lengths = BTreeMap::from([("r".to_owned(), 100)]);

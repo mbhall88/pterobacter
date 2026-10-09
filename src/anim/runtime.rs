@@ -114,7 +114,8 @@ pub struct PairRecord {
     pub error: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PairRequest {
     pub query: PathBuf,
     pub reference: PathBuf,
@@ -127,6 +128,18 @@ pub struct PairRequest {
     pub expect_reference_sha256: Option<String>,
     pub timeout: Duration,
     pub memory_mib: u64,
+}
+
+/// Input identities from the caller's current query and reference context.
+/// These must not be taken from the saved pair being verified.
+#[derive(Debug, Clone)]
+pub struct ExpectedPair {
+    pub query_id: String,
+    pub query_sha256: String,
+    pub reference_id: String,
+    pub reference_sha256: String,
+    pub reference_component: String,
+    pub reference_concept_ids: Vec<String>,
 }
 
 pub fn hash_bytes(bytes: &[u8]) -> String {
@@ -750,14 +763,11 @@ fn memory_exceeded(ceiling: u64) -> bool {
     exceeded
 }
 
-/// Authenticate a saved complete pair before reuse. The caller supplies both
-/// expected byte hashes; artifacts, roles, integers and current method/build
-/// bindings are checked again. This does not implement a cache scheduler.
-pub fn verify_pair(
-    directory: &Path,
-    query_sha256: &str,
-    reference_sha256: &str,
-) -> Result<PairRecord, AnimError> {
+/// Validate a saved complete pair before reuse. The caller supplies expected
+/// identities, byte hashes, component and concepts from its current context.
+/// The retained request, artifacts, roles, integers and current method/build
+/// bindings are checked again. Package authentication remains the caller's job.
+pub fn verify_pair(directory: &Path, expected: &ExpectedPair) -> Result<PairRecord, AnimError> {
     let report: PairRecord = serde_json::from_slice(&fs::read(directory.join("result.json"))?)?;
     let mut current = Method::current(&std::env::current_exe()?)?;
     // The two public aliases and development binary share the same library,
@@ -781,8 +791,33 @@ pub fn verify_pair(
         .reference
         .as_ref()
         .ok_or_else(|| invalid("missing reference binding"))?;
-    if query.sha256 != query_sha256 || reference.sha256 != reference_sha256 {
+    if query.sha256 != expected.query_sha256 || reference.sha256 != expected.reference_sha256 {
         return Err(invalid("stale input provenance"));
+    }
+    if query.id != expected.query_id
+        || query.component != "query-whole-assembly"
+        || !query.concept_ids.is_empty()
+        || reference.id != expected.reference_id
+        || reference.component != expected.reference_component
+        || reference.concept_ids != expected.reference_concept_ids
+    {
+        return Err(invalid("input identity/component/concept mismatch"));
+    }
+    let request: PairRequest = serde_json::from_slice(&fs::read(directory.join("request.json"))?)?;
+    if request.query_id.as_deref().unwrap_or(&query.sha256) != expected.query_id
+        || request.reference_id.as_deref().unwrap_or(&reference.sha256) != expected.reference_id
+        || request.reference_component != expected.reference_component
+        || request.reference_concept_ids != expected.reference_concept_ids
+        || request
+            .expect_query_sha256
+            .as_ref()
+            .is_some_and(|hash| hash != &expected.query_sha256)
+        || request
+            .expect_reference_sha256
+            .as_ref()
+            .is_some_and(|hash| hash != &expected.reference_sha256)
+    {
+        return Err(invalid("saved operation context mismatch"));
     }
     for (input, name) in [(query, "query.fa"), (reference, "reference.fa")] {
         let bytes = fs::read(directory.join("inputs").join(name))?;
