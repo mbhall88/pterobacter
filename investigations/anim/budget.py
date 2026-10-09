@@ -76,7 +76,8 @@ class Lease:
         with self.budget.transaction() as data:
             entry = next(e for e in data['entries'] if e['id'] == self.key)
             # Unknown/killed work is charged in full, including cleanup headroom.
-            charge = entry['reserved_seconds'] if failed else max(self.cpu, (self.clock() - self.start) * self.cpus)
+            measured_bound = max(self.cpu, (self.clock() - self.start) * self.cpus)
+            charge = max(entry['reserved_seconds'], measured_bound) if failed else measured_bound
             entry.update(status='failed' if failed else 'complete', charged_seconds=charge,
                          measured_cpu_seconds=self.cpu,
                          finished_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
