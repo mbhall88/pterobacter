@@ -29,10 +29,21 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      # `cog check --from-latest-tag` exits 1 with "unable to get any tag" until the first release
+      # exists, and the action hides that message. Until then check the whole history, which is
+      # the same rule over every commit.
+      - name: Choose the commit range
+        id: range
+        run: |
+          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
+            echo "args=--from-latest-tag" >> "$GITHUB_OUTPUT"
+          else
+            echo "args=" >> "$GITHUB_OUTPUT"
+          fi
       - uses: cocogitto/cocogitto-action@v4
         with:
           command: check
-          args: --from-latest-tag
+          args: ${{ steps.range.outputs.args }}
 
   test:
     name: test on ${{ matrix.os }}
