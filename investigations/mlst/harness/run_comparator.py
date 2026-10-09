@@ -13,7 +13,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from common import MLST_ENV, LOCI, parse_comparator, sha256, timed
+from common import MLST_ENV, LOCI, is_crash, parse_comparator, sha256, timed
 
 
 def main(package, fixtures, out, names):
@@ -54,6 +54,8 @@ def main(package, fixtures, out, names):
         rec["input_sha256"] = sha256(fa) if fa.exists() else None
         rec["fixture"] = name
         (d / "record.json").write_text(json.dumps(rec, indent=1))
+        if is_crash(rec):
+            sys.exit(f"comparator crashed or timed out on {name}; stopping (record kept in {d / 'record.json'})")
         if rec["exit_code"] == 0:
             parsed = parse_comparator(Path(d / "mlst.tsv").read_text().splitlines()[1], Path(d / "mlst.debug").read_text())
             (d / "parsed.json").write_text(json.dumps(parsed, indent=1))
