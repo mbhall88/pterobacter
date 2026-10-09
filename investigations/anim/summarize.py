@@ -14,7 +14,7 @@ def load_pairs(root):
 
 def table(path, rows):
     with path.open('w', newline='') as out:
-        writer = csv.DictWriter(out, fieldnames=list(rows[0]), delimiter='\t')
+        writer = csv.DictWriter(out, fieldnames=list(rows[0]), delimiter='\t', lineterminator='\n')
         writer.writeheader()
         writer.writerows(rows)
 
