@@ -1,0 +1,10 @@
+xdrop	fixtures	call_parity_pass	hsps_comparator	hsps_missing_in_route_d	hsps_extra_in_route_d	fixtures_with_hsp_difference
+10	52	52	100002	51	51	51
+11	52	52	100002	51	51	51
+12	52	52	100002	0	0	0
+13	52	52	100002	0	0	0
+14	52	52	100002	0	0	0
+15	52	52	100002	51	51	51
+20	52	52	100002	51	51	51
+30	52	52	100002	51	51	51
+59	52	52	100002	52	51	51

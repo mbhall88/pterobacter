@@ -11,10 +11,11 @@ VARIANTS = [("core", None), ("exact-bio", "engine-exact-bio"), ("exact-ba", "eng
             ("minimap2", "engine-minimap2"), ("minimap2-pure", "engine-minimap2-pure")]
 OUT.mkdir(exist_ok=True)
 empty = (PROBE / "target/core/release/empty").stat().st_size
+# "core" is the route-D-capable baseline: probe/src/main.rs compiles route D in unconditionally, so increments below are prototype build increments for the optional backends, not production estimates.
 core = (PROBE / "target/core/release/mlst-probe").stat().st_size
 with (OUT / "binary-sizes.tsv").open("w") as fh:
     w = csv.writer(fh, delimiter="\t")
-    w.writerow(["variant", "bytes", "increment_over_empty_executable", "increment_over_core_no_engine_build"])
+    w.writerow(["variant", "bytes", "increment_over_empty_executable", "increment_over_route_d_capable_baseline"])
     w.writerow(["empty", empty, 0, ""])
     for name, _ in VARIANTS:
         size = (PROBE / f"target/{name}/release/mlst-probe").stat().st_size

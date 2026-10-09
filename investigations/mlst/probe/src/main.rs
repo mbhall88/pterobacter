@@ -12,6 +12,9 @@ fn main() {
     let engine = get("--engine").unwrap_or_else(|| fail("--engine required".into()));
     let pkg_dir = PathBuf::from(get("--package").unwrap_or_else(|| fail("--package required".into())));
     let query = PathBuf::from(get("--query").unwrap_or_else(|| fail("--query required".into())));
+    if let Some(v) = get("--xdrop") {
+        mlst_feasibility_probes::hsp::set_xdrop(v.parse().unwrap_or_else(|_| fail("--xdrop needs an integer".into())));
+    }
     let t0 = Instant::now();
     let pkg = Package::load(&pkg_dir).unwrap_or_else(|e| fail(e));
     let contigs = fasta::read_assembly(&query).unwrap_or_else(|e| fail(e));

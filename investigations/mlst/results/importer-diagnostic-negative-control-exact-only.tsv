@@ -1,0 +1,53 @@
+fixture	comparator_import	route_d_import	importer_state	importer_ST	importer_candidate_ST	copy_reasons	verified_exact_locations	importer_outputs_equal	differences	harness_derive_agrees	cutoff	limitation_text_ok
+exact_st1	ok	ok	exact_profile_match	1			7	True		True	2024-12-31	True
+exact_st2480	ok	ok	exact_profile_match	2480			7	True		True	2024-12-31	True
+exact_st3295	ok	ok	exact_profile_match	3295			7	True		True	2024-12-31	True
+exact_st1648	ok	ok	exact_profile_match	1648			7	True		True	2024-12-31	True
+exact_st1_rev	ok	ok	exact_profile_match	1			7	True		True	2024-12-31	True
+exact_st1_mixed	ok	ok	exact_profile_match	1			7	True		True	2024-12-31	True
+exact_unmatched_profile	ok	ok	unmatched_profile				7	True		True	2024-12-31	True
+missing_1	ok	ok	incomplete_profile				6	True		True	2024-12-31	True
+missing_3	ok	ok	incomplete_profile				4	True		True	2024-12-31	True
+random_only	ok	ok	incomplete_profile				0	True		True	2024-12-31	True
+inexact_mid	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+inexact_end1	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+inexact_start1	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+inexact_end3	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+inexact_start3	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+inexact_end10	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+inexact_start10	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+inexact_id951	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+inexact_id949	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+inexact_five_loci	ok	ok	inexact_alleles				2	False	state,alleles,loci	True	2024-12-31	True
+tie_two_alleles	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+tie_broken_by_one_snp	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+partial_70	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+partial_51	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+partial_49	ok	ok	incomplete_profile				6	True		True	2024-12-31	True
+partial_30	ok	ok	incomplete_profile				6	True		True	2024-12-31	True
+fragment_40	ok	ok	incomplete_profile				6	True		True	2024-12-31	True
+fragment_60	ok	ok	incomplete_profile				6	True		True	2024-12-31	True
+edge_exact_at_end	ok	ok	exact_profile_match	1			7	True		True	2024-12-31	True
+edge_exact_at_start	ok	ok	exact_profile_match	1			7	True		True	2024-12-31	True
+edge_trunc_30_start	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+edge_trunc_30_end	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+edge_split_two_contigs	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+edge_one_contig_per_allele	ok	ok	exact_profile_match	1			7	True		True	2024-12-31	True
+indel_ins1	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+indel_del1	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+indel_ins3	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+indel_ins1_end10	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+indel_del1_30pct	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+dup_same_twice	ok	ok	ambiguous_alleles		1	repeated_identical_allele_copy	8	True		True	2024-12-31	True
+dup_two_alleles	ok	ok	ambiguous_alleles			discordant_exact_allele_sequences	8	True		True	2024-12-31	True
+dup_exact_then_inexact	ok	ok	exact_profile_match	1			7	True		True	2024-12-31	True
+dup_inexact_then_exact	ok	ok	exact_profile_match	1			7	True		True	2024-12-31	True
+dup_diverged_90	ok	ok	exact_profile_match	1			7	True		True	2024-12-31	True
+dup_diverged_96	ok	ok	exact_profile_match	1			7	True		True	2024-12-31	True
+dup_same_rev	ok	ok	ambiguous_alleles		1	repeated_identical_allele_copy	8	True		True	2024-12-31	True
+amb_N1	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+amb_N2pct	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+amb_Nend	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+amb_iupac_R	ok	ok	inexact_alleles				6	False	state,alleles,loci	True	2024-12-31	True
+lowercase	ok	ok	exact_profile_match	1			7	True		True	2024-12-31	True
+frag_12_contigs	ok	ok	inexact_alleles				5	False	state,alleles,loci	True	2024-12-31	True
