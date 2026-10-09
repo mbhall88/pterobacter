@@ -79,3 +79,12 @@ Hit-level comparison of the shared finisher with the comparator exposed one wron
 - **minimap2 binding crash.** Route 1 as pre-registered (in-memory contig index) segfaulted (exit 139) on every multi-contig assembly, 8 of 52 fixtures, at every preset. The stop rule says to stop a candidate on an unsafe crash; the in-memory result is therefore reported as route 1's measured outcome. A file-indexed variant (contigs written to a temporary FASTA, indexed by minimap2's own reader) is reported as a clearly labelled supplementary deviation, because it is a different code path and the only way to learn whether the engine itself is usable. The pure-Rust translation `minimap2-pure-rs` (route 1b) was added after seeing the crash and measured with identical presets and settings.
 - **block-aligner.** Offers global and X-drop alignment but no local mode, so it is used as an anchored X-drop extension from one seed per allele in each direction. Built first time with one repair, to my own adapter (wrong anchor offset), not to the build.
 - **Workloads.** The performance workloads are the 5 Mbp single-contig and 200-contig assemblies and a 20-assembly synthetic panel; there is no 140-reference panel for MLST.
+
+## Addendum D (9 October 2026, after coordinator review of the first report)
+
+Four changes, none altering the fixture list, presets or any reported measurement:
+
+- **Stop controls.** The harness now enforces the stop rules above (wall limit, memory limit, worker cap, CPU budget, stop on first crash, retained failure records), tested with synthetic subprocesses. The earlier saved runs predate these controls; they were not repeated.
+- **Retained diagnostics.** `harness/xdrop_sweep.py` and `harness/order_audit.py` re-derive the X-drop bracket and the report-order check from saved comparator output (route D rerun at ten X-drop values, about 1.7 CPU-minutes). The retained order audit counts 102,827 pairs (not 104,913): it groups by contig and locus and leaves out the invalid duplicate-contig-id input. The probe gained a diagnostic `--xdrop` option; the default and every reported result still use 13.
+- **Importer check.** `harness/importer_diagnostic.py` passes saved comparator and route D outputs through the real, unchanged Enterobacter importer, with reconstructed (not historical) receipts and the comparator's prepared command for route D. It does not give route D an execution receipt.
+- **Size baseline.** The "core" binary is the route-D-capable baseline, not an engine-free build; the column is renamed.

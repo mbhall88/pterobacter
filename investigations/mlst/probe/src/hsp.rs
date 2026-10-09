@@ -2,12 +2,19 @@
 //! scoring (+1/-2), and the shared seed-and-extend routine that candidate engines use to finish a
 //! candidate diagonal into BLAST-comparable HSPs.
 
+use std::sync::atomic::{AtomicI32, Ordering};
+
 pub const WORD: usize = 32;
 pub const REWARD: i32 = 1;
 pub const PENALTY: i32 = -2;
 /// Raw ungapped X-drop. blastn documents 20 bits but its raw conversion is not stated; comparator hits bracket it
 /// to 12..=14 (11 and 15 each break one hit per fixture), so the midpoint is used. See protocol addendum B.
 pub const XDROP: i32 = 13;
+static XDROP_OVERRIDE: AtomicI32 = AtomicI32::new(XDROP);
+
+/// Diagnostic only (`--xdrop` in the probe): the sweep in `harness/xdrop_sweep.py` varies this; every reported result uses `XDROP`.
+pub fn set_xdrop(v: i32) { XDROP_OVERRIDE.store(v, Ordering::Relaxed); }
+fn xdrop() -> i32 { XDROP_OVERRIDE.load(Ordering::Relaxed) }
 
 #[derive(Clone, Debug)]
 pub struct Hsp {
@@ -68,7 +75,7 @@ pub fn extend_diagonal(allele: &[u8], contig: &[u8], diag: isize, contig_idx: us
             if cur > best {
                 best = cur;
                 right = i;
-            } else if best - cur >= XDROP {
+            } else if best - cur >= xdrop() {
                 break;
             }
         }
@@ -81,7 +88,7 @@ pub fn extend_diagonal(allele: &[u8], contig: &[u8], diag: isize, contig_idx: us
             if lcur > lbest {
                 lbest = lcur;
                 left = i;
-            } else if lbest - lcur >= XDROP {
+            } else if lbest - lcur >= xdrop() {
                 break;
             }
         }

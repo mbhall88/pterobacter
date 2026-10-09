@@ -41,14 +41,14 @@ Rules from the source (protocol items 1–7) plus three found by running it (add
 | hit kept if `nident / allele length ≥ 0.5` | yes |
 | exact: full length, all identical; further exact hits append `,id`; an exact replaces an earlier `~`/`?` | yes |
 | `~id` full-length ungapped with mismatches; `id?` shorter; first in BLAST order wins | yes |
-| BLAST order: contig, then subject best score, ties **highest allele id first** | yes; 0 violations in 104,913 within-locus adjacent pairs; order across loci not reproduced and irrelevant |
+| BLAST order: contig, then subject best score, ties **highest allele id first** | yes; 0 violations in 102,827 adjacent subject pairs per contig and locus (retained audit, [`results/report-order-audit.tsv`](results/report-order-audit.tsv)); order across loci not reproduced and irrelevant |
 | a substitution followed by ≤2 matches is trimmed off (so a base change 1–3 from an allele end is `n?`) | yes |
 | e-value floor | modelled, inert: shortest allele is 249 bases so a kept hit has ≥125 identical bases |
 | score `int((7 − .3 a − .5 b − c)·90/7) + 10 if ST`, STATUS table | yes; unit-tested incl. BAD (BAD is not reached by any fixture) |
 | N and IUPAC codes are mismatches; lower case is upper-cased | yes (`amb_*`, `lowercase`) |
 | duplicate tolerant input: duplicate contig ids and protein FASTA are accepted by `mlst`; empty, headerless and missing files exit 1 | **diverged on purpose**: the harness rejects all five (exit 2) before any backend, as the protocol specifies |
 
-X-drop: the documented 20 bits did not convert to a value that reproduced the comparator (10 truncated one HSP, 20 extended another). Two natural probes bracket the raw value to 12–14; 12, 13 and 14 each give zero differences over all 100,002 HSPs, 11 and 15 each break one HSP per fixture. I used 13. This is a comparator-model constant shared by every route, not a candidate preset.
+X-drop: the documented 20 bits did not convert to a value that reproduced the comparator (10 truncated one HSP, 20 extended another). A retained sweep over all 52 fixtures ([`results/xdrop-sweep.tsv`](results/xdrop-sweep.tsv), `harness/xdrop_sweep.py`) brackets the raw value to 12–14: 12, 13 and 14 each give zero HSP differences over all 100,002 comparator HSPs, while 10, 11, 15, 20, 30 and 59 each miss and add one HSP in 51 of 52 fixtures (59 misses one more). Call parity stays 52/52 at every value tried, so the constant matters for HSP-level fidelity, not for the calls on these fixtures. I used 13. This is a comparator-model constant shared by every route, not a candidate preset.
 
 Not modelled, because no fixture exercised it: BLAST's removal of HSPs with common endpoints, query-splitting for very large queries, soft-masking of subjects. Real assemblies with diverged paralogs are the likely place to find a difference.
 
@@ -60,7 +60,7 @@ Not modelled, because no fixture exercised it: BLAST's removal of HSPs with comm
 
 Linux x86-64 (AMD EPYC, 8 cores), one thread, process wall time including parsing and index building, fixture generation excluded. Total alignment CPU across all measurements was about 7 CPU-minutes, so no stop limit came near.
 
-| Route | 5 Mbp, 1 contig: wall / peak RSS | 5 Mbp, 200 contigs: wall | 20-assembly panel: total wall | binary +vs empty / vs core |
+| Route | 5 Mbp, 1 contig: wall / peak RSS | 5 Mbp, 200 contigs: wall | 20-assembly panel: total wall | binary +vs empty / vs route-D-capable baseline |
 |---|---|---|---|---|
 | comparator (`mlst` + Perl + BLAST+ + any2fasta) | 1.08 s / 162 MiB | 1.07 s | 24.5 s | — |
 | D ungapped | 0.38 s / 107 MiB | 0.29 s | 7.4 s | +164 kB / 0 |
@@ -69,7 +69,7 @@ Linux x86-64 (AMD EPYC, 8 cores), one thread, process wall time including parsin
 | minimap2 C, asm20 (file index) | 0.62 s / 80 MiB | 0.68 s | 14.1 s | +343 kB / +178 kB |
 | `minimap2-pure-rs`, asm20 | 0.94 s / 64 MiB | 0.57 s | 11.0 s | +695 kB / +531 kB |
 
-All routes except exact-only gave the comparator's call on all 22 performance assemblies (exact-only fails the 200-contig one, where cuts split alleles). Runtime is not a reason to avoid BLAST; the reason is the external executables. "Core" is the probe with JSON output and no engine; the empty-executable baseline is 302 kB. The exact routes build a k-mer seed index only when some locus has no exact allele, which is why they use 12 MiB on an all-exact assembly. [`results/performance.tsv`](results/performance.tsv), [`results/binary-sizes.tsv`](results/binary-sizes.tsv).
+All routes except exact-only gave the comparator's call on all 22 performance assemblies (exact-only fails the 200-contig one, where cuts split alleles). Runtime is not a reason to avoid BLAST; the reason is the external executables. The baseline is the probe as built with no optional backend, which still includes route D (it is compiled in unconditionally), so it is not an engine-free build; D's +164 kB over the 302 kB empty executable is its cost, and the other increments are prototype build increments for the optional backends, not production estimates. The exact routes build a k-mer seed index only when some locus has no exact allele, which is why they use 12 MiB on an all-exact assembly. [`results/performance.tsv`](results/performance.tsv), [`results/binary-sizes.tsv`](results/binary-sizes.tsv).
 
 ## Licences and data provenance
 
@@ -97,8 +97,9 @@ A short `cargo info` survey (versions and licences only, no build): `parasail-rs
 ## Limits
 
 - Cutoff parity is trivial here: the cutoff limitation text comes from the same package and importer on both sides and no engine touches it, so there is nothing to diverge. It is not a measured result.
-- Importer state and candidate ST come from `compare.py`'s `derive()`, a harness reimplementation of the Enterobacter importer's rules applied to both sides. It was not checked against the real importer, and it tests the engine's tokens and exact-hit locations, not an independent state of the candidate. Only `dup_same_twice` and `dup_same_rev` produce a candidate ST (column `comparator_candidate_ST` in `parity-per-fixture.tsv`); every other fixture shows none.
-- The within-locus BLAST report-order check (104,913 adjacent pairs, 0 violations) and the X-drop sweep (11–15; 10, 20, 30 and 59 on seven fixtures; candidate runs deleted afterwards) were ad hoc checks with no script or table kept, here or in the Enterobacter run beyond a note in its commands log. Treat them as reported, not reproducible from here.
+- Importer acceptance is partly met. The real, unchanged Enterobacter importer accepts the saved comparator output and route D's output for all 52 valid fixtures, with identical importer records (state, ST, per-locus tokens, sequence-verified exact locations, profile-compatible candidate ST, copy-diagnostic reasons, cutoff and limitation text) and agrees with `compare.py`'s `derive()` on all 52 ([`results/importer-diagnostic.tsv`](results/importer-diagnostic.tsv)). A negative control (the exact-only run) differs on exactly the 27 fixtures that fail call parity, so the check discriminates. What it is not: the receipts are reconstructed from saved outputs (the comparator's saved `mlst.json`, rebuilt fixture paths and hashes), and route D's records were submitted under the comparator's prepared command because the importer's contract requires pinned mlst/BLAST executables and a BLAST index. That `execution` block is dropped before comparison and means nothing about route D. The BLAST index inventory omits the `.nhd`/`.nhi` files that `makeblastdb -hash_index` adds, which the importer's inventory does not list. Accepting a new named engine in production therefore still needs a versioned importer adapter and command contract (the amendment already named as a gate before #25); this run does not provide it. Only `dup_same_twice` and `dup_same_rev` produce a candidate ST; every other fixture shows none.
+- The report-order audit and X-drop sweep are now retained and reproducible (`harness/order_audit.py`, `harness/xdrop_sweep.py`, `results/`). They supersede the earlier ad hoc figures (a 104,913-pair order check and an 11–15 sweep whose candidate runs were deleted), which were not retained; the retained pair count is 102,827 because the audit now groups by contig and excludes the duplicate-contig-id input. The sweep and the 13 chosen from it are in-sample.
+- Stop controls were added after review. The first harness had no wall timeout, memory limit, four-worker cap, aggregate CPU budget or stop-on-crash, so the in-memory minimap2 run continued past its first segfault to show it was systematic on all 8 multi-contig fixtures (a deviation from the protocol's "stop a candidate on unsafe crashes"). The saved measurements show no overrun (peak RSS under 170 MiB, no run over 2 seconds, about 7 CPU-minutes in all). `harness/common.py` now enforces the protocol limits (600 s per run with process-group kill, 2 GiB address space, at most 4 workers, 3600 CPU-seconds, stop after the first crash, with failure records and `STOPPED.json` retained) and `harness/tests/test_bounds.py` tests them with tiny synthetic subprocesses. Successful alignment runs were not repeated; a one-fixture smoke run of the comparator and probe under the new limits passed.
 - Route D's 100,002 matched HSPs are in-sample: X-drop 13 was chosen on those same HSPs. The fixtures give no holdout.
 - Route 2's "the aligner adds nothing" is inferred from route D matching, not shown by ablation. Hit-level agreement is reported only for D; other routes report missing-HSP counts.
 - minimap2 was run with the three protocol presets only (asm5, asm10, asm20) and no other tuning, so route 1's sensitivity floor is for those presets.
@@ -128,6 +129,10 @@ python3 harness/run_candidate.py probe/target/core/release/mlst-probe ungapped <
 python3 harness/compare.py <scheme-dir>/ecloacae RUNS/comparator RUNS/cand/ungapped RUNS/cmp_ungapped
 python3 harness/run_perf.py <package-dir> FIXTURES RUNS/comparator bins.json RUNS/perf.json
 python3 harness/summarise.py RUNS results && python3 harness/sizes_licences.py
+python3 harness/order_audit.py RUNS/comparator results/report-order-audit.tsv
+python3 harness/xdrop_sweep.py probe/target/core/release/mlst-probe <scheme-dir>/ecloacae FIXTURES RUNS/comparator RUNS/xdrop results/xdrop-sweep.tsv
+python3 harness/importer_diagnostic.py <enterobacter>/src <package-dir> FIXTURES RUNS/comparator RUNS/cand/ungapped $MLST_ENV results/importer-diagnostic.tsv
+python3 -m unittest discover -s harness/tests                          # stop-control tests
 cd probe && cargo test --release                                       # 16 unit + 5 behavioural tests
 ```
 
