@@ -180,6 +180,7 @@ fn subspecies_metadata_cannot_invent_a_parent_or_reuse_a_species_id() {
         let r = &mut e["ranked_reference_evidence"][0];
         r["species_id"] = "".into();
         r["species_name"] = "".into();
+        r["reference_role"] = "context_only".into();
         r["subspecies_id"] = "SS1".into();
         r["subspecies_name"] = "subspecies one".into();
     });
@@ -187,5 +188,14 @@ fn subspecies_metadata_cannot_invent_a_parent_or_reuse_a_species_id() {
         let r = &mut e["ranked_reference_evidence"][0];
         r["subspecies_id"] = "SP1".into();
         r["subspecies_name"] = "subspecies one".into();
+    });
+}
+
+#[test]
+fn unmapped_references_must_be_context_only_before_they_can_supply_a_contrast() {
+    rejects("context_only", |e| {
+        let r = &mut e["ranked_reference_evidence"][1];
+        r["species_id"] = "".into();
+        r["species_name"] = "".into();
     });
 }

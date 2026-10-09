@@ -380,6 +380,12 @@ impl RawReference {
         {
             return invalid(format!("{id}: invalid reference metadata"));
         }
+        if self.species_id.is_empty()
+            && self.lineage_id.is_empty()
+            && self.reference_role != "context_only"
+        {
+            return invalid(format!("{id}: an unmapped reference must be context_only"));
+        }
         let zero = Percent(0);
         if self.aligned_fraction_query_percent == zero
             || self.aligned_fraction_reference_percent == zero

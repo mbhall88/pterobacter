@@ -92,7 +92,7 @@ pub fn evidence_json(rows: &[Row]) -> Value {
                 "lineage_id": r.lineage.unwrap_or(""),
                 "subspecies_id": r.subspecies.unwrap_or(""),
                 "subspecies_name": r.subspecies.map_or(String::new(), |s| format!("Enterobacter {s}")),
-                "reference_role": "diversity",
+                "reference_role": if r.species.is_none() && r.lineage.is_none() { "context_only" } else { "diversity" },
                 "name_status": "validly_published_correct_name",
                 "ani_percent": r.ani,
                 "aligned_fraction_query_percent": r.af_query,

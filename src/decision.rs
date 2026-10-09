@@ -7,7 +7,6 @@ use serde_json::{json, Value};
 use crate::evidence::{Percent, Reference, SavedEvidence, Taxon};
 
 pub const V1_POLICY_ID: &str = "conservative-assembly-v1";
-const CANDIDATE: &str = "diagnostic_candidate_only";
 const ASSIGNED: &str = "conditional_assembly_assignment";
 
 /// The frozen policy uses emitted hundredths, including the one-point subspecies margin.
@@ -103,14 +102,57 @@ fn gap(a: &Reference, b: &Reference) -> Value {
     json!(a.ani.gap(b.ani) as f64 / 100.0)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum RankReason {
+    Candidate,
+    NoEstimate,
+    DifferentSpeciesNearestTie,
+    NearestReferenceHasNoSpecies,
+    SpeciesCompetitorUnmeasured,
+    NearestBelowSpeciesAni,
+    SpeciesCoverageNotMet,
+    ParentSpeciesUnresolved,
+    WithinParentNearestGroupTie,
+    NearestReferenceHasNoSubspecies,
+    NearestGroupBelowSubspeciesAni,
+    SubspeciesCoverageNotMet,
+    WithinParentCompetitorUnmeasured,
+    GlobalGroupCompetitorUnmeasured,
+    GlobalGroupMarginBelowGuide,
+    QualifyingReferenceMarginBelowGuide,
+}
+impl RankReason {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Candidate => "diagnostic_candidate_only",
+            Self::NoEstimate => "no_estimate",
+            Self::DifferentSpeciesNearestTie => "different_species_nearest_tie",
+            Self::NearestReferenceHasNoSpecies => "nearest_reference_has_no_species",
+            Self::SpeciesCompetitorUnmeasured => "species_competitor_unmeasured",
+            Self::NearestBelowSpeciesAni => "nearest_below_species_ANI",
+            Self::SpeciesCoverageNotMet => "species_coverage_not_met",
+            Self::ParentSpeciesUnresolved => "parent_species_unresolved",
+            Self::WithinParentNearestGroupTie => "within_parent_nearest_group_tie",
+            Self::NearestReferenceHasNoSubspecies => "nearest_reference_has_no_subspecies",
+            Self::NearestGroupBelowSubspeciesAni => "nearest_group_below_subspecies_ANI",
+            Self::SubspeciesCoverageNotMet => "subspecies_coverage_not_met",
+            Self::WithinParentCompetitorUnmeasured => "within_parent_competitor_unmeasured",
+            Self::GlobalGroupCompetitorUnmeasured => "global_group_competitor_unmeasured",
+            Self::GlobalGroupMarginBelowGuide => "global_group_margin_below_guide",
+            Self::QualifyingReferenceMarginBelowGuide => "qualifying_reference_margin_below_guide",
+        }
+    }
+}
+
 struct RankCall<'a> {
     candidate: Option<&'a Taxon>,
     witness: Option<&'a Reference>,
+    reason: RankReason,
     evidence: Value,
 }
 impl RankCall<'_> {
     fn reason(&self) -> &str {
-        self.evidence["reason"].as_str().expect("rank reason")
+        self.reason.as_str()
     }
 }
 fn species_rank<'a>(rows: &[&'a Reference], policy: &Policy) -> RankCall<'a> {
@@ -119,6 +161,7 @@ fn species_rank<'a>(rows: &[&'a Reference], policy: &Policy) -> RankCall<'a> {
         "competing_parents": []});
     let mut candidate = None;
     let mut witness = None;
+    let mut reason = RankReason::NoEstimate;
     if let Some(top) = rows.first() {
         let other: Vec<_> = rows
             .iter()
@@ -138,14 +181,14 @@ fn species_rank<'a>(rows: &[&'a Reference], policy: &Policy) -> RankCall<'a> {
             .take_while(|r| r.ani == top.ani)
             .map(|r| parent(r))
             .collect();
-        let reason = if tied.len() > 1 {
-            "different_species_nearest_tie"
+        reason = if tied.len() > 1 {
+            RankReason::DifferentSpeciesNearestTie
         } else if top.species.is_none() {
-            "nearest_reference_has_no_species"
+            RankReason::NearestReferenceHasNoSpecies
         } else if other.is_empty() {
-            "species_competitor_unmeasured"
+            RankReason::SpeciesCompetitorUnmeasured
         } else if top.ani < policy.species_ani {
-            "nearest_below_species_ANI"
+            RankReason::NearestBelowSpeciesAni
         } else {
             witness = rows
                 .iter()
@@ -153,12 +196,12 @@ fn species_rank<'a>(rows: &[&'a Reference], policy: &Policy) -> RankCall<'a> {
                 .find(|r| parent(r) == parent(top) && policy.passes(r, policy.species_ani));
             if witness.is_some() {
                 candidate = top.species.as_ref();
-                CANDIDATE
+                RankReason::Candidate
             } else {
-                "species_coverage_not_met"
+                RankReason::SpeciesCoverageNotMet
             }
         };
-        out["reason"] = reason.into();
+        out["reason"] = reason.as_str().into();
         if let Some(s) = candidate {
             out["candidate_id"] = json!(s.id);
             out["candidate_name"] = json!(s.name);
@@ -170,6 +213,7 @@ fn species_rank<'a>(rows: &[&'a Reference], policy: &Policy) -> RankCall<'a> {
     RankCall {
         candidate,
         witness,
+        reason,
         evidence: out,
     }
 }
@@ -189,6 +233,7 @@ fn subspecies_rank<'a>(
         return RankCall {
             candidate: None,
             witness: None,
+            reason: RankReason::ParentSpeciesUnresolved,
             evidence: out,
         };
     };
@@ -217,9 +262,9 @@ fn subspecies_rank<'a>(
         .collect();
     let mut witness = None;
     let reason = if tied.len() > 1 {
-        "within_parent_nearest_group_tie"
+        RankReason::WithinParentNearestGroupTie
     } else if top.subspecies.is_none() {
-        "nearest_reference_has_no_subspecies"
+        RankReason::NearestReferenceHasNoSubspecies
     } else {
         let within: Vec<_> = ph
             .iter()
@@ -245,29 +290,29 @@ fn subspecies_rank<'a>(
             .copied()
             .find(|r| group(r) == group(top) && policy.passes(r, policy.subspecies_ani));
         if top.ani < policy.subspecies_ani {
-            "nearest_group_below_subspecies_ANI"
+            RankReason::NearestGroupBelowSubspeciesAni
         } else if let Some(w) = eligible {
             out["ani_af_witness"] = hit(w);
             if let Some(r) = other.first() {
                 out["qualifying_witness_gap_percentage_points"] = gap(w, r);
             }
             if within.is_empty() {
-                "within_parent_competitor_unmeasured"
+                RankReason::WithinParentCompetitorUnmeasured
             } else if other.is_empty() {
-                "global_group_competitor_unmeasured"
+                RankReason::GlobalGroupCompetitorUnmeasured
             } else if top.ani.gap(other[0].ani) < policy.subspecies_margin {
-                "global_group_margin_below_guide"
+                RankReason::GlobalGroupMarginBelowGuide
             } else if w.ani.gap(other[0].ani) < policy.subspecies_margin {
-                "qualifying_reference_margin_below_guide"
+                RankReason::QualifyingReferenceMarginBelowGuide
             } else {
                 witness = Some(w);
-                CANDIDATE
+                RankReason::Candidate
             }
         } else {
-            "subspecies_coverage_not_met"
+            RankReason::SubspeciesCoverageNotMet
         }
     };
-    out["reason"] = reason.into();
+    out["reason"] = reason.as_str().into();
     let candidate = witness.and_then(|w| w.subspecies.as_ref());
     if let Some(s) = candidate {
         out["candidate_id"] = json!(s.id);
@@ -279,6 +324,7 @@ fn subspecies_rank<'a>(
     RankCall {
         candidate,
         witness,
+        reason,
         evidence: out,
     }
 }
@@ -338,7 +384,7 @@ pub fn decide(evidence: &SavedEvidence, policy: &Policy) -> Decision {
         .collect::<HashSet<_>>()
         .len()
         >= 2;
-    let incomplete = species.reason() == "species_competitor_unmeasured";
+    let incomplete = species.reason == RankReason::SpeciesCompetitorUnmeasured;
     let unexplained = evidence.scope()["outcome"] == "unexplained_after_checks";
     let method_block = evidence
         .diagnostics()

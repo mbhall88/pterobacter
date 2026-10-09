@@ -37,7 +37,7 @@ The pure interface validates bindings and metadata. Its output explicitly says t
 
 ## Supported and historical interfaces
 
-The supported input is an unassigned `2.0.0-dev-evidence` assembly record with null taxon fields, complete ranked evidence and declared percent units. Only whole-input skani 0.3.2 is accepted for this policy. The two recorded query-digest layouts are supported; conflicting digests are rejected.
+The supported input is an unassigned `2.0.0-dev-evidence` assembly record with null taxon fields, complete ranked evidence and declared percent units. Only whole-input skani 0.3.2 is accepted for this policy. The two recorded query-digest layouts are supported; conflicting digests are rejected. References without a species or lineage must use the `context_only` role.
 
 The historical Python `legacy_cli` is outside the supported release API. Its inference that AF `0.8` means 80% and its retention of taxon labels in unresolved output are not reproduced. The frozen 0.2.0 wheel and its evidence-only route remain external comparators, unchanged by this port.
 
