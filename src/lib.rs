@@ -14,3 +14,5 @@ pub mod evidence;
 pub mod panel;
 pub mod rescue;
 pub mod skani;
+
+pub mod anim;
