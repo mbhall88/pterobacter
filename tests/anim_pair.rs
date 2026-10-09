@@ -10,7 +10,7 @@ fn fixture(name: &str) -> PathBuf {
         .join(name)
 }
 fn pair(query: &Path, reference: &Path, output: &Path) -> std::process::Output {
-    cargo_bin_cmd!("terobacter-dev")
+    let result = cargo_bin_cmd!("terobacter-dev")
         .args(["anim-pair", "--query-id", "Q", "--reference-id", "R"])
         .arg("--query")
         .arg(query)
@@ -19,7 +19,18 @@ fn pair(query: &Path, reference: &Path, output: &Path) -> std::process::Output {
         .arg("--output")
         .arg(output)
         .output()
-        .unwrap()
+        .unwrap();
+    if !result.status.success() {
+        eprintln!("pair stdout: {}", String::from_utf8_lossy(&result.stdout));
+        for direction in ["QR", "RQ"] {
+            if let Ok(stderr) =
+                std::fs::read_to_string(output.join(direction).join("worker.stderr"))
+            {
+                eprintln!("{direction} worker stderr: {stderr}");
+            }
+        }
+    }
+    result
 }
 fn record(output: &Path) -> PairRecord {
     serde_json::from_slice(&std::fs::read(output.join("result.json")).unwrap()).unwrap()
@@ -149,7 +160,12 @@ fn upstream_missing_file_cannot_terminate_the_coordinator() {
         .unwrap();
     let output = child.wait_with_output().unwrap();
     assert!(!output.status.success());
-    let completion: Value = serde_json::from_slice(&output.stdout).unwrap();
+    let completion: Value = serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
+        panic!(
+            "{error}; worker stderr: {}",
+            String::from_utf8_lossy(&output.stderr)
+        )
+    });
     assert_ne!(completion["exit_code"], 0);
     assert!(!completion["message"].as_str().unwrap().is_empty());
 }

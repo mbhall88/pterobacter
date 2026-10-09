@@ -37,6 +37,7 @@ pub struct Method {
     pub query_threads: u32,
     pub reference_n_policy: String,
     pub filter_rng: String,
+    pub memory_policy: String,
 }
 impl Method {
     fn current(executable: &Path) -> Result<Self, AnimError> {
@@ -56,6 +57,8 @@ impl Method {
                 .into(),
             filter_rng: "isolated worker process; libc srand(1); one-to-one flag1to1(-1,100)"
                 .into(),
+            memory_policy:
+                "Linux: RLIMIT_AS; macOS: Mach peak RSS watchdog at 10 ms; failures retained".into(),
         })
     }
 }
@@ -627,10 +630,14 @@ fn worker() -> Result<WorkerResult, AnimError> {
     }
     let parent = request.parent_pid;
     let deadline = Duration::from_secs_f64(request.wall_seconds);
+    let memory_ceiling = request.memory_mib * 1024 * 1024;
     std::thread::spawn(move || {
         let start = Instant::now();
         loop {
-            if unsafe { libc::getppid() } as u32 != parent || start.elapsed() >= deadline {
+            if unsafe { libc::getppid() } as u32 != parent
+                || start.elapsed() >= deadline
+                || memory_exceeded(memory_ceiling)
+            {
                 unsafe {
                     libc::kill(libc::getpid(), libc::SIGKILL);
                 }
@@ -646,12 +653,15 @@ fn worker() -> Result<WorkerResult, AnimError> {
     if unsafe { libc::setrlimit(libc::RLIMIT_CPU, &cpu) } != 0 {
         return Err(std::io::Error::last_os_error().into());
     }
-    let limit = libc::rlimit {
-        rlim_cur: request.memory_mib * 1024 * 1024,
-        rlim_max: request.memory_mib * 1024 * 1024,
-    };
-    if unsafe { libc::setrlimit(libc::RLIMIT_AS, &limit) } != 0 {
-        return Err(std::io::Error::last_os_error().into());
+    #[cfg(target_os = "linux")]
+    {
+        let limit = libc::rlimit {
+            rlim_cur: memory_ceiling,
+            rlim_max: memory_ceiling,
+        };
+        if unsafe { libc::setrlimit(libc::RLIMIT_AS, &limit) } != 0 {
+            return Err(std::io::Error::last_os_error().into());
+        }
     }
     // Do not allow native crashes to leave large core files.
     let core = libc::rlimit {
@@ -697,12 +707,47 @@ fn worker() -> Result<WorkerResult, AnimError> {
     } else {
         peak.checked_mul(1024).ok_or(AnimError::Overflow)?
     };
+    if peak_rss_bytes > memory_ceiling {
+        return Err(invalid("native worker exceeded memory ceiling"));
+    }
     Ok(WorkerResult {
         exit_code: code,
         message,
         cpu_seconds,
         peak_rss_bytes,
     })
+}
+
+#[cfg(target_os = "linux")]
+fn memory_exceeded(_: u64) -> bool {
+    false
+}
+
+#[cfg(target_os = "macos")]
+#[allow(deprecated)] // libc supplies this small Mach ABI; no additional native crate.
+fn memory_exceeded(ceiling: u64) -> bool {
+    // macOS maps a large virtual address range before alignment. RLIMIT_AS
+    // below that existing mapping returns EINVAL. Bound peak resident bytes
+    // instead, including transient peaks between samples, and fail closed.
+    let mut info = std::mem::MaybeUninit::<libc::mach_task_basic_info>::uninit();
+    let mut count = libc::MACH_TASK_BASIC_INFO_COUNT;
+    let code = unsafe {
+        libc::task_info(
+            libc::mach_task_self(),
+            libc::MACH_TASK_BASIC_INFO,
+            info.as_mut_ptr().cast(),
+            &mut count,
+        )
+    };
+    if code != libc::KERN_SUCCESS {
+        eprintln!("error: cannot sample native worker memory");
+        return true;
+    }
+    let exceeded = unsafe { info.assume_init() }.resident_size_max > ceiling;
+    if exceeded {
+        eprintln!("error: native worker exceeded memory ceiling");
+    }
+    exceeded
 }
 
 /// Authenticate a saved complete pair before reuse. The caller supplies both
