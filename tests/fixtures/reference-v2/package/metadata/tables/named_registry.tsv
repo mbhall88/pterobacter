@@ -1,0 +1,6 @@
+concept_id	rank	parent_concept_id	project_name	nomenclature_status	concept_scope	primary140_reference_count	primary140_type_count	all_represented_historical_type_accessions	supplementary_reference_accessions	type_QC_exception_accessions	represented_reference_evidence	validated_supported_caller_rank	gaps_and_qualifications
+SYN-SP01	species		Enterobacter syntheticus	validly_published_correct_name	synthetic_named_concept	3	2	GCA_900000001.1;GCA_900000002.1	GCA_900000003.1	GCA_900000002.1	True	False	synthetic
+SYN-SS01	subspecies	SYN-SP01	Enterobacter syntheticus subsp. syntheticus	approved_project_subspecies_proposal_not_validated_combination	synthetic_named_concept	1	1	GCA_900000001.1			True	False	synthetic
+SYN-SS02	subspecies	SYN-SP01	Enterobacter syntheticus subsp. alter	approved_project_subspecies_proposal_not_validated_combination	synthetic_named_concept	2	1	GCA_900000002.1	GCA_900000003.1	GCA_900000002.1	True	False	synthetic
+SYN-SP02	species		Enterobacter fictus	validly_published_synonym	synthetic_named_concept	2	1	GCA_900000004.1	GCA_900000005.1		True	False	synthetic
+SYN-SP03	species		Enterobacter absentis	provisional_name_not_validly_published	synthetic_named_concept	0	0				False	False	synthetic

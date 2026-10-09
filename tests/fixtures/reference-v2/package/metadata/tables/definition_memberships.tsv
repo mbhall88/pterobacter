@@ -1,0 +1,5 @@
+accession	historical_label	project_species	project_subspecies_proposal	genomovar_id	genomovar_version	genomovar_rule
+GCA_900000002.1	label-GCA_900000002.1	Enterobacter syntheticus	Enterobacter syntheticus subsp. alter	GV01	2026-01-01-v1	synthetic_chromosome_ANI_group_rule
+GCA_900000003.1	label-GCA_900000003.1	Enterobacter syntheticus	Enterobacter syntheticus subsp. alter	GV02	2026-01-01-v1	synthetic_chromosome_ANI_group_rule
+GCA_900000006.1	label-GCA_900000006.1	Enterobacter syntheticus	Enterobacter syntheticus subsp. alter	GV01	2026-01-01-v1	synthetic_chromosome_ANI_group_rule
+GCA_900000007.1	label-GCA_900000007.1	Enterobacter syntheticus	Enterobacter syntheticus subsp. syntheticus	GV03	2026-01-01-v1	synthetic_chromosome_ANI_group_rule

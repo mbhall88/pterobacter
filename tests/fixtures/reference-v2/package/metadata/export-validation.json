@@ -1,0 +1,36 @@
+{
+  "exporter_source": {
+    "bytes": 20666,
+    "path": "/mnt/src/enterobacter_classifier/portable_reference.py",
+    "sha256": "1ecafd226e4bbd596c22473af2a0b5b51fd0d8b6ee9fa6b00d1c40ecee4745a2"
+  },
+  "local_validation": {
+    "counts": {
+      "context_lineage_concepts": 2,
+      "development_context_records_not_packaged": 2,
+      "eligible_cohort_records": 11,
+      "eligible_species_reference_represented": 7,
+      "genomovar_concepts": 3,
+      "historical_chromosome_definition_references": 4,
+      "named_concepts": 5,
+      "primary_historical_type_accessions": 3,
+      "primary_whole_references": 5,
+      "reference_scope_records": 9,
+      "unique_accessions": 7
+    },
+    "database_bytes": 925,
+    "positive_calling_policy_enabled": false,
+    "schema_version": "1.0.0-dev-reference-package",
+    "valid": true,
+    "verified_artifacts": 32
+  },
+  "local_validator_source": {
+    "bytes": 26180,
+    "path": "/mnt/src/enterobacter_classifier/reference_package.py",
+    "sha256": "0455b57743f14acc2e472b0546023528f1fdac63967000d9f403b88a8150a34b"
+  },
+  "no_external_distribution": true,
+  "no_sequence_or_sketch_recomputation": true,
+  "scope": "full_local_source_validation_at_export_not_reexecuted_at_load",
+  "source_manifest_sha256": "7ce3f86797b49b1e4735ee8739d33cbd574c3d96bfbf6321764ec78c4adee020"
+}

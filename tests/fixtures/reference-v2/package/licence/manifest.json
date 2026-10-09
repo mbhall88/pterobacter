@@ -1,0 +1,6 @@
+{
+  "ncbi_submitter_rights_disclaimer": "Synthetic test disclaimer. A real package carries the NCBI molecular data usage statement.",
+  "package_version": "2026-10-09.test2",
+  "schema_version": "2.0.0-reference-licence-manifest",
+  "source_manifest_sha256": "7ce3f86797b49b1e4735ee8739d33cbd574c3d96bfbf6321764ec78c4adee020"
+}

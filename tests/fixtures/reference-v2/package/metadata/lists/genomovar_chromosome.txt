@@ -1,0 +1,4 @@
+/mnt/synthetic/sequences/chromosome/GCA_900000002.1.fna
+/mnt/synthetic/sequences/chromosome/GCA_900000003.1.fna
+/mnt/synthetic/sequences/chromosome/GCA_900000006.1.fna
+/mnt/synthetic/sequences/chromosome/GCA_900000007.1.fna

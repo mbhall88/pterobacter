@@ -1,12 +1,22 @@
-//! Files, argument parsing and artifact verification for the feature-gated development binary.
-use crate::decision::{decide, Policy, V1_POLICY_ID};
+//! Development binary: evaluation-only operations (saved-evidence classification, reference
+//! package authentication, measurement and artifact verification). Compiled only with the `dev`
+//! feature, which the module declaration in `lib.rs` gates, so a default build or install never
+//! contains any of it. Failure produces no decision on stdout.
+use crate::decision::{decide, decide_bound, Policy, V1_POLICY_ID};
 use crate::evidence::{sha256_hex, SavedEvidence};
 use crate::panel::Panel;
+use crate::reference::{
+    is_sha256, verify_package, PackageError, PackageErrorKind, PackageSource, RegistryPins,
+    VerifiedPackage,
+};
 use crate::rescue::{AnimRecords, BoundAnim, RescueInput, Thresholds, V2_POLICY_ID};
 use crate::skani::{SearchSettings, SeedingMode, SkaniDatabase};
 use clap::{Args, Parser, Subcommand};
 use serde_json::{json, Value};
+use std::collections::BTreeSet;
 use std::fmt::Display;
+use std::fs::{self, File};
+use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
@@ -47,6 +57,22 @@ enum DevCommand {
         diagnostics_sha256: Option<String>,
         #[command(flatten)]
         v2: V2Inputs,
+        #[command(flatten)]
+        package: PackageInputs,
+    },
+    /// Verify a reference package directory and print its identity and components as JSON
+    ReferencePackage {
+        /// Directory holding portable.json and the files it lists
+        directory: PathBuf,
+        /// SHA-256 that the package's portable.json must have
+        #[arg(long, value_name = "SHA256", value_parser = parse_sha256)]
+        expected_sha256: String,
+        /// SHA-256 that the named registry table must have, if it is to be pinned
+        #[arg(long, value_name = "SHA256", value_parser = parse_sha256)]
+        named_registry_sha256: Option<String>,
+        /// SHA-256 that the lineage registry table must have, if it is to be pinned
+        #[arg(long, value_name = "SHA256", value_parser = parse_sha256)]
+        lineage_registry_sha256: Option<String>,
     },
     /// Dry v2 rescue plan: trigger, nearest parent, witnesses and the ANIm pairs still
     /// required. Reads saved evidence and records only; runs no alignment
@@ -106,6 +132,45 @@ struct V2Inputs {
     #[arg(long)]
     exclude_references: Option<PathBuf>,
 }
+/// A reference package to verify and bind the evidence to (v1 only).
+#[derive(Debug, Args)]
+struct PackageInputs {
+    /// Verify this reference package and require the evidence to be bound to it
+    #[arg(long, value_name = "DIR", requires = "expected_sha256")]
+    reference_package: Option<PathBuf>,
+    /// SHA-256 that the package's portable.json must have
+    #[arg(
+        long,
+        value_name = "SHA256",
+        value_parser = parse_sha256,
+        requires = "reference_package"
+    )]
+    expected_sha256: Option<String>,
+    /// SHA-256 that the named registry table must have, if it is to be pinned
+    #[arg(
+        long,
+        value_name = "SHA256",
+        value_parser = parse_sha256,
+        requires = "reference_package"
+    )]
+    named_registry_sha256: Option<String>,
+    /// SHA-256 that the lineage registry table must have, if it is to be pinned
+    #[arg(
+        long,
+        value_name = "SHA256",
+        value_parser = parse_sha256,
+        requires = "reference_package"
+    )]
+    lineage_registry_sha256: Option<String>,
+}
+
+fn parse_sha256(text: &str) -> Result<String, String> {
+    if is_sha256(text) {
+        Ok(text.to_string())
+    } else {
+        Err("expected 64 lowercase hexadecimal characters".to_string())
+    }
+}
 
 #[derive(Debug, clap::Args)]
 struct AnimPairArgs {
@@ -131,6 +196,57 @@ struct AnimPairArgs {
     timeout_seconds: u64,
     #[arg(long, default_value_t = 6144)]
     memory_mib: u64,
+}
+
+const EXIT_FAILURE: u8 = 1;
+const EXIT_MISSING: u8 = 3;
+const EXIT_ALTERED: u8 = 4;
+const EXIT_TRUNCATED: u8 = 5;
+const EXIT_INCOMPATIBLE: u8 = 6;
+const EXIT_INCONSISTENT: u8 = 7;
+const EXIT_UNRESOLVED: u8 = 8;
+const EXIT_UNEXPECTED: u8 = 9;
+const EXIT_UNLISTED: u8 = 10;
+
+/// Why a command printed no result, and the exit code that says so.
+struct Failure {
+    code: u8,
+    message: String,
+}
+
+impl From<String> for Failure {
+    fn from(message: String) -> Self {
+        Failure {
+            code: EXIT_FAILURE,
+            message,
+        }
+    }
+}
+
+impl From<&str> for Failure {
+    fn from(message: &str) -> Self {
+        message.to_string().into()
+    }
+}
+
+impl From<PackageError> for Failure {
+    fn from(error: PackageError) -> Self {
+        let code = match error.kind() {
+            PackageErrorKind::Io => EXIT_FAILURE,
+            PackageErrorKind::Unexpected => EXIT_UNEXPECTED,
+            PackageErrorKind::Missing => EXIT_MISSING,
+            PackageErrorKind::Altered => EXIT_ALTERED,
+            PackageErrorKind::Truncated => EXIT_TRUNCATED,
+            PackageErrorKind::Incompatible => EXIT_INCOMPATIBLE,
+            PackageErrorKind::Inconsistent => EXIT_INCONSISTENT,
+            PackageErrorKind::Unresolved => EXIT_UNRESOLVED,
+            PackageErrorKind::Unlisted => EXIT_UNLISTED,
+        };
+        Failure {
+            code,
+            message: error.to_string(),
+        }
+    }
 }
 
 /// Run the development binary.
@@ -161,15 +277,16 @@ pub fn run() -> ExitCode {
             }
         }
         command @ (DevCommand::SavedEvidence { .. }
+        | DevCommand::ReferencePackage { .. }
         | DevCommand::SkaniSearch { .. }
         | DevCommand::RescuePlan { .. }) => match execute(command) {
             Ok(json) => {
                 println!("{json}");
                 ExitCode::SUCCESS
             }
-            Err(message) => {
-                eprintln!("error: {message}");
-                ExitCode::FAILURE
+            Err(failure) => {
+                eprintln!("error: {}", failure.message);
+                ExitCode::from(failure.code)
             }
         },
         DevCommand::AnimPair(args) => {
@@ -232,6 +349,85 @@ extern "C" fn cancel_signal(_: libc::c_int) {
 }
 
 type Pins = Vec<(PathBuf, String)>;
+
+fn reference_package(
+    directory: &Path,
+    expected_sha256: &str,
+    pins: &RegistryPins,
+) -> Result<String, Failure> {
+    let package: VerifiedPackage =
+        verify_package(&Directory(directory.to_path_buf()), expected_sha256, pins)?;
+    Ok(serde_json::to_string_pretty(&package.to_value()).expect("a JSON value always serialises"))
+}
+
+/// Reads a package directory. Symbolic links and names that are not UTF-8 are refused.
+struct Directory(PathBuf);
+
+impl PackageSource for Directory {
+    fn open(&self, path: &str) -> io::Result<Option<Box<dyn Read + '_>>> {
+        let mut full = self.0.clone();
+        for segment in path.split('/') {
+            full.push(segment);
+            match fs::symlink_metadata(&full) {
+                Ok(metadata) if metadata.file_type().is_symlink() => {
+                    return Err(symlink_refused());
+                }
+                Ok(_) => {}
+                Err(error)
+                    if matches!(
+                        error.kind(),
+                        io::ErrorKind::NotFound | io::ErrorKind::NotADirectory
+                    ) =>
+                {
+                    return Ok(None);
+                }
+                Err(error) => return Err(error),
+            }
+        }
+        let file = File::open(full)?;
+        Ok(Some(Box::new(file)))
+    }
+
+    fn inventory(&self) -> io::Result<BTreeSet<String>> {
+        let mut found = BTreeSet::new();
+        list_files(&self.0, "", &mut found)?;
+        Ok(found)
+    }
+}
+
+fn list_files(directory: &Path, prefix: &str, found: &mut BTreeSet<String>) -> io::Result<()> {
+    for entry in fs::read_dir(directory)? {
+        let entry = entry?;
+        let name = entry.file_name().into_string().map_err(|_| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "a file name in the package is not UTF-8",
+            )
+        })?;
+        let relative = if prefix.is_empty() {
+            name
+        } else {
+            format!("{prefix}/{name}")
+        };
+        let file_type = entry.file_type()?;
+        if file_type.is_symlink() {
+            return Err(symlink_refused());
+        }
+        if file_type.is_dir() {
+            list_files(&entry.path(), &relative, found)?;
+        } else {
+            found.insert(relative);
+        }
+    }
+    Ok(())
+}
+
+fn symlink_refused() -> io::Error {
+    io::Error::new(
+        io::ErrorKind::PermissionDenied,
+        "symbolic links are not allowed in a package",
+    )
+}
 
 fn read_bytes(path: &Path, expected: Option<&str>, pins: &mut Pins) -> Result<Vec<u8>, String> {
     let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
@@ -399,8 +595,13 @@ fn rescue_inputs(
     Ok((rescue, bound, Value::Array(files)))
 }
 
-fn execute(command: DevCommand) -> Result<String, String> {
+const UNBOUND: &str =
+    "input_and_artifact_hashes_checked; package_authentication_requires_checked_inventory";
+const BOUND: &str = "input_and_artifact_hashes_checked; reference_package_verified";
+
+fn execute(command: DevCommand) -> Result<String, Failure> {
     let mut pins = Vec::new();
+    let mut verification = UNBOUND;
     let mut result = match command {
         DevCommand::AnimPair(_) | DevCommand::AnimParse { .. } => {
             return Err("ANIm command must be dispatched through run".into());
@@ -411,12 +612,14 @@ fn execute(command: DevCommand) -> Result<String, String> {
             diagnostics,
             diagnostics_sha256,
             v2,
+            package,
         } if policy == V1_POLICY_ID => {
             if !v2.anim_records.is_empty() || v2.exclude_references.is_some() {
                 return Err(format!(
                     "--anim-records and --exclude-references need --policy {V2_POLICY_ID}; \
                      v1 takes method diagnostics through --diagnostics"
-                ));
+                )
+                .into());
             }
             if inputs.reference_inventory.is_some() && diagnostics.is_none() {
                 return Err("under v1, --reference-inventory pairs with --diagnostics".into());
@@ -425,18 +628,39 @@ fn execute(command: DevCommand) -> Result<String, String> {
                 .as_deref()
                 .map(|path| (path, diagnostics_sha256.as_deref()));
             let saved = load(&inputs, diagnostics, &mut pins)?;
-            decide(&saved, &Policy::v1()).to_value().clone()
+            match package.reference_package.zip(package.expected_sha256) {
+                Some((directory, expected)) => {
+                    let registry_pins = RegistryPins {
+                        named_registry_sha256: package.named_registry_sha256,
+                        lineage_registry_sha256: package.lineage_registry_sha256,
+                    };
+                    let package = verify_package(&Directory(directory), &expected, &registry_pins)?;
+                    verification = BOUND;
+                    decide_bound(&saved, &package, &Policy::v1())?
+                        .to_value()
+                        .clone()
+                }
+                None => decide(&saved, &Policy::v1()).to_value().clone(),
+            }
         }
         DevCommand::SavedEvidence {
             inputs,
             diagnostics,
             v2,
+            package,
             ..
         } => {
             if diagnostics.is_some() {
                 return Err(format!(
                     "{V2_POLICY_ID} reads ANIm through --anim-records, not v1 --diagnostics"
-                ));
+                )
+                .into());
+            }
+            if package.reference_package.is_some() {
+                return Err(format!(
+                    "--reference-package binds v1 evidence only; {V2_POLICY_ID} does not take it yet"
+                )
+                .into());
             }
             let (rescue, bound, files) = rescue_inputs(&inputs, &v2, &mut pins)?;
             let mut value = rescue
@@ -446,6 +670,21 @@ fn execute(command: DevCommand) -> Result<String, String> {
                 .clone();
             value["input"]["anim_record_files"] = files;
             value
+        }
+        DevCommand::ReferencePackage {
+            directory,
+            expected_sha256,
+            named_registry_sha256,
+            lineage_registry_sha256,
+        } => {
+            return reference_package(
+                &directory,
+                &expected_sha256,
+                &RegistryPins {
+                    named_registry_sha256,
+                    lineage_registry_sha256,
+                },
+            );
         }
         DevCommand::SkaniSearch {
             database,
@@ -467,9 +706,8 @@ fn execute(command: DevCommand) -> Result<String, String> {
             return SkaniDatabase::open(&database)
                 .and_then(|db| db.search(&query, settings, threads, mode))
                 .map_err(|e| e.to_string())
-                .and_then(|report| {
-                    serde_json::to_string_pretty(&report).map_err(|e| e.to_string())
-                });
+                .and_then(|report| serde_json::to_string_pretty(&report).map_err(|e| e.to_string()))
+                .map_err(Failure::from);
         }
         DevCommand::RescuePlan { inputs, v2 } => {
             let (rescue, bound, files) = rescue_inputs(&inputs, &v2, &mut pins)?;
@@ -482,16 +720,13 @@ fn execute(command: DevCommand) -> Result<String, String> {
             value
         }
     };
-    result["input"]["verification"] = Value::String(
-        "input_and_artifact_hashes_checked; package_authentication_requires_checked_inventory"
-            .into(),
-    );
+    result["input"]["verification"] = Value::String(verification.into());
     let output = serde_json::to_string_pretty(&result).map_err(|e| e.to_string())?;
     // Recheck the originally pinned bytes before a successful result can leave this wrapper.
     for (path, hash) in &pins {
         let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
         if sha256_hex(&bytes) != *hash {
-            return Err(format!("{}: input changed during decision", path.display()));
+            return Err(format!("{}: input changed during decision", path.display()).into());
         }
     }
     Ok(output)

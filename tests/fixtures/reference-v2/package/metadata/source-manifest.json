@@ -1,0 +1,997 @@
+{
+  "cohort_coverage_summary": {
+    "named_Enterobacter_reference_evidence_absent": 1,
+    "named_Enterobacter_reference_evidence_present": 7,
+    "named_other_genus_context_reference_absent": 1,
+    "restricted_or_out_of_genus_context_reference_absent": 1,
+    "reviewed_unassigned_lineage_reference_absent": 1
+  },
+  "components": [
+    {
+      "component_id": "genomovar_chromosome",
+      "database_files": [
+        {
+          "bytes": 324,
+          "path": "/mnt/synthetic/databases/genomovar_chromosome/index.db",
+          "sha256": "278c48d6119aff960dc85e7741922f5db2cdfbe20a57dc646d9c8983da9d117a"
+        },
+        {
+          "bytes": 43,
+          "path": "/mnt/synthetic/databases/genomovar_chromosome/markers.bin",
+          "sha256": "39f1d2e92d39c6294bb559bd738c0ae0d755e98ed567529535720457cadfb380"
+        },
+        {
+          "bytes": 64,
+          "path": "/mnt/synthetic/databases/genomovar_chromosome/sketches.db",
+          "sha256": "1c4672a4c6713bcb9495abba712be251bbeff723d79f001f81e5170b1d1627a5"
+        }
+      ],
+      "database_format": "skani-0.3.2-consolidated-bincode1",
+      "database_index_entries": [
+        {
+          "bytes": 16,
+          "offset": 0,
+          "path": "/mnt/synthetic/sequences/chromosome/GCA_900000002.1.fna"
+        },
+        {
+          "bytes": 16,
+          "offset": 16,
+          "path": "/mnt/synthetic/sequences/chromosome/GCA_900000003.1.fna"
+        },
+        {
+          "bytes": 16,
+          "offset": 32,
+          "path": "/mnt/synthetic/sequences/chromosome/GCA_900000006.1.fna"
+        },
+        {
+          "bytes": 16,
+          "offset": 48,
+          "path": "/mnt/synthetic/sequences/chromosome/GCA_900000007.1.fna"
+        }
+      ],
+      "engine": "skani",
+      "engine_version": "0.3.2",
+      "provenance_state": "archived_build_records_hash_checked_not_reexecuted",
+      "reference_ids": [
+        "genomovar_chromosome:GCA_900000002.1",
+        "genomovar_chromosome:GCA_900000003.1",
+        "genomovar_chromosome:GCA_900000006.1",
+        "genomovar_chromosome:GCA_900000007.1"
+      ],
+      "reference_role": "genomovar_definition_member",
+      "search_label_semantics": "exact_archived_index_label_not_a_deployed_FASTA_requirement",
+      "sequence_scope": "historical_chromosome_record_set",
+      "sequence_scope_basis": "frozen_source_manifest_not_new_replicon_detection",
+      "sketch_payload_recomputed": false
+    },
+    {
+      "component_id": "primary_whole",
+      "database_files": [
+        {
+          "bytes": 378,
+          "path": "/mnt/synthetic/databases/primary_whole/index.db",
+          "sha256": "c065f3f3e169840135dd091f38feadda4f809d5dde8a6b2ef0e1d68b8fed0913"
+        },
+        {
+          "bytes": 36,
+          "path": "/mnt/synthetic/databases/primary_whole/markers.bin",
+          "sha256": "0dc2c5425264488e69ca46d2257ad2de8c466c0a8cb065fdadff5f7e9cb1e27c"
+        },
+        {
+          "bytes": 80,
+          "path": "/mnt/synthetic/databases/primary_whole/sketches.db",
+          "sha256": "b1d1a68efaee9083e1e43459e6ef9620320ba3eff096b2a96ef77956472c0e33"
+        }
+      ],
+      "database_format": "skani-0.3.2-consolidated-bincode1",
+      "database_index_entries": [
+        {
+          "bytes": 16,
+          "offset": 0,
+          "path": "/mnt/synthetic/sequences/whole/GCA_900000001.1.fna"
+        },
+        {
+          "bytes": 16,
+          "offset": 16,
+          "path": "/mnt/synthetic/sequences/whole/GCA_900000002.1.fna"
+        },
+        {
+          "bytes": 16,
+          "offset": 32,
+          "path": "/mnt/synthetic/sequences/whole/GCA_900000003.1.fna"
+        },
+        {
+          "bytes": 16,
+          "offset": 48,
+          "path": "/mnt/synthetic/sequences/whole/GCA_900000004.1.fna"
+        },
+        {
+          "bytes": 16,
+          "offset": 64,
+          "path": "/mnt/synthetic/sequences/whole/GCA_900000005.1.fna"
+        }
+      ],
+      "engine": "skani",
+      "engine_version": "0.3.2",
+      "provenance_state": "archived_build_records_hash_checked_not_reexecuted",
+      "reference_ids": [
+        "primary_whole:GCA_900000001.1",
+        "primary_whole:GCA_900000002.1",
+        "primary_whole:GCA_900000003.1",
+        "primary_whole:GCA_900000004.1",
+        "primary_whole:GCA_900000005.1"
+      ],
+      "reference_role": "primary_named_reference_evidence",
+      "search_label_semantics": "exact_archived_index_label_not_a_deployed_FASTA_requirement",
+      "sequence_scope": "whole_assembly_as_deposited",
+      "sequence_scope_basis": "frozen_source_manifest_not_new_replicon_detection",
+      "sketch_payload_recomputed": false
+    }
+  ],
+  "concepts": [
+    {
+      "concept_id": "ECTX-GV-2026-01-01-v1-GV01",
+      "definition_member_ids": [
+        "genomovar_chromosome:GCA_900000002.1",
+        "genomovar_chromosome:GCA_900000006.1"
+      ],
+      "definition_sequence_scope": "historical_chromosome_record_set",
+      "definition_version": "2026-01-01-v1",
+      "display_name": "GV01",
+      "historical_definition_engine": "skani 0.3.1",
+      "historical_definition_rule": "synthetic_chromosome_ANI_group_rule",
+      "identifier_status": "stable_id_proposal_not_adopted_registry",
+      "nomenclature_status": "informal_operational_ANI_group",
+      "parent_concept_id": "SYN-SS02",
+      "production_membership_policy_enabled": false,
+      "rank": "genomovar",
+      "reference_state": "represented_definition",
+      "representative_reference_id": "genomovar_chromosome:GCA_900000006.1",
+      "representative_role": "nomination_only_not_membership_shortcut",
+      "sampling_state": "multiple_definition_members",
+      "validated_supported_caller_rank": false
+    },
+    {
+      "concept_id": "ECTX-GV-2026-01-01-v1-GV02",
+      "definition_member_ids": [
+        "genomovar_chromosome:GCA_900000003.1"
+      ],
+      "definition_sequence_scope": "historical_chromosome_record_set",
+      "definition_version": "2026-01-01-v1",
+      "display_name": "GV02",
+      "historical_definition_engine": "skani 0.3.1",
+      "historical_definition_rule": "synthetic_chromosome_ANI_group_rule",
+      "identifier_status": "stable_id_proposal_not_adopted_registry",
+      "nomenclature_status": "informal_operational_ANI_group",
+      "parent_concept_id": "SYN-SS02",
+      "production_membership_policy_enabled": false,
+      "rank": "genomovar",
+      "reference_state": "represented_definition",
+      "representative_reference_id": "genomovar_chromosome:GCA_900000003.1",
+      "representative_role": "nomination_only_not_membership_shortcut",
+      "sampling_state": "singleton_no_independent_own_group_test",
+      "validated_supported_caller_rank": false
+    },
+    {
+      "concept_id": "ECTX-GV-2026-01-01-v1-GV03",
+      "definition_member_ids": [
+        "genomovar_chromosome:GCA_900000007.1"
+      ],
+      "definition_sequence_scope": "historical_chromosome_record_set",
+      "definition_version": "2026-01-01-v1",
+      "display_name": "GV03",
+      "historical_definition_engine": "skani 0.3.1",
+      "historical_definition_rule": "synthetic_chromosome_ANI_group_rule",
+      "identifier_status": "stable_id_proposal_not_adopted_registry",
+      "nomenclature_status": "informal_operational_ANI_group",
+      "parent_concept_id": "SYN-SS01",
+      "production_membership_policy_enabled": false,
+      "rank": "genomovar",
+      "reference_state": "represented_definition",
+      "representative_reference_id": "genomovar_chromosome:GCA_900000007.1",
+      "representative_role": "nomination_only_not_membership_shortcut",
+      "sampling_state": "singleton_no_independent_own_group_test",
+      "validated_supported_caller_rank": false
+    },
+    {
+      "concept_id": "SYN-LN01",
+      "display_name": "Synthetic lineage L1",
+      "identifier_status": "stable_id_proposal_not_adopted_registry",
+      "nomenclature_status": "informal_reviewed_context_lineage",
+      "parent_concept_id": null,
+      "rank": "lineage",
+      "reference_state": "context_only",
+      "sampling_state": "absent",
+      "source_annotation": {
+        "approved_reported_species": "",
+        "concept_id": "SYN-LN01",
+        "development_release_scope": "context_only",
+        "genomovar173_reference_count": "0",
+        "nomenclature_status": "informal_reviewed_context_lineage",
+        "primary140_reference_count": "0",
+        "project_label": "Synthetic lineage L1",
+        "rank": "lineage",
+        "represented_reference_evidence": "False",
+        "validated_supported_caller_rank": "False"
+      },
+      "validated_supported_caller_rank": false
+    },
+    {
+      "concept_id": "SYN-LN02",
+      "display_name": "Synthetic lineage L2",
+      "identifier_status": "stable_id_proposal_not_adopted_registry",
+      "nomenclature_status": "informal_reviewed_context_lineage",
+      "parent_concept_id": null,
+      "rank": "lineage",
+      "reference_state": "context_only",
+      "sampling_state": "absent",
+      "source_annotation": {
+        "approved_reported_species": "",
+        "concept_id": "SYN-LN02",
+        "development_release_scope": "context_only",
+        "genomovar173_reference_count": "0",
+        "nomenclature_status": "informal_reviewed_context_lineage",
+        "primary140_reference_count": "0",
+        "project_label": "Synthetic lineage L2",
+        "rank": "lineage",
+        "represented_reference_evidence": "False",
+        "validated_supported_caller_rank": "False"
+      },
+      "validated_supported_caller_rank": false
+    },
+    {
+      "concept_id": "SYN-SP01",
+      "display_name": "Enterobacter syntheticus",
+      "identifier_status": "stable_id_proposal_not_adopted_registry",
+      "nomenclature_status": "validly_published_correct_name",
+      "parent_concept_id": null,
+      "rank": "species",
+      "reference_state": "represented",
+      "sampling_state": "multiple_development_references",
+      "source_annotation": {
+        "all_represented_historical_type_accessions": "GCA_900000001.1;GCA_900000002.1",
+        "concept_id": "SYN-SP01",
+        "concept_scope": "synthetic_named_concept",
+        "gaps_and_qualifications": "synthetic",
+        "nomenclature_status": "validly_published_correct_name",
+        "parent_concept_id": "",
+        "primary140_reference_count": "3",
+        "primary140_type_count": "2",
+        "project_name": "Enterobacter syntheticus",
+        "rank": "species",
+        "represented_reference_evidence": "True",
+        "supplementary_reference_accessions": "GCA_900000003.1",
+        "type_QC_exception_accessions": "GCA_900000002.1",
+        "validated_supported_caller_rank": "False"
+      },
+      "validated_supported_caller_rank": false
+    },
+    {
+      "concept_id": "SYN-SP02",
+      "display_name": "Enterobacter fictus",
+      "identifier_status": "stable_id_proposal_not_adopted_registry",
+      "nomenclature_status": "validly_published_synonym",
+      "parent_concept_id": null,
+      "rank": "species",
+      "reference_state": "represented",
+      "sampling_state": "multiple_development_references",
+      "source_annotation": {
+        "all_represented_historical_type_accessions": "GCA_900000004.1",
+        "concept_id": "SYN-SP02",
+        "concept_scope": "synthetic_named_concept",
+        "gaps_and_qualifications": "synthetic",
+        "nomenclature_status": "validly_published_synonym",
+        "parent_concept_id": "",
+        "primary140_reference_count": "2",
+        "primary140_type_count": "1",
+        "project_name": "Enterobacter fictus",
+        "rank": "species",
+        "represented_reference_evidence": "True",
+        "supplementary_reference_accessions": "GCA_900000005.1",
+        "type_QC_exception_accessions": "",
+        "validated_supported_caller_rank": "False"
+      },
+      "validated_supported_caller_rank": false
+    },
+    {
+      "concept_id": "SYN-SP03",
+      "display_name": "Enterobacter absentis",
+      "identifier_status": "stable_id_proposal_not_adopted_registry",
+      "nomenclature_status": "provisional_name_not_validly_published",
+      "parent_concept_id": null,
+      "rank": "species",
+      "reference_state": "unsupported_no_reference",
+      "sampling_state": "absent",
+      "source_annotation": {
+        "all_represented_historical_type_accessions": "",
+        "concept_id": "SYN-SP03",
+        "concept_scope": "synthetic_named_concept",
+        "gaps_and_qualifications": "synthetic",
+        "nomenclature_status": "provisional_name_not_validly_published",
+        "parent_concept_id": "",
+        "primary140_reference_count": "0",
+        "primary140_type_count": "0",
+        "project_name": "Enterobacter absentis",
+        "rank": "species",
+        "represented_reference_evidence": "False",
+        "supplementary_reference_accessions": "",
+        "type_QC_exception_accessions": "",
+        "validated_supported_caller_rank": "False"
+      },
+      "validated_supported_caller_rank": false
+    },
+    {
+      "concept_id": "SYN-SS01",
+      "display_name": "Enterobacter syntheticus subsp. syntheticus",
+      "identifier_status": "stable_id_proposal_not_adopted_registry",
+      "nomenclature_status": "approved_project_subspecies_proposal_not_validated_combination",
+      "parent_concept_id": "SYN-SP01",
+      "rank": "subspecies",
+      "reference_state": "represented",
+      "sampling_state": "single_reference",
+      "source_annotation": {
+        "all_represented_historical_type_accessions": "GCA_900000001.1",
+        "concept_id": "SYN-SS01",
+        "concept_scope": "synthetic_named_concept",
+        "gaps_and_qualifications": "synthetic",
+        "nomenclature_status": "approved_project_subspecies_proposal_not_validated_combination",
+        "parent_concept_id": "SYN-SP01",
+        "primary140_reference_count": "1",
+        "primary140_type_count": "1",
+        "project_name": "Enterobacter syntheticus subsp. syntheticus",
+        "rank": "subspecies",
+        "represented_reference_evidence": "True",
+        "supplementary_reference_accessions": "",
+        "type_QC_exception_accessions": "",
+        "validated_supported_caller_rank": "False"
+      },
+      "validated_supported_caller_rank": false
+    },
+    {
+      "concept_id": "SYN-SS02",
+      "display_name": "Enterobacter syntheticus subsp. alter",
+      "identifier_status": "stable_id_proposal_not_adopted_registry",
+      "nomenclature_status": "approved_project_subspecies_proposal_not_validated_combination",
+      "parent_concept_id": "SYN-SP01",
+      "rank": "subspecies",
+      "reference_state": "represented",
+      "sampling_state": "multiple_development_references",
+      "source_annotation": {
+        "all_represented_historical_type_accessions": "GCA_900000002.1",
+        "concept_id": "SYN-SS02",
+        "concept_scope": "synthetic_named_concept",
+        "gaps_and_qualifications": "synthetic",
+        "nomenclature_status": "approved_project_subspecies_proposal_not_validated_combination",
+        "parent_concept_id": "SYN-SP01",
+        "primary140_reference_count": "2",
+        "primary140_type_count": "1",
+        "project_name": "Enterobacter syntheticus subsp. alter",
+        "rank": "subspecies",
+        "represented_reference_evidence": "True",
+        "supplementary_reference_accessions": "GCA_900000003.1",
+        "type_QC_exception_accessions": "GCA_900000002.1",
+        "validated_supported_caller_rank": "False"
+      },
+      "validated_supported_caller_rank": false
+    }
+  ],
+  "context_not_packaged": [
+    {
+      "accession": "GCA_900000020.1",
+      "approved_species": "",
+      "context_disposition": "restricted_or_out_of_genus_context_reference_absent",
+      "development_group": "context:GCA_900000020.1",
+      "eligible_reporting_cohort": "True",
+      "reference_in_proposed_package": "False",
+      "usage_restrictions": "no_named_classifier_reference"
+    },
+    {
+      "accession": "GCA_900000021.1",
+      "approved_species": "",
+      "context_disposition": "named_other_genus_context_reference_absent",
+      "development_group": "context:GCA_900000021.1",
+      "eligible_reporting_cohort": "True",
+      "reference_in_proposed_package": "False",
+      "usage_restrictions": "no_named_classifier_reference"
+    }
+  ],
+  "counts": {
+    "context_lineage_concepts": 2,
+    "development_context_records_not_packaged": 2,
+    "eligible_cohort_records": 11,
+    "eligible_species_reference_represented": 7,
+    "genomovar_concepts": 3,
+    "historical_chromosome_definition_references": 4,
+    "named_concepts": 5,
+    "primary_historical_type_accessions": 3,
+    "primary_whole_references": 5,
+    "reference_scope_records": 9,
+    "unique_accessions": 7
+  },
+  "historical_type_crosswalk": [
+    {
+      "current_project_species": "Enterobacter syntheticus",
+      "current_project_stratum": "Enterobacter syntheticus subsp. alter",
+      "historical_rank": "species",
+      "historical_taxon_name": "Enterobacter alter",
+      "represented_name_bearing_accessions": "GCA_900000002.1",
+      "source_date": "2026-01-01"
+    },
+    {
+      "current_project_species": "Enterobacter fictus",
+      "current_project_stratum": "Enterobacter fictus",
+      "historical_rank": "species",
+      "historical_taxon_name": "Enterobacter fictus",
+      "represented_name_bearing_accessions": "GCA_900000004.1",
+      "source_date": "2026-01-01"
+    },
+    {
+      "current_project_species": "",
+      "current_project_stratum": "",
+      "historical_rank": "species",
+      "historical_taxon_name": "Enterobacter orphanus",
+      "represented_name_bearing_accessions": "",
+      "source_date": "2026-01-01"
+    },
+    {
+      "current_project_species": "Enterobacter syntheticus",
+      "current_project_stratum": "Enterobacter syntheticus subsp. syntheticus",
+      "historical_rank": "species",
+      "historical_taxon_name": "Enterobacter syntheticus",
+      "represented_name_bearing_accessions": "GCA_900000001.1",
+      "source_date": "2026-01-01"
+    }
+  ],
+  "integrity_scope": "all_pins_and_packaged_sequence_hashes_exact_source_joins_and_database_index_membership",
+  "package_id": "synthetic-enterobacter-reference",
+  "package_version": "2026-10-09.test2",
+  "path_semantics": "absolute_existing_local_sources_no_relocation_or_sequence_copy",
+  "positive_calling_policy_enabled": false,
+  "provenance_limit": "hashes_pin_reviewed_local_records_not_authenticated_origin_or_recomputed_sketches",
+  "recipe": {
+    "components": {
+      "genomovar_chromosome": {
+        "build_records": [
+          {
+            "bytes": 49,
+            "path": "/mnt/synthetic/records/genomovar_chromosome-build-record.txt",
+            "sha256": "66ec9e46550f088c3741e096bf58937e502c04c29650326ff2e32970de9448dd"
+          }
+        ],
+        "database_files": [
+          {
+            "bytes": 324,
+            "path": "/mnt/synthetic/databases/genomovar_chromosome/index.db",
+            "sha256": "278c48d6119aff960dc85e7741922f5db2cdfbe20a57dc646d9c8983da9d117a"
+          },
+          {
+            "bytes": 43,
+            "path": "/mnt/synthetic/databases/genomovar_chromosome/markers.bin",
+            "sha256": "39f1d2e92d39c6294bb559bd738c0ae0d755e98ed567529535720457cadfb380"
+          },
+          {
+            "bytes": 64,
+            "path": "/mnt/synthetic/databases/genomovar_chromosome/sketches.db",
+            "sha256": "1c4672a4c6713bcb9495abba712be251bbeff723d79f001f81e5170b1d1627a5"
+          }
+        ],
+        "skani_binary": {
+          "bytes": 40,
+          "path": "/mnt/synthetic/records/synthetic-skani-binary",
+          "sha256": "24ef0d2ea9fd9f1c7744444c1449926343b2a7dd12aa6333e2f6467d59f4637b"
+        },
+        "source_list": {
+          "bytes": 224,
+          "path": "/mnt/synthetic/lists/genomovar_chromosome.list",
+          "sha256": "4e3c182dcce68ae2eb44c98cf665c1ddeb5ba3c747d3bb16a1721d0c0c8ea120"
+        }
+      },
+      "primary_whole": {
+        "build_records": [
+          {
+            "bytes": 42,
+            "path": "/mnt/synthetic/records/primary_whole-build-record.txt",
+            "sha256": "a51b23f351e14e249304cf490e8810aa24f586ae2d0365dbe6135c0b7ebf899a"
+          }
+        ],
+        "database_files": [
+          {
+            "bytes": 378,
+            "path": "/mnt/synthetic/databases/primary_whole/index.db",
+            "sha256": "c065f3f3e169840135dd091f38feadda4f809d5dde8a6b2ef0e1d68b8fed0913"
+          },
+          {
+            "bytes": 36,
+            "path": "/mnt/synthetic/databases/primary_whole/markers.bin",
+            "sha256": "0dc2c5425264488e69ca46d2257ad2de8c466c0a8cb065fdadff5f7e9cb1e27c"
+          },
+          {
+            "bytes": 80,
+            "path": "/mnt/synthetic/databases/primary_whole/sketches.db",
+            "sha256": "b1d1a68efaee9083e1e43459e6ef9620320ba3eff096b2a96ef77956472c0e33"
+          }
+        ],
+        "skani_binary": {
+          "bytes": 40,
+          "path": "/mnt/synthetic/records/synthetic-skani-binary",
+          "sha256": "24ef0d2ea9fd9f1c7744444c1449926343b2a7dd12aa6333e2f6467d59f4637b"
+        },
+        "source_list": {
+          "bytes": 255,
+          "path": "/mnt/synthetic/lists/primary_whole.list",
+          "sha256": "c5b9473dd0233ee28747149cb1a1278d4ad8daee653310a8bf9d114dfcbf9ba6"
+        }
+      }
+    },
+    "expected_counts": {
+      "context_lineage_concepts": 2,
+      "development_context_records_not_packaged": 2,
+      "eligible_cohort_records": 11,
+      "eligible_species_reference_represented": 7,
+      "genomovar_concepts": 3,
+      "historical_chromosome_definition_references": 4,
+      "named_concepts": 5,
+      "primary_historical_type_accessions": 3,
+      "primary_whole_references": 5,
+      "reference_scope_records": 9,
+      "unique_accessions": 7
+    },
+    "package_id": "synthetic-enterobacter-reference",
+    "package_version": "2026-10-09.test2",
+    "provenance_files": [
+      {
+        "bytes": 59,
+        "path": "/mnt/synthetic/records/derivation-record.txt",
+        "sha256": "9ee44af0f4228ba120fa992d62e4d91eb64232e5dee60b368fe137eab64ade30"
+      }
+    ],
+    "source_tables": {
+      "assignments": {
+        "bytes": 1475,
+        "path": "/mnt/synthetic/tables/assignments.tsv",
+        "sha256": "283240f3578e0a3553e28e1f11ca8397f622d18e6861ccc21934d64fda0796a1"
+      },
+      "cohort_coverage": {
+        "bytes": 1686,
+        "path": "/mnt/synthetic/tables/cohort_coverage.tsv",
+        "sha256": "18aca695ac58e231a1bde315e967b6bc986c561de0988116405b227f99852cf1"
+      },
+      "definition_groups": {
+        "bytes": 145,
+        "path": "/mnt/synthetic/tables/definition_groups.tsv",
+        "sha256": "390823855dd99e6b4505041fa11c113934fe6bce76de10e17ca71038321fe222"
+      },
+      "definition_memberships": {
+        "bytes": 747,
+        "path": "/mnt/synthetic/tables/definition_memberships.tsv",
+        "sha256": "b40ea0cb722a369fe41336c6a8b099bd8aebf777b759f6e44acbb468a77625e4"
+      },
+      "definition_references": {
+        "bytes": 1574,
+        "path": "/mnt/synthetic/tables/definition_references.tsv",
+        "sha256": "d87f4672205b0261539dbb4d8e0f389c8f21cab71c70cdc90397d0b7413a57af"
+      },
+      "development_context": {
+        "bytes": 656,
+        "path": "/mnt/synthetic/tables/development_context.tsv",
+        "sha256": "e5debc60c889cba99d7f586c0f88112a06d661a3a483da6b8cb52657e124d035"
+      },
+      "genomovar_crosswalk": {
+        "bytes": 499,
+        "path": "/mnt/synthetic/tables/genomovar_crosswalk.tsv",
+        "sha256": "e94438ab5da7c08fc936b03f58d61bdbfbc78df0205af837d679ff83717c94f9"
+      },
+      "historical_types": {
+        "bytes": 519,
+        "path": "/mnt/synthetic/tables/historical_types.tsv",
+        "sha256": "a1a01de6cff6e8e73d8a7c902dfc832057c24151dda100224287c14c22a3c716"
+      },
+      "lineage_registry": {
+        "bytes": 425,
+        "path": "/mnt/synthetic/tables/lineage_registry.tsv",
+        "sha256": "899790a9bd5aed7341e1669468974f3cd97b7d8e66d403df4aa1d05649d33ead"
+      },
+      "named_registry": {
+        "bytes": 1219,
+        "path": "/mnt/synthetic/tables/named_registry.tsv",
+        "sha256": "0a9e53ffa3a9c246c93837ca1616872830d3ead961150619eea01c181d6a6bd1"
+      },
+      "primary_references": {
+        "bytes": 1423,
+        "path": "/mnt/synthetic/tables/primary_references.tsv",
+        "sha256": "7ada53956b543576b2038b903341be750985c61a48eabc7e3d53da5a8f230eb9"
+      }
+    }
+  },
+  "references": [
+    {
+      "accession": "GCA_900000002.1",
+      "assignment_status": "retained_formal_type_anchor",
+      "component_id": "genomovar_chromosome",
+      "historical_origin_path": "/mnt/synthetic/original/GCA_900000002.1_parsed.fna",
+      "historical_origin_validation": "frozen_metadata_only_not_an_additional_packaged_source",
+      "historical_source_basis": "synthetic_full_manifest_source",
+      "quality_flags": "type_QC_exception",
+      "quality_state": "type_QC_exception",
+      "reference_id": "genomovar_chromosome:GCA_900000002.1",
+      "reference_role": "genomovar_definition_member",
+      "search_label": "/mnt/synthetic/sequences/chromosome/GCA_900000002.1.fna",
+      "sequence_scope": "historical_chromosome_record_set",
+      "source": {
+        "bytes": 39,
+        "path": "/mnt/synthetic/sequences/chromosome/GCA_900000002.1.fna",
+        "sha256": "71ced6a7a9874626cb58761cce953d37a47b31e5f2fb067b7029f51e4b3a7e37"
+      },
+      "source_selection_reason": "frozen_genomovar_definition_member",
+      "species_id": "SYN-SP01",
+      "stratum_concept_id": "SYN-SS02",
+      "subspecies_id": "SYN-SS02",
+      "supplementary_qc_pass": false,
+      "type_anchor": true
+    },
+    {
+      "accession": "GCA_900000003.1",
+      "assignment_status": "approved_review_treatment",
+      "component_id": "genomovar_chromosome",
+      "historical_origin_path": "/mnt/synthetic/original/GCA_900000003.1_parsed.fna",
+      "historical_origin_validation": "frozen_metadata_only_not_an_additional_packaged_source",
+      "historical_source_basis": "synthetic_full_manifest_source",
+      "quality_flags": "",
+      "quality_state": "source_QC_pass",
+      "reference_id": "genomovar_chromosome:GCA_900000003.1",
+      "reference_role": "genomovar_definition_member",
+      "search_label": "/mnt/synthetic/sequences/chromosome/GCA_900000003.1.fna",
+      "sequence_scope": "historical_chromosome_record_set",
+      "source": {
+        "bytes": 39,
+        "path": "/mnt/synthetic/sequences/chromosome/GCA_900000003.1.fna",
+        "sha256": "f6eaa18fb0bce4d1c2678e9be026ead0a3a9990b36a170245f6a204a15fad0bf"
+      },
+      "source_selection_reason": "frozen_genomovar_definition_member",
+      "species_id": "SYN-SP01",
+      "stratum_concept_id": "SYN-SS02",
+      "subspecies_id": "SYN-SS02",
+      "supplementary_qc_pass": true,
+      "type_anchor": false
+    },
+    {
+      "accession": "GCA_900000006.1",
+      "assignment_status": "approved_review_treatment",
+      "component_id": "genomovar_chromosome",
+      "historical_origin_path": "/mnt/synthetic/original/GCA_900000006.1_parsed.fna",
+      "historical_origin_validation": "frozen_metadata_only_not_an_additional_packaged_source",
+      "historical_source_basis": "synthetic_full_manifest_source",
+      "quality_flags": "",
+      "quality_state": "source_QC_pass",
+      "reference_id": "genomovar_chromosome:GCA_900000006.1",
+      "reference_role": "genomovar_definition_member",
+      "search_label": "/mnt/synthetic/sequences/chromosome/GCA_900000006.1.fna",
+      "sequence_scope": "historical_chromosome_record_set",
+      "source": {
+        "bytes": 39,
+        "path": "/mnt/synthetic/sequences/chromosome/GCA_900000006.1.fna",
+        "sha256": "199c2b87b799fc3508004ee4939ccce679fc3b4ae7a912d42b8184ce32adf37b"
+      },
+      "source_selection_reason": "frozen_genomovar_definition_member",
+      "species_id": "SYN-SP01",
+      "stratum_concept_id": "SYN-SS02",
+      "subspecies_id": "SYN-SS02",
+      "supplementary_qc_pass": true,
+      "type_anchor": false
+    },
+    {
+      "accession": "GCA_900000007.1",
+      "assignment_status": "approved_review_treatment",
+      "component_id": "genomovar_chromosome",
+      "historical_origin_path": "/mnt/synthetic/original/GCA_900000007.1_parsed.fna",
+      "historical_origin_validation": "frozen_metadata_only_not_an_additional_packaged_source",
+      "historical_source_basis": "synthetic_full_manifest_source",
+      "quality_flags": "contig_count",
+      "quality_state": "source_QC_fail",
+      "reference_id": "genomovar_chromosome:GCA_900000007.1",
+      "reference_role": "genomovar_definition_member",
+      "search_label": "/mnt/synthetic/sequences/chromosome/GCA_900000007.1.fna",
+      "sequence_scope": "historical_chromosome_record_set",
+      "source": {
+        "bytes": 39,
+        "path": "/mnt/synthetic/sequences/chromosome/GCA_900000007.1.fna",
+        "sha256": "b35bd3acb662e73230909c0107dd89f35a0fee9ab93fb6f7156e32190ac46436"
+      },
+      "source_selection_reason": "frozen_genomovar_definition_member",
+      "species_id": "SYN-SP01",
+      "stratum_concept_id": "SYN-SS01",
+      "subspecies_id": "SYN-SS01",
+      "supplementary_qc_pass": false,
+      "type_anchor": false
+    },
+    {
+      "accession": "GCA_900000001.1",
+      "assignment_status": "approved_review_treatment",
+      "component_id": "primary_whole",
+      "historical_origin_path": null,
+      "historical_origin_validation": "frozen_metadata_only_not_an_additional_packaged_source",
+      "historical_source_basis": null,
+      "quality_flags": "",
+      "quality_state": "source_QC_pass",
+      "reference_id": "primary_whole:GCA_900000001.1",
+      "reference_role": "primary_named_reference_evidence",
+      "search_label": "/mnt/synthetic/sequences/whole/GCA_900000001.1.fna",
+      "sequence_scope": "whole_assembly_as_deposited",
+      "source": {
+        "bytes": 70,
+        "path": "/mnt/synthetic/sequences/whole/GCA_900000001.1.fna",
+        "sha256": "9e61bdaa3e7d4e176c92db014b3803a79061cb7ea1ba49f662f46c1955f2409c"
+      },
+      "source_selection_reason": "historical_type_anchor",
+      "species_id": "SYN-SP01",
+      "stratum_concept_id": "SYN-SS01",
+      "subspecies_id": "SYN-SS01",
+      "supplementary_qc_pass": true,
+      "type_anchor": true
+    },
+    {
+      "accession": "GCA_900000002.1",
+      "assignment_status": "retained_formal_type_anchor",
+      "component_id": "primary_whole",
+      "historical_origin_path": null,
+      "historical_origin_validation": "frozen_metadata_only_not_an_additional_packaged_source",
+      "historical_source_basis": null,
+      "quality_flags": "type_QC_exception",
+      "quality_state": "type_QC_exception",
+      "reference_id": "primary_whole:GCA_900000002.1",
+      "reference_role": "primary_named_reference_evidence",
+      "search_label": "/mnt/synthetic/sequences/whole/GCA_900000002.1.fna",
+      "sequence_scope": "whole_assembly_as_deposited",
+      "source": {
+        "bytes": 70,
+        "path": "/mnt/synthetic/sequences/whole/GCA_900000002.1.fna",
+        "sha256": "84a5138a862cab2f5f70051953919bc4fbf73889a8301b3366ad9533ccc1d474"
+      },
+      "source_selection_reason": "historical_type_anchor",
+      "species_id": "SYN-SP01",
+      "stratum_concept_id": "SYN-SS02",
+      "subspecies_id": "SYN-SS02",
+      "supplementary_qc_pass": false,
+      "type_anchor": true
+    },
+    {
+      "accession": "GCA_900000003.1",
+      "assignment_status": "approved_review_treatment",
+      "component_id": "primary_whole",
+      "historical_origin_path": null,
+      "historical_origin_validation": "frozen_metadata_only_not_an_additional_packaged_source",
+      "historical_source_basis": null,
+      "quality_flags": "",
+      "quality_state": "source_QC_pass",
+      "reference_id": "primary_whole:GCA_900000003.1",
+      "reference_role": "primary_named_reference_evidence",
+      "search_label": "/mnt/synthetic/sequences/whole/GCA_900000003.1.fna",
+      "sequence_scope": "whole_assembly_as_deposited",
+      "source": {
+        "bytes": 70,
+        "path": "/mnt/synthetic/sequences/whole/GCA_900000003.1.fna",
+        "sha256": "e057ee6b173cef9f4d38a3f0c1e39b6eb40f75dc2a6fca827219bbb1ec6551cf"
+      },
+      "source_selection_reason": "within_stratum_diversity",
+      "species_id": "SYN-SP01",
+      "stratum_concept_id": "SYN-SS02",
+      "subspecies_id": "SYN-SS02",
+      "supplementary_qc_pass": true,
+      "type_anchor": false
+    },
+    {
+      "accession": "GCA_900000004.1",
+      "assignment_status": "retained_formal_type_anchor",
+      "component_id": "primary_whole",
+      "historical_origin_path": null,
+      "historical_origin_validation": "frozen_metadata_only_not_an_additional_packaged_source",
+      "historical_source_basis": null,
+      "quality_flags": "",
+      "quality_state": "source_QC_pass",
+      "reference_id": "primary_whole:GCA_900000004.1",
+      "reference_role": "primary_named_reference_evidence",
+      "search_label": "/mnt/synthetic/sequences/whole/GCA_900000004.1.fna",
+      "sequence_scope": "whole_assembly_as_deposited",
+      "source": {
+        "bytes": 70,
+        "path": "/mnt/synthetic/sequences/whole/GCA_900000004.1.fna",
+        "sha256": "d4a2833dc0fdd901bf5fd4078172b515b4a1b9836785bfa5590acda5725c4ef9"
+      },
+      "source_selection_reason": "historical_type_anchor",
+      "species_id": "SYN-SP02",
+      "stratum_concept_id": "SYN-SP02",
+      "subspecies_id": null,
+      "supplementary_qc_pass": true,
+      "type_anchor": true
+    },
+    {
+      "accession": "GCA_900000005.1",
+      "assignment_status": "source_name_retained_not_individually_adjudicated",
+      "component_id": "primary_whole",
+      "historical_origin_path": null,
+      "historical_origin_validation": "frozen_metadata_only_not_an_additional_packaged_source",
+      "historical_source_basis": null,
+      "quality_flags": "low_completeness",
+      "quality_state": "source_QC_fail",
+      "reference_id": "primary_whole:GCA_900000005.1",
+      "reference_role": "primary_named_reference_evidence",
+      "search_label": "/mnt/synthetic/sequences/whole/GCA_900000005.1.fna",
+      "sequence_scope": "whole_assembly_as_deposited",
+      "source": {
+        "bytes": 70,
+        "path": "/mnt/synthetic/sequences/whole/GCA_900000005.1.fna",
+        "sha256": "5cec22366c372bd0fe6c4f0942738d35959d57b05e758a944f3abd99428a4cef"
+      },
+      "source_selection_reason": "within_stratum_diversity",
+      "species_id": "SYN-SP02",
+      "stratum_concept_id": "SYN-SP02",
+      "subspecies_id": null,
+      "supplementary_qc_pass": false,
+      "type_anchor": false
+    }
+  ],
+  "release_state": "development_proposal_not_distributable",
+  "schema_version": "1.0.0-dev-reference-package",
+  "verified_artifacts": [
+    {
+      "bytes": 324,
+      "path": "/mnt/synthetic/databases/genomovar_chromosome/index.db",
+      "sha256": "278c48d6119aff960dc85e7741922f5db2cdfbe20a57dc646d9c8983da9d117a"
+    },
+    {
+      "bytes": 43,
+      "path": "/mnt/synthetic/databases/genomovar_chromosome/markers.bin",
+      "sha256": "39f1d2e92d39c6294bb559bd738c0ae0d755e98ed567529535720457cadfb380"
+    },
+    {
+      "bytes": 64,
+      "path": "/mnt/synthetic/databases/genomovar_chromosome/sketches.db",
+      "sha256": "1c4672a4c6713bcb9495abba712be251bbeff723d79f001f81e5170b1d1627a5"
+    },
+    {
+      "bytes": 378,
+      "path": "/mnt/synthetic/databases/primary_whole/index.db",
+      "sha256": "c065f3f3e169840135dd091f38feadda4f809d5dde8a6b2ef0e1d68b8fed0913"
+    },
+    {
+      "bytes": 36,
+      "path": "/mnt/synthetic/databases/primary_whole/markers.bin",
+      "sha256": "0dc2c5425264488e69ca46d2257ad2de8c466c0a8cb065fdadff5f7e9cb1e27c"
+    },
+    {
+      "bytes": 80,
+      "path": "/mnt/synthetic/databases/primary_whole/sketches.db",
+      "sha256": "b1d1a68efaee9083e1e43459e6ef9620320ba3eff096b2a96ef77956472c0e33"
+    },
+    {
+      "bytes": 224,
+      "path": "/mnt/synthetic/lists/genomovar_chromosome.list",
+      "sha256": "4e3c182dcce68ae2eb44c98cf665c1ddeb5ba3c747d3bb16a1721d0c0c8ea120"
+    },
+    {
+      "bytes": 255,
+      "path": "/mnt/synthetic/lists/primary_whole.list",
+      "sha256": "c5b9473dd0233ee28747149cb1a1278d4ad8daee653310a8bf9d114dfcbf9ba6"
+    },
+    {
+      "bytes": 59,
+      "path": "/mnt/synthetic/records/derivation-record.txt",
+      "sha256": "9ee44af0f4228ba120fa992d62e4d91eb64232e5dee60b368fe137eab64ade30"
+    },
+    {
+      "bytes": 49,
+      "path": "/mnt/synthetic/records/genomovar_chromosome-build-record.txt",
+      "sha256": "66ec9e46550f088c3741e096bf58937e502c04c29650326ff2e32970de9448dd"
+    },
+    {
+      "bytes": 42,
+      "path": "/mnt/synthetic/records/primary_whole-build-record.txt",
+      "sha256": "a51b23f351e14e249304cf490e8810aa24f586ae2d0365dbe6135c0b7ebf899a"
+    },
+    {
+      "bytes": 40,
+      "path": "/mnt/synthetic/records/synthetic-skani-binary",
+      "sha256": "24ef0d2ea9fd9f1c7744444c1449926343b2a7dd12aa6333e2f6467d59f4637b"
+    },
+    {
+      "bytes": 39,
+      "path": "/mnt/synthetic/sequences/chromosome/GCA_900000002.1.fna",
+      "sha256": "71ced6a7a9874626cb58761cce953d37a47b31e5f2fb067b7029f51e4b3a7e37"
+    },
+    {
+      "bytes": 39,
+      "path": "/mnt/synthetic/sequences/chromosome/GCA_900000003.1.fna",
+      "sha256": "f6eaa18fb0bce4d1c2678e9be026ead0a3a9990b36a170245f6a204a15fad0bf"
+    },
+    {
+      "bytes": 39,
+      "path": "/mnt/synthetic/sequences/chromosome/GCA_900000006.1.fna",
+      "sha256": "199c2b87b799fc3508004ee4939ccce679fc3b4ae7a912d42b8184ce32adf37b"
+    },
+    {
+      "bytes": 39,
+      "path": "/mnt/synthetic/sequences/chromosome/GCA_900000007.1.fna",
+      "sha256": "b35bd3acb662e73230909c0107dd89f35a0fee9ab93fb6f7156e32190ac46436"
+    },
+    {
+      "bytes": 70,
+      "path": "/mnt/synthetic/sequences/whole/GCA_900000001.1.fna",
+      "sha256": "9e61bdaa3e7d4e176c92db014b3803a79061cb7ea1ba49f662f46c1955f2409c"
+    },
+    {
+      "bytes": 70,
+      "path": "/mnt/synthetic/sequences/whole/GCA_900000002.1.fna",
+      "sha256": "84a5138a862cab2f5f70051953919bc4fbf73889a8301b3366ad9533ccc1d474"
+    },
+    {
+      "bytes": 70,
+      "path": "/mnt/synthetic/sequences/whole/GCA_900000003.1.fna",
+      "sha256": "e057ee6b173cef9f4d38a3f0c1e39b6eb40f75dc2a6fca827219bbb1ec6551cf"
+    },
+    {
+      "bytes": 70,
+      "path": "/mnt/synthetic/sequences/whole/GCA_900000004.1.fna",
+      "sha256": "d4a2833dc0fdd901bf5fd4078172b515b4a1b9836785bfa5590acda5725c4ef9"
+    },
+    {
+      "bytes": 70,
+      "path": "/mnt/synthetic/sequences/whole/GCA_900000005.1.fna",
+      "sha256": "5cec22366c372bd0fe6c4f0942738d35959d57b05e758a944f3abd99428a4cef"
+    },
+    {
+      "bytes": 1475,
+      "path": "/mnt/synthetic/tables/assignments.tsv",
+      "sha256": "283240f3578e0a3553e28e1f11ca8397f622d18e6861ccc21934d64fda0796a1"
+    },
+    {
+      "bytes": 1686,
+      "path": "/mnt/synthetic/tables/cohort_coverage.tsv",
+      "sha256": "18aca695ac58e231a1bde315e967b6bc986c561de0988116405b227f99852cf1"
+    },
+    {
+      "bytes": 145,
+      "path": "/mnt/synthetic/tables/definition_groups.tsv",
+      "sha256": "390823855dd99e6b4505041fa11c113934fe6bce76de10e17ca71038321fe222"
+    },
+    {
+      "bytes": 747,
+      "path": "/mnt/synthetic/tables/definition_memberships.tsv",
+      "sha256": "b40ea0cb722a369fe41336c6a8b099bd8aebf777b759f6e44acbb468a77625e4"
+    },
+    {
+      "bytes": 1574,
+      "path": "/mnt/synthetic/tables/definition_references.tsv",
+      "sha256": "d87f4672205b0261539dbb4d8e0f389c8f21cab71c70cdc90397d0b7413a57af"
+    },
+    {
+      "bytes": 656,
+      "path": "/mnt/synthetic/tables/development_context.tsv",
+      "sha256": "e5debc60c889cba99d7f586c0f88112a06d661a3a483da6b8cb52657e124d035"
+    },
+    {
+      "bytes": 499,
+      "path": "/mnt/synthetic/tables/genomovar_crosswalk.tsv",
+      "sha256": "e94438ab5da7c08fc936b03f58d61bdbfbc78df0205af837d679ff83717c94f9"
+    },
+    {
+      "bytes": 519,
+      "path": "/mnt/synthetic/tables/historical_types.tsv",
+      "sha256": "a1a01de6cff6e8e73d8a7c902dfc832057c24151dda100224287c14c22a3c716"
+    },
+    {
+      "bytes": 425,
+      "path": "/mnt/synthetic/tables/lineage_registry.tsv",
+      "sha256": "899790a9bd5aed7341e1669468974f3cd97b7d8e66d403df4aa1d05649d33ead"
+    },
+    {
+      "bytes": 1219,
+      "path": "/mnt/synthetic/tables/named_registry.tsv",
+      "sha256": "0a9e53ffa3a9c246c93837ca1616872830d3ead961150619eea01c181d6a6bd1"
+    },
+    {
+      "bytes": 1423,
+      "path": "/mnt/synthetic/tables/primary_references.tsv",
+      "sha256": "7ada53956b543576b2038b903341be750985c61a48eabc7e3d53da5a8f230eb9"
+    }
+  ]
+}
