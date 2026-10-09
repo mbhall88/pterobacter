@@ -25,9 +25,11 @@ pub enum EvidenceError {
     Json(#[from] serde_json::Error),
     #[error("invalid saved evidence: {0}")]
     Invalid(String),
+    #[error("invalid settings: {0}")]
+    Settings(String),
 }
 
-fn invalid<T>(message: impl Into<String>) -> Result<T, EvidenceError> {
+pub(crate) fn invalid<T>(message: impl Into<String>) -> Result<T, EvidenceError> {
     Err(EvidenceError::Invalid(message.into()))
 }
 
@@ -46,6 +48,10 @@ impl Percent {
     /// For display only; never compare these values.
     pub fn as_f64(self) -> f64 {
         f64::from(self.0) / 100.0
+    }
+
+    pub(crate) const fn from_hundredths(hundredths: u32) -> Self {
+        Percent(hundredths)
     }
 
     pub(crate) fn gap(self, other: Self) -> i64 {
@@ -157,7 +163,7 @@ impl SavedEvidence {
     pub fn from_json(text: &str) -> Result<Self, EvidenceError> {
         let raw: RawEvidence = serde_json::from_str(text)?;
         let mut evidence = raw.validate()?;
-        evidence.source_sha256 = format!("{:x}", Sha256::digest(text.as_bytes()));
+        evidence.source_sha256 = sha256_hex(text.as_bytes());
         Ok(evidence)
     }
 
@@ -208,6 +214,27 @@ impl SavedEvidence {
 
     pub fn references(&self) -> &[Reference] {
         &self.references
+    }
+
+    /// The same evidence with the masked references removed from the rows and the panel
+    /// counts. `unreturned` is how many masked references skani had not returned.
+    pub(crate) fn without_references(
+        &self,
+        mask: &std::collections::BTreeSet<&str>,
+        unreturned: usize,
+    ) -> SavedEvidence {
+        let references: Vec<_> = self
+            .references
+            .iter()
+            .filter(|r| !mask.contains(r.id.as_str()))
+            .cloned()
+            .collect();
+        SavedEvidence {
+            reference_count: self.reference_count - mask.len(),
+            not_returned_count: self.not_returned_count - unreturned,
+            references,
+            ..self.clone()
+        }
     }
 
     pub fn provenance(&self) -> &Provenance {
@@ -267,6 +294,10 @@ struct RawReference {
     aligned_fraction_query_percent: Percent,
     aligned_fraction_reference_percent: Percent,
     minimum_directional_af_percent: Percent,
+}
+
+pub(crate) fn sha256_hex(bytes: &[u8]) -> String {
+    format!("{:x}", Sha256::digest(bytes))
 }
 
 pub(crate) fn is_sha256(text: &str) -> bool {

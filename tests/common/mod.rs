@@ -1,6 +1,8 @@
 //! Helpers shared by the integration tests.
 #![allow(dead_code)] // each test crate uses a different subset
 
+pub mod p1;
+
 use serde_json::{json, Value};
 use terobacter::decision::{decide, Policy};
 use terobacter::evidence::SavedEvidence;

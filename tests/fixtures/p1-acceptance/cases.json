@@ -1,0 +1,4149 @@
+[
+  {
+    "id": "strict_above_promotes",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": "A",
+      "basis": "ANIm_assisted",
+      "subspecies": null
+    }
+  },
+  {
+    "id": "ANIm_exact96_evidence_only",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null
+    }
+  },
+  {
+    "id": "ANIm_below96",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "95.9",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "95.9",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null
+    }
+  },
+  {
+    "id": "one_direction_exact96",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.4",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null
+    }
+  },
+  {
+    "id": "one_direction_below96_despite_mean_above",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "97",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "95.9",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null
+    }
+  },
+  {
+    "id": "unrounded_above96_displays96",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.00000001",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.00000001",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": "A"
+    }
+  },
+  {
+    "id": "unrounded_below96_displays96",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "95.99999999",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "95.99999999",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null
+    }
+  },
+  {
+    "id": "one_failed_AF_q",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "79.999999",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "79.999999",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null
+    }
+  },
+  {
+    "id": "one_failed_AF_r",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "79.999999"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "79.999999"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null
+    }
+  },
+  {
+    "id": "one_failed_AF_q2",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "79.999999",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null
+    }
+  },
+  {
+    "id": "one_failed_AF_r2",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "79.999999"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null
+    }
+  },
+  {
+    "id": "all_AF_exact80_pass",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "80",
+              "ar": "80"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "80",
+              "ar": "80"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": "A"
+    }
+  },
+  {
+    "id": "skani_aq_failure_not_rescued",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "79.9",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "skani_coverage_not_rescuable"
+      ]
+    }
+  },
+  {
+    "id": "skani_ar_failure_not_rescued",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "79.9"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "skani_coverage_not_rescuable"
+      ]
+    }
+  },
+  {
+    "id": "trigger_lower_endpoint_included",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "94.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": "A",
+      "trigger": true
+    }
+  },
+  {
+    "id": "below_trigger_evidence_only",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "94.49999",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "trigger": false
+    }
+  },
+  {
+    "id": "skani_exact96_uses_legacy_route",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "96",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {}
+    },
+    "expected": {
+      "species": "A",
+      "basis": "skani",
+      "trigger": false
+    }
+  },
+  {
+    "id": "skani_96plus_keeps_supplied_ANIm_veto",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "96.2",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "95.9",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "95.9",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "method_gate_disagreement"
+      ]
+    }
+  },
+  {
+    "id": "warnings_veto",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      },
+      "warnings": [
+        "bound_problem"
+      ]
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "external_problem_warning"
+      ]
+    }
+  },
+  {
+    "id": "residual_veto",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      },
+      "scope": "unexplained_after_checks"
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "unexplained_residual_sequence"
+      ]
+    }
+  },
+  {
+    "id": "simultaneous_vetoes_retained",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      },
+      "warnings": [
+        "bound_problem"
+      ],
+      "scope": "unexplained_after_checks"
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "external_problem_warning",
+        "unexplained_residual_sequence"
+      ]
+    }
+  },
+  {
+    "id": "scope_not_assessed_is_not_veto",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      },
+      "scope": "not_assessed"
+    },
+    "expected": {
+      "species": "A"
+    }
+  },
+  {
+    "id": "scope_explained_does_not_clear_warning",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      },
+      "warnings": [
+        "bound_problem"
+      ],
+      "scope": "explained_after_checks"
+    },
+    "expected": {
+      "species": null
+    }
+  },
+  {
+    "id": "missing_witness",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "ANIm_incomplete"
+      ]
+    }
+  },
+  {
+    "id": "missing_competitor",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "ANIm_competitor_incomplete"
+      ]
+    }
+  },
+  {
+    "id": "competitor_one_direction_error",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "error",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "ANIm_competitor_incomplete"
+      ]
+    }
+  },
+  {
+    "id": "witness_one_direction_missing",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "ANIm_incomplete"
+      ]
+    }
+  },
+  {
+    "id": "competitor_no_alignment_is_measured",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "no_alignment",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "no_alignment",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": "A",
+      "competitor_evaluation": "complete"
+    }
+  },
+  {
+    "id": "second_species_ANIm_challenges",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.1",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.1",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "challenges": [
+        "B1"
+      ]
+    }
+  },
+  {
+    "id": "competitor_exact96_still_challenges",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "challenges": [
+        "B1"
+      ]
+    }
+  },
+  {
+    "id": "competitor_low_query_AF_challenges",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.1",
+              "aq": "10",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.1",
+              "aq": "10",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "challenges": [
+        "B1"
+      ]
+    }
+  },
+  {
+    "id": "competitor_one_orientation_challenges",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.1",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "95.8",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "challenges": [
+        "B1"
+      ]
+    }
+  },
+  {
+    "id": "competitor_low_reference_AF_is_not_challenge",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.1",
+              "aq": "85",
+              "ar": "79"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.1",
+              "aq": "85",
+              "ar": "79"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": "A",
+      "challenges": []
+    }
+  },
+  {
+    "id": "unreturned_skani_competitor_still_checked",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "C1",
+          "species": "C",
+          "subspecies": null,
+          "ani": null,
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "C1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "challenges": [
+        "C1"
+      ]
+    }
+  },
+  {
+    "id": "unreturned_skani_competitor_missing_ANIm",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "C1",
+          "species": "C",
+          "subspecies": null,
+          "ani": null,
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "ANIm_competitor_incomplete"
+      ]
+    }
+  },
+  {
+    "id": "unnamed_competitor_challenges",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": null,
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85",
+          "lineage": "L1"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.1",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.1",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "challenges": [
+        "B1"
+      ]
+    }
+  },
+  {
+    "id": "nearest_unnamed_not_replaced",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": null,
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85",
+          "lineage": "L0"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "nearest_reference_has_no_species"
+      ]
+    }
+  },
+  {
+    "id": "cross_species_skani_tie_stays_unresolved",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "different_species_nearest_tie"
+      ]
+    }
+  },
+  {
+    "id": "same_species_skani_tie_allowed",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A2",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "A2": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": "A"
+    }
+  },
+  {
+    "id": "same_species_ANIm_tie_allowed",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A2",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.4",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "A2": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": "A"
+    }
+  },
+  {
+    "id": "same_parent_AF_crossing_disagreement_vetoes",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A2",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.4",
+          "aq": "79",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "A2": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "method_gate_disagreement"
+      ]
+    }
+  },
+  {
+    "id": "no_measured_skani_parent_contrast",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "species_competitor_unmeasured"
+      ]
+    }
+  },
+  {
+    "id": "no_skani_hits_no_rescue",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": null,
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": null,
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "trigger": false
+    }
+  },
+  {
+    "id": "same_reference_witness_required",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A2",
+          "species": "A",
+          "subspecies": null,
+          "ani": "94.4",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "95.9",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "95.9",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "A2": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.5",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.5",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null
+    }
+  },
+  {
+    "id": "ANIm_subspecies_never_promoted",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": "A-sub",
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "99.5",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "99.5",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": "A",
+      "subspecies": null
+    }
+  },
+  {
+    "id": "ordinary_subspecies_margin1_inclusive",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": "A-sub1",
+          "ani": "99",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A2",
+          "species": "A",
+          "subspecies": "A-sub2",
+          "ani": "98",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {}
+    },
+    "expected": {
+      "species": "A",
+      "subspecies": "A-sub1",
+      "basis": "skani"
+    }
+  },
+  {
+    "id": "ordinary_subspecies_below_margin",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": "A-sub1",
+          "ani": "99",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A2",
+          "species": "A",
+          "subspecies": "A-sub2",
+          "ani": "98.01",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {}
+    },
+    "expected": {
+      "species": "A",
+      "subspecies": null
+    }
+  },
+  {
+    "id": "two_skani_parents_alert_low_queryAF",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": "A-sub1",
+          "ani": "99",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A2",
+          "species": "A",
+          "subspecies": "A-sub2",
+          "ani": "98",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "96",
+          "aq": "10",
+          "ar": "85"
+        }
+      ],
+      "anim": {}
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "two_parent_support_alert"
+      ]
+    }
+  },
+  {
+    "id": "custom_equal_default_still_tagged",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      },
+      "custom": {
+        "species_ani": "96.0"
+      }
+    },
+    "expected": {
+      "species": "A",
+      "mode": "custom",
+      "validation_status": "custom_unvalidated"
+    }
+  },
+  {
+    "id": "custom_lower_threshold_ordinary_call",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {},
+      "custom": {
+        "species_ani": "95"
+      }
+    },
+    "expected": {
+      "species": "A",
+      "basis": "skani",
+      "mode": "custom"
+    }
+  },
+  {
+    "id": "custom_higher_threshold_strict_rescue",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "96.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "97.1",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "97.1",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      },
+      "custom": {
+        "species_ani": "97"
+      }
+    },
+    "expected": {
+      "species": "A",
+      "basis": "ANIm_assisted",
+      "mode": "custom"
+    }
+  },
+  {
+    "id": "custom_ANIm_equality_no_promotion",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "96.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "97",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "97",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      },
+      "custom": {
+        "species_ani": "97"
+      }
+    },
+    "expected": {
+      "species": null,
+      "mode": "custom"
+    }
+  },
+  {
+    "id": "custom_higher_threshold_keeps96_alert",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "96.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "96.1",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "97.1",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "97.1",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      },
+      "custom": {
+        "species_ani": "97"
+      }
+    },
+    "expected": {
+      "species": null,
+      "reasons": [
+        "two_parent_support_alert"
+      ]
+    }
+  },
+  {
+    "id": "competitor_outside_topfive_cannot_disappear",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A2",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.48",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A3",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.47",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A4",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.46",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A5",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.45",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A6",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.44",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.1",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.1",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "A2": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "A3": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "A4": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "A5": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "A6": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "species": null,
+      "challenges": [
+        "B1"
+      ],
+      "display": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5"
+      ]
+    }
+  },
+  {
+    "id": "display_fifth_tie_included",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A2",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.48",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A3",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.47",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A4",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.46",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A5",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.45",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "A6",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.45",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.1",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.1",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "A2": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "A3": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "A4": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "A5": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "A6": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "expected": {
+      "display": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "A6"
+      ]
+    }
+  },
+  {
+    "id": "invalid_below_search_floor",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      },
+      "custom": {
+        "species_ani": "79.9"
+      }
+    },
+    "raises": "ValueError"
+  },
+  {
+    "id": "invalid_threshold_order",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      },
+      "custom": {
+        "species_ani": "99"
+      }
+    },
+    "raises": "ValueError"
+  },
+  {
+    "id": "invalid_nonfinite",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      },
+      "custom": {
+        "species_ani": "NaN"
+      }
+    },
+    "raises": "ValueError"
+  },
+  {
+    "id": "invalid_unknown_AF_override",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      },
+      "custom": {
+        "af": "79"
+      }
+    },
+    "raises": "ValueError"
+  },
+  {
+    "id": "duplicate_direction_rejected",
+    "input": {
+      "references": [
+        {
+          "id": "A1",
+          "species": "A",
+          "subspecies": null,
+          "ani": "95.5",
+          "aq": "85",
+          "ar": "85"
+        },
+        {
+          "id": "B1",
+          "species": "B",
+          "subspecies": null,
+          "ani": "90",
+          "aq": "85",
+          "ar": "85"
+        }
+      ],
+      "anim": {
+        "A1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "96.2",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        },
+        "B1": {
+          "directions": [
+            {
+              "id": "QR",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            },
+            {
+              "id": "RQ",
+              "status": "complete",
+              "ani": "90",
+              "aq": "85",
+              "ar": "85"
+            }
+          ]
+        }
+      }
+    },
+    "raises": "ValueError"
+  }
+]
