@@ -61,3 +61,7 @@ tempfile = "3.27.0"
 strip = true   # https://github.com/johnthagen/min-sized-rust?tab=readme-ov-file#strip-symbols-from-binary
 debug = false
 lto = true # https://doc.rust-lang.org/cargo/reference/profiles.html
+
+# Keep test builds smaller; CARGO_PROFILE_TEST_DEBUG can restore symbols for debugging.
+[profile.test]
+debug = 0
