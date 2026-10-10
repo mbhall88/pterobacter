@@ -35,6 +35,11 @@ fn outside_band_v2_uses_the_same_skani_call_without_requiring_fastas() {
     assert_eq!(report["counts"]["attempted"], 0);
     assert_eq!(report["execution"]["status"], "complete");
     assert_eq!(report["validation_status"], "not_yet_validated");
+    assert_eq!(report["genomovar"]["search"]["status"], "not_run");
+    assert_eq!(
+        report["genomovar"]["parent"]["policy_id"],
+        "conservative-assembly-anim-v2"
+    );
 }
 
 #[test]
@@ -108,6 +113,17 @@ fn native_rescue_measures_every_primary_competitor_including_unreturned() {
     assert_eq!(report["rescue_status"], "rescued", "{report}");
     assert_eq!(report["species_id"], "SYN-SP01");
     assert_eq!(report["subspecies_id"], Value::Null);
+    if report["execution"]["status"] == "complete" {
+        assert_eq!(report["genomovar"]["search"]["status"], "not_run");
+        assert_eq!(report["genomovar"]["genomovar_id"], Value::Null);
+        assert!(
+            report["genomovar"]["parent"]["result_sha256"]
+                .as_str()
+                .unwrap()
+                .len()
+                == 64
+        );
+    }
     assert_eq!(report["genomovar_id"], Value::Null);
     assert_eq!(report["call_basis"], "ANIm_assisted");
     assert_eq!(report["competitor_evaluation"], "complete");
@@ -404,6 +420,9 @@ fn decisive_foreign_parent_veto_stops_before_unnecessary_pairs() {
         .unwrap()
         .iter()
         .any(|v| v == "foreign_parent_challenge"));
+    assert_eq!(report["genomovar"]["search"]["status"], "not_run");
+    assert_eq!(report["genomovar"]["genomovar_id"], Value::Null);
+    assert_eq!(report["genomovar"]["parent"]["status"], "unresolved");
     assert_eq!(report["counts"]["attempted"], 4);
     assert_eq!(report["counts"]["completed"], 4);
     assert_eq!(report["counts"]["not_run"], 1);
@@ -631,6 +650,17 @@ fn changed_component_after_a_completed_witness_cannot_publish_a_rescue() {
     assert_eq!(report["counts"]["completed"], 5);
     assert_eq!(report["species_id"], Value::Null);
     assert_eq!(report["subspecies_id"], Value::Null);
+    if report["execution"]["status"] == "complete" {
+        assert_eq!(report["genomovar"]["search"]["status"], "not_run");
+        assert_eq!(report["genomovar"]["genomovar_id"], Value::Null);
+        assert!(
+            report["genomovar"]["parent"]["result_sha256"]
+                .as_str()
+                .unwrap()
+                .len()
+                == 64
+        );
+    }
     assert_eq!(report["genomovar_id"], Value::Null);
     assert_eq!(report["rescue_status"], "incomplete");
     assert_eq!(report["execution"]["status"], "incomplete");

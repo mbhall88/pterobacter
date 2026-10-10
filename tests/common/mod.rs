@@ -3,6 +3,7 @@
 
 pub mod assembly;
 pub mod mlst;
+pub mod native;
 pub mod p1;
 pub mod package;
 

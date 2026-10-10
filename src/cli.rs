@@ -161,10 +161,7 @@ pub fn run_public() -> ExitCode {
             Ok(())
         })();
         if let Err((code, error)) = &result {
-            report["execution"]["status"] = "incomplete".into();
-            withhold(&mut report);
-            report["execution"]["error"] = error.as_str().into();
-            exit = *code;
+            exit = record_failure(&mut report, *code, error.clone());
         }
         // Classification may rebuild the report, so supplementary MLST is attached afterwards.
         report["mlst"] = match &mut mlst {
@@ -191,7 +188,7 @@ pub fn run_public() -> ExitCode {
                 exit = 4;
                 for report in &mut results {
                     if report["anim_execution"]["reference_component"].is_object()
-                        && report["execution"]["status"] == "complete"
+                        && retains_assignment(report)
                     {
                         report["execution"] = json!({"status": "incomplete", "stage": "anim_component_recheck", "error": error});
                         withhold(report);
@@ -202,16 +199,18 @@ pub fn run_public() -> ExitCode {
         if let Err(error) = workflow.finish() {
             exit = 4;
             for report in &mut results {
-                if report["execution"]["status"] == "complete" {
-                    report["execution"] =
-                        json!({"status": "incomplete", "stage": "package_recheck", "error": error});
-                    withhold(report);
+                if retains_assignment(report) {
+                    assembly::invalidate(report, "package_recheck", &error);
                 }
             }
         }
     }
     if v2::cancel_before_publication(&mut results, &CANCELLED) {
         exit = 1;
+    }
+    // Publication: a genomovar stands only if its parent is still the report's final call.
+    for report in &mut results {
+        crate::genomovar::recheck(report);
     }
     let value = if results.len() == 1 {
         results.remove(0)
@@ -381,7 +380,7 @@ pub(crate) fn withhold(report: &mut Value) {
     if report.get("call_basis").is_some() {
         report["call_basis"] = Value::Null;
     }
-    for key in ["species", "subspecies", "genomovar"] {
+    for key in ["species", "subspecies"] {
         if report.get(key).is_some() {
             report[key] = Value::Null;
         }
@@ -401,5 +400,44 @@ fn install_cancel_handlers() {
             libc::SIGTERM,
             cancel_signal as *const () as libc::sighandler_t,
         );
+    }
+}
+
+fn record_failure(report: &mut Value, code: u8, error: String) -> u8 {
+    report["execution"]["status"] = "incomplete".into();
+    if report["execution"]["stage"] != "genomovar" {
+        withhold(report);
+    }
+    report["execution"]["error"] = error.into();
+    code
+}
+
+/// Final integrity checks apply even when a supplementary stage failed.
+fn retains_assignment(report: &Value) -> bool {
+    report["execution"]["status"] == "complete"
+        || report["assignment"]["species_id"].is_string()
+        || report["species_id"].is_string()
+}
+
+#[cfg(test)]
+mod supplementary_integrity_tests {
+    use super::*;
+
+    #[test]
+    fn incomplete_supplement_still_requires_final_parent_integrity_checks() {
+        for mut report in [
+            json!({"assignment": {"status": "assigned", "species_id": "parent", "subspecies_id": "child"}}),
+            json!({"status": "assigned", "species_id": "parent", "subspecies_id": "child"}),
+        ] {
+            let error =
+                assembly::attach_result(&mut report, Err("supplement failed".into())).unwrap_err();
+            assert_eq!(record_failure(&mut report, 1, error), 1);
+            assert_eq!(report["genomovar"]["status"], "failed");
+            assert!(retains_assignment(&report));
+            assembly::invalidate(&mut report, "package_recheck", "changed package");
+            assert!(!retains_assignment(&report));
+            assert_eq!(report["species_id"], Value::Null);
+            assert_eq!(report["assignment"]["species_id"], Value::Null);
+        }
     }
 }

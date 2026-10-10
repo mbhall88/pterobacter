@@ -38,6 +38,14 @@ Vocabulary for the Terobacter tool, which classifies Enterobacter isolate assemb
 
 **Parent**: The taxon a reference belongs to for the purpose of finding competitors: its species, else its lineage, else the reference alone (reported as `untyped_reference`). Unmapped references are never merged into one parent.
 
+**Genomovar**: An informal chromosome ANI group within subspecies `ECTX-SS007`, from the frozen definition `2026-10-02-v1` (25 groups, 173 historical chromosome members). A genomovar call is a conditional operational match to one group, not a population boundary or a new taxon.
+
+**Genomovar parent**: The final species and subspecies call a genomovar depends on: actually assigned `ECTX-SP025` and `ECTX-SS007`, unvetoed, on the same query and package. A v2 call qualifies only when it is the unchanged v1 skani call. Distinct from the competitor **Parent** above.
+
+**Compatible group**: A genomovar group whose every member has reported skani ANI ≥99.50% to the query. A group with a missing member and no measured failure is incomplete, never excluded.
+
+**Rejection witness**: A measured member below 99.50% that excludes its group, listed in the group's `below_threshold`. Only a rejection witness excludes a rival; missing evidence never does.
+
 **Front end**: Code that turns user input into evidence and a decision into output: the command line today, possibly a browser or GUI later. Front ends call the decision logic and never contain it.
 
 **Development binary**: `terobacter-dev`, built only with the `dev` feature, hosting evaluation-only operations. It shares the implementation with `tero` and `terobacter` but is not part of the user-facing tool.

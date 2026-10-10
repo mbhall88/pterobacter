@@ -9,7 +9,7 @@ terobacter --reference-package reference --expected-sha256 MANIFEST_SHA256 --thr
 
 Use the SHA-256 of `portable.json` supplied through a trusted package handoff. Computing a digest from an untrusted package does not establish its origin. The command verifies every listed asset, package metadata and component membership before opening the embedded skani database, and checks the package again before writing results. A provisioned run needs no network or external executable. Archived search labels are provenance labels; no archived FASTA is opened.
 
-The default `--policy conservative-assembly-v1` uses the frozen species ANI ≥96%, subspecies ANI ≥98%, both AF ≥80% and subspecies margin ≥1 percentage point rules. The candidate `--policy conservative-assembly-anim-v2` runs the accepted skani-first rescue plan with embedded MUMmer4. Genomovar execution remains separate work. Historical MLST is optional under either policy. No query CheckM2 is run.
+The default `--policy conservative-assembly-v1` uses the frozen species ANI ≥96%, subspecies ANI ≥98%, both AF ≥80% and subspecies margin ≥1 percentage point rules. The candidate `--policy conservative-assembly-anim-v2` runs the accepted skani-first rescue plan with embedded MUMmer4. Historical MLST is optional under either policy. Both policies attach conditional genomovar results; see [genomovar.md](genomovar.md). No query CheckM2 is run.
 
 ## Input and sequence scope
 
@@ -43,7 +43,7 @@ Reports include authenticated data identity and version, policy ID, implementati
 | Public exit code | Meaning |
 |---|---|
 | 0 | All inputs completed, whether assigned or biologically withheld. |
-| 1 | Measurement, decision or output I/O failure. |
+| 1 | Measurement, decision, genomovar search or output I/O failure. |
 | 2 | Command-line usage error, including missing package/digest, invalid digest or zero threads. No report is available. |
 | 3 | Unreadable, empty, malformed or unsupported assembly input or input kind. |
 | 4 | Package authentication, database opening or final package recheck failed. |
