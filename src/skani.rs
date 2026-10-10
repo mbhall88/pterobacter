@@ -215,6 +215,23 @@ impl SkaniDatabase {
         })
     }
 
+    /// The pinned settings of a search of this database, in the form
+    /// `c<compression>_m<marker compression>_learnedANI_s<screen>_minAF<floor>_uncapped`.
+    pub fn settings_label(&self, settings: SearchSettings) -> String {
+        let ani = if regression::use_learned_ani(self.params.c, false, false, false) {
+            "learnedANI"
+        } else {
+            "unlearnedANI"
+        };
+        format!(
+            "c{}_m{}_{ani}_s{}_minAF{}_uncapped",
+            self.params.c,
+            self.params.marker_c,
+            settings.screen_percent(),
+            settings.reporting_floor_percent()
+        )
+    }
+
     pub fn search(
         &self,
         query: &Path,
@@ -222,10 +239,29 @@ impl SkaniDatabase {
         threads: usize,
         mode: SeedingMode,
     ) -> Result<SearchReport, SkaniError> {
+        let bytes = std::fs::read(query).map_err(error)?;
+        let label = query
+            .to_str()
+            .ok_or_else(|| error("query path is not UTF-8"))?;
+        self.search_bytes(label, &bytes, settings, threads, mode)
+    }
+
+    /// Search the exact bytes a workflow has validated and hashed. All supplied
+    /// records reach the pinned sketcher; its native 500-base floor is unchanged.
+    /// Keep the original query label: upstream uses it to break orientation ties.
+    /// The label is never opened as a file by this method.
+    pub fn search_bytes(
+        &self,
+        query_label: &str,
+        bytes: &[u8],
+        settings: SearchSettings,
+        threads: usize,
+        mode: SeedingMode,
+    ) -> Result<SearchReport, SkaniError> {
         if threads == 0 {
             return Err(error("thread count must be positive"));
         }
-        let (query, total_input_bases) = sketch_query(query, &self.params, mode)?;
+        let (query, total_input_bases) = sketch_query(query_label, bytes, &self.params, mode)?;
         let cp = settings.command_params();
         let learned = regression::use_learned_ani(self.params.c, false, false, false);
         let model = regression::get_model(self.params.c, learned);
@@ -387,15 +423,20 @@ fn validate_reference(
 }
 
 fn sketch_query(
-    path: &Path,
+    query_label: &str,
+    bytes: &[u8],
     params: &SketchParams,
     mode: SeedingMode,
 ) -> Result<(Sketch, usize), SkaniError> {
-    let name = path
-        .to_str()
-        .ok_or_else(|| error("query path is not UTF-8"))?;
-    let mut sketch = Sketch::new(params.marker_c, params.c, params.k, name.into(), false);
-    let mut reader = needletail::parse_fastx_file(path).map_err(error)?;
+    let mut sketch = Sketch::new(
+        params.marker_c,
+        params.c,
+        params.k,
+        query_label.into(),
+        false,
+    );
+    let mut reader =
+        needletail::parse_fastx_reader(std::io::Cursor::new(bytes.to_vec())).map_err(error)?;
     let mut total = 0_usize;
     while let Some(record) = reader.next() {
         let record = record.map_err(error)?;
@@ -403,11 +444,7 @@ fn sketch_query(
             return Err(error("query must be an assembly FASTA, not FASTQ"));
         }
         let seq = record.seq();
-        if seq.is_empty()
-            || !seq
-                .iter()
-                .all(|base| b"ACGTURYSWKMBDHVNacgturyswkmbdhvn".contains(base))
-        {
+        if !is_iupac_sequence(&seq) {
             return Err(error(
                 "query contains an empty sequence or a non-IUPAC nucleotide",
             ));
@@ -434,4 +471,12 @@ fn sketch_query(
         return Err(error("assembly contains no sequence"));
     }
     Ok((sketch, total))
+}
+
+/// Shared input validity predicate; parsing and errors remain with each caller.
+pub(crate) fn is_iupac_sequence(sequence: &[u8]) -> bool {
+    !sequence.is_empty()
+        && sequence
+            .iter()
+            .all(|base| b"ACGTURYSWKMBDHVNacgturyswkmbdhvn".contains(base))
 }

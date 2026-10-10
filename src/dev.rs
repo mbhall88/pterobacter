@@ -2,21 +2,18 @@
 //! package authentication, measurement and artifact verification). Compiled only with the `dev`
 //! feature, which the module declaration in `lib.rs` gates, so a default build or install never
 //! contains any of it. Failure produces no decision on stdout.
+use crate::cli::Directory;
 use crate::decision::{decide, decide_bound, Policy, V1_POLICY_ID};
 use crate::evidence::{sha256_hex, SavedEvidence};
 use crate::panel::Panel;
 use crate::reference::{
-    is_sha256, verify_package, PackageError, PackageErrorKind, PackageSource, RegistryPins,
-    VerifiedPackage,
+    is_sha256, verify_package, PackageError, PackageErrorKind, RegistryPins, VerifiedPackage,
 };
 use crate::rescue::{AnimRecords, BoundAnim, RescueInput, V2_POLICY_ID};
 use crate::skani::{SearchSettings, SeedingMode, SkaniDatabase};
 use clap::{Args, Parser, Subcommand};
 use serde_json::{json, Value};
-use std::collections::BTreeSet;
 use std::fmt::Display;
-use std::fs::{self, File};
-use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
@@ -360,75 +357,6 @@ fn reference_package(
     let package: VerifiedPackage =
         verify_package(&Directory(directory.to_path_buf()), expected_sha256, pins)?;
     Ok(serde_json::to_string_pretty(&package.to_value()).expect("a JSON value always serialises"))
-}
-
-/// Reads a package directory. Symbolic links and names that are not UTF-8 are refused.
-struct Directory(PathBuf);
-
-impl PackageSource for Directory {
-    fn open(&self, path: &str) -> io::Result<Option<Box<dyn Read + '_>>> {
-        let mut full = self.0.clone();
-        for segment in path.split('/') {
-            full.push(segment);
-            match fs::symlink_metadata(&full) {
-                Ok(metadata) if metadata.file_type().is_symlink() => {
-                    return Err(symlink_refused());
-                }
-                Ok(_) => {}
-                Err(error)
-                    if matches!(
-                        error.kind(),
-                        io::ErrorKind::NotFound | io::ErrorKind::NotADirectory
-                    ) =>
-                {
-                    return Ok(None);
-                }
-                Err(error) => return Err(error),
-            }
-        }
-        let file = File::open(full)?;
-        Ok(Some(Box::new(file)))
-    }
-
-    fn inventory(&self) -> io::Result<BTreeSet<String>> {
-        let mut found = BTreeSet::new();
-        list_files(&self.0, "", &mut found)?;
-        Ok(found)
-    }
-}
-
-fn list_files(directory: &Path, prefix: &str, found: &mut BTreeSet<String>) -> io::Result<()> {
-    for entry in fs::read_dir(directory)? {
-        let entry = entry?;
-        let name = entry.file_name().into_string().map_err(|_| {
-            io::Error::new(
-                io::ErrorKind::InvalidData,
-                "a file name in the package is not UTF-8",
-            )
-        })?;
-        let relative = if prefix.is_empty() {
-            name
-        } else {
-            format!("{prefix}/{name}")
-        };
-        let file_type = entry.file_type()?;
-        if file_type.is_symlink() {
-            return Err(symlink_refused());
-        }
-        if file_type.is_dir() {
-            list_files(&entry.path(), &relative, found)?;
-        } else {
-            found.insert(relative);
-        }
-    }
-    Ok(())
-}
-
-fn symlink_refused() -> io::Error {
-    io::Error::new(
-        io::ErrorKind::PermissionDenied,
-        "symbolic links are not allowed in a package",
-    )
 }
 
 fn read_bytes(path: &Path, expected: Option<&str>, pins: &mut Pins) -> Result<Vec<u8>, String> {

@@ -177,6 +177,27 @@ impl Thresholds {
         self.supplied.is_some()
     }
 
+    /// Policy settings and their canonical digest, available before any evidence is read.
+    pub fn policy_value(&self) -> serde_json::Value {
+        use super::{CONTRACT_REVISION, CUSTOM_UNVALIDATED, NOT_YET_VALIDATED, V2_POLICY_ID};
+        use serde_json::json;
+        let custom = self.is_custom();
+        let mut policy = json!({"policy_id": V2_POLICY_ID, "contract_revision": CONTRACT_REVISION,
+            "policy_mode": if custom { "custom" } else { "default_candidate" },
+            "validation_status": if custom { CUSTOM_UNVALIDATED } else { NOT_YET_VALIDATED },
+            "thresholds": self.to_json()});
+        // Hash effective settings and mode, retaining literal flags separately in the report.
+        let mut canonical = policy.clone();
+        canonical["thresholds"]
+            .as_object_mut()
+            .expect("threshold object")
+            .remove("supplied");
+        policy["settings_sha256"] = json!(crate::evidence::sha256_hex(
+            canonical.to_string().as_bytes()
+        ));
+        policy
+    }
+
     pub(crate) fn species(&self) -> &Exact {
         &self.species
     }

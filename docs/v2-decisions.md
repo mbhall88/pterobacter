@@ -91,8 +91,14 @@ terobacter-dev rescue-plan evidence.json --reference-inventory inventory.json \
   --species-ani 97
 ```
 
-The public aliases also parse these flags with `--assignment-policy conservative-assembly-anim-v2`; their default policy is v1. Whole-assembly classification is still pending, so a valid public request reports that limitation and exits nonzero without a result.
+The public aliases accept the same flags with `--policy conservative-assembly-anim-v2` and the equivalent `--assignment-policy` alias; their default policy is v1. They measure whole assemblies against an authenticated reference package and execute required ANIm pairs. Incomplete required work exits nonzero with a report that retains its selected settings and validation status. Custom results cannot establish a genomovar parent. See [native assembly classification](assembly.md).
+
+```sh
+tero --reference-package package --expected-sha256 HASH \
+  --policy conservative-assembly-anim-v2 --species-ani 95.5 --subspecies-ani 97 \
+  query.fa
+```
 
 ## Not covered here
 
-- Running skani or ANIm for a whole assembly, and nonzero exits for incomplete required work, belong to issue #11.
+- The native measurement and execution interfaces are documented in [assembly.md](assembly.md).

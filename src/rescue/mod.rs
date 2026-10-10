@@ -642,21 +642,7 @@ impl RescueInput {
     }
 
     fn policy_json(&self) -> Value {
-        let custom = self.thresholds.is_custom();
-        let mut policy = json!({"policy_id": V2_POLICY_ID, "contract_revision": CONTRACT_REVISION,
-            "policy_mode": if custom { "custom" } else { "default_candidate" },
-            "validation_status": if custom { CUSTOM_UNVALIDATED } else { NOT_YET_VALIDATED },
-            "thresholds": self.thresholds.to_json()});
-        // Hash effective settings and mode, retaining literal flags separately in the report.
-        let mut canonical = policy.clone();
-        canonical["thresholds"]
-            .as_object_mut()
-            .expect("threshold object")
-            .remove("supplied");
-        policy["settings_sha256"] = json!(crate::evidence::sha256_hex(
-            canonical.to_string().as_bytes()
-        ));
-        policy
+        self.thresholds.policy_value()
     }
 
     fn input_json(&self, anim: &BoundAnim) -> Value {

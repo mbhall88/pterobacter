@@ -76,10 +76,7 @@ fn help_shows_the_approved_interface_without_subcommands() {
     let output = command("tero").arg("--help").output().unwrap();
     let help = String::from_utf8(output.stdout).unwrap();
 
-    assert!(
-        help.contains("Usage: tero [OPTIONS] <ASSEMBLY>..."),
-        "{help}"
-    );
+    assert!(help.contains("Usage: tero [OPTIONS] --reference-package <REFERENCE_PACKAGE> --expected-sha256 <EXPECTED_SHA256> <ASSEMBLY>..."), "{help}");
     assert!(
         !help.contains("Commands:"),
         "the public command has no subcommands:\n{help}"
@@ -87,59 +84,13 @@ fn help_shows_the_approved_interface_without_subcommands() {
 }
 
 #[test]
-fn an_assembly_run_fails_loudly_until_classification_exists() {
+fn an_assembly_run_requires_an_explicit_reference_package_and_digest() {
     for name in COMMANDS {
         let output = command(name).arg("query.fa").output().unwrap();
-
-        assert_eq!(
-            output.status.code(),
-            Some(1),
-            "{name} must not look successful"
-        );
-        assert!(
-            output.stdout.is_empty(),
-            "{name} printed a result it did not compute"
-        );
-        assert!(
-            String::from_utf8_lossy(&output.stderr).contains("not implemented"),
-            "{name} should say why it stopped"
-        );
-    }
-}
-
-#[test]
-fn both_public_commands_validate_custom_settings_before_the_assembly_stub() {
-    for name in COMMANDS {
-        for flag in ["--species-ani=96", "--subspecies-ani=98"] {
-            let out = command(name).args([flag, "query.fa"]).output().unwrap();
-            assert!(!out.status.success());
-            assert!(out.stdout.is_empty());
-            assert!(String::from_utf8_lossy(&out.stderr).contains("v1 rejects threshold overrides"));
-        }
-        let out = command(name)
-            .args([
-                "--assignment-policy",
-                "conservative-assembly-anim-v2",
-                "--species-ani",
-                "79.99",
-                "query.fa",
-            ])
-            .output()
-            .unwrap();
-        assert!(!out.status.success());
-        assert!(String::from_utf8_lossy(&out.stderr).contains("80 <="));
-        let out = command(name)
-            .args([
-                "--assignment-policy",
-                "conservative-assembly-anim-v2",
-                "--species-ani",
-                "96",
-                "query.fa",
-            ])
-            .output()
-            .unwrap();
-        assert!(!out.status.success());
-        assert!(out.stdout.is_empty());
-        assert!(String::from_utf8_lossy(&out.stderr).contains("not implemented"));
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty());
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(stderr.contains("--reference-package"), "{stderr}");
+        assert!(stderr.contains("--expected-sha256"), "{stderr}");
     }
 }

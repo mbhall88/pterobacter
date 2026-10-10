@@ -2,7 +2,7 @@
 
 Classify Enterobacter isolate assemblies with one self-contained command.
 
-> **Status: development.** Saved-evidence v1 decisions are implemented. `tero <assembly>` does not classify yet, and no release version is selected. Production implementation, scientific acceptance and release are separate gates tracked in this repository's issues.
+> **Status: development.** Whole-assembly v1 and candidate v2 classification and saved-evidence decisions are implemented. No release version is selected. Production implementation, scientific acceptance and release are separate gates tracked in this repository's issues.
 
 Terobacter reports a species and subspecies call only when the approved rules support one. It shows the nearest-reference evidence either way, so a borderline result is never hidden behind a label.
 
@@ -15,7 +15,13 @@ tero [OPTIONS] <ASSEMBLY>...
 tero --version     # terobacter <version>
 ```
 
-There are no subcommands. Whole-assembly classification is not implemented yet: running it now exits with status 1 and says so. The public command does not take a reference package yet.
+There are no subcommands. Classify a whole assembly with a provisioned reference package and its trusted manifest digest:
+
+```sh
+tero --reference-package REFERENCE_DIR --expected-sha256 MANIFEST_SHA256 --threads 4 isolate.fa > isolate.json
+```
+
+The default policy is `conservative-assembly-v1`. Use `--policy conservative-assembly-anim-v2` for the candidate ANIm rescue branch; it requires a separate authenticated FASTA component when the rescue plan requests alignments. Every supplied FASTA record is retained, including plasmids and drafts. JSON records lengths, sequence and input byte hashes, the authenticated package identity, engine profile, measurements and the decision. Optional historical MLST runs when `--mlst-package` and `--mlst-expected-sha256` are supplied, and never changes classification. See [whole-assembly classification](docs/assembly.md) for input rules, partial reports and exit codes.
 
 ## Build, test, install
 
@@ -50,7 +56,7 @@ A package converted from the version 1 format carries the version 1 `portable.js
 
 `--reference-package` authenticates the package in the same way, then requires the evidence to be bound to it. The evidence's reference package digest must equal the verified manifest digest, or the digest of the attested version 1 manifest it was converted from. The evidence must cover the whole primary component. Each row must give what the package gives for its reference: the species and subspecies with their display names, the name status of the more specific of the two, the role (`type_anchor` or `diversity`), and no lineage. Contradictory evidence is refused, never corrected. The two flags must be given together. Package binding applies to v1 decisions only; `--policy conservative-assembly-anim-v2` refuses `--reference-package`. Without `--reference-package` the decision reports `reference_package.status` as `not_verified`.
 
-### Exit codes
+### Development exit codes
 
 | Code | Meaning |
 |---|---|
@@ -80,8 +86,8 @@ See [the method amendment](docs/contracts/P1-ANIM-MUMMER4-r1.md) and [P4a-r3 com
 
 | Path | Role |
 |---|---|
-| `src/evidence.rs`, `src/annotations.rs`, `src/reference/`, `src/decision.rs` | Pure decision logic. Package bytes arrive through a port, so there is no file, terminal or process code. |
-| `src/cli.rs`, `src/dev.rs` | Argument parsing, files and exit codes for the public and development commands. |
+| `src/evidence.rs`, `src/annotations.rs`, `src/reference/`, `src/decision.rs`, `src/mlst/` | Pure decision and typing logic. Package bytes arrive through a port, so there is no file, terminal or process code. |
+| `src/cli.rs`, `src/cli/assembly.rs`, `src/cli/mlst.rs`, `src/dev.rs` | Argument parsing, files and exit codes for the public and development commands. |
 | `src/bin/` | Thin entry points for `tero`, `terobacter` and `terobacter-dev`. |
 | `tests/` | Tests at the decision, command-line and packaging seams, with fixtures. |
 | `docs/adr/` | Decisions and their reasons. |
