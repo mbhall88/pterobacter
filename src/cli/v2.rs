@@ -81,6 +81,7 @@ impl V2Settings {
 }
 pub struct V2Context<'a> {
     pub settings: &'a V2Settings,
+    pub thresholds: &'a crate::rescue::Thresholds,
     pub query_ordinal: usize,
     pub cancelled: &'a AtomicBool,
 }

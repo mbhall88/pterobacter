@@ -279,7 +279,7 @@ impl AssemblyWorkflow {
             saved.clone(),
             self.panel(&saved)?,
             &[],
-            crate::rescue::Thresholds::standard(),
+            context.thresholds.clone(),
         )
         .map_err(|e| e.to_string())?;
         report["execution"]["stage"] = "anim".into();

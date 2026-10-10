@@ -81,7 +81,7 @@ impl Pair {
             .all(|o| o.is_some_and(|o| o.finished()))
     }
 
-    fn strict(&self, threshold: thresholds::Exact) -> bool {
+    fn strict(&self, threshold: &thresholds::Exact) -> bool {
         [self.qr, self.rq]
             .iter()
             .all(|o| o.is_some_and(|o| o.strict(threshold)))
@@ -572,7 +572,7 @@ impl RescueInput {
                 let by_anim: Vec<_> = pair
                     .iter()
                     .flat_map(|p| [("QR", p.qr), ("RQ", p.rq)])
-                    .filter(|(_, o)| o.is_some_and(|o| o.challenges(t.conflict())))
+                    .filter(|(_, o)| o.is_some_and(|o| o.challenges(&t.conflict())))
                     .map(|(name, _)| name)
                     .collect();
                 if by_skani || !by_anim.is_empty() {
@@ -642,11 +642,7 @@ impl RescueInput {
     }
 
     fn policy_json(&self) -> Value {
-        let custom = self.thresholds.is_custom();
-        json!({"policy_id": V2_POLICY_ID, "contract_revision": CONTRACT_REVISION,
-            "policy_mode": if custom { "custom" } else { "default_candidate" },
-            "validation_status": if custom { CUSTOM_UNVALIDATED } else { NOT_YET_VALIDATED },
-            "thresholds": self.thresholds.to_json()})
+        self.thresholds.policy_value()
     }
 
     fn input_json(&self, anim: &BoundAnim) -> Value {
