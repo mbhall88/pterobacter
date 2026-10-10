@@ -21,7 +21,7 @@ There are no subcommands. Classify a whole assembly with a provisioned reference
 tero --reference-package REFERENCE_DIR --expected-sha256 MANIFEST_SHA256 --threads 4 isolate.fa > isolate.json
 ```
 
-The default policy is `conservative-assembly-v1`. Use `--policy conservative-assembly-anim-v2` for the candidate ANIm rescue branch; it requires a separate authenticated FASTA component when the rescue plan requests alignments. Every supplied FASTA record is retained, including plasmids and drafts. JSON records lengths, sequence and input byte hashes, the authenticated package identity, engine profile, measurements and the decision. Optional historical MLST runs when `--mlst-package` and `--mlst-expected-sha256` are supplied, and never changes classification. See [whole-assembly classification](docs/assembly.md) for input rules, partial reports and exit codes.
+The default policy is `conservative-assembly-v1`. Use `--policy conservative-assembly-anim-v2` for the candidate ANIm rescue branch; it requires a separate authenticated FASTA component when the rescue plan requests alignments. Every supplied FASTA record is retained, including plasmids and drafts. JSON records lengths, sequence and input byte hashes, the authenticated package identity, engine profile, measurements and the decision. Optional historical MLST runs when `--mlst-package` and `--mlst-expected-sha256` are supplied, and never changes classification. `--jobs` analyses several assemblies at once, `--output` writes the report to a new file, and `--anim-cache` reuses verified v2 alignments across runs. A provisioned run needs no network. See [whole-assembly classification](docs/assembly.md) for input rules, batches, caching, partial reports and exit codes.
 
 ## Build, test, install
 
