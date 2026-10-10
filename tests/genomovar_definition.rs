@@ -1,12 +1,16 @@
 //! The frozen genomovar definition `2026-10-02-v1` as an authenticated package exposes it: 25
 //! groups of 173 historical chromosome members under `ECTX-SS007`, pinned by a canonical
-//! membership digest. A package with any other definition supports no genomovar call.
+//! membership digest and the frozen source hashes of its members. A package with any other
+//! definition supports no genomovar call.
 mod common;
 
 use std::collections::BTreeMap;
 
 use common::package::Synthetic;
-use terobacter::genomovar::{Definition, DEFINITION_VERSION, FROZEN_MEMBERSHIP_SHA256};
+use terobacter::genomovar::{
+    member_source_sha256, Definition, DEFINITION_VERSION, FROZEN_MEMBERSHIP_SHA256,
+    FROZEN_MEMBER_SOURCE_SHA256,
+};
 
 fn groups(spec: &[(&str, &[&str])]) -> BTreeMap<String, Vec<String>> {
     spec.iter()
@@ -19,6 +23,8 @@ fn a_package_without_the_frozen_definition_supports_no_genomovar() {
     let package = Synthetic::new().verify().unwrap();
     let error = Definition::from_package(&package).unwrap_err().to_string();
     assert!(error.contains("frozen genomovar definition"), "{error}");
+    let component = package.component("genomovar_chromosome").unwrap();
+    assert_ne!(member_source_sha256(component), FROZEN_MEMBER_SOURCE_SHA256);
 }
 
 #[test]
@@ -56,6 +62,7 @@ fn the_frozen_package_carries_the_pinned_definition() {
         &sha256,
     )
     .unwrap();
+    // Opening the definition checks the membership and member source digests.
     let definition = workflow.genomovar_definition().unwrap();
     assert_eq!(definition.version(), DEFINITION_VERSION);
     assert_eq!(definition.groups().len(), 25);

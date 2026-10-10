@@ -45,15 +45,23 @@ fn v1(input: &Value, warnings: &[&str]) -> Value {
         let text = p1::warnings_text(&evidence, warnings);
         evidence.with_annotations(None, Some(&text), None).unwrap()
     };
-    let mut value = decide(&evidence, &Policy::v1()).to_value().clone();
-    // The native route binds evidence to the authenticated package, as `decide_bound` reports.
-    value["reference_package"] =
+    bound(decide(&evidence, &Policy::v1()).to_value().clone())
+}
+
+/// The binding a native route adds once it decides against the authenticated package, as
+/// `decide_bound` reports it.
+fn bound(mut decision: Value) -> Value {
+    decision["reference_package"] =
         json!({"status": "verified", "package": {"manifest_sha256": p1::PACKAGE_SHA256}});
-    value
+    decision
+}
+
+fn unbound_v2(input: &Value) -> Value {
+    p1::decide(&json!({"id": "parent", "input": input})).unwrap()
 }
 
 fn v2(input: &Value) -> Value {
-    p1::decide(&json!({"id": "parent", "input": input})).unwrap()
+    bound(unbound_v2(input))
 }
 
 /// Whether the parent would let an otherwise unique, fully measured group be assigned.
@@ -150,6 +158,21 @@ fn a_v2_skani_call_bridges_to_the_same_v1_parent() {
         (&parent.species_id, &parent.subspecies_id),
         (&legacy.species_id, &legacy.subspecies_id)
     );
+}
+
+#[test]
+fn a_v2_call_without_a_verified_package_binding_is_not_a_parent() {
+    // A pure v2 decision checks only its contract, not the package its evidence names.
+    let decision = unbound_v2(&group_a());
+    assert_eq!(decision["call_basis"], "skani");
+    assert!(!supports_genomovar(&GenomovarParent::from_report(
+        &decision
+    )));
+    let mut decision = v2(&group_a());
+    decision["reference_package"]["package"]["manifest_sha256"] = "c".repeat(64).into();
+    assert!(!supports_genomovar(&GenomovarParent::from_report(
+        &decision
+    )));
 }
 
 #[test]

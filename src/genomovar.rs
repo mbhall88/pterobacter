@@ -14,7 +14,7 @@ use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 
 use crate::evidence::Percent;
-use crate::reference::{Rank, VerifiedPackage};
+use crate::reference::{Rank, ReferenceComponent, VerifiedPackage};
 
 pub const POLICY_ID: &str = "p3a-genomovar-contract-r1";
 pub const DEFINITION_VERSION: &str = "2026-10-02-v1";
@@ -35,6 +35,9 @@ pub const FROZEN_GROUP_COUNT: usize = 25;
 pub const FROZEN_MEMBER_COUNT: usize = 173;
 pub const FROZEN_MEMBERSHIP_SHA256: &str =
     "1a2202dde4e0afcf78a89c1e6c084563169bd5cdea0f102da8113b1a87ebf0ab";
+/// The [`member_source_sha256`] of the frozen historical chromosome sources.
+pub const FROZEN_MEMBER_SOURCE_SHA256: &str =
+    "757cfd93459593edb03a16fd7a150ce55c552ac8fe9e83c959bc897d4461b11d";
 
 const ANI_MINIMUM: Percent = Percent::from_hundredths(9950);
 const AF_MINIMUM: Percent = Percent::from_whole(80);
@@ -88,7 +91,8 @@ impl Definition {
     /// The frozen definition, exactly as the authenticated package carries it: every genomovar
     /// concept at version [`DEFINITION_VERSION`] under `ECTX-SS007`, whose members are exactly
     /// the references of the `genomovar_chromosome` component, with the pinned group count,
-    /// member count and membership digest. Any other definition is refused, not adapted.
+    /// member count, membership digest and member source digest. Any other definition is
+    /// refused, not adapted.
     pub fn from_package(package: &VerifiedPackage) -> Result<Self, GenomovarError> {
         let refuse = |why: String| {
             reject(format!(
@@ -144,6 +148,10 @@ impl Definition {
                 "the {COMPONENT_ID} references are not the definition members"
             ));
         }
+        let sources = member_source_sha256(component);
+        if sources != FROZEN_MEMBER_SOURCE_SHA256 {
+            return refuse(format!("member source SHA-256 {sources}"));
+        }
         if definition.groups.len() != FROZEN_GROUP_COUNT
             || definition.member_count() != FROZEN_MEMBER_COUNT
             || definition.membership_sha256() != FROZEN_MEMBERSHIP_SHA256
@@ -188,6 +196,18 @@ impl Definition {
     }
 }
 
+/// SHA-256 of `reference_id<TAB>source_sha256<LF>` lines over a component's references, in ID
+/// order: the identity of the sequences the definition was clustered on.
+pub fn member_source_sha256(component: &ReferenceComponent) -> String {
+    let mut lines: Vec<_> = component
+        .references
+        .iter()
+        .map(|r| format!("{}\t{}\n", r.reference_id, r.source.sha256))
+        .collect();
+    lines.sort();
+    format!("{:x}", Sha256::digest(lines.concat()))
+}
+
 /// One reported skani comparison between the query and a definition member.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -220,10 +240,11 @@ impl GenomovarParent {
     /// Read the parent from a final v1 or v2 decision, or a report built on one. Anything else
     /// gives an empty, unverified parent.
     ///
-    /// A v1 call is verified when the decision was bound to the authenticated package its
-    /// evidence names. A v2 call is verified only across the bridge to v1: default thresholds,
-    /// a complete evaluation, a skani call basis, and the same species and subspecies as the v1
-    /// result on the same evidence. An ANIm rescue never qualifies, and its subspecies is null.
+    /// Either call is verified only when the decision was bound to the authenticated package
+    /// its evidence names (`reference_package.status: verified`). A v2 call must also cross the
+    /// bridge to v1: default thresholds, a complete evaluation, a skani call basis, and the same
+    /// species and subspecies as the v1 result on the same evidence. An ANIm rescue never
+    /// qualifies, and its subspecies is null.
     pub fn from_report(report: &Value) -> Self {
         let text = |v: &Value| v.as_str().unwrap_or_default().to_owned();
         let id = |v: &Value| v.as_str().filter(|s| !s.is_empty()).map(str::to_owned);
@@ -233,6 +254,10 @@ impl GenomovarParent {
                 .unwrap_or_else(|| vec!["missing_veto_record".into()])
         };
         let input = &report["input"];
+        // Decided against the authenticated package its evidence names.
+        let package = &report["reference_package"];
+        let bound = package["status"] == "verified"
+            && package["package"]["manifest_sha256"] == input["reference_package_sha256"];
         let mut parent = GenomovarParent {
             query_sha256: text(&input["query_sha256"]),
             package_sha256: text(&input["reference_package_sha256"]),
@@ -241,15 +266,12 @@ impl GenomovarParent {
         };
         if report["policy"]["id"] == crate::decision::V1_POLICY_ID {
             let a = &report["assignment"];
-            let package = &report["reference_package"];
             parent.policy_id = crate::decision::V1_POLICY_ID.into();
             parent.status = text(&a["status"]);
             parent.species_id = id(&a["species_id"]);
             parent.subspecies_id = id(&a["subspecies_id"]);
             parent.blocking_reasons = reasons(&report["blocking_reasons"]);
-            parent.verified = report["evaluation_status"] == "completed"
-                && package["status"] == "verified"
-                && package["package"]["manifest_sha256"] == input["reference_package_sha256"];
+            parent.verified = bound && report["evaluation_status"] == "completed";
         } else if report["policy_id"] == crate::rescue::V2_POLICY_ID {
             let legacy = &report["legacy_v1_result"];
             parent.policy_id = crate::rescue::V2_POLICY_ID.into();
@@ -257,7 +279,8 @@ impl GenomovarParent {
             parent.species_id = id(&report["species_id"]);
             parent.subspecies_id = id(&report["subspecies_id"]);
             parent.blocking_reasons = reasons(&report["reasons"]);
-            parent.verified = report["policy_mode"] == "default_candidate"
+            parent.verified = bound
+                && report["policy_mode"] == "default_candidate"
                 && report["evaluation_status"] == "complete"
                 && report["call_basis"] == "skani"
                 && legacy["policy_id"] == crate::decision::V1_POLICY_ID
