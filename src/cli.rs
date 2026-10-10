@@ -104,12 +104,7 @@ pub fn run_public() -> ExitCode {
             exit = 4;
             for report in &mut results {
                 if report["execution"]["status"] == "complete" {
-                    report["execution"] =
-                        json!({"status": "incomplete", "stage": "package_recheck", "error": error});
-                    report["assignment"] = json!({"status": "not_evaluated", "species_id": null, "species_name": null,
-                        "subspecies_id": null, "subspecies_name": null, "lineage_id": null, "genomovar_id": null});
-                    report["species"] = Value::Null;
-                    report["subspecies"] = Value::Null;
+                    assembly::invalidate(report, "package_recheck", &error);
                 }
             }
         }

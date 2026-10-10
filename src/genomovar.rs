@@ -203,7 +203,7 @@ pub struct MemberRow {
 
 /// The parent call the genomovar depends on, as read from a final decision.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct Parent {
+pub struct GenomovarParent {
     pub policy_id: String,
     pub status: String,
     pub species_id: Option<String>,
@@ -216,7 +216,7 @@ pub struct Parent {
     pub scope_outcome: String,
 }
 
-impl Parent {
+impl GenomovarParent {
     /// Read the parent from a final v1 or v2 decision, or a report built on one. Anything else
     /// gives an empty, unverified parent.
     ///
@@ -233,11 +233,11 @@ impl Parent {
                 .unwrap_or_else(|| vec!["missing_veto_record".into()])
         };
         let input = &report["input"];
-        let mut parent = Parent {
+        let mut parent = GenomovarParent {
             query_sha256: text(&input["query_sha256"]),
             package_sha256: text(&input["reference_package_sha256"]),
             scope_outcome: text(&report["scope_assessment"]["outcome"]),
-            ..Parent::default()
+            ..GenomovarParent::default()
         };
         if report["policy"]["id"] == crate::decision::V1_POLICY_ID {
             let a = &report["assignment"];
@@ -278,7 +278,7 @@ impl Parent {
 }
 
 /// The gates the parent alone decides. Any of them makes a genomovar search pointless.
-fn parent_reasons(parent: &Parent) -> Vec<&'static str> {
+fn parent_reasons(parent: &GenomovarParent) -> Vec<&'static str> {
     let mut reasons = Vec::new();
     if parent.status != "assigned"
         || parent.species_id.as_deref() != Some(PARENT_SPECIES_ID)
@@ -299,7 +299,10 @@ fn parent_reasons(parent: &Parent) -> Vec<&'static str> {
 
 /// The withheld section for a query whose genomovar search is not run: the parent is not
 /// eligible, or the package cannot support a call. `None` means the search should run.
-pub fn before_search(parent: &Parent, definition: Result<&Definition, &str>) -> Option<Value> {
+pub fn before_search(
+    parent: &GenomovarParent,
+    definition: Result<&Definition, &str>,
+) -> Option<Value> {
     let mut reasons = parent_reasons(parent);
     let detail = definition.err();
     if detail.is_some() {
@@ -314,7 +317,7 @@ pub fn before_search(parent: &Parent, definition: Result<&Definition, &str>) -> 
 }
 
 /// The section for a genomovar search that failed: an execution failure, not a negative result.
-pub fn failed(parent: &Parent, error: &str) -> Value {
+pub fn failed(parent: &GenomovarParent, error: &str) -> Value {
     json!({"policy_id": POLICY_ID, "status": "failed", "genomovar_id": null,
         "reasons": ["incomplete_or_unbound_execution"], "detail": error,
         "compatible_groups": [], "incomplete_groups": [], "groups": [], "warnings": [],
@@ -329,7 +332,7 @@ pub fn recheck(report: &mut Value) {
     let section = &report["genomovar"];
     let mut assigned = section["genomovar_id"].as_str().map(str::to_owned);
     if assigned.is_some() {
-        let parent = Parent::from_report(report);
+        let parent = GenomovarParent::from_report(report);
         let complete = report
             .get("execution")
             .is_none_or(|e| e["status"] == "complete");
@@ -362,7 +365,7 @@ pub fn recheck(report: &mut Value) {
 /// The default context is empty and fails closed.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Context {
-    pub parent: Parent,
+    pub parent: GenomovarParent,
     pub input_kind: String,
     pub query_scope: String,
     pub reference_scope: String,
@@ -623,6 +626,6 @@ pub fn assess(
     })
 }
 
-/// v1, and the v2 successor when its call is the unchanged v1 skani call (see [`Parent`]).
+/// v1, and the v2 successor when its call is the unchanged v1 skani call (see [`GenomovarParent`]).
 pub const ACCEPTED_PARENT_POLICIES: [&str; 2] =
     [crate::decision::V1_POLICY_ID, crate::rescue::V2_POLICY_ID];

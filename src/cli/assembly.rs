@@ -10,7 +10,7 @@ use crate::skani::{SearchReport, SearchSettings, SeedingMode, SkaniDatabase};
 use std::cell::OnceCell;
 use std::path::PathBuf;
 
-use crate::genomovar::{self, Context, Definition, MemberRow, Parent};
+use crate::genomovar::{self, Context, Definition, GenomovarParent, MemberRow};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// Authenticated primary panel and its embedded measurement engine. Open once
@@ -124,10 +124,11 @@ impl AssemblyWorkflow {
         complete["execution"] = json!({"status": "incomplete", "stage": "genomovar"});
         let section = match &self.genomovar {
             Ok(definition) => self.genomovar(definition, query_label, bytes, threads, &complete),
-            Err(why) => Ok(
-                genomovar::before_search(&Parent::from_report(&complete), Err(why))
-                    .expect("an unsupported definition is never searched"),
-            ),
+            Err(why) => Ok(genomovar::before_search(
+                &GenomovarParent::from_report(&complete),
+                Err(why),
+            )
+            .expect("an unsupported definition is never searched")),
         };
         let result = match section {
             Ok(section) => {
@@ -136,8 +137,11 @@ impl AssemblyWorkflow {
                 Ok(())
             }
             Err(error) => {
-                complete["genomovar"] = genomovar::failed(&Parent::from_report(&complete), &error);
-                Err(format!("genomovar search failed: {error}"))
+                complete["genomovar"] =
+                    genomovar::failed(&GenomovarParent::from_report(&complete), &error);
+                let error = format!("genomovar search failed: {error}");
+                invalidate(&mut complete, "genomovar", &error);
+                Err(error)
             }
         };
         *report = complete;
@@ -159,7 +163,7 @@ impl AssemblyWorkflow {
         threads: usize,
         report: &Value,
     ) -> Result<Value, String> {
-        let parent = Parent::from_report(report);
+        let parent = GenomovarParent::from_report(report);
         if let Some(section) = genomovar::before_search(&parent, Ok(definition)) {
             return Ok(section);
         }
@@ -344,4 +348,14 @@ impl AssemblyWorkflow {
             "duplicate_rows_collapsed": 0, "nearest_reference_ids": nearest, "ranked_reference_evidence": rows}),
         )
     }
+}
+
+/// Withdraws a report's call after an execution failure at `stage`, keeping its measurement
+/// and evidence. An incomplete report never carries an assignment.
+pub fn invalidate(report: &mut Value, stage: &str, error: &str) {
+    report["execution"] = json!({"status": "incomplete", "stage": stage, "error": error});
+    report["assignment"] = json!({"status": "not_evaluated", "species_id": null, "species_name": null,
+        "subspecies_id": null, "subspecies_name": null, "lineage_id": null, "genomovar_id": null});
+    report["species"] = Value::Null;
+    report["subspecies"] = Value::Null;
 }

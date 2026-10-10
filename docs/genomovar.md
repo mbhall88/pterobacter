@@ -44,6 +44,7 @@ The search runs only for an eligible parent on a package with the frozen definit
 | `unsupported_scope` | Not a whole assembly, or not the historical chromosome references. |
 | `unsupported_method_or_definition` | Not the pinned engine, settings or frozen definition. `detail` says which. |
 | `incomplete_or_unbound_execution` | The search did not complete, or its query or package differs from the parent's. |
+| `diagnostic_only_no_deployment_call` | The contract's leave-one-out diagnostic mode. The command never runs it. |
 | `overlapping_definitions` | Two or more groups are compatible. |
 | `incomplete_alternative_or_member_evidence` | A group has a missing member and no measured failure. |
 | `no_compatible_definition` | No group is compatible and none is incomplete. This is not a new genomovar. |
@@ -54,7 +55,7 @@ The search runs only for an eligible parent on a package with the frozen definit
 
 Immediately before writing reports, the command rechecks each assigned genomovar against its report's final parent. The report must still be complete, and its parent call must be unchanged, eligible and bound to the same query and package. A later failure, such as the final package check, clears the genomovar with `parent_withdrawn_before_publication` and keeps the evidence.
 
-A genomovar search failure is an execution failure, not a negative result. The report keeps the parent call, sets `execution.status: incomplete` at stage `genomovar` with a `failed` genomovar section, and the command exits 1.
+A genomovar search failure is an execution failure, not a negative result. As with any other failed stage, the report sets `execution.status: incomplete` at stage `genomovar` with null assignment fields. It keeps the measurement, the evidence and a `failed` genomovar section that records the parent call, and the command exits 1.
 
 ## Limits
 

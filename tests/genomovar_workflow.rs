@@ -13,7 +13,7 @@ use assert_cmd::cargo::cargo_bin_cmd;
 use common::native;
 use common::package::sha256_hex;
 use serde_json::{json, Value};
-use terobacter::cli::assembly::AssemblyWorkflow;
+use terobacter::cli::assembly::{invalidate, AssemblyWorkflow};
 use terobacter::genomovar::{recheck, Definition, DEFINITION_VERSION, SEARCH_PARAMETERS};
 
 const GV01: &str = "ECTX-GV-2026-01-01-v1-GV01";
@@ -181,6 +181,35 @@ fn a_late_parent_veto_clears_the_genomovar_before_publication() {
             .contains(&json!("parent_withdrawn_before_publication")));
         // The compatible evidence is kept.
         assert_eq!(section["compatible_groups"], json!([GV01]));
+    }
+}
+
+#[test]
+fn an_invalidated_report_publishes_neither_its_call_nor_its_genomovar() {
+    // A failed genomovar search or final package check invalidates the whole call.
+    for stage in ["genomovar", "package_recheck"] {
+        let mut report = analyse(&[], |_| {});
+        report["species"] = json!({"id": "ECTX-SP025"});
+        report["subspecies"] = json!({"id": "ECTX-SS007"});
+        report["evidence"] = json!({"kept": true});
+        invalidate(&mut report, stage, "failed");
+        recheck(&mut report);
+        assert_eq!(
+            report["execution"],
+            json!({"status": "incomplete", "stage": stage, "error": "failed"})
+        );
+        assert_eq!(report["assignment"]["status"], "not_evaluated");
+        for field in ["species_id", "subspecies_id", "genomovar_id"] {
+            assert_eq!(report["assignment"][field], Value::Null, "{field}");
+        }
+        assert_eq!(report["species"], Value::Null);
+        assert_eq!(report["subspecies"], Value::Null);
+        assert_eq!(report["evidence"], json!({"kept": true}));
+        assert_eq!(report["genomovar"]["genomovar_id"], Value::Null);
+        assert!(report["genomovar"]["reasons"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("parent_withdrawn_before_publication")));
     }
 }
 

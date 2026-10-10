@@ -10,7 +10,9 @@ use common::p1;
 use serde_json::{json, Value};
 use terobacter::decision::{decide, Policy};
 use terobacter::evidence::SavedEvidence;
-use terobacter::genomovar::{assess, Context, Definition, MemberRow, Parent, DEFINITION_VERSION};
+use terobacter::genomovar::{
+    assess, Context, Definition, GenomovarParent, MemberRow, DEFINITION_VERSION,
+};
 
 const SP: &str = "ECTX-SP025";
 const SS: &str = "ECTX-SS007";
@@ -55,7 +57,7 @@ fn v2(input: &Value) -> Value {
 }
 
 /// Whether the parent would let an otherwise unique, fully measured group be assigned.
-fn supports_genomovar(parent: &Parent) -> bool {
+fn supports_genomovar(parent: &GenomovarParent) -> bool {
     let definition = Definition::new(
         DEFINITION_VERSION,
         BTreeMap::from([("GV01".to_owned(), vec!["m".to_owned()])]),
@@ -86,7 +88,7 @@ fn supports_genomovar(parent: &Parent) -> bool {
 
 #[test]
 fn an_assigned_v1_group_a_call_is_an_eligible_parent() {
-    let parent = Parent::from_report(&v1(&group_a(), &[]));
+    let parent = GenomovarParent::from_report(&v1(&group_a(), &[]));
     assert_eq!(parent.policy_id, "conservative-assembly-v1");
     assert_eq!(parent.species_id.as_deref(), Some(SP));
     assert_eq!(parent.subspecies_id.as_deref(), Some(SS));
@@ -99,15 +101,19 @@ fn an_assigned_v1_group_a_call_is_an_eligible_parent() {
 fn a_v1_call_without_a_verified_package_binding_is_not_a_parent() {
     let mut decision = v1(&group_a(), &[]);
     decision["reference_package"] = json!({"status": "not_verified"});
-    assert!(!supports_genomovar(&Parent::from_report(&decision)));
+    assert!(!supports_genomovar(&GenomovarParent::from_report(
+        &decision
+    )));
     let mut decision = v1(&group_a(), &[]);
     decision["reference_package"]["package"]["manifest_sha256"] = "c".repeat(64).into();
-    assert!(!supports_genomovar(&Parent::from_report(&decision)));
+    assert!(!supports_genomovar(&GenomovarParent::from_report(
+        &decision
+    )));
 }
 
 #[test]
 fn a_vetoed_v1_call_is_not_a_parent() {
-    let parent = Parent::from_report(&v1(&group_a(), &["concern"]));
+    let parent = GenomovarParent::from_report(&v1(&group_a(), &["concern"]));
     assert_eq!(parent.status, "unresolved");
     assert_eq!(parent.blocking_reasons, vec!["external_problem_warning"]);
     assert!(!supports_genomovar(&parent));
@@ -118,14 +124,14 @@ fn another_subspecies_or_a_species_only_call_is_not_a_parent() {
     let mut other = group_a();
     other["references"][0]["subspecies"] = "ECTX-SS001".into();
     other["references"][1]["subspecies"] = SS.into();
-    let parent = Parent::from_report(&v1(&other, &[]));
+    let parent = GenomovarParent::from_report(&v1(&other, &[]));
     assert_eq!(parent.subspecies_id.as_deref(), Some("ECTX-SS001"));
     assert!(!supports_genomovar(&parent));
 
     // Within the one-point subspecies margin: species assigned, subspecies withheld.
     let mut close = group_a();
     close["references"][1]["ani"] = "99.5".into();
-    let parent = Parent::from_report(&v1(&close, &[]));
+    let parent = GenomovarParent::from_report(&v1(&close, &[]));
     assert_eq!(parent.species_id.as_deref(), Some(SP));
     assert_eq!(parent.subspecies_id, None);
     assert!(!supports_genomovar(&parent));
@@ -135,11 +141,11 @@ fn another_subspecies_or_a_species_only_call_is_not_a_parent() {
 fn a_v2_skani_call_bridges_to_the_same_v1_parent() {
     let decision = v2(&group_a());
     assert_eq!(decision["call_basis"], "skani");
-    let parent = Parent::from_report(&decision);
+    let parent = GenomovarParent::from_report(&decision);
     assert_eq!(parent.policy_id, "conservative-assembly-anim-v2");
     assert_eq!(parent.subspecies_id.as_deref(), Some(SS));
     assert!(supports_genomovar(&parent));
-    let legacy = Parent::from_report(&v1(&group_a(), &[]));
+    let legacy = GenomovarParent::from_report(&v1(&group_a(), &[]));
     assert_eq!(
         (&parent.species_id, &parent.subspecies_id),
         (&legacy.species_id, &legacy.subspecies_id)
@@ -152,7 +158,7 @@ fn a_rescued_species_has_null_subspecies_and_no_genomovar_parent() {
     assert_eq!(decision["call_basis"], "ANIm_assisted");
     assert_eq!(decision["species_id"], SP);
     assert_eq!(decision["subspecies_id"], Value::Null);
-    let parent = Parent::from_report(&decision);
+    let parent = GenomovarParent::from_report(&decision);
     assert_eq!(parent.status, "assigned");
     assert_eq!(parent.subspecies_id, None);
     assert!(!supports_genomovar(&parent));
@@ -160,14 +166,16 @@ fn a_rescued_species_has_null_subspecies_and_no_genomovar_parent() {
     // Even a rescue that somehow carried the subspecies is not the unchanged v1 call.
     let mut forged = decision.clone();
     forged["subspecies_id"] = SS.into();
-    assert!(!supports_genomovar(&Parent::from_report(&forged)));
+    assert!(!supports_genomovar(&GenomovarParent::from_report(&forged)));
 }
 
 #[test]
 fn a_v2_call_that_disagrees_with_its_v1_result_is_not_a_parent() {
     let mut decision = v2(&group_a());
     decision["legacy_v1_result"]["subspecies_id"] = "ECTX-SS001".into();
-    assert!(!supports_genomovar(&Parent::from_report(&decision)));
+    assert!(!supports_genomovar(&GenomovarParent::from_report(
+        &decision
+    )));
 }
 
 #[test]
@@ -177,7 +185,9 @@ fn custom_v2_thresholds_are_not_a_parent_even_at_default_values() {
     let decision = v2(&input);
     assert_eq!(decision["policy_mode"], "custom");
     assert_eq!(decision["subspecies_id"], SS);
-    assert!(!supports_genomovar(&Parent::from_report(&decision)));
+    assert!(!supports_genomovar(&GenomovarParent::from_report(
+        &decision
+    )));
 }
 
 #[test]
@@ -186,7 +196,9 @@ fn a_v2_method_veto_withholds_the_parent() {
     input["anim"] = json!({"A1": p1::reciprocal("99.9", "70", "70")});
     let decision = v2(&input);
     assert_eq!(decision["status"], "unresolved", "{decision}");
-    assert!(!supports_genomovar(&Parent::from_report(&decision)));
+    assert!(!supports_genomovar(&GenomovarParent::from_report(
+        &decision
+    )));
 }
 
 #[test]
@@ -195,6 +207,6 @@ fn an_unknown_report_shape_fails_closed() {
         json!({}),
         json!({"status": "assigned", "species_id": SP, "subspecies_id": SS}),
     ] {
-        assert!(!supports_genomovar(&Parent::from_report(&report)));
+        assert!(!supports_genomovar(&GenomovarParent::from_report(&report)));
     }
 }

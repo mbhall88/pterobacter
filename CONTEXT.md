@@ -44,7 +44,7 @@ Vocabulary for the Terobacter tool, which classifies Enterobacter isolate assemb
 
 **Compatible group**: A genomovar group whose every member has reported skani ANI ≥99.50% to the query. A group with a missing member and no measured failure is incomplete, never excluded.
 
-**Rejection witness**: A measured member below 99.50% that excludes its group. Only a rejection witness excludes a rival; missing evidence never does.
+**Rejection witness**: A measured member below 99.50% that excludes its group, listed in the group's `below_threshold`. Only a rejection witness excludes a rival; missing evidence never does.
 
 **Front end**: Code that turns user input into evidence and a decision into output: the command line today, possibly a browser or GUI later. Front ends call the decision logic and never contain it.
 

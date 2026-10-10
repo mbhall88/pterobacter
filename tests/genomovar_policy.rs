@@ -5,11 +5,13 @@
 use std::collections::BTreeMap;
 
 use serde_json::{json, Value};
-use terobacter::genomovar::{assess, Context, Definition, MemberRow, Parent, DEFINITION_VERSION};
+use terobacter::genomovar::{
+    assess, Context, Definition, GenomovarParent, MemberRow, DEFINITION_VERSION,
+};
 
 fn context() -> Context {
     Context {
-        parent: Parent {
+        parent: GenomovarParent {
             policy_id: "conservative-assembly-v1".into(),
             status: "assigned".into(),
             species_id: Some("ECTX-SP025".into()),
@@ -234,7 +236,7 @@ fn accession_metadata_cannot_trigger_self_exclusion() {
 
 #[test]
 fn a_candidate_species_only_or_other_parent_is_withheld() {
-    type Edit = (&'static str, fn(&mut Parent));
+    type Edit = (&'static str, fn(&mut GenomovarParent));
     let edits: Vec<Edit> = vec![
         ("candidate", |p| p.status = "candidate".into()),
         ("unresolved", |p| p.status = "unresolved".into()),
