@@ -279,3 +279,47 @@ fn a_native_foreign_challenge_withholds_the_label_in_every_format() {
     assert!(markdown.contains("**Species:** unresolved"));
     assert!(!markdown.contains("assigned —"));
 }
+
+#[test]
+fn custom_v2_thresholds_are_custom_unvalidated_in_the_json_and_every_rendering() {
+    let (dir, pin, seq) = native_package();
+    let query = dir.path().join("query.fa");
+    std::fs::write(&query, [b">chr\n".as_slice(), &seq, b"\n"].concat()).unwrap();
+    let reports = dir.path().join("reports");
+    let output = tero(
+        dir.path(),
+        &pin,
+        &[
+            "--policy".as_ref(),
+            "conservative-assembly-anim-v2".as_ref(),
+            "--species-ani".as_ref(),
+            "96".as_ref(),
+            "--subspecies-ani".as_ref(),
+            "98.5".as_ref(),
+            "--report-dir".as_ref(),
+            reports.as_os_str(),
+        ],
+        &[&query],
+    );
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(
+        json["validation_status"], "custom_unvalidated",
+        "default values are still custom"
+    );
+    let calls = std::fs::read_to_string(reports.join("calls.tsv")).unwrap();
+    assert_eq!(column(&calls, 0, "policy_mode"), "custom");
+    assert_eq!(column(&calls, 0, "validation_status"), "custom_unvalidated");
+    assert_eq!(
+        column(&calls, 0, "min_species_ani"),
+        json["thresholds"]["species_ani"]
+    );
+    assert_eq!(column(&calls, 0, "min_subspecies_ani"), "98.5");
+    assert_eq!(json["versions"]["validation"], "custom_unvalidated");
+    let markdown = std::fs::read_to_string(reports.join("report.md")).unwrap();
+    assert!(markdown.contains("custom_unvalidated"));
+}
