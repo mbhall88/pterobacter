@@ -26,3 +26,12 @@ The P1 filtered-delta fixtures below are byte-for-byte copies from the frozen `m
 | `weighted.filter` | `1f8776b68a2c06070e334847ddc28062772298e3cf4d75840d85d98e54080442` |
 
 The CRLF regression rewraps the frozen identical query sequence to ten bases per line and surrounds the reference sequence lines with spaces and tabs. It retains all 120000 bases, descriptions and original-byte hashes, and expects full identical coverage in both orientations.
+
+The compressed-input regressions encode `identical.q.fa` without changing its decoded bytes. The source SHA-256 is `253cdd6edc1e68e54f8035ab952b92dd1a4b92587b851e5782207f7ff4f869a3`. Native pair tests check gzip, bzip2, xz and zstd decoding, original-file provenance and equivalent reciprocal metrics. The public triggered-rescue regression uses deterministic gzip of the existing reference-v2 rescue derivative, retaining its five-base short record. Generation commands and full receipts remain in the research follow-up packet.
+
+| File | SHA-256 |
+| --- | --- |
+| `identical.q.fa.gz` | `8ffa5fb01bf9c9aec4726cce697cb5569a8d1da080f28a4df8a14eb62645ed6d` |
+| `identical.q.fa.bz2` | `40c3868be14738cbb126fc7a53150e3cdd27665b43926c9583422289863c68bc` |
+| `identical.q.fa.xz` | `a621e7bacedbfca553abd4d650456727d11d6efd4b970ba5bbd60049de3ac673` |
+| `identical.q.fa.zst` | `cec790233f6144986e29415ea7f41432c88fe675d2e072984106862d60534a09` |

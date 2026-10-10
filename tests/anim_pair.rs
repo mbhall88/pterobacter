@@ -45,6 +45,63 @@ fn expected_pair(query_sha256: &str, reference_sha256: &str) -> ExpectedPair {
 fn record(output: &Path) -> PairRecord {
     serde_json::from_slice(&std::fs::read(output.join("result.json")).unwrap()).unwrap()
 }
+
+#[test]
+fn compressed_pair_snapshots_keep_original_hashes_and_equivalent_native_metrics() {
+    let dir = tempfile::tempdir().unwrap();
+    let reference = fixture("identical.r.fa");
+    let plain = fixture("identical.q.fa");
+    let plain_output = dir.path().join("plain");
+    assert!(pair(&plain, &reference, &plain_output).status.success());
+    let plain_record = record(&plain_output);
+    let reference_sha = hash_file(&reference).unwrap();
+    for extension in ["gz", "bz2", "xz", "zst"] {
+        let query = fixture(&format!("identical.q.fa.{extension}"));
+        let output = dir.path().join(extension);
+        assert!(pair(&query, &reference, &output).status.success());
+        let expected = expected_pair(&hash_file(&query).unwrap(), &reference_sha);
+        let verified = verify_pair(&output, &expected).unwrap();
+        let binding = verified.query.as_ref().unwrap();
+        assert_ne!(binding.sha256, plain_record.query.as_ref().unwrap().sha256);
+        assert_eq!(
+            binding.native_sha256,
+            plain_record.query.as_ref().unwrap().native_sha256
+        );
+        assert_eq!(binding.total_bases, 120000);
+        assert_eq!(
+            binding.record_lengths,
+            plain_record.query.as_ref().unwrap().record_lengths
+        );
+        assert_eq!(
+            std::fs::read(output.join("inputs/query.fa")).unwrap(),
+            std::fs::read(&query).unwrap()
+        );
+        for direction in ["QR", "RQ"] {
+            assert_eq!(
+                verified.orientations[direction].metrics,
+                plain_record.orientations[direction].metrics
+            );
+            assert_eq!(verified.orientations[direction].status, "aligned");
+        }
+        let source = output.join("inputs/query.fa");
+        std::fs::write(source, b"altered original snapshot").unwrap();
+        assert!(verify_pair(&output, &expected).is_err());
+    }
+    let truncated = dir.path().join("truncated.gz");
+    let gzip = std::fs::read(fixture("identical.q.fa.gz")).unwrap();
+    std::fs::write(&truncated, &gzip[..gzip.len() / 2]).unwrap();
+    let output = dir.path().join("truncated");
+    assert!(!pair(&truncated, &reference, &output).status.success());
+    let failed = record(&output);
+    assert_eq!(failed.status, "incomplete");
+    assert!(failed.error.is_some());
+    assert!(failed.orientations.is_empty());
+    assert_eq!(
+        std::fs::read(output.join("inputs/query.fa")).unwrap(),
+        std::fs::read(truncated).unwrap()
+    );
+}
+
 #[test]
 fn saved_pair_requires_expected_identities_component_and_concepts() {
     let dir = tempfile::tempdir().unwrap();

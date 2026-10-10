@@ -152,6 +152,126 @@ struct Prepared {
     anim_pin: String,
     query: std::path::PathBuf,
 }
+
+#[test]
+fn triggered_gzip_rescue_preserves_supplied_hash_and_matches_plain_pair_metrics() {
+    use terobacter::anim::{hash_bytes, hash_file, verify_pair, ExpectedPair};
+    let prepared = Prepared::new(common::assembly::NativeCase::Rescue);
+    let plain = std::fs::read(&prepared.query).unwrap();
+    let plain = [plain, b">short\nACGTN\n".to_vec()].concat();
+    std::fs::write(&prepared.query, &plain).unwrap();
+    let compressed = std::process::Command::new("gzip")
+        .args(["-n", "-c"])
+        .arg(&prepared.query)
+        .output()
+        .unwrap();
+    assert!(compressed.status.success());
+    let gzip = prepared.dir.path().join("query.fa.gz");
+    std::fs::write(&gzip, &compressed.stdout).unwrap();
+    let run = |query: &std::path::Path, name: &str| {
+        let output = prepared
+            .command_to(query, name)
+            .args(["--threads", "1"])
+            .output()
+            .unwrap();
+        let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert!(output.status.success(), "{report}");
+        assert_eq!(report["rescue_status"], "rescued");
+        assert_eq!(report["species_id"], "SYN-SP01");
+        assert_eq!(report["input"]["total_bases"], 200008);
+        report
+    };
+    let compressed_report = run(&gzip, "compressed-pairs");
+    let plain_report = run(&prepared.query, "plain-pairs");
+    for key in [
+        "species_id",
+        "subspecies_id",
+        "reasons",
+        "counts",
+        "call_basis",
+        "competitor_evaluation",
+    ] {
+        assert_eq!(compressed_report[key], plain_report[key], "{key}");
+    }
+    let supplied_hash = hash_bytes(&compressed.stdout);
+    assert_ne!(supplied_hash, hash_bytes(&plain));
+    assert_eq!(compressed_report["input"]["query_sha256"], supplied_hash);
+    assert_eq!(
+        compressed_report["evidence"]["provenance"]["query_sha256"],
+        supplied_hash
+    );
+    let manifest: Value = serde_json::from_slice(
+        &std::fs::read(prepared.dir.path().join("fastas/anim.json")).unwrap(),
+    )
+    .unwrap();
+    for (compressed_pair, plain_pair) in compressed_report["anim_execution"]["pairs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .zip(plain_report["anim_execution"]["pairs"].as_array().unwrap())
+    {
+        let id = compressed_pair["reference_id"].as_str().unwrap();
+        let reference = manifest["references"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|r| r["reference_id"] == id)
+            .unwrap();
+        let expected = ExpectedPair {
+            query_id: supplied_hash.clone(),
+            query_sha256: supplied_hash.clone(),
+            reference_id: id.into(),
+            reference_sha256: reference["sha256"].as_str().unwrap().into(),
+            reference_component: "primary_whole".into(),
+            reference_concept_ids: reference["concept_ids"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|c| c.as_str().unwrap().into())
+                .collect(),
+        };
+        let directory = std::path::Path::new(compressed_pair["directory"].as_str().unwrap());
+        let verified = verify_pair(directory, &expected).unwrap();
+        let binding = verified.query.as_ref().unwrap();
+        assert_eq!(binding.sha256, supplied_hash);
+        assert_eq!(binding.id, supplied_hash);
+        assert_eq!(binding.total_bases, 200008);
+        assert_eq!(
+            std::fs::read(directory.join("inputs/query.fa")).unwrap(),
+            compressed.stdout
+        );
+        assert_eq!(
+            hash_file(&directory.join("inputs/query.native.fa")).unwrap(),
+            binding.native_sha256
+        );
+        assert_eq!(
+            binding.native_sha256,
+            plain_pair["record"]["query"]["native_sha256"]
+        );
+        assert_eq!(binding.record_lengths["short"], 5);
+        for direction in ["QR", "RQ"] {
+            assert_eq!(
+                compressed_pair["record"]["orientations"][direction]["metrics"],
+                plain_pair["record"]["orientations"][direction]["metrics"]
+            );
+            assert_eq!(
+                compressed_pair["record"]["orientations"][direction]["status"],
+                plain_pair["record"]["orientations"][direction]["status"]
+            );
+        }
+        assert!(verify_pair(
+            directory,
+            &ExpectedPair {
+                query_sha256: hash_bytes(&plain),
+                ..expected.clone()
+            }
+        )
+        .is_err());
+        let native = directory.join("inputs/query.native.fa");
+        std::fs::write(&native, b">wrong\nACGT\n").unwrap();
+        assert!(verify_pair(directory, &expected).is_err());
+    }
+}
 impl Prepared {
     fn new(case: common::assembly::NativeCase) -> Self {
         let (dir, pin, seq) = common::assembly::native_case(case);
@@ -168,6 +288,9 @@ impl Prepared {
         }
     }
     fn command(&self) -> assert_cmd::Command {
+        self.command_to(&self.query, "receipts")
+    }
+    fn command_to(&self, query: &std::path::Path, output: &str) -> assert_cmd::Command {
         let mut command = cargo_bin_cmd!("tero");
         command
             .arg("--reference-package")
@@ -183,8 +306,8 @@ impl Prepared {
             .arg("--anim-reference-package")
             .arg(self.dir.path().join("fastas"))
             .arg("--anim-output")
-            .arg(self.dir.path().join("receipts"))
-            .arg(&self.query);
+            .arg(self.dir.path().join(output))
+            .arg(query);
         command
     }
     fn edit_manifest(&mut self, edit: impl FnOnce(&mut Value)) {
