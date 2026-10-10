@@ -225,6 +225,8 @@ pub struct MemberRow {
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct GenomovarParent {
     pub policy_id: String,
+    pub policy_sha256: String,
+    pub result_sha256: String,
     pub status: String,
     pub species_id: Option<String>,
     pub subspecies_id: Option<String>,
@@ -288,11 +290,14 @@ impl GenomovarParent {
                 && id(&legacy["species_id"]) == parent.species_id
                 && id(&legacy["subspecies_id"]) == parent.subspecies_id;
         }
+        parent.policy_sha256 = parent_policy_sha256(&parent.policy_id);
+        parent.result_sha256 = parent_result_sha256(report);
         parent
     }
 
     pub fn to_value(&self) -> Value {
-        json!({"policy_id": self.policy_id, "status": self.status,
+        json!({"policy_id": self.policy_id, "policy_sha256": self.policy_sha256,
+            "result_sha256": self.result_sha256, "status": self.status,
             "species_id": self.species_id, "subspecies_id": self.subspecies_id,
             "verified": self.verified, "query_sha256": self.query_sha256,
             "reference_package_sha256": self.package_sha256,
@@ -332,7 +337,8 @@ pub fn before_search(
         reasons.push("unsupported_method_or_definition");
     }
     (!reasons.is_empty()).then(|| {
-        json!({"policy_id": POLICY_ID, "status": "withheld", "genomovar_id": null,
+        json!({"policy_id": POLICY_ID, "policy_sha256": reporting_policy_sha256(),
+            "approval": approval(), "status": "withheld", "genomovar_id": null,
             "reasons": reasons, "detail": detail, "compatible_groups": [], "incomplete_groups": [],
             "groups": [], "warnings": [], "parent": parent.to_value(),
             "search": {"status": "not_run"}})
@@ -341,7 +347,8 @@ pub fn before_search(
 
 /// The section for a genomovar search that failed: an execution failure, not a negative result.
 pub fn failed(parent: &GenomovarParent, error: &str) -> Value {
-    json!({"policy_id": POLICY_ID, "status": "failed", "genomovar_id": null,
+    json!({"policy_id": POLICY_ID, "policy_sha256": reporting_policy_sha256(),
+            "approval": approval(), "status": "failed", "genomovar_id": null,
         "reasons": ["incomplete_or_unbound_execution"], "detail": error,
         "compatible_groups": [], "incomplete_groups": [], "groups": [], "warnings": [],
         "parent": parent.to_value(), "search": {"status": "failed", "error": error}})
@@ -470,7 +477,8 @@ impl Assessment {
                 "minimum_af_reference_percent": c.minimum.map(|m| pct(m.2))})
             })
             .collect();
-        json!({"policy_id": POLICY_ID,
+        json!({"policy_id": POLICY_ID, "policy_sha256": reporting_policy_sha256(),
+            "approval": approval(),
             "status": if self.assigned.is_some() { "assigned" } else { "withheld" },
             "genomovar_id": self.assigned,
             "reasons": self.reasons,
@@ -652,3 +660,55 @@ pub fn assess(
 /// v1, and the v2 successor when its call is the unchanged v1 skani call (see [`GenomovarParent`]).
 pub const ACCEPTED_PARENT_POLICIES: [&str; 2] =
     [crate::decision::V1_POLICY_ID, crate::rescue::V2_POLICY_ID];
+
+/// Reporting policy digest: exact UTF-8 base and accepted-addendum SHA-256 identities,
+/// separated by a newline. These immutable contract documents define the policy.
+pub fn reporting_policy_sha256() -> String {
+    crate::evidence::sha256_hex(b"ae3eacf1a708a4c0fac18d81dc46df73c183d84accad4dd52e1c4a43de7e1b03\n1616c88a4be5193b8e54b6ce3ec27fcee19d731dd375c2e7ad4c989db429df4f\n")
+}
+fn approval() -> Value {
+    json!({"status": "approved", "by": "Michael", "date": "2026-10-08",
+        "decision": "Q-GV-AF-01 option A",
+        "source": "https://github.com/mbhall88/Enterobacter/issues/3#issuecomment-6056920803",
+        "base_contract_sha256": "ae3eacf1a708a4c0fac18d81dc46df73c183d84accad4dd52e1c4a43de7e1b03",
+        "accepted_addendum_sha256": "1616c88a4be5193b8e54b6ce3ec27fcee19d731dd375c2e7ad4c989db429df4f"})
+}
+/// Parent implementation identity: exact policy source, with v2 also covering thresholds
+/// and native-pair binding. Build paths and timestamps are excluded.
+pub fn parent_policy_sha256(id: &str) -> String {
+    let source = match id {
+        crate::decision::V1_POLICY_ID => include_str!("decision.rs").to_owned(),
+        crate::rescue::V2_POLICY_ID => [
+            include_str!("decision.rs"),
+            include_str!("rescue/mod.rs"),
+            include_str!("rescue/thresholds.rs"),
+            include_str!("rescue/records.rs"),
+        ]
+        .join("\n"),
+        _ => return String::new(),
+    };
+    crate::evidence::sha256_hex(source.as_bytes())
+}
+/// Digest the parent decision before attachment. Runtime receipts and supplementary fields
+/// are excluded; decision evidence identities, assignments, reasons and input binding remain.
+pub fn parent_result_sha256(report: &Value) -> String {
+    let mut decision = report.clone();
+    if let Some(object) = decision.as_object_mut() {
+        for key in [
+            "genomovar",
+            "genomovar_id",
+            "execution",
+            "measurement",
+            "evidence",
+            "anim_execution",
+            "anim_plan",
+            "implementation",
+        ] {
+            object.remove(key);
+        }
+    }
+    if let Some(assignment) = decision["assignment"].as_object_mut() {
+        assignment.remove("genomovar_id");
+    }
+    crate::evidence::sha256_hex(&serde_json::to_vec(&decision).expect("parent decision JSON"))
+}

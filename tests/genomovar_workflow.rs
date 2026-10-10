@@ -13,7 +13,7 @@ use assert_cmd::cargo::cargo_bin_cmd;
 use common::native;
 use common::package::sha256_hex;
 use serde_json::{json, Value};
-use terobacter::cli::assembly::{invalidate, AssemblyWorkflow};
+use terobacter::cli::assembly::{attach_result, invalidate, AssemblyWorkflow};
 use terobacter::genomovar::{recheck, Definition, DEFINITION_VERSION, SEARCH_PARAMETERS};
 
 const GV01: &str = "ECTX-GV-2026-01-01-v1-GV01";
@@ -186,8 +186,9 @@ fn a_late_parent_veto_clears_the_genomovar_before_publication() {
 
 #[test]
 fn an_invalidated_report_publishes_neither_its_call_nor_its_genomovar() {
-    // A failed genomovar search or final package check invalidates the whole call.
-    for stage in ["genomovar", "package_recheck"] {
+    // A primary integrity failure withdraws all dependent assignments.
+    {
+        let stage = "package_recheck";
         let mut report = analyse(&[], |_| {});
         report["species"] = json!({"id": "ECTX-SP025"});
         report["subspecies"] = json!({"id": "ECTX-SS007"});
@@ -244,4 +245,74 @@ fn the_public_command_reports_a_withheld_genomovar_for_a_package_without_the_def
         .as_str()
         .unwrap()
         .contains("frozen genomovar definition"));
+}
+
+#[test]
+fn supplemental_failure_retains_parent_but_late_package_failure_withdraws_it() {
+    for v2 in [false, true] {
+        let (dir, pin) = package(&[]);
+        let workflow = AssemblyWorkflow::open(&dir.path().join("package"), &pin).unwrap();
+        let mut report = group_a_report(&pin, &query());
+        if v2 {
+            report["policy_id"] = "conservative-assembly-anim-v2".into();
+            report["policy"] = Value::Null;
+            report["status"] = "assigned".into();
+            report["species_id"] = "ECTX-SP025".into();
+            report["subspecies_id"] = "ECTX-SS007".into();
+            report["assignment"] = Value::Null;
+        }
+        let original = report.clone();
+        assert!(attach_result(
+            &mut report,
+            Err("synthetic standalone search failure".into())
+        )
+        .is_err());
+        recheck(&mut report);
+        assert_eq!(report["genomovar"]["status"], "failed");
+        assert_eq!(report["execution"]["stage"], "genomovar");
+        assert_eq!(report["execution"]["status"], "incomplete");
+        assert_eq!(report["assignment"], original["assignment"]);
+        assert_eq!(report["species_id"], original["species_id"]);
+        assert_eq!(report["subspecies_id"], original["subspecies_id"]);
+        workflow.finish().unwrap();
+        std::fs::write(dir.path().join("package/portable.json"), b"changed").unwrap();
+        let error = workflow.finish().unwrap_err();
+        invalidate(&mut report, "package_recheck", &error);
+        recheck(&mut report);
+        let assignment = if v2 { &report } else { &report["assignment"] };
+        assert_eq!(assignment["species_id"], Value::Null);
+        assert_eq!(assignment["subspecies_id"], Value::Null);
+        assert_eq!(report["execution"]["stage"], "package_recheck");
+    }
+}
+
+#[test]
+fn emitted_provenance_binds_contract_parent_policy_and_decision() {
+    use terobacter::genomovar::{
+        parent_policy_sha256, parent_result_sha256, reporting_policy_sha256,
+    };
+    let mut report = analyse(&[], |_| {});
+    let section = report["genomovar"].clone();
+    assert_eq!(section["policy_sha256"], reporting_policy_sha256());
+    assert_eq!(section["approval"]["status"], "approved");
+    assert_eq!(section["approval"]["by"], "Michael");
+    assert_eq!(
+        section["parent"]["policy_sha256"],
+        parent_policy_sha256("conservative-assembly-v1")
+    );
+    assert_eq!(
+        section["parent"]["result_sha256"],
+        parent_result_sha256(&report)
+    );
+    let hash = parent_result_sha256(&report);
+    recheck(&mut report);
+    assert_eq!(hash, parent_result_sha256(&report));
+    report["blocking_reasons"] = json!(["late_veto"]);
+    assert_ne!(hash, parent_result_sha256(&report));
+    recheck(&mut report);
+    assert_eq!(report["assignment"]["genomovar_id"], Value::Null);
+    assert_eq!(
+        report["genomovar"]["compatible_groups"],
+        section["compatible_groups"]
+    );
 }

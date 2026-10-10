@@ -12,6 +12,8 @@ use terobacter::genomovar::{
 fn context() -> Context {
     Context {
         parent: GenomovarParent {
+            policy_sha256: String::new(),
+            result_sha256: String::new(),
             policy_id: "conservative-assembly-v1".into(),
             status: "assigned".into(),
             species_id: Some("ECTX-SP025".into()),

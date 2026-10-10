@@ -2,7 +2,7 @@
 
 A genomovar is an informal chromosome ANI group within *Enterobacter xiangfangensis* subsp. *hoffmannii* (`ECTX-SS007`, Group A), the project's proposed combination. The definition is frozen as `2026-10-02-v1`: 25 groups (GV01 to GV25) of 173 historical chromosome members. Each group was built by complete linkage at chromosome ANI ≥99.50%. A genomovar call matches a query to one frozen group under the accepted P3a contract, `p3a-genomovar-contract-r1`. It is an operational match, not a population boundary, a purity estimate or a new taxon.
 
-Every whole-assembly report has a `genomovar` section. `assignment.genomovar_id` is set only when that section's status is `assigned`, and only after the final recheck described below.
+Every whole-assembly report has a `genomovar` section. `assignment.genomovar_id` in v1, or the top-level `genomovar_id` in v2, is set only when that section's status is `assigned`, and only after the final recheck described below.
 
 ## When a genomovar is assigned
 
@@ -32,7 +32,8 @@ The search runs only for an eligible parent on a package with the frozen definit
 | `compatible_groups`, `incomplete_groups` | Groups with every member ≥99.50%, and groups with no measured failure but a missing member. |
 | `groups` | Per group: `state` (`compatible`, `incompatible`, `incomplete` or `unassessable`), required and observed member counts, `missing`, `below_threshold`, `below_member_af` and the minima. |
 | `warnings` | Always the operational-match warning. A singleton group adds a sparse-reference warning. A minimum ANI of exactly 99.50% adds a cutoff warning. |
-| `parent` | The parent call the section was assessed against. |
+| `parent` | The parent call, policy source digest and parent decision digest before attachment. |
+| `policy_sha256`, `approval` | Digest of the base and accepted addendum identities, with approval source and contract hashes. |
 | `search` | Engine, settings, scopes, query and package hashes, counts and member evidence. |
 | `definition`, `rule` | The definition identity and the gate values. |
 
@@ -51,11 +52,13 @@ The search runs only for an eligible parent on a package with the frozen definit
 | `insufficient_member_coverage` | The one compatible group has a member with an AF below 80%. |
 | `parent_withdrawn_before_publication` | The parent changed or was vetoed after assessment. |
 
+The reporting policy digest hashes the two contract SHA-256 strings in order, each followed by a newline. `approval` records those identities and Michael's dated decision source. The parent policy digest hashes the exact v1 decision source; v2 additionally includes rescue decision, threshold and pair-binding sources, separated by newlines. The parent result digest hashes compact JSON with sorted keys after removing `genomovar`, `genomovar_id`, `execution`, `measurement`, `evidence`, `anim_execution`, `anim_plan`, `implementation` and nested `assignment.genomovar_id`. The retained decision contains the query/package/evidence identities, parent assignment and vetoes. Paths and timing are not part of either policy digest.
+
 ## Recheck before publication
 
 Immediately before writing reports, the command rechecks each assigned genomovar against its report's final parent. The report must still be complete, and its parent call must be unchanged, eligible and bound to the same query and package. A later failure, such as the final package check, clears the genomovar with `parent_withdrawn_before_publication` and keeps the evidence.
 
-A genomovar search failure is an execution failure, not a negative result. As with any other failed stage, the report sets `execution.status: incomplete` at stage `genomovar` with null assignment fields. It keeps the measurement, the evidence and a `failed` genomovar section that records the parent call, and the command exits 1.
+A genomovar search failure is an execution failure, not a negative result. As with any other failed stage, the report sets `execution.status: incomplete` at stage `genomovar` while retaining independently supported species and subspecies fields. Final package checks still apply to those retained calls. It keeps the measurement, the evidence and a `failed` genomovar section that records the parent call, and the command exits 1.
 
 ## Limits
 

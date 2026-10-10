@@ -2,7 +2,7 @@
 
 Classify Enterobacter isolate assemblies with one self-contained command.
 
-> **Status: development.** Whole-assembly v1 classification and saved-evidence decisions are implemented. No release version is selected. Production implementation, scientific acceptance and release are separate gates tracked in this repository's issues.
+> **Status: development.** Whole-assembly v1 and candidate v2 classification and saved-evidence decisions are implemented. No release version is selected. Production implementation, scientific acceptance and release are separate gates tracked in this repository's issues.
 
 Terobacter reports a species and subspecies call only when the approved rules support one. It shows the nearest-reference evidence either way, so a borderline result is never hidden behind a label.
 
@@ -21,7 +21,7 @@ There are no subcommands. Classify a whole assembly with a provisioned reference
 tero --reference-package REFERENCE_DIR --expected-sha256 MANIFEST_SHA256 --threads 4 isolate.fa > isolate.json
 ```
 
-The default policy is `conservative-assembly-v1`. Native v2 is unavailable in this build; requesting it fails explicitly. Every supplied FASTA record is retained, including plasmids and drafts. JSON records lengths, sequence and input byte hashes, the authenticated package identity, engine profile, measurements and the v1 decision. See [whole-assembly classification](docs/assembly.md) for input rules, partial reports and exit codes.
+The default policy is `conservative-assembly-v1`. Use `--policy conservative-assembly-anim-v2` for the candidate ANIm rescue branch; it requires a separate authenticated FASTA component when the rescue plan requests alignments. Every supplied FASTA record is retained, including plasmids and drafts. JSON records lengths, sequence and input byte hashes, the authenticated package identity, engine profile, measurements and the decision. See [whole-assembly classification](docs/assembly.md) for input rules, partial reports and exit codes.
 
 ## Build, test, install
 
