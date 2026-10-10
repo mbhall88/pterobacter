@@ -45,3 +45,9 @@ Vocabulary for the Terobacter tool, which classifies Enterobacter isolate assemb
 **Method diagnostic**: A bound reciprocal ANIm comparison supplied alongside saved skani evidence. Under v1, a disagreement at the species ANI/AF gate withholds the assignment. It cannot rescue one. Under v2 the same veto applies, except to a witness candidate that fails skani only on ANI and passes the strict ANIm gate.
 
 **Problem warning**: A bound external concern that withholds the assignment. An explained scope assessment cannot clear it.
+
+**Historical MLST**: Optional supplementary seven-locus typing against the PubMLST *Enterobacter* scheme as submitted through 31 December 2024. It never sets or changes a species, subspecies, lineage or genomovar, and an exact profile the scheme lacks is unmatched, not a new ST.
+
+**MLST scheme package**: The versioned, hash-listed allele FASTAs and profile table for historical MLST, authenticated by the SHA-256 of its manifest. It is separate from the reference package.
+
+**MLST engine**: `terobacter-ungapped-mlst`, the in-binary matcher. It reproduces the comparator `mlst` 2.32.2 with BLAST+ 2.16.0 on development fixtures but is a different, named engine.

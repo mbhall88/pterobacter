@@ -1,5 +1,6 @@
 //! Public command parsing, output and exit codes.
 pub mod assembly;
+pub mod mlst;
 
 use crate::decision::V1_POLICY_ID;
 use crate::evidence::sha256_hex;
@@ -33,6 +34,12 @@ struct Public {
     /// Worker threads for each assembly
     #[arg(long, default_value_t = 1, value_parser = clap::value_parser!(u16).range(1..))]
     threads: u16,
+    /// Historical MLST scheme package directory; requests optional supplementary MLST
+    #[arg(long, requires = "mlst_expected_sha256")]
+    mlst_package: Option<PathBuf>,
+    /// Expected SHA-256 of the MLST package manifest.json, obtained from a trusted source
+    #[arg(long, value_parser = parse_sha256, requires = "mlst_package")]
+    mlst_expected_sha256: Option<String>,
 }
 fn parse_sha256(text: &str) -> Result<String, String> {
     if crate::reference::is_sha256(text) {
@@ -51,6 +58,11 @@ pub fn run_public() -> ExitCode {
     let mut results = Vec::new();
     let mut exit = 0;
     let mut workflow = None;
+    let mut mlst = args
+        .mlst_package
+        .as_deref()
+        .zip(args.mlst_expected_sha256.as_deref())
+        .map(|(directory, sha256)| mlst::Mlst::new(directory, sha256));
     for path in &args.assemblies {
         let mut report = json!({"schema": "terobacter.assembly-call/1",
             "implementation": {"name": env!("CARGO_PKG_NAME"), "version": env!("CARGO_PKG_VERSION")},
@@ -58,19 +70,24 @@ pub fn run_public() -> ExitCode {
             "input": {"kind": args.input_kind, "file": path.to_string_lossy(), "sequence_scope": "whole_assembly_as_supplied"},
             "assignment": {"status": "not_evaluated", "species_id": null, "species_name": null,
                 "subspecies_id": null, "subspecies_name": null, "lineage_id": null, "genomovar_id": null},
-            "execution": {"status": "incomplete", "stage": "input"}});
+            "execution": {"status": "incomplete", "stage": "input"},
+            "mlst": mlst::not_requested()});
         if args.policy != V1_POLICY_ID {
             report["execution"]["stage"] = "policy".into();
             report["execution"]["error"] = "requested native policy is unavailable; only conservative-assembly-v1 is implemented".into();
             exit = 5;
+            if let Some(mlst) = &mut mlst {
+                report["mlst"] = mlst.report(None);
+            }
             results.push(report);
             continue;
         }
+        let mut validated = None;
         let result = (|| -> Result<(), (u8, String)> {
             if args.input_kind != "assembly" {
                 return Err((3, "only assembly FASTA input is supported".into()));
             }
-            let bytes = read_input(path, &mut report).map_err(|e| (3, e))?;
+            let bytes: &[u8] = validated.insert(read_input(path, &mut report).map_err(|e| (3, e))?);
             report["execution"]["stage"] = "package".into();
             if workflow.is_none() {
                 workflow = Some(
@@ -86,18 +103,32 @@ pub fn run_public() -> ExitCode {
                 .expect("opened workflow")
                 .analyse(
                     path.to_str().ok_or((3, "query path is not UTF-8".into()))?,
-                    &bytes,
+                    bytes,
                     args.threads.into(),
                     &mut report,
                 )
                 .map_err(|e| (1, e))?;
             Ok(())
         })();
-        if let Err((code, error)) = result {
-            report["execution"]["error"] = error.into();
-            exit = code;
+        if let Err((code, error)) = &result {
+            report["execution"]["error"] = error.as_str().into();
+            exit = *code;
+        }
+        // Classification may rebuild the report, so the MLST field is set afterwards.
+        report["mlst"] = match &mut mlst {
+            Some(mlst) => mlst.report(validated.as_deref()),
+            None => mlst::not_requested(),
+        };
+        if result.is_ok() && report["mlst"]["status"] == "failed" {
+            exit = mlst::MLST_FAILED;
         }
         results.push(report);
+    }
+    if let Some(Err(error)) = mlst.as_ref().map(mlst::Mlst::finish) {
+        exit = mlst::MLST_FAILED;
+        for report in &mut results {
+            mlst::invalidate(report, &error);
+        }
     }
     if let Some(workflow) = workflow {
         if let Err(error) = workflow.finish() {

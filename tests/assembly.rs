@@ -224,6 +224,7 @@ fn native_whole_assembly_retains_plasmids_and_short_records_and_assigns_v1() {
         report["reference_package"]["package"]["manifest_sha256"],
         pin
     );
+    assert_eq!(report["mlst"]["status"], "not_requested");
 }
 
 #[test]
@@ -327,4 +328,116 @@ fn complete_no_estimate_is_withheld_and_batch_failure_does_not_change_other_quer
         observed.push(report);
     }
     assert_eq!(observed[0], observed[1]);
+}
+
+/// A query that classifies as SYN-SP01 and carries the synthetic scheme's ST5 alleles.
+fn mlst_query(dir: &std::path::Path, seq: &[u8], second_id: &str) -> std::path::PathBuf {
+    let scheme = common::mlst::SyntheticScheme::new();
+    scheme.write_to(&dir.join("mlst"));
+    let query = dir.join("query-mlst.fa");
+    let typing = scheme.assembly(&scheme.st5_pieces());
+    let bytes = [
+        b">chromosome\n".as_slice(),
+        seq,
+        format!("\n>{second_id} typing region\n").as_bytes(),
+        &typing,
+        b"\n",
+    ]
+    .concat();
+    std::fs::write(&query, bytes).unwrap();
+    query
+}
+
+fn run_with_mlst(
+    dir: &std::path::Path,
+    pin: &str,
+    mlst_sha256: &str,
+    queries: &[&std::path::Path],
+) -> (Option<i32>, Value) {
+    let output = cargo_bin_cmd!("tero")
+        .arg("--reference-package")
+        .arg(dir.join("package"))
+        .args(["--expected-sha256", pin])
+        .arg("--mlst-package")
+        .arg(dir.join("mlst"))
+        .args(["--mlst-expected-sha256", mlst_sha256])
+        .args(queries)
+        .output()
+        .unwrap();
+    let report = serde_json::from_slice(&output.stdout)
+        .unwrap_or_else(|_| panic!("{}", String::from_utf8_lossy(&output.stderr)));
+    (output.status.code(), report)
+}
+
+#[test]
+fn requested_mlst_is_reported_beside_an_unchanged_classification() {
+    let (dir, pin, seq) = native_package();
+    let query = mlst_query(dir.path(), &seq, "typing");
+    let sha256 = common::mlst::SyntheticScheme::new().manifest_sha256();
+    let (code, report) = run_with_mlst(dir.path(), &pin, &sha256, &[&query]);
+    assert_eq!(code, Some(0), "{report}");
+    assert_eq!(report["execution"]["status"], "complete");
+    assert_eq!(report["assignment"]["species_id"], "SYN-SP01");
+    let mlst = &report["mlst"];
+    assert_eq!(mlst["requested"], true);
+    assert_eq!(mlst["status"], "complete");
+    assert_eq!(mlst["state"], "exact_profile_match");
+    assert_eq!(mlst["sequence_type"], "5");
+    assert_eq!(mlst["query_sha256"], report["input"]["query_sha256"]);
+    assert_eq!(
+        mlst["loci"][0]["sequence_verified_exact_locations"][0]["record_id"],
+        "typing"
+    );
+    assert_eq!(mlst["engine"]["name"], "terobacter-ungapped-mlst");
+    assert_eq!(mlst["database"]["submission_cutoff"], "2024-12-31");
+    assert_eq!(mlst["database"]["package_manifest_sha256"], sha256);
+    assert_eq!(mlst["taxonomic_assignment_performed"], false);
+}
+
+#[test]
+fn requested_mlst_that_fails_is_explicit_and_keeps_the_classification() {
+    let (dir, pin, seq) = native_package();
+    let query = mlst_query(dir.path(), &seq, "typing");
+    let duplicate = mlst_query(dir.path(), &seq, "chromosome");
+    let wrong = "1".repeat(64);
+    let (code, report) = run_with_mlst(dir.path(), &pin, &wrong, &[&query]);
+    assert_eq!(code, Some(6));
+    assert_eq!(report["execution"]["status"], "complete");
+    assert_eq!(report["assignment"]["species_id"], "SYN-SP01");
+    assert_eq!(report["mlst"]["status"], "failed");
+    assert_eq!(report["mlst"]["stage"], "package");
+    assert_eq!(report["mlst"]["sequence_type"], Value::Null);
+
+    let sha256 = common::mlst::SyntheticScheme::new().manifest_sha256();
+    let (code, report) = run_with_mlst(dir.path(), &pin, &sha256, &[&duplicate]);
+    assert_eq!(code, Some(6));
+    assert_eq!(report["assignment"]["species_id"], "SYN-SP01");
+    assert_eq!(report["mlst"]["status"], "failed");
+    assert_eq!(report["mlst"]["stage"], "input");
+
+    let bad = dir.path().join("bad.fa");
+    std::fs::write(&bad, b">bad\n!\n").unwrap();
+    let (code, report) = run_with_mlst(dir.path(), &pin, &sha256, &[&bad]);
+    assert_eq!(code, Some(3));
+    assert_eq!(report["execution"]["status"], "incomplete");
+    assert_eq!(report["mlst"]["status"], "failed");
+    assert_eq!(report["mlst"]["stage"], "input");
+}
+
+#[test]
+fn an_mlst_package_needs_its_expected_sha256() {
+    let output = cargo_bin_cmd!("tero")
+        .args([
+            "--reference-package",
+            FIXTURE_DIR,
+            "--expected-sha256",
+            PINNED_MANIFEST_SHA256,
+            "--mlst-package",
+            "mlst",
+            "query.fa",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
 }
