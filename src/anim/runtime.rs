@@ -43,6 +43,16 @@ pub struct Method {
 impl Method {
     fn current(executable: &Path) -> Result<Self, AnimError> {
         Ok(Self {
+            implementation_sha256: hash_file(executable)?,
+            ..Self::identity()
+        })
+    }
+
+    /// The method and native build this library runs, with an empty `implementation_sha256`.
+    /// The two public aliases and the development binary share it although their executables
+    /// hash differently.
+    pub fn identity() -> Self {
+        Self {
             profile: METHOD_PROFILE.into(),
             amendment: AMENDMENT.into(),
             upstream_commit: "eb734606f2d516f42a0e0dce7a116bfb88ec1ebf".into(),
@@ -52,7 +62,7 @@ impl Method {
             compiler: env!("TERO_ANIM_COMPILER").into(),
             target: env!("TERO_ANIM_TARGET").into(),
             implementation_version: env!("CARGO_PKG_VERSION").into(),
-            implementation_sha256: hash_file(executable)?,
+            implementation_sha256: String::new(),
             query_threads: 1,
             reference_n_policy: "preserved; literal character identity; known long-N limitation"
                 .into(),
@@ -60,7 +70,7 @@ impl Method {
                 .into(),
             memory_policy:
                 "Linux: RLIMIT_AS; macOS: Mach peak RSS watchdog at 10 ms; failures retained".into(),
-        })
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -802,11 +812,13 @@ fn memory_exceeded(ceiling: u64) -> bool {
 /// bindings are checked again. Package authentication remains the caller's job.
 pub fn verify_pair(directory: &Path, expected: &ExpectedPair) -> Result<PairRecord, AnimError> {
     let report: PairRecord = serde_json::from_slice(&fs::read(directory.join("result.json"))?)?;
-    let mut current = Method::current(&std::env::current_exe()?)?;
     // The two public aliases and development binary share the same library,
     // but have different executable hashes. Keep the producing binary receipt
     // while checking the current library's method and native build identity.
-    current.implementation_sha256 = report.method.implementation_sha256.clone();
+    let current = Method {
+        implementation_sha256: report.method.implementation_sha256.clone(),
+        ..Method::identity()
+    };
     if report.schema != "terobacter-anim-pair-v1"
         || report.status != "complete"
         || report.error.is_some()

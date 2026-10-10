@@ -615,8 +615,7 @@ fn a_v2_report_with_no_challenge_still_says_none_challenged() {
         .contains("No reference challenged the call."));
 }
 
-/// A missing measurement is not a negative result: only a finished run whose competitor panel
-/// was fully measured may say that nothing challenged the call.
+/// A missing measurement is not a negative result: coverage is independent of execution; a failed run must not imply a supported call.
 #[test]
 fn challenge_assessment_separates_unmeasured_partial_and_completed_checks() {
     let cases = [
@@ -646,7 +645,13 @@ fn challenge_assessment_separates_unmeasured_partial_and_completed_checks() {
             "not_applicable",
             "Not applicable",
         ),
-        ("complete", "incomplete", "not_assessed", "Not assessed"),
+        ("incomplete", "incomplete", "partial", "Partially assessed"),
+        (
+            "complete",
+            "incomplete",
+            "completed",
+            "execution or integrity checks failed",
+        ),
     ];
     for (evaluation, execution, assessment, fragment) in cases {
         let mut report = v2_rescued();
@@ -668,7 +673,7 @@ fn challenge_assessment_separates_unmeasured_partial_and_completed_checks() {
             rendered
                 .markdown
                 .contains("No reference challenged the call."),
-            assessment == "completed",
+            assessment == "completed" && execution == "complete",
             "{evaluation}/{execution}"
         );
     }
@@ -690,4 +695,29 @@ fn a_report_without_competitor_evidence_never_claims_an_unchallenged_call() {
         cell(&rendered.calls_tsv, 0, "challenge_assessment"),
         "not_assessed"
     );
+}
+
+#[test]
+fn incomplete_native_panel_retains_measured_challenge_and_counts() {
+    let mut report = v2_withheld_with_stale_scaffold();
+    report["execution"] =
+        json!({"status": "incomplete", "stage": "decision", "error": "ANIm panel incomplete"});
+    let rendered = render(&[report]);
+    assert_eq!(
+        cell(&rendered.calls_tsv, 0, "challenge_assessment"),
+        "partial"
+    );
+    assert_eq!(
+        cell(&rendered.calls_tsv, 0, "execution_status"),
+        "incomplete"
+    );
+    assert_eq!(cell(&rendered.calls_tsv, 0, "anim_completed"), "4");
+    assert_eq!(cell(&rendered.calls_tsv, 0, "anim_required"), "5");
+    assert_eq!(cell(&rendered.calls_tsv, 0, "species_id"), "");
+    assert!(rendered.markdown.contains("primary_whole:Z"));
+    assert!(rendered.markdown.contains("Partially assessed"));
+    assert!(!rendered.markdown.contains("Not assessed: the run stopped"));
+    assert!(!rendered
+        .markdown
+        .contains("No reference challenged the call"));
 }

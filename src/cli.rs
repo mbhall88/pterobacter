@@ -1,6 +1,8 @@
 //! Public command parsing, output and exit codes.
 pub mod assembly;
+pub mod cache;
 pub mod mlst;
+mod outputs;
 pub mod v2;
 
 use crate::decision::V1_POLICY_ID;
@@ -13,6 +15,8 @@ use std::fs::{self, File};
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::{Mutex, OnceLock};
 
 use crate::rescue::{Thresholds, V2_POLICY_ID};
 
@@ -66,6 +70,12 @@ struct Public {
     /// Worker threads for each assembly
     #[arg(long, default_value_t = 1, value_parser = clap::value_parser!(u16).range(1..))]
     threads: u16,
+    /// Assemblies analysed at the same time, each with its own --threads
+    #[arg(long, default_value_t = 1, value_parser = clap::value_parser!(u16).range(1..))]
+    jobs: u16,
+    /// Write the JSON report to this new file instead of standard output; never replaced
+    #[arg(long, value_name = "FILE")]
+    output: Option<PathBuf>,
     /// Historical MLST scheme package directory; requests optional supplementary MLST
     #[arg(long, requires = "mlst_expected_sha256")]
     mlst_package: Option<PathBuf>,
@@ -99,24 +109,31 @@ pub fn run_public() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    // A fresh directory, created first so a collision stops the run before any analysis.
+    if let Err(error) = outputs::check(&outputs::Paths {
+        report: args.output.as_deref(),
+        report_dir: args.report_dir.as_deref(),
+        anim_output: args.anim.anim_output.as_deref(),
+        anim_cache: args.anim.anim_cache.as_deref(),
+        packages: [
+            Some(args.reference_package.as_path()),
+            args.anim.anim_reference_package.as_deref(),
+            args.mlst_package.as_deref(),
+        ]
+        .into_iter()
+        .flatten()
+        .collect(),
+        assemblies: args.assemblies.iter().map(PathBuf::as_path).collect(),
+    }) {
+        eprintln!("error: {error}");
+        return ExitCode::from(2);
+    }
     if let Some(dir) = &args.report_dir {
-        if let Some(package) = package_containing(dir, &args) {
-            eprintln!(
-                "error: --report-dir {} is inside the input package {}; reports are never written into a reference package",
-                dir.display(),
-                package.display()
-            );
-            return ExitCode::from(2);
-        }
         if let Err(error) = fs::create_dir(dir) {
             eprintln!("error: --report-dir must be a new directory: {error}");
             return ExitCode::from(2);
         }
     }
-    if args.policy == crate::rescue::V2_POLICY_ID {
-        install_cancel_handlers();
-    }
+    install_cancel_handlers();
     let output_error = if args.policy == crate::rescue::V2_POLICY_ID {
         args.anim
             .anim_output
@@ -126,116 +143,31 @@ pub fn run_public() -> ExitCode {
     } else {
         None
     };
-    let mut results = Vec::new();
-    let mut exit = 0;
-    let mut workflow = None;
-    let mut mlst = args
+    let mlst = args
         .mlst_package
         .as_deref()
         .zip(args.mlst_expected_sha256.as_deref())
         .map(|(directory, sha256)| mlst::Mlst::new(directory, sha256));
-    for (index, path) in args.assemblies.iter().enumerate() {
-        let mut report = json!({"schema": "terobacter.assembly-call/1",
-            "implementation": {"name": env!("CARGO_PKG_NAME"), "version": env!("CARGO_PKG_VERSION")},
-            "policy": {"id": args.policy},
-            "input": {"kind": args.input_kind, "file": path.to_string_lossy(), "sequence_scope": "whole_assembly_as_supplied"},
-            "assignment": {"status": "not_evaluated", "species_id": null, "species_name": null,
-                "subspecies_id": null, "subspecies_name": null, "lineage_id": null, "genomovar_id": null},
-            "execution": {"status": "incomplete", "stage": "input"},
-            "mlst": mlst::not_requested()});
-        if args.policy == crate::rescue::V2_POLICY_ID {
-            report["schema"] = crate::rescue::REPORT_SCHEMA.into();
-            for (key, value) in thresholds
-                .policy_value()
-                .as_object()
-                .expect("policy object")
-            {
-                report[key] = value.clone();
-            }
-            report["trigger"] = Value::Null;
-            report["call_basis"] = Value::Null;
-            report["reasons"] = json!([]);
-            report["legacy_v1_result"] = Value::Null;
-            report["rescue_status"] = "incomplete".into();
-            report["competitor_evaluation"] = "not_run".into();
-            report["evaluation_status"] = "incomplete".into();
-            report["counts"] = json!({"unit": "reciprocal_pair", "required": 0, "attempted": 0,
-                "completed": 0, "no_alignment": 0, "failed": 0, "not_run": 0});
-        }
-        if args.policy != V1_POLICY_ID && args.policy != crate::rescue::V2_POLICY_ID {
-            report["execution"]["stage"] = "policy".into();
-            report["execution"]["error"] = "requested native policy is unavailable; supported policies are conservative-assembly-v1 and conservative-assembly-anim-v2".into();
-            exit = 5;
-            if let Some(mlst) = &mut mlst {
-                report["mlst"] = mlst.not_run("policy");
-            }
-            results.push(report);
-            continue;
-        }
-        let mut validated = None;
-        let result = (|| -> Result<(), (u8, String)> {
-            if args.policy == V1_POLICY_ID && args.anim.supplied() {
-                report["execution"]["stage"] = "policy".into();
-                return Err((
-                    5,
-                    "ANIm options require conservative-assembly-anim-v2".into(),
-                ));
-            }
-            if let Some(error) = &output_error {
-                report["execution"]["stage"] = "anim_output".into();
-                return Err((1, format!("ANIm output must be a fresh directory: {error}")));
-            }
-            if CANCELLED.load(std::sync::atomic::Ordering::SeqCst) {
-                return Err((1, "run interrupted".into()));
-            }
-            if args.input_kind != "assembly" {
-                return Err((3, "only assembly FASTA input is supported".into()));
-            }
-            let bytes: &[u8] = validated.insert(read_input(path, &mut report).map_err(|e| (3, e))?);
-            report["execution"]["stage"] = "package".into();
-            if workflow.is_none() {
-                workflow = Some(
-                    assembly::AssemblyWorkflow::open(
-                        &args.reference_package,
-                        &args.expected_sha256,
-                    )
-                    .map_err(|e| (4, e))?,
-                );
-            }
-            let workflow = workflow.as_ref().expect("opened workflow");
-            let query_label = path.to_str().ok_or((3, "query path is not UTF-8".into()))?;
-            if args.policy == crate::rescue::V2_POLICY_ID {
-                workflow.analyse_v2(
-                    query_label,
-                    bytes,
-                    args.threads.into(),
-                    &mut report,
-                    &v2::V2Context {
-                        settings: &args.anim,
-                        thresholds: &thresholds,
-                        query_ordinal: index + 1,
-                        cancelled: &CANCELLED,
-                    },
-                )
-            } else {
-                workflow.analyse(query_label, bytes, args.threads.into(), &mut report)
-            }
-            .map_err(|e| (1, e))?;
-            Ok(())
-        })();
-        if let Err((code, error)) = &result {
-            exit = record_failure(&mut report, *code, error.clone());
-        }
-        // Classification may rebuild the report, so supplementary MLST is attached afterwards.
-        report["mlst"] = match &mut mlst {
-            Some(mlst) => mlst.report(validated.as_deref()),
-            None => mlst::not_requested(),
-        };
-        if result.is_ok() && report["mlst"]["status"] == "failed" {
-            exit = mlst::MLST_FAILED;
+    let batch = Batch {
+        args: &args,
+        thresholds: &thresholds,
+        output_error: output_error.as_deref(),
+        workflow: OnceLock::new(),
+        mlst: mlst.as_ref(),
+    };
+    let mut results = Vec::new();
+    let mut exit = 0;
+    // Reports keep argument order and the exit code follows the last failed input in that
+    // order, whatever order the concurrent queries finish in.
+    for (report, code) in run_bounded(args.jobs.into(), args.assemblies.len(), |index| {
+        batch.analyse(index)
+    }) {
+        if code != 0 {
+            exit = code;
         }
         results.push(report);
     }
+    let workflow = batch.workflow.into_inner().and_then(Result::ok);
     if let Some(Err(error)) = mlst.as_ref().map(mlst::Mlst::finish) {
         exit = mlst::MLST_FAILED;
         for report in &mut results {
@@ -295,11 +227,29 @@ pub fn run_public() -> ExitCode {
             write_failed = true;
         }
     }
-    let result = (|| -> io::Result<()> {
+    let write_stdout = || -> io::Result<()> {
         let mut out = io::stdout().lock();
         serde_json::to_writer_pretty(&mut out, &value)?;
         writeln!(out)
-    })();
+    };
+    let result = match &args.output {
+        None => write_stdout(),
+        Some(path) => {
+            let mut text = serde_json::to_vec_pretty(&value).expect("report serializes");
+            text.push(b'\n');
+            match outputs::write_new(path, &text) {
+                Ok(()) => Ok(()),
+                // Keep the results rather than lose them with the file.
+                Err(error) => {
+                    eprintln!("error writing report to {}: {error}", path.display());
+                    if let Err(error) = write_stdout() {
+                        eprintln!("error writing report: {error}");
+                    }
+                    return ExitCode::FAILURE;
+                }
+            }
+        }
+    };
     if let Err(error) = result {
         eprintln!("error writing report: {error}");
         return ExitCode::FAILURE;
@@ -308,44 +258,6 @@ pub fn run_public() -> ExitCode {
         return ExitCode::FAILURE;
     }
     ExitCode::from(exit)
-}
-
-/// The input package, if any, that contains the report directory this run is about to create.
-/// A package inventory rejects any unlisted file, so output must never land inside one.
-fn package_containing(dir: &Path, args: &Public) -> Option<PathBuf> {
-    let target = resolve_path(dir).ok()?;
-    [
-        Some(&args.reference_package),
-        args.mlst_package.as_ref(),
-        args.anim.anim_reference_package.as_ref(),
-    ]
-    .into_iter()
-    .flatten()
-    .find(|package| resolve_path(package).is_ok_and(|package| target.starts_with(package)))
-    .cloned()
-}
-
-/// An absolute path with symbolic links resolved for every existing ancestor and `.` / `..`
-/// applied to the rest, so two spellings of one location compare equal.
-fn resolve_path(path: &Path) -> io::Result<PathBuf> {
-    use std::path::Component;
-    let mut resolved = PathBuf::new();
-    for component in std::env::current_dir()?.join(path).components() {
-        match component {
-            Component::Prefix(_) | Component::RootDir => resolved.push(component),
-            Component::CurDir => {}
-            Component::ParentDir => {
-                resolved.pop();
-            }
-            Component::Normal(name) => {
-                resolved.push(name);
-                if let Ok(canonical) = fs::canonicalize(&resolved) {
-                    resolved = canonical;
-                }
-            }
-        }
-    }
-    Ok(resolved)
 }
 
 /// Write the JSON report and its renderings into a directory this run created. Each file is
@@ -359,13 +271,153 @@ fn write_reports(dir: &Path, json: &Value, rendered: &crate::report::Rendered) -
         ("evidence.tsv", rendered.evidence_tsv.as_str()),
         ("report.md", rendered.markdown.as_str()),
     ] {
-        let mut file = fs::OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(dir.join(name))?;
-        file.write_all(content.as_bytes())?;
+        outputs::write_new(&dir.join(name), content.as_bytes())?;
     }
     Ok(())
+}
+
+/// Shared, read-only state for the queries of one run.
+struct Batch<'a> {
+    args: &'a Public,
+    thresholds: &'a Thresholds,
+    output_error: Option<&'a str>,
+    /// Opened by the first input that needs it; a failure applies to every later input.
+    workflow: OnceLock<Result<assembly::AssemblyWorkflow, String>>,
+    mlst: Option<&'a mlst::Mlst>,
+}
+
+impl Batch<'_> {
+    /// One input's report and exit code, 0 when it completed. Nothing here touches another
+    /// input's report.
+    fn analyse(&self, index: usize) -> (Value, u8) {
+        let args = self.args;
+        let path = &args.assemblies[index];
+        let mut report = json!({"schema": "terobacter.assembly-call/1",
+            "implementation": {"name": env!("CARGO_PKG_NAME"), "version": env!("CARGO_PKG_VERSION")},
+            "policy": {"id": args.policy},
+            "input": {"kind": args.input_kind, "file": path.to_string_lossy(), "ordinal": index + 1,
+                "sequence_scope": "whole_assembly_as_supplied"},
+            "assignment": {"status": "not_evaluated", "species_id": null, "species_name": null,
+                "subspecies_id": null, "subspecies_name": null, "lineage_id": null, "genomovar_id": null},
+            "execution": {"status": "incomplete", "stage": "input"},
+            "mlst": mlst::not_requested()});
+        if args.policy == crate::rescue::V2_POLICY_ID {
+            report["schema"] = crate::rescue::REPORT_SCHEMA.into();
+            for (key, value) in self
+                .thresholds
+                .policy_value()
+                .as_object()
+                .expect("policy object")
+            {
+                report[key] = value.clone();
+            }
+            report["trigger"] = Value::Null;
+            report["call_basis"] = Value::Null;
+            report["reasons"] = json!([]);
+            report["legacy_v1_result"] = Value::Null;
+            report["rescue_status"] = "incomplete".into();
+            report["competitor_evaluation"] = "not_run".into();
+            report["evaluation_status"] = "incomplete".into();
+            report["counts"] = json!({"unit": "reciprocal_pair", "required": 0, "attempted": 0,
+                "completed": 0, "no_alignment": 0, "failed": 0, "not_run": 0});
+        }
+        if args.policy != V1_POLICY_ID && args.policy != crate::rescue::V2_POLICY_ID {
+            report["execution"]["stage"] = "policy".into();
+            report["execution"]["error"] = "requested native policy is unavailable; supported policies are conservative-assembly-v1 and conservative-assembly-anim-v2".into();
+            if let Some(mlst) = self.mlst {
+                report["mlst"] = mlst.not_run("policy");
+            }
+            return (report, 5);
+        }
+        let mut exit = 0;
+        let mut validated = None;
+        let result = (|| -> Result<(), (u8, String)> {
+            if args.policy == V1_POLICY_ID && args.anim.supplied() {
+                report["execution"]["stage"] = "policy".into();
+                return Err((
+                    5,
+                    "ANIm options require conservative-assembly-anim-v2".into(),
+                ));
+            }
+            if let Some(error) = self.output_error {
+                report["execution"]["stage"] = "anim_output".into();
+                return Err((1, format!("ANIm output must be a fresh directory: {error}")));
+            }
+            if CANCELLED.load(Ordering::SeqCst) {
+                return Err((1, "run interrupted".into()));
+            }
+            if args.input_kind != "assembly" {
+                return Err((3, "only assembly FASTA input is supported".into()));
+            }
+            let bytes: &[u8] = validated.insert(read_input(path, &mut report).map_err(|e| (3, e))?);
+            report["execution"]["stage"] = "package".into();
+            let workflow = self
+                .workflow
+                .get_or_init(|| {
+                    assembly::AssemblyWorkflow::open(&args.reference_package, &args.expected_sha256)
+                })
+                .as_ref()
+                .map_err(|e| (4, e.clone()))?;
+            let query_label = path.to_str().ok_or((3, "query path is not UTF-8".into()))?;
+            if args.policy == crate::rescue::V2_POLICY_ID {
+                workflow.analyse_v2(
+                    query_label,
+                    bytes,
+                    args.threads.into(),
+                    &mut report,
+                    &v2::V2Context {
+                        settings: &args.anim,
+                        query_ordinal: index + 1,
+                        cancelled: &CANCELLED,
+                        thresholds: self.thresholds,
+                    },
+                )
+            } else {
+                workflow.analyse(query_label, bytes, args.threads.into(), &mut report)
+            }
+            .map_err(|e| (1, e))?;
+            Ok(())
+        })();
+        if let Err((code, error)) = &result {
+            exit = record_failure(&mut report, *code, error.clone());
+        }
+        // Classification may rebuild the report, so supplementary MLST is attached afterwards.
+        report["mlst"] = match self.mlst {
+            Some(mlst) => mlst.report(validated.as_deref()),
+            None => mlst::not_requested(),
+        };
+        if result.is_ok() && report["mlst"]["status"] == "failed" {
+            exit = mlst::MLST_FAILED;
+        }
+        (report, exit)
+    }
+}
+
+/// Run `task` for every index below `count` on at most `jobs` threads. Results keep index
+/// order, independent of completion order.
+fn run_bounded<T: Send>(jobs: usize, count: usize, task: impl Fn(usize) -> T + Sync) -> Vec<T> {
+    let next = AtomicUsize::new(0);
+    let slots: Vec<Mutex<Option<T>>> = (0..count).map(|_| Mutex::new(None)).collect();
+    std::thread::scope(|scope| {
+        for _ in 0..jobs.clamp(1, count.max(1)) {
+            scope.spawn(|| loop {
+                let index = next.fetch_add(1, Ordering::SeqCst);
+                if index >= count {
+                    break;
+                }
+                let value = task(index);
+                *slots[index].lock().expect("result slot") = Some(value);
+            });
+        }
+    });
+    slots
+        .into_iter()
+        .map(|slot| {
+            slot.into_inner()
+                .expect("result slot")
+                .expect("every index ran")
+        })
+        .collect()
 }
 
 /// Reads a package directory. Symbolic links and names that are not UTF-8 are refused.
@@ -525,9 +577,14 @@ pub(crate) fn withhold(report: &mut Value) {
         }
     }
 }
-static CANCELLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
-extern "C" fn cancel_signal(_: libc::c_int) {
-    CANCELLED.store(true, std::sync::atomic::Ordering::SeqCst);
+static CANCELLED: AtomicBool = AtomicBool::new(false);
+/// The first SIGINT or SIGTERM stops the run at its next check and still publishes the
+/// withheld reports. A second signal of the same kind terminates at once.
+extern "C" fn cancel_signal(signal: libc::c_int) {
+    CANCELLED.store(true, Ordering::SeqCst);
+    unsafe {
+        libc::signal(signal, libc::SIG_DFL);
+    }
 }
 fn install_cancel_handlers() {
     unsafe {

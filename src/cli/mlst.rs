@@ -5,6 +5,7 @@ use crate::evidence::sha256_hex;
 use crate::mlst::{type_assembly, Record, Scheme};
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
 
 /// Exit code when MLST was requested and did not complete for some input.
 pub const MLST_FAILED: u8 = 6;
@@ -37,7 +38,7 @@ pub fn parse_records(bytes: &[u8]) -> Result<Vec<(String, Vec<u8>)>, String> {
 pub struct Mlst {
     directory: PathBuf,
     expected_sha256: String,
-    scheme: Option<Result<Scheme, String>>,
+    scheme: OnceLock<Result<Scheme, String>>,
 }
 
 impl Mlst {
@@ -45,7 +46,7 @@ impl Mlst {
         Self {
             directory: directory.to_owned(),
             expected_sha256: expected_sha256.into(),
-            scheme: None,
+            scheme: OnceLock::new(),
         }
     }
 
@@ -58,12 +59,12 @@ impl Mlst {
     }
 
     /// The `mlst` report field for one input. `bytes` is `None` when the input was not validated.
-    pub fn report(&mut self, bytes: Option<&[u8]>) -> Value {
+    pub fn report(&self, bytes: Option<&[u8]>) -> Value {
         let Some(bytes) = bytes else {
             return self.not_run("input");
         };
         let (directory, expected) = (&self.directory, &self.expected_sha256);
-        let scheme = self.scheme.get_or_insert_with(|| {
+        let scheme = self.scheme.get_or_init(|| {
             Scheme::verify(&Directory(directory.clone()), expected).map_err(|e| e.to_string())
         });
         let scheme = match scheme {
@@ -92,7 +93,7 @@ impl Mlst {
 
     /// Reject a scheme package changed during the run.
     pub fn finish(&self) -> Result<(), String> {
-        match &self.scheme {
+        match self.scheme.get() {
             Some(Ok(scheme)) => scheme
                 .recheck(&Directory(self.directory.clone()))
                 .map_err(|e| e.to_string()),

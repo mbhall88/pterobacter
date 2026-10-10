@@ -1,0 +1,1764 @@
+{
+ "cases": [
+  {
+   "applicable": true,
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "drop_one_contradiction",
+   "expected": {
+    "incomplete_groups": [],
+    "would_assign": "GV01"
+   },
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P01",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "paired control: GV03 has two measured contradictions; removing one keeps it excluded and the positive stands",
+   "p3a_model": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "record_id": "rec-1",
+   "refused": null,
+   "removed_groups": [],
+   "removed_rows": [
+    "d"
+   ],
+   "rival": "GV03",
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "d"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01",
+   "target_group": "GV03"
+  },
+  {
+   "applicable": true,
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "drop_contradictions",
+   "expected": {
+    "incomplete_groups": [
+     "GV03"
+    ],
+    "would_assign": null
+   },
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P02",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "paired case: removing both GV03 contradictions leaves it with missing comparisons only, so it is incomplete and the positive is withheld",
+   "p3a_model": {
+    "category": "gv_withheld_incomplete",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [
+     "GV03"
+    ],
+    "reasons": [
+     "diagnostic_only_no_deployment_call",
+     "incomplete_alternative_or_member_evidence"
+    ],
+    "violations": [],
+    "would_assign": null
+   },
+   "record_id": "rec-1",
+   "refused": null,
+   "removed_groups": [],
+   "removed_rows": [
+    "d",
+    "e"
+   ],
+   "rival": "GV03",
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "d"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01",
+   "target_group": "GV03"
+  },
+  {
+   "applicable": true,
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "drop_contradictions",
+   "expected": {
+    "incomplete_groups": [
+     "GV02"
+    ],
+    "would_assign": null
+   },
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P03",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "sole contradiction of a singleton rival removed: incomplete",
+   "p3a_model": {
+    "category": "gv_withheld_incomplete",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [
+     "GV02"
+    ],
+    "reasons": [
+     "diagnostic_only_no_deployment_call",
+     "incomplete_alternative_or_member_evidence"
+    ],
+    "violations": [],
+    "would_assign": null
+   },
+   "record_id": "rec-1",
+   "refused": null,
+   "removed_groups": [],
+   "removed_rows": [
+    "c"
+   ],
+   "rival": "GV02",
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "d"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01",
+   "target_group": "GV02"
+  },
+  {
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "drop_one_contradiction",
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P04",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "a singleton rival has no second contradiction: the control is refused",
+   "record_id": "rec-1",
+   "refused": "rival_without_second_contradiction",
+   "removed_groups": [],
+   "rival": "GV02",
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "d"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01"
+  },
+  {
+   "applicable": true,
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "drop_contradictions",
+   "expected": {
+    "incomplete_groups": [
+     "GV04"
+    ],
+    "would_assign": null
+   },
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P05",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "rival with a measured member at or above 99.50: its contradictions removed, it is incomplete, not compatible",
+   "p3a_model": {
+    "category": "gv_withheld_incomplete",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [
+     "GV04"
+    ],
+    "reasons": [
+     "diagnostic_only_no_deployment_call",
+     "incomplete_alternative_or_member_evidence"
+    ],
+    "violations": [],
+    "would_assign": null
+   },
+   "record_id": "rec-1",
+   "refused": null,
+   "removed_groups": [],
+   "removed_rows": [
+    "g",
+    "h"
+   ],
+   "rival": "GV04",
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "d"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01",
+   "target_group": "GV04"
+  },
+  {
+   "applicable": true,
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "drop_one_contradiction",
+   "expected": {
+    "incomplete_groups": [],
+    "would_assign": "GV01"
+   },
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P06",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "paired control on the same rival: one of two contradictions removed, still excluded",
+   "p3a_model": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "record_id": "rec-1",
+   "refused": null,
+   "removed_groups": [],
+   "removed_rows": [
+    "h"
+   ],
+   "rival": "GV04",
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "d"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01",
+   "target_group": "GV04"
+  },
+  {
+   "applicable": true,
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "missing_own_member",
+   "expected": {
+    "incomplete_groups": [
+     "GV01"
+    ],
+    "would_assign": null
+   },
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P07",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "missing own member: the only own member left after the self mask",
+   "p3a_model": {
+    "category": "gv_withheld_incomplete",
+    "compatible_groups": [],
+    "incomplete_groups": [
+     "GV01"
+    ],
+    "reasons": [
+     "diagnostic_only_no_deployment_call",
+     "incomplete_alternative_or_member_evidence"
+    ],
+    "violations": [],
+    "would_assign": null
+   },
+   "record_id": "rec-1",
+   "refused": null,
+   "removed_groups": [],
+   "removed_rows": [
+    "b"
+   ],
+   "rival": null,
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "d"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01",
+   "target_group": "GV01"
+  },
+  {
+   "applicable": true,
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "missing_own_member",
+   "expected": {
+    "incomplete_groups": [
+     "GV01"
+    ],
+    "would_assign": null
+   },
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P08",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "missing own member at the inclusive 99.50 cutoff",
+   "p3a_model": {
+    "category": "gv_withheld_incomplete",
+    "compatible_groups": [],
+    "incomplete_groups": [
+     "GV01"
+    ],
+    "reasons": [
+     "diagnostic_only_no_deployment_call",
+     "incomplete_alternative_or_member_evidence"
+    ],
+    "violations": [],
+    "would_assign": null
+   },
+   "record_id": "rec-1",
+   "refused": null,
+   "removed_groups": [],
+   "removed_rows": [
+    "b"
+   ],
+   "rival": null,
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.50",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "d"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01",
+   "target_group": "GV01"
+  },
+  {
+   "applicable": true,
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "missing_own_member",
+   "expected": {
+    "incomplete_groups": [
+     "GV01"
+    ],
+    "would_assign": null
+   },
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P09",
+   "masked_members": [],
+   "matched_group": "GV01",
+   "note": "missing own member, two own members left (no self mask)",
+   "p3a_model": {
+    "category": "gv_withheld_incomplete",
+    "compatible_groups": [],
+    "incomplete_groups": [
+     "GV01"
+    ],
+    "reasons": [
+     "diagnostic_only_no_deployment_call",
+     "incomplete_alternative_or_member_evidence"
+    ],
+    "violations": [],
+    "would_assign": null
+   },
+   "record_id": "rec-1",
+   "refused": null,
+   "removed_groups": [],
+   "removed_rows": [
+    "b"
+   ],
+   "rival": null,
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "a"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "d"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01",
+   "target_group": "GV01"
+  },
+  {
+   "applicable": true,
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "missing_rival",
+   "expected": {
+    "incomplete_groups": [
+     "GV02"
+    ],
+    "would_assign": null
+   },
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P10",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "missing rival by the hash rule",
+   "p3a_model": {
+    "category": "gv_withheld_incomplete",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [
+     "GV02"
+    ],
+    "reasons": [
+     "diagnostic_only_no_deployment_call",
+     "incomplete_alternative_or_member_evidence"
+    ],
+    "violations": [],
+    "would_assign": null
+   },
+   "record_id": "rec-1",
+   "refused": null,
+   "removed_groups": [],
+   "removed_rows": [
+    "c"
+   ],
+   "rival": null,
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "d"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01",
+   "target_group": "GV02"
+  },
+  {
+   "applicable": true,
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "missing_rival",
+   "expected": {
+    "incomplete_groups": [
+     "GV03"
+    ],
+    "would_assign": null
+   },
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P11",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "missing rival by the hash rule, another record ID: a rival with two contradictions",
+   "p3a_model": {
+    "category": "gv_withheld_incomplete",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [
+     "GV03"
+    ],
+    "reasons": [
+     "diagnostic_only_no_deployment_call",
+     "incomplete_alternative_or_member_evidence"
+    ],
+    "violations": [],
+    "would_assign": null
+   },
+   "record_id": "rec-3",
+   "refused": null,
+   "removed_groups": [],
+   "removed_rows": [
+    "d",
+    "e"
+   ],
+   "rival": null,
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "d"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01",
+   "target_group": "GV03"
+  },
+  {
+   "applicable": true,
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "rival_control",
+   "expected": {
+    "incomplete_groups": [],
+    "would_assign": "GV01"
+   },
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P12",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "rival control by the hash rule",
+   "p3a_model": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "record_id": "rec-1",
+   "refused": null,
+   "removed_groups": [],
+   "removed_rows": [
+    "h"
+   ],
+   "rival": null,
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "d"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01",
+   "target_group": "GV04"
+  },
+  {
+   "applicable": true,
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "missing_rival",
+   "expected": {
+    "incomplete_groups": [
+     "GV04"
+    ],
+    "would_assign": null
+   },
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P13",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "removed group GV03 is not a rival; the rival comes from GV02 and GV04",
+   "p3a_model": {
+    "category": "gv_withheld_incomplete",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [
+     "GV04"
+    ],
+    "reasons": [
+     "diagnostic_only_no_deployment_call",
+     "incomplete_alternative_or_member_evidence"
+    ],
+    "violations": [],
+    "would_assign": null
+   },
+   "record_id": "rec-3",
+   "refused": null,
+   "removed_groups": [
+    "GV03"
+   ],
+   "removed_rows": [
+    "g",
+    "h"
+   ],
+   "rival": null,
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01",
+   "target_group": "GV04"
+  },
+  {
+   "applicable": false,
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "missing_rival",
+   "expected": "not_applicable_no_rival",
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P14",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "no other group in the definition: missing rival not applicable",
+   "record_id": "rec-1",
+   "refused": null,
+   "removed_groups": [
+    "GV02",
+    "GV03",
+    "GV04"
+   ],
+   "removed_rows": [],
+   "rival": null,
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    }
+   ],
+   "source_group": "GV01",
+   "target_group": null
+  },
+  {
+   "applicable": false,
+   "baseline": {
+    "category": "gv_source_group",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [],
+    "reasons": [
+     "diagnostic_only_no_deployment_call"
+    ],
+    "violations": [],
+    "would_assign": "GV01"
+   },
+   "call": "rival_control",
+   "expected": "not_applicable_no_second_contradiction",
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P15",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "no rival with two contradictions: control not applicable",
+   "record_id": "rec-1",
+   "refused": null,
+   "removed_groups": [],
+   "removed_rows": [],
+   "rival": null,
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "d"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01",
+   "target_group": null
+  },
+  {
+   "baseline": {
+    "category": "gv_withheld_incomplete",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [
+     "GV02"
+    ],
+    "reasons": [
+     "diagnostic_only_no_deployment_call",
+     "incomplete_alternative_or_member_evidence"
+    ],
+    "violations": [],
+    "would_assign": null
+   },
+   "call": "missing_rival",
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P16",
+   "masked_members": [
+    "a",
+    "c"
+   ],
+   "matched_group": "GV01",
+   "note": "emptied (unassessable) rival: not a positive baseline, refused",
+   "record_id": "rec-1",
+   "refused": "rival_without_measured_contradiction",
+   "removed_groups": [],
+   "rival": null,
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "d"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01"
+  },
+  {
+   "baseline": {
+    "category": "gv_withheld_incomplete",
+    "compatible_groups": [
+     "GV01"
+    ],
+    "incomplete_groups": [
+     "GV03"
+    ],
+    "reasons": [
+     "diagnostic_only_no_deployment_call",
+     "incomplete_alternative_or_member_evidence"
+    ],
+    "violations": [],
+    "would_assign": null
+   },
+   "call": "missing_rival",
+   "groups": {
+    "GV01": [
+     "a",
+     "b"
+    ],
+    "GV02": [
+     "c"
+    ],
+    "GV03": [
+     "d",
+     "e"
+    ],
+    "GV04": [
+     "f",
+     "g",
+     "h"
+    ]
+   },
+   "id": "P17",
+   "masked_members": [
+    "a"
+   ],
+   "matched_group": "GV01",
+   "note": "incomplete rival (member missing, none below 99.50): not a positive baseline, refused",
+   "record_id": "rec-1",
+   "refused": "rival_without_measured_contradiction",
+   "removed_groups": [],
+   "rival": null,
+   "rows": [
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "b"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "c"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "e"
+    },
+    {
+     "af_query": "90",
+     "af_reference": "90",
+     "ani": "99.80",
+     "reference_id": "f"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "g"
+    },
+    {
+     "af_query": "85",
+     "af_reference": "85",
+     "ani": "90.00",
+     "reference_id": "h"
+    }
+   ],
+   "source_group": "GV01"
+  }
+ ],
+ "description": "P4a-r3 GV-4 row-removal fixtures (amendment A5): rule, expected result and the accepted P3a model output. P4b must reproduce all before perturbing real records.",
+ "p3a_model_version": "p3a-genomovar-proposal-v1",
+ "seed": "Enterobacter-P4-gv-missing-v1",
+ "threshold": "99.50"
+}

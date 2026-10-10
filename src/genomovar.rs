@@ -239,6 +239,30 @@ pub struct GenomovarParent {
 }
 
 impl GenomovarParent {
+    /// Authenticated, complete decision provenance, independent of parent eligibility.
+    pub fn provenance_verified(report: &Value) -> bool {
+        let input = &report["input"];
+        let bound = report["reference_package"]["status"] == "verified"
+            && report["reference_package"]["package"]["manifest_sha256"]
+                == input["reference_package_sha256"]
+            && input["query_sha256"]
+                .as_str()
+                .is_some_and(crate::reference::is_sha256)
+            && input["reference_package_sha256"]
+                .as_str()
+                .is_some_and(crate::reference::is_sha256);
+        bound
+            && ((report["policy"]["id"] == crate::decision::V1_POLICY_ID
+                && report["evaluation_status"] == "completed")
+                || (report["policy_id"] == crate::rescue::V2_POLICY_ID
+                    && report["evaluation_status"] == "complete"))
+    }
+
+    /// Reasons a valid parent decision withholds a genomovar positive.
+    pub fn eligibility_reasons(&self) -> Vec<&'static str> {
+        parent_reasons(self)
+    }
+
     /// Read the parent from a final v1 or v2 decision, or a report built on one. Anything else
     /// gives an empty, unverified parent.
     ///
@@ -257,9 +281,7 @@ impl GenomovarParent {
         };
         let input = &report["input"];
         // Decided against the authenticated package its evidence names.
-        let package = &report["reference_package"];
-        let bound = package["status"] == "verified"
-            && package["package"]["manifest_sha256"] == input["reference_package_sha256"];
+        let bound = Self::provenance_verified(report);
         let mut parent = GenomovarParent {
             query_sha256: text(&input["query_sha256"]),
             package_sha256: text(&input["reference_package_sha256"]),
@@ -449,17 +471,36 @@ pub struct Assessment {
     membership_sha256: String,
     member_count: usize,
     assigned: Option<String>,
+    #[cfg(feature = "dev")]
+    would_assign: Option<String>,
     compatible: Vec<String>,
     incomplete: Vec<String>,
     reasons: Vec<&'static str>,
     cells: Vec<Cell>,
     warnings: Vec<&'static str>,
     context: Context,
+    #[cfg(feature = "dev")]
+    diagnostic_actions: Option<DiagnosticActions>,
+}
+
+#[derive(Debug, Clone)]
+#[cfg(feature = "dev")]
+struct DiagnosticActions {
+    masked_members: Vec<String>,
+    removed_groups: Vec<String>,
+    excluded_evidence_rows: Vec<String>,
 }
 
 impl Assessment {
     pub fn assigned_genomovar_id(&self) -> Option<&str> {
         self.assigned.as_deref()
+    }
+
+    /// Candidate under the same evidence and gates before the diagnostic suppression is applied.
+    /// In an ordinary assessment this equals the deployment assignment.
+    #[cfg(feature = "dev")]
+    pub fn would_assign_genomovar_id(&self) -> Option<&str> {
+        self.would_assign.as_deref()
     }
 
     pub fn to_value(&self) -> Value {
@@ -477,7 +518,7 @@ impl Assessment {
                 "minimum_af_reference_percent": c.minimum.map(|m| pct(m.2))})
             })
             .collect();
-        json!({"policy_id": POLICY_ID, "policy_sha256": reporting_policy_sha256(),
+        let value = json!({"policy_id": POLICY_ID, "policy_sha256": reporting_policy_sha256(),
             "approval": approval(),
             "status": if self.assigned.is_some() { "assigned" } else { "withheld" },
             "genomovar_id": self.assigned,
@@ -497,7 +538,29 @@ impl Assessment {
                 "engine": c.engine, "engine_version": c.engine_version, "parameters": c.parameters,
                 "adapter_verified": c.adapter_verified, "query_sha256": c.query_sha256,
                 "reference_package_sha256": c.package_sha256,
-                "diagnostic_exclusion": c.diagnostic_exclusion}})
+                "diagnostic_exclusion": c.diagnostic_exclusion}});
+        #[cfg(feature = "dev")]
+        let value = {
+            let mut value = value;
+            if let Some(actions) = &self.diagnostic_actions {
+                value["diagnostic_would_assign_genomovar_id"] = self.would_assign.clone().into();
+                value["diagnostic_actions"] = json!({
+                    "masked_members": actions.masked_members,
+                    "removed_groups": actions.removed_groups,
+                    "excluded_evidence_rows": actions.excluded_evidence_rows,
+                });
+                value["diagnostic_outcome"] = if !c.parent.eligibility_reasons().is_empty() {
+                    "gv_withheld_parent"
+                } else if self.would_assign.is_some() {
+                    "gv_would_assign"
+                } else {
+                    "gv_withheld"
+                }
+                .into();
+            }
+            value
+        };
+        value
     }
 }
 
@@ -640,21 +703,205 @@ pub fn assess(
             );
         }
     }
-    let assigned = selected
-        .filter(|_| reasons.is_empty())
+    let would_assign = selected
+        .filter(|_| {
+            reasons
+                .iter()
+                .all(|reason| *reason == "diagnostic_only_no_deployment_call")
+        })
         .map(|c| c.group.clone());
+    let assigned = if context.diagnostic_exclusion {
+        None
+    } else {
+        would_assign.clone()
+    };
     Ok(Assessment {
         version: definition.version.clone(),
         membership_sha256: definition.membership_sha256(),
         member_count: definition.member_count(),
         assigned,
+        #[cfg(feature = "dev")]
+        would_assign,
         compatible,
         incomplete,
         reasons,
         cells,
         warnings,
         context: context.clone(),
+        #[cfg(feature = "dev")]
+        diagnostic_actions: None,
     })
+}
+
+/// Apply development-only member masks and whole-group removals to saved evidence. The resulting
+/// assessment is permanently marked diagnostic and cannot publish a deployment assignment.
+#[cfg(feature = "dev")]
+pub fn diagnostic_assess(
+    definition: &Definition,
+    rows: &[MemberRow],
+    context: &Context,
+    masked_members: &[String],
+    removed_groups: &[String],
+    excluded_evidence_rows: &[String],
+) -> Result<Assessment, GenomovarError> {
+    let mut masked = std::collections::BTreeSet::new();
+    for member in masked_members {
+        if !definition.contains(member) || !masked.insert(member.as_str()) {
+            return reject(format!("{member}: unknown or duplicate masked member"));
+        }
+    }
+    let mut removed = std::collections::BTreeSet::new();
+    for group in removed_groups {
+        if !definition.groups.contains_key(group) || !removed.insert(group.as_str()) {
+            return reject(format!("{group}: unknown or duplicate removed group"));
+        }
+    }
+    let mut excluded_rows = std::collections::BTreeSet::new();
+    for member in excluded_evidence_rows {
+        if !rows.iter().any(|row| &row.reference_id == member)
+            || !excluded_rows.insert(member.as_str())
+        {
+            return reject(format!(
+                "{member}: unknown, absent or duplicate excluded evidence row"
+            ));
+        }
+    }
+
+    // Validate the original complete evidence before filtering it, so an invalid row cannot be
+    // hidden by a mask or group removal.
+    assess(definition, rows, context)?;
+
+    let reduced_groups = definition
+        .groups
+        .iter()
+        .filter(|(group, _)| !removed.contains(group.as_str()))
+        .map(|(group, members)| {
+            (
+                group.clone(),
+                members
+                    .iter()
+                    .filter(|member| !masked.contains(member.as_str()))
+                    .cloned()
+                    .collect(),
+            )
+        })
+        .collect();
+    let reduced = Definition::new(&definition.version, reduced_groups)?;
+    let remaining: std::collections::BTreeSet<&str> = reduced
+        .groups
+        .values()
+        .flatten()
+        .map(String::as_str)
+        .collect();
+    let reduced_rows: Vec<MemberRow> = rows
+        .iter()
+        .filter(|row| {
+            remaining.contains(row.reference_id.as_str())
+                && !excluded_rows.contains(row.reference_id.as_str())
+        })
+        .cloned()
+        .collect();
+    let mut diagnostic_context = context.clone();
+    diagnostic_context.diagnostic_exclusion = true;
+    let mut assessment = assess(&reduced, &reduced_rows, &diagnostic_context)?;
+    assessment.diagnostic_actions = Some(DiagnosticActions {
+        masked_members: masked_members.to_vec(),
+        removed_groups: removed_groups.to_vec(),
+        excluded_evidence_rows: excluded_evidence_rows.to_vec(),
+    });
+    Ok(assessment)
+}
+
+/// The source calling policy, including exact v2 threshold settings.
+#[cfg(feature = "dev")]
+pub enum DiagnosticParentPolicy {
+    V1,
+    V2(crate::rescue::Thresholds),
+}
+
+#[cfg(feature = "dev")]
+impl DiagnosticParentPolicy {
+    /// Retain the source decision's exact v2 settings and validation mode when recomputing.
+    pub fn from_report(report: &Value) -> Result<Self, GenomovarError> {
+        if report["policy"]["id"] == crate::decision::V1_POLICY_ID {
+            return Ok(Self::V1);
+        }
+        if report["policy_id"] != crate::rescue::V2_POLICY_ID {
+            return reject("unsupported diagnostic parent policy");
+        }
+        let supplied = &report["thresholds"]["supplied"];
+        let thresholds = if supplied.is_null() {
+            crate::rescue::Thresholds::standard()
+        } else {
+            crate::rescue::Thresholds::from_json(&supplied.to_string())
+                .map_err(|error| GenomovarError(error.to_string()))?
+        };
+        let policy = thresholds.policy_value();
+        for field in ["policy_mode", "thresholds", "settings_sha256"] {
+            if report[field] != policy[field] {
+                return reject("source parent policy settings or digest are inconsistent");
+            }
+        }
+        Ok(Self::V2(thresholds))
+    }
+}
+
+/// Recompute the parent on the declared primary mask using authenticated, unmasked evidence.
+/// Annotation and ANIm files are verified by the adapter before their values enter this API.
+#[cfg(feature = "dev")]
+pub fn diagnostic_parent(
+    evidence: crate::evidence::SavedEvidence,
+    package: &VerifiedPackage,
+    mask: &[String],
+    policy: &DiagnosticParentPolicy,
+    records: &crate::rescue::AnimRecords,
+    method_profile: Option<&str>,
+) -> Result<Value, GenomovarError> {
+    if !records.is_empty() && method_profile.is_none() {
+        return reject("diagnostic parent ANIm records require their method profile");
+    }
+    let panel = crate::panel::Panel::from_package(package, &evidence)
+        .map_err(|error| GenomovarError(error.to_string()))?;
+    let mut decision = match policy {
+        DiagnosticParentPolicy::V1 => {
+            if !records.is_empty() || method_profile.is_some() {
+                return reject("v1 diagnostic parents do not accept v2 ANIm records");
+            }
+            let mut excluded = std::collections::BTreeSet::new();
+            for id in mask {
+                if panel.get(id).is_none() || !excluded.insert(id.as_str()) {
+                    return reject(format!("{id}: unknown or duplicate primary mask reference"));
+                }
+            }
+            let unreturned = excluded
+                .iter()
+                .filter(|id| !evidence.references().iter().any(|row| row.id == **id))
+                .count();
+            let masked = evidence.without_references(&excluded, unreturned);
+            let mut value = crate::decision::decide(&masked, &crate::decision::Policy::v1())
+                .to_value()
+                .clone();
+            value["input"]["mask"] = json!({"excluded_reference_ids": excluded});
+            value
+        }
+        DiagnosticParentPolicy::V2(thresholds) => {
+            let rescue = crate::rescue::RescueInput::new(evidence, panel, mask, thresholds.clone())
+                .map_err(|error| GenomovarError(error.to_string()))?;
+            let bound = match method_profile {
+                Some(profile) => rescue
+                    .bind_to_plan(records, profile)
+                    .map_err(|error| GenomovarError(error.to_string()))?,
+                None => crate::rescue::BoundAnim::none(),
+            };
+            rescue
+                .decide(&bound)
+                .map_err(|error| GenomovarError(error.to_string()))?
+                .to_value()
+                .clone()
+        }
+    };
+    decision["reference_package"] = package.to_value();
+    Ok(decision)
 }
 
 /// v1, and the v2 successor when its call is the unchanged v1 skani call (see [`GenomovarParent`]).

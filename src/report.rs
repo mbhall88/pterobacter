@@ -120,12 +120,6 @@ fn challenge_assessment(report: &Value) -> &'static str {
     if !is_v2(report) {
         return "not_applicable";
     }
-    if report["execution"]["status"]
-        .as_str()
-        .is_some_and(|s| s != "complete")
-    {
-        return "not_assessed";
-    }
     match report["competitor_evaluation"].as_str() {
         Some("complete") => "completed",
         Some("incomplete") => "partial",
@@ -741,6 +735,9 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
         );
     } else {
         let note = match challenge_assessment(report) {
+            "completed" if report["execution"]["status"] == "incomplete" => Some(
+                "The competitor panel was fully measured, but execution or integrity checks failed. Retained measurements do not establish a valid call.",
+            ),
             "completed" if challenges.is_empty() => {
                 Some("No reference challenged the call. The competitor panel was fully measured.")
             }

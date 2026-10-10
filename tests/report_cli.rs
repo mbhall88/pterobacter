@@ -389,7 +389,7 @@ fn a_report_dir_inside_an_input_package_is_refused_before_any_analysis() {
     );
     assert_eq!(output.status.code(), Some(2));
     assert!(output.stdout.is_empty());
-    assert!(String::from_utf8_lossy(&output.stderr).contains("inside the input package"));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("inside package"));
     assert!(!inside.exists(), "nothing is created inside the package");
 }
 
@@ -421,4 +421,79 @@ fn unmeasured_challenges_are_not_reported_as_negative_evidence() {
     assert!(markdown.contains("Not assessed"), "{markdown}");
     let calls = std::fs::read_to_string(reports.join("calls.tsv")).unwrap();
     assert_eq!(column(&calls, 0, "challenge_assessment"), "not_assessed");
+}
+
+#[test]
+fn report_bundle_collisions_are_rejected_before_creating_any_outputs() {
+    let (dir, pin, _) = native_package();
+    let missing = dir.path().join("missing.fa");
+    let reports = dir.path().join("reports");
+    let parent = dir.path().join("parent");
+    std::fs::create_dir(&parent).unwrap();
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(dir.path(), dir.path().join("alias")).unwrap();
+    let mut cases = Vec::new();
+    for flag in ["--output", "--anim-output", "--anim-cache"] {
+        cases.push((flag, reports.clone()));
+        cases.push((flag, reports.join("report.json")));
+    }
+    cases.push(("--anim-cache", dir.path().to_path_buf()));
+    cases.push(("--anim-cache", parent.join("../reports")));
+    #[cfg(unix)]
+    cases.push(("--anim-cache", dir.path().join("alias/reports")));
+    for (flag, path) in cases {
+        let output = tero(
+            dir.path(),
+            &pin,
+            &[
+                "--report-dir".as_ref(),
+                reports.as_os_str(),
+                flag.as_ref(),
+                path.as_os_str(),
+            ],
+            &[&missing],
+        );
+        assert_eq!(output.status.code(), Some(2), "{flag} {}", path.display());
+        assert!(output.stdout.is_empty());
+        assert!(
+            String::from_utf8_lossy(&output.stderr).contains("output collision"),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(!reports.exists());
+    }
+}
+
+#[test]
+fn batch_reports_agree_with_separate_output_file_and_preserve_argument_order() {
+    let (dir, pin, seq) = native_package();
+    let query = dir.path().join("query.fa");
+    std::fs::write(&query, [b">chr\n".as_slice(), &seq, b"\n"].concat()).unwrap();
+    let missing = dir.path().join("missing.fa");
+    let reports = dir.path().join("reports");
+    let output_path = dir.path().join("output.json");
+    let output = tero(
+        dir.path(),
+        &pin,
+        &[
+            "--report-dir".as_ref(),
+            reports.as_os_str(),
+            "--output".as_ref(),
+            output_path.as_os_str(),
+            "--jobs".as_ref(),
+            "2".as_ref(),
+        ],
+        &[&query, &missing],
+    );
+    assert_eq!(output.status.code(), Some(3));
+    assert!(output.stdout.is_empty());
+    let json: Value = serde_json::from_slice(&std::fs::read(&output_path).unwrap()).unwrap();
+    let bundle: Value =
+        serde_json::from_slice(&std::fs::read(reports.join("report.json")).unwrap()).unwrap();
+    assert_eq!(json, bundle);
+    let calls = std::fs::read_to_string(reports.join("calls.tsv")).unwrap();
+    assert_eq!(column(&calls, 0, "call_status"), "assigned");
+    assert_eq!(column(&calls, 1, "execution_status"), "incomplete");
+    assert_eq!(json[0]["input"]["ordinal"], 1);
+    assert_eq!(json[1]["input"]["ordinal"], 2);
 }

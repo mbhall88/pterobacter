@@ -75,10 +75,14 @@ For the v2 policy, an empty challenge list is a result only when the check was c
 
 | Value | Meaning |
 |---|---|
-| `completed` | The run finished and every competitor pair was measured. An empty list means nothing challenged the call. |
-| `partial` | Some competitor pairs are missing. Any challenge listed is real; an unlisted reference has not been cleared. |
-| `not_assessed` | The run did not finish, or stopped before the competitor panel was measured. Nothing can be said about challenges. |
-| `not_applicable` | The query was outside the rescue band, so no challenge test ran (always the case for v1). | ANI methods are not mixed in one ranking. skani orders the table; ANIm values, where the v2 policy measured them, sit beside it as separate columns.
+| `completed` | Every required competitor pair was measured. An empty list means the retained measurements contain no challenge; this alone does not validate the call. |
+| `partial` | Some competitor pairs are missing. Known challenges are retained; an unlisted reference has not been cleared. |
+| `not_assessed` | The competitor panel was not assessed. An empty challenge list is not negative evidence. |
+| `not_applicable` | The policy did not require a competitor check; for example, the query was outside the rescue band or lacked a qualifying skani coverage witness. V1 has no such check. |
+
+Assessment coverage is separate from `execution_status`. A failed execution or integrity check can retain measurements while withholding the call. Check both fields.
+
+ANI methods are not mixed in one ranking. skani orders the table; ANIm values, where the v2 policy measured them, sit beside it as separate columns.
 
 ### Counts and versions
 
