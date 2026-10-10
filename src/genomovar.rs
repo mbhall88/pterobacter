@@ -267,6 +267,95 @@ impl Parent {
         }
         parent
     }
+
+    pub fn to_value(&self) -> Value {
+        json!({"policy_id": self.policy_id, "status": self.status,
+            "species_id": self.species_id, "subspecies_id": self.subspecies_id,
+            "verified": self.verified, "query_sha256": self.query_sha256,
+            "reference_package_sha256": self.package_sha256,
+            "blocking_reasons": self.blocking_reasons, "scope_outcome": self.scope_outcome})
+    }
+}
+
+/// The gates the parent alone decides. Any of them makes a genomovar search pointless.
+fn parent_reasons(parent: &Parent) -> Vec<&'static str> {
+    let mut reasons = Vec::new();
+    if parent.status != "assigned"
+        || parent.species_id.as_deref() != Some(PARENT_SPECIES_ID)
+        || parent.subspecies_id.as_deref() != Some(PARENT_SUBSPECIES_ID)
+        || !parent.verified
+        || !ACCEPTED_PARENT_POLICIES.contains(&parent.policy_id.as_str())
+    {
+        reasons.push("absent_eligible_parent");
+    }
+    if !["not_assessed", "explained_after_checks"].contains(&parent.scope_outcome.as_str()) {
+        reasons.push("unresolved_scope");
+    }
+    if !parent.blocking_reasons.is_empty() {
+        reasons.push("upstream_veto");
+    }
+    reasons
+}
+
+/// The withheld section for a query whose genomovar search is not run: the parent is not
+/// eligible, or the package cannot support a call. `None` means the search should run.
+pub fn before_search(parent: &Parent, definition: Result<&Definition, &str>) -> Option<Value> {
+    let mut reasons = parent_reasons(parent);
+    let detail = definition.err();
+    if detail.is_some() {
+        reasons.push("unsupported_method_or_definition");
+    }
+    (!reasons.is_empty()).then(|| {
+        json!({"policy_id": POLICY_ID, "status": "withheld", "genomovar_id": null,
+            "reasons": reasons, "detail": detail, "compatible_groups": [], "incomplete_groups": [],
+            "groups": [], "warnings": [], "parent": parent.to_value(),
+            "search": {"status": "not_run"}})
+    })
+}
+
+/// The section for a genomovar search that failed: an execution failure, not a negative result.
+pub fn failed(parent: &Parent, error: &str) -> Value {
+    json!({"policy_id": POLICY_ID, "status": "failed", "genomovar_id": null,
+        "reasons": ["incomplete_or_unbound_execution"], "detail": error,
+        "compatible_groups": [], "incomplete_groups": [], "groups": [], "warnings": [],
+        "parent": parent.to_value(), "search": {"status": "failed", "error": error}})
+}
+
+/// Recheck a report's genomovar immediately before publication, and only then set the report's
+/// own `genomovar_id`. The section's parent must still be the report's final, complete and
+/// eligible parent on the same query and package. Otherwise the genomovar is cleared and the
+/// compatible evidence is kept.
+pub fn recheck(report: &mut Value) {
+    let section = &report["genomovar"];
+    let mut assigned = section["genomovar_id"].as_str().map(str::to_owned);
+    if assigned.is_some() {
+        let parent = Parent::from_report(report);
+        let complete = report
+            .get("execution")
+            .is_none_or(|e| e["status"] == "complete");
+        let standing = complete
+            && section["status"] == "assigned"
+            && parent_reasons(&parent).is_empty()
+            && parent.to_value() == section["parent"];
+        if !standing {
+            assigned = None;
+            let section = &mut report["genomovar"];
+            section["status"] = "withheld".into();
+            section["genomovar_id"] = Value::Null;
+            section["reasons"]
+                .as_array_mut()
+                .expect("assessment reasons")
+                .push("parent_withdrawn_before_publication".into());
+        }
+    }
+    let target = if report["assignment"].is_object() {
+        &mut report["assignment"]
+    } else {
+        report
+    };
+    if target.is_object() {
+        target["genomovar_id"] = assigned.into();
+    }
 }
 
 /// What the front end's adapter verified about the parent and the genomovar search.
@@ -332,6 +421,7 @@ pub struct Assessment {
     reasons: Vec<&'static str>,
     cells: Vec<Cell>,
     warnings: Vec<&'static str>,
+    context: Context,
 }
 
 impl Assessment {
@@ -341,6 +431,7 @@ impl Assessment {
 
     pub fn to_value(&self) -> Value {
         let pct = |p: Percent| serde_json::to_value(p).expect("percent");
+        let c = &self.context;
         let groups: Vec<Value> = self
             .cells
             .iter()
@@ -365,7 +456,14 @@ impl Assessment {
                 "member_count": self.member_count, "membership_sha256": self.membership_sha256},
             "rule": {"ani_minimum_percent": pct(ANI_MINIMUM), "every_member": true,
                 "both_af_minimum_percent": pct(AF_MINIMUM),
-                "rival_exclusion": "measured_below_threshold_member"}})
+                "rival_exclusion": "measured_below_threshold_member"},
+            "parent": c.parent.to_value(),
+            "search": {"status": c.search_status, "input_kind": c.input_kind,
+                "query_scope": c.query_scope, "reference_scope": c.reference_scope,
+                "engine": c.engine, "engine_version": c.engine_version, "parameters": c.parameters,
+                "adapter_verified": c.adapter_verified, "query_sha256": c.query_sha256,
+                "reference_package_sha256": c.package_sha256,
+                "diagnostic_exclusion": c.diagnostic_exclusion}})
     }
 }
 
@@ -451,16 +549,8 @@ pub fn assess(
     let compatible = of(&[State::Compatible]);
     let incomplete = of(&[State::Incomplete, State::Unassessable]);
 
-    let mut reasons = Vec::new();
     let parent = &context.parent;
-    if parent.status != "assigned"
-        || parent.species_id.as_deref() != Some(PARENT_SPECIES_ID)
-        || parent.subspecies_id.as_deref() != Some(PARENT_SUBSPECIES_ID)
-        || !parent.verified
-        || !ACCEPTED_PARENT_POLICIES.contains(&parent.policy_id.as_str())
-    {
-        reasons.push("absent_eligible_parent");
-    }
+    let mut reasons = parent_reasons(parent);
     if context.input_kind != "assembly"
         || context.query_scope != QUERY_SCOPE
         || context.reference_scope != REFERENCE_SCOPE
@@ -482,12 +572,6 @@ pub fn assess(
         || context.package_sha256 != parent.package_sha256
     {
         reasons.push("incomplete_or_unbound_execution");
-    }
-    if !["not_assessed", "explained_after_checks"].contains(&parent.scope_outcome.as_str()) {
-        reasons.push("unresolved_scope");
-    }
-    if !parent.blocking_reasons.is_empty() {
-        reasons.push("upstream_veto");
     }
     if context.diagnostic_exclusion {
         reasons.push("diagnostic_only_no_deployment_call");
@@ -535,6 +619,7 @@ pub fn assess(
         reasons,
         cells,
         warnings,
+        context: context.clone(),
     })
 }
 

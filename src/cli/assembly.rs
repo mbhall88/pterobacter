@@ -10,7 +10,8 @@ use crate::skani::{SearchReport, SearchSettings, SeedingMode, SkaniDatabase};
 use std::cell::OnceCell;
 use std::path::PathBuf;
 
-use crate::genomovar::{self, Definition};
+use crate::genomovar::{self, Context, Definition, MemberRow, Parent};
+use std::collections::{BTreeMap, BTreeSet};
 
 /// Authenticated primary panel and its embedded measurement engine. Open once
 /// for a sequential batch; finish rechecks package bytes before reports leave.
@@ -120,9 +121,137 @@ impl AssemblyWorkflow {
         complete["input"]["sequence_scope"] = "whole_assembly_as_supplied".into();
         complete["measurement"] = report["measurement"].take();
         complete["evidence"] = evidence_value;
-        complete["execution"] = json!({"status": "complete", "stage": "decision"});
+        complete["execution"] = json!({"status": "incomplete", "stage": "genomovar"});
+        let section = match &self.genomovar {
+            Ok(definition) => self.genomovar(definition, query_label, bytes, threads, &complete),
+            Err(why) => Ok(
+                genomovar::before_search(&Parent::from_report(&complete), Err(why))
+                    .expect("an unsupported definition is never searched"),
+            ),
+        };
+        let result = match section {
+            Ok(section) => {
+                complete["genomovar"] = section;
+                complete["execution"] = json!({"status": "complete", "stage": "genomovar"});
+                Ok(())
+            }
+            Err(error) => {
+                complete["genomovar"] = genomovar::failed(&Parent::from_report(&complete), &error);
+                Err(format!("genomovar search failed: {error}"))
+            }
+        };
         *report = complete;
-        Ok(())
+        result
+    }
+
+    /// The genomovar section for one query, given the final report of its parent call. The
+    /// uncapped genomovar search of the historical chromosome component runs only for an
+    /// eligible Group A parent. The front end publishes the report-level `genomovar_id` only
+    /// after [`genomovar::recheck`].
+    ///
+    /// [`Self::analyse`] always passes the frozen definition the package carries; another
+    /// definition never yields a supported call through the public command.
+    pub fn genomovar(
+        &self,
+        definition: &Definition,
+        query_label: &str,
+        bytes: &[u8],
+        threads: usize,
+        report: &Value,
+    ) -> Result<Value, String> {
+        let parent = Parent::from_report(report);
+        if let Some(section) = genomovar::before_search(&parent, Ok(definition)) {
+            return Ok(section);
+        }
+        let database = self.genomovar_database()?;
+        let component = self
+            .package
+            .component(genomovar::COMPONENT_ID)
+            .ok_or("package has no genomovar component")?;
+        let measurement = database
+            .search_bytes(
+                query_label,
+                bytes,
+                SearchSettings::Genomovar,
+                threads,
+                SeedingMode::Auto,
+            )
+            .map_err(|e| e.to_string())?;
+        let by_label: BTreeMap<&str, &str> = component
+            .references
+            .iter()
+            .map(|r| (r.search_label.as_str(), r.reference_id.as_str()))
+            .collect();
+        let mut seen = BTreeSet::new();
+        let mut rows = Vec::new();
+        let mut not_returned = Vec::new();
+        for row in &measurement.rows {
+            let id = *by_label
+                .get(row.reference_file.as_str())
+                .ok_or("unbound genomovar reference")?;
+            if !seen.insert(id) {
+                return Err("duplicate genomovar reference".into());
+            }
+            rows.push(MemberRow {
+                reference_id: id.to_owned(),
+                ani: row.ani,
+                af_query: row.af_query,
+                af_reference: row.af_reference,
+            });
+        }
+        for label in &measurement.not_returned_reference_files {
+            let id = *by_label
+                .get(label.as_str())
+                .ok_or("unbound unreturned genomovar reference")?;
+            if !seen.insert(id) {
+                return Err("duplicate unreturned genomovar reference".into());
+            }
+            not_returned.push(id);
+        }
+        if seen.len() != by_label.len() {
+            return Err("skani did not assess the complete genomovar component".into());
+        }
+        let text = |v: &Value| v.as_str().unwrap_or_default().to_owned();
+        let context = Context {
+            parent,
+            input_kind: text(&report["input"]["kind"]),
+            query_scope: text(&report["input"]["sequence_scope"]),
+            reference_scope: component.sequence_scope.clone(),
+            engine: component.engine.clone(),
+            engine_version: if component.engine_version == measurement.engine_version {
+                measurement.engine_version.into()
+            } else {
+                format!(
+                    "{} measured with {}",
+                    component.engine_version, measurement.engine_version
+                )
+            },
+            parameters: database.settings_label(SearchSettings::Genomovar),
+            search_status: "completed".into(),
+            adapter_verified: true,
+            query_sha256: sha256_hex(bytes),
+            package_sha256: self.package.package().manifest_sha256.clone(),
+            diagnostic_exclusion: false,
+        };
+        let assessment =
+            genomovar::assess(definition, &rows, &context).map_err(|e| e.to_string())?;
+        let mut section = assessment.to_value();
+        let search = &mut section["search"];
+        search["component_id"] = genomovar::COMPONENT_ID.into();
+        search["engine_revision"] = measurement.engine_revision.into();
+        search["engine_profile"] = measurement.engine_profile.into();
+        search["reference_count"] = by_label.len().into();
+        search["returned_count"] = rows.len().into();
+        search["not_returned_reference_ids"] = json!(not_returned);
+        search["member_evidence"] = json!(rows
+            .iter()
+            .map(
+                |r| json!({"reference_id": r.reference_id, "ani_percent": r.ani,
+                "aligned_fraction_query_percent": r.af_query,
+                "aligned_fraction_reference_percent": r.af_reference})
+            )
+            .collect::<Vec<_>>());
+        Ok(section)
     }
 
     /// Reject a package changed during a run, including an unreturned reference.

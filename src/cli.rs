@@ -114,6 +114,10 @@ pub fn run_public() -> ExitCode {
             }
         }
     }
+    // Publication: a genomovar stands only if its parent is still the report's final call.
+    for report in &mut results {
+        crate::genomovar::recheck(report);
+    }
     let value = if results.len() == 1 {
         results.remove(0)
     } else {
