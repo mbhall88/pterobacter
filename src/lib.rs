@@ -11,6 +11,7 @@ pub mod decision;
 #[cfg(feature = "dev")]
 pub mod dev;
 pub mod evidence;
+pub mod genomovar;
 pub mod panel;
 pub mod reference;
 pub mod rescue;
