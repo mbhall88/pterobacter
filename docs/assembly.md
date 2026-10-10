@@ -1,4 +1,4 @@
-# Whole-assembly v1 classification
+# Whole-assembly classification
 
 `tero` and `terobacter` accept one or more isolate assembly FASTAs, without a subcommand:
 
@@ -9,7 +9,7 @@ terobacter --reference-package reference --expected-sha256 MANIFEST_SHA256 --thr
 
 Use the SHA-256 of `portable.json` supplied through a trusted package handoff. Computing a digest from an untrusted package does not establish its origin. The command verifies every listed asset, package metadata and component membership before opening the embedded skani database, and checks the package again before writing results. A provisioned run needs no network or external executable. Archived search labels are provenance labels; no archived FASTA is opened.
 
-The default `--policy conservative-assembly-v1` uses the frozen species ANI ≥96%, subspecies ANI ≥98%, both AF ≥80% and subspecies margin ≥1 percentage point rules. Native v2 is unavailable; `--policy conservative-assembly-anim-v2` produces an incomplete report and exits 5. Saved-evidence v2 remains in the development binary. ANIm, MLST and genomovar execution are outside this command's current v1 scope. No query CheckM2 is run.
+The default `--policy conservative-assembly-v1` uses the frozen species ANI ≥96%, subspecies ANI ≥98%, both AF ≥80% and subspecies margin ≥1 percentage point rules. The candidate `--policy conservative-assembly-anim-v2` runs the accepted skani-first rescue plan with embedded MUMmer4. MLST and genomovar execution remain separate work. No query CheckM2 is run.
 
 ## Input and sequence scope
 
@@ -32,8 +32,50 @@ Reports include authenticated data identity and version, policy ID, implementati
 | 2 | Command-line usage error, including missing package/digest, invalid digest or zero threads. No report is available. |
 | 3 | Unreadable, empty, malformed or unsupported assembly input or input kind. |
 | 4 | Package authentication, database opening or final package recheck failed. |
-| 5 | Requested native policy is unavailable. No v1 fallback occurs. |
+| 5 | Requested native policy is unavailable, or ANIm flags are supplied to v1. No v1 fallback occurs. |
 
 For batches with different failures, the last failed input's code is returned; a final package recheck failure takes precedence. Inspect each report's execution status. Development commands retain their separate exit-code meanings in the README.
 
 These are implementation and development-parity checks. Independent biological validation and release/platform acceptance remain separate gates.
+
+## Candidate v2 ANIm rescue
+
+```sh
+tero --reference-package reference --expected-sha256 PRIMARY_MANIFEST_SHA256 \
+  --policy conservative-assembly-anim-v2 \
+  --anim-reference-package reference-fastas --expected-anim-sha256 ANIM_MANIFEST_SHA256 \
+  --anim-output new-evidence isolate.fa > isolate.json
+```
+
+V2 uses the same whole-input skani search. Outside the rescue band it keeps the v1 decision and requires no ANIm component. Eligible queries measure witnesses first. A passing witness requires the entire primary competitor panel, including unreturned references. A decisive veto permits an early stop; the report lists every omitted reference. A positive rescue assigns species only, with null subspecies and genomovar. The report retains `legacy_v1_result`, the original skani evidence, the final plan, exact reciprocal records, artifact directories and hashes. Validation status remains `not_yet_validated`.
+
+Missing required FASTAs, invalid metadata or bytes, failed native execution and interruption produce an incomplete report with a null call and nonzero exit. Successful zero alignment is measured evidence and counts separately from failures. Redirect stdout to save the unified report. `--anim-output` must be a new directory; each query and pair receives a separate retained directory. There is no cache reuse in this slice.
+
+ANIm runs one worker at a time with one native query thread. Defaults are 120 seconds per reciprocal pair, 600 seconds total ANIm wall time per query and 1024 MiB per worker. `--anim-pair-seconds`, `--anim-query-seconds` and `--anim-memory-mib` select limits up to 1800 seconds, 7200 seconds and 6144 MiB respectively; minimum memory is 64 MiB. SIGINT and SIGTERM stop the native worker and retain partial evidence. A complete execution stopped by a biological veto can still report `competitor_evaluation: incomplete`, because the pure decision records which competitors were not measured; `anim_execution.stop_reason: decisive_veto` distinguishes this valid stop from a failed required comparison. The public command never silently substitutes v1 for requested v2.
+
+## Separate reference FASTA component
+
+The optional component has its own directory and trusted SHA-256 for `anim.json`. It contains every primary whole-assembly source FASTA and an exact copy of the primary package's licence manifest. FASTA bytes, lengths, IDs and concept context must match the authenticated primary package. Chromosome-only substitutes, incomplete inventories, extra files, unsafe paths and symbolic links are refused. The component is verified before alignments and again before completing the native run; the primary package is also rechecked before publishing the batch.
+
+Its manifest has this shape; reference entries repeat for the complete primary panel:
+
+```json
+{
+  "schema": "terobacter.anim-reference/1",
+  "component_id": "primary_whole",
+  "sequence_scope": "whole_assembly_as_deposited",
+  "reference_package_sha256": "PRIMARY_MANIFEST_SHA256",
+  "licence": {"path": "licence.json", "sha256": "LICENCE_SHA256", "bytes": 123},
+  "references": [{
+    "reference_id": "primary_whole:ACCESSION",
+    "path": "sequences/ACCESSION.fa",
+    "sha256": "SOURCE_SHA256",
+    "bytes": 456,
+    "concept_ids": ["SPECIES_ID", "SUBSPECIES_ID"]
+  }]
+}
+```
+
+Concept IDs are ordered species then subspecies, omitting the latter when absent. Paths are relative to the component directory. Each FASTA is capped at 256 MiB and the manifest at 1 MiB. Keep this component separate from the skani package, whose inventory rejects unlisted files. Obtain both trusted digests from the package handoff. Component provisioning and distribution remain release work.
+
+The maintained MUMmer4 profile preserves literal N identity and inclusive whole-input coverage, matching the accepted MUMmer3 comparator semantics. Long runs of N remain a known limitation. See the [method amendment](contracts/P1-ANIM-MUMMER4-r1.md). Duplicate FASTA identifiers accepted by v1 cannot be passed to the native ANIm adapter; if rescue requires such an input, v2 reports an explicit failed pair.
