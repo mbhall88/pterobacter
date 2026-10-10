@@ -241,6 +241,17 @@ fn command_preserves_membership_and_binds_masked_or_withheld_parents() {
         .filter(|(_, members)| members.len() >= 2);
     let (target, own) = multimember.next().unwrap();
     let (rival, rival_members) = multimember.next().unwrap();
+    let primary = package.component("primary_whole").unwrap();
+    let absent_primary_member = own
+        .iter()
+        .find(|id| {
+            let accession = &package.reference(id).unwrap().accession;
+            !primary
+                .references
+                .iter()
+                .any(|reference| &reference.accession == accession)
+        })
+        .expect("empty-mask regression needs a target member absent from the primary panel");
     let evidence = primary_evidence(&package, &pin);
     let parent_members: Vec<String> = package
         .component("primary_whole")
@@ -257,6 +268,13 @@ fn command_preserves_membership_and_binds_masked_or_withheld_parents() {
     let veto_mask = temp.path().join("parent-veto-mask.txt");
     fs::write(&veto_mask, parent_members.join("\n")).unwrap();
     let veto_pin = sha256_hex(&fs::read(&veto_mask).unwrap());
+    let empty_mask = temp.path().join("empty-primary-mask.txt");
+    fs::write(&empty_mask, "").unwrap();
+    let empty_pin = sha256_hex(b"");
+    let invalid_mask = temp.path().join("unknown-primary-mask.txt");
+    fs::write(&invalid_mask, "unknown-primary-reference\n").unwrap();
+    let invalid_pin = sha256_hex(&fs::read(&invalid_mask).unwrap());
+    let missing_mask = temp.path().join("missing-primary-mask.txt");
     let warning_artifact = temp.path().join("warning.txt");
     fs::write(&warning_artifact, "synthetic concern").unwrap();
 
@@ -388,6 +406,73 @@ fn command_preserves_membership_and_binds_masked_or_withheld_parents() {
             .unwrap()
             .contains(&json!("external_problem_warning")));
 
+        for setting in ["self_alias", "clone_block"] {
+            let empty_args = [
+                ("--setting", setting),
+                ("--exclude-references", empty_mask.to_str().unwrap()),
+                ("--exclude-references-sha256", empty_pin.as_str()),
+                ("--mask-member", absent_primary_member.as_str()),
+            ];
+            let retained = successful(run(&baseline, temp.path(), &directory, &pin, &empty_args));
+            assert_eq!(
+                retained["diagnostic_would_assign_genomovar_id"],
+                target.as_str()
+            );
+            assert_eq!(retained["parent_recomputation"]["setting"], setting);
+            assert_eq!(
+                retained["parent_recomputation"]["primary_mask_sha256"],
+                empty_pin
+            );
+            assert_eq!(
+                retained["parent_recomputation"]["excluded_reference_ids"],
+                json!([])
+            );
+            let mut veto_args = empty_args.to_vec();
+            veto_args.extend([
+                ("--problem-warnings", warnings.to_str().unwrap()),
+                ("--problem-warnings-sha256", warning_pin.as_str()),
+            ]);
+            let vetoed = successful(run(&baseline, temp.path(), &directory, &pin, &veto_args));
+            assert_eq!(vetoed["diagnostic_outcome"], "gv_withheld_parent");
+            assert_eq!(vetoed["diagnostic_would_assign_genomovar_id"], Value::Null);
+            assert_eq!(vetoed["parent_recomputation"]["setting"], setting);
+            assert_eq!(
+                vetoed["parent_recomputation"]["excluded_reference_ids"],
+                json!([])
+            );
+            assert!(vetoed["diagnostic"]["parent"]["blocking_reasons"]
+                .as_array()
+                .unwrap()
+                .contains(&json!("external_problem_warning")));
+        }
+        // An empty, authenticated mask differs from missing, unpinned, mismatched or invalid input.
+        for (path, expected, reason) in [
+            (empty_mask.as_path(), None, "--exclude-references-sha256"),
+            (
+                empty_mask.as_path(),
+                Some(self_pin.as_str()),
+                "SHA-256 mismatch",
+            ),
+            (
+                missing_mask.as_path(),
+                Some(empty_pin.as_str()),
+                "missing-primary-mask.txt",
+            ),
+            (
+                invalid_mask.as_path(),
+                Some(invalid_pin.as_str()),
+                "unknown",
+            ),
+        ] {
+            let mut args = vec![
+                ("--setting", "self_alias"),
+                ("--exclude-references", path.to_str().unwrap()),
+            ];
+            if let Some(hash) = expected {
+                args.push(("--exclude-references-sha256", hash));
+            }
+            refused(run(&baseline, temp.path(), &directory, &pin, &args), reason);
+        }
         for field in ["query_sha256", "reference_package_sha256"] {
             let mut mismatch = baseline.clone();
             mismatch["evidence"]["provenance"][field] = "f".repeat(64).into();

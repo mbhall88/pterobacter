@@ -124,7 +124,7 @@ struct GenomovarDiagnosticArgs {
     /// Primary-mask setting used for this diagnostic
     #[arg(long, default_value = "unmasked", value_parser = ["unmasked", "self_alias", "clone_block"])]
     setting: String,
-    /// Matching primary-reference mask: one reference ID per line
+    /// Matching primary-reference mask: one ID per line; an explicitly pinned empty file is valid
     #[arg(long, requires = "exclude_references_sha256")]
     exclude_references: Option<PathBuf>,
     /// SHA-256 of the matching primary-mask file
@@ -942,9 +942,8 @@ fn recompute_diagnostic_parent(
         })
         .transpose()?
         .unwrap_or_default();
-    if masked_setting && mask.is_empty() {
-        return Err("a masked setting requires a nonempty matching primary-reference mask".into());
-    }
+    // Members absent from the primary panel have an empty matching mask. The explicit
+    // file and its pin remain required; recompute the parent even when no IDs are removed.
     let saved = SavedEvidence::from_json(&report["evidence"].to_string())
         .map_err(|error| format!("report primary evidence is invalid: {error}"))?;
     if saved.provenance().query_sha256 != report["input"]["query_sha256"]
