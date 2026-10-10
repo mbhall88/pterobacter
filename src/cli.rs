@@ -1,5 +1,6 @@
 //! Public command parsing, output and exit codes.
 pub mod assembly;
+pub mod v2;
 
 use crate::decision::V1_POLICY_ID;
 use crate::evidence::sha256_hex;
@@ -24,7 +25,7 @@ struct Public {
     /// Expected SHA-256 of portable.json, obtained from a trusted source
     #[arg(long, value_parser = parse_sha256)]
     expected_sha256: String,
-    /// Native classification policy; this build supports v1 only
+    /// Native classification policy; v1 or conservative-assembly-anim-v2
     #[arg(long, default_value = V1_POLICY_ID)]
     policy: String,
     /// Kind of input; assembly FASTA is the supported kind
@@ -33,6 +34,8 @@ struct Public {
     /// Worker threads for each assembly
     #[arg(long, default_value_t = 1, value_parser = clap::value_parser!(u16).range(1..))]
     threads: u16,
+    #[command(flatten)]
+    anim: v2::V2Settings,
 }
 fn parse_sha256(text: &str) -> Result<String, String> {
     if crate::reference::is_sha256(text) {
@@ -48,10 +51,22 @@ pub fn run_public() -> ExitCode {
         return status;
     }
     let args = Public::parse();
+    if args.policy == crate::rescue::V2_POLICY_ID {
+        install_cancel_handlers();
+    }
+    let output_error = if args.policy == crate::rescue::V2_POLICY_ID {
+        args.anim
+            .anim_output
+            .as_ref()
+            .and_then(|p| fs::create_dir(p).err())
+            .map(|e| e.to_string())
+    } else {
+        None
+    };
     let mut results = Vec::new();
     let mut exit = 0;
     let mut workflow = None;
-    for path in &args.assemblies {
+    for (index, path) in args.assemblies.iter().enumerate() {
         let mut report = json!({"schema": "terobacter.assembly-call/1",
             "implementation": {"name": env!("CARGO_PKG_NAME"), "version": env!("CARGO_PKG_VERSION")},
             "policy": {"id": args.policy},
@@ -59,14 +74,41 @@ pub fn run_public() -> ExitCode {
             "assignment": {"status": "not_evaluated", "species_id": null, "species_name": null,
                 "subspecies_id": null, "subspecies_name": null, "lineage_id": null, "genomovar_id": null},
             "execution": {"status": "incomplete", "stage": "input"}});
-        if args.policy != V1_POLICY_ID {
+        if args.policy == crate::rescue::V2_POLICY_ID {
+            report["schema"] = crate::rescue::REPORT_SCHEMA.into();
+            report["policy_id"] = args.policy.clone().into();
+            report["trigger"] = Value::Null;
+            report["call_basis"] = Value::Null;
+            report["reasons"] = json!([]);
+            report["legacy_v1_result"] = Value::Null;
+            report["rescue_status"] = "incomplete".into();
+            report["competitor_evaluation"] = "not_run".into();
+            report["evaluation_status"] = "incomplete".into();
+            report["counts"] = json!({"unit": "reciprocal_pair", "required": 0, "attempted": 0,
+                "completed": 0, "no_alignment": 0, "failed": 0, "not_run": 0});
+        }
+        if args.policy != V1_POLICY_ID && args.policy != crate::rescue::V2_POLICY_ID {
             report["execution"]["stage"] = "policy".into();
-            report["execution"]["error"] = "requested native policy is unavailable; only conservative-assembly-v1 is implemented".into();
+            report["execution"]["error"] = "requested native policy is unavailable; supported policies are conservative-assembly-v1 and conservative-assembly-anim-v2".into();
             exit = 5;
             results.push(report);
             continue;
         }
         let result = (|| -> Result<(), (u8, String)> {
+            if args.policy == V1_POLICY_ID && args.anim.supplied() {
+                report["execution"]["stage"] = "policy".into();
+                return Err((
+                    5,
+                    "ANIm options require conservative-assembly-anim-v2".into(),
+                ));
+            }
+            if let Some(error) = &output_error {
+                report["execution"]["stage"] = "anim_output".into();
+                return Err((1, format!("ANIm output must be a fresh directory: {error}")));
+            }
+            if CANCELLED.load(std::sync::atomic::Ordering::SeqCst) {
+                return Err((1, "run interrupted".into()));
+            }
             if args.input_kind != "assembly" {
                 return Err((3, "only assembly FASTA input is supported".into()));
             }
@@ -81,38 +123,64 @@ pub fn run_public() -> ExitCode {
                     .map_err(|e| (4, e))?,
                 );
             }
-            workflow
-                .as_ref()
-                .expect("opened workflow")
-                .analyse(
-                    path.to_str().ok_or((3, "query path is not UTF-8".into()))?,
+            let workflow = workflow.as_ref().expect("opened workflow");
+            let query_label = path.to_str().ok_or((3, "query path is not UTF-8".into()))?;
+            if args.policy == crate::rescue::V2_POLICY_ID {
+                workflow.analyse_v2(
+                    query_label,
                     &bytes,
                     args.threads.into(),
                     &mut report,
+                    &v2::V2Context {
+                        settings: &args.anim,
+                        query_ordinal: index + 1,
+                        cancelled: &CANCELLED,
+                    },
                 )
-                .map_err(|e| (1, e))?;
+            } else {
+                workflow.analyse(query_label, &bytes, args.threads.into(), &mut report)
+            }
+            .map_err(|e| (1, e))?;
             Ok(())
         })();
         if let Err((code, error)) = result {
+            report["execution"]["status"] = "incomplete".into();
+            withhold(&mut report);
             report["execution"]["error"] = error.into();
             exit = code;
         }
         results.push(report);
     }
     if let Some(workflow) = workflow {
+        if results
+            .iter()
+            .any(|report| report["anim_execution"]["reference_component"].is_object())
+        {
+            if let Err(error) = workflow.finish_anim(&args.anim) {
+                exit = 4;
+                for report in &mut results {
+                    if report["anim_execution"]["reference_component"].is_object()
+                        && report["execution"]["status"] == "complete"
+                    {
+                        report["execution"] = json!({"status": "incomplete", "stage": "anim_component_recheck", "error": error});
+                        withhold(report);
+                    }
+                }
+            }
+        }
         if let Err(error) = workflow.finish() {
             exit = 4;
             for report in &mut results {
                 if report["execution"]["status"] == "complete" {
                     report["execution"] =
                         json!({"status": "incomplete", "stage": "package_recheck", "error": error});
-                    report["assignment"] = json!({"status": "not_evaluated", "species_id": null, "species_name": null,
-                        "subspecies_id": null, "subspecies_name": null, "lineage_id": null, "genomovar_id": null});
-                    report["species"] = Value::Null;
-                    report["subspecies"] = Value::Null;
+                    withhold(report);
                 }
             }
         }
+    }
+    if v2::cancel_before_publication(&mut results, &CANCELLED) {
+        exit = 1;
     }
     let value = if results.len() == 1 {
         results.remove(0)
@@ -241,4 +309,66 @@ pub(crate) fn read_input(path: &Path, report: &mut Value) -> Result<Vec<u8>, Str
         return Err("assembly contains no sequence".into());
     }
     Ok(bytes)
+}
+
+/// Clear all parent-dependent calls when a wrapper integrity or execution check fails.
+pub(crate) fn withhold(report: &mut Value) {
+    if let Some(assignment) = report["assignment"].as_object_mut() {
+        for key in [
+            "species_id",
+            "species_name",
+            "subspecies_id",
+            "subspecies_name",
+            "lineage_id",
+            "genomovar_id",
+        ] {
+            assignment.insert(key.into(), Value::Null);
+        }
+        assignment.insert("status".into(), "not_evaluated".into());
+    }
+    for key in [
+        "species_id",
+        "species_name",
+        "subspecies_id",
+        "subspecies_name",
+        "genomovar_id",
+    ] {
+        if report.get(key).is_some() {
+            report[key] = Value::Null;
+        }
+    }
+    if report.get("status").is_some() {
+        report["status"] = "unresolved".into();
+    }
+    if report.get("evaluation_status").is_some() {
+        report["evaluation_status"] = "incomplete".into();
+    }
+    if report.get("rescue_status").is_some() {
+        report["rescue_status"] = "incomplete".into();
+        report["execution"]["withholding_reason"] = "execution_incomplete".into();
+    }
+    if report.get("call_basis").is_some() {
+        report["call_basis"] = Value::Null;
+    }
+    for key in ["species", "subspecies", "genomovar"] {
+        if report.get(key).is_some() {
+            report[key] = Value::Null;
+        }
+    }
+}
+static CANCELLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+extern "C" fn cancel_signal(_: libc::c_int) {
+    CANCELLED.store(true, std::sync::atomic::Ordering::SeqCst);
+}
+fn install_cancel_handlers() {
+    unsafe {
+        libc::signal(
+            libc::SIGINT,
+            cancel_signal as *const () as libc::sighandler_t,
+        );
+        libc::signal(
+            libc::SIGTERM,
+            cancel_signal as *const () as libc::sighandler_t,
+        );
+    }
 }

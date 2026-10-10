@@ -31,7 +31,7 @@ fn invalid_input_retains_a_partial_report_and_never_assigns() {
 }
 
 #[test]
-fn requested_native_v2_is_an_explicit_unavailable_policy_failure() {
+fn unknown_policy_is_an_explicit_unavailable_policy_failure() {
     let output = cargo_bin_cmd!("tero")
         .args([
             "--reference-package",
@@ -39,7 +39,7 @@ fn requested_native_v2_is_an_explicit_unavailable_policy_failure() {
             "--expected-sha256",
             PINNED_MANIFEST_SHA256,
             "--policy",
-            "conservative-assembly-anim-v2",
+            "unavailable-policy",
             "missing.fa",
         ])
         .output()
@@ -47,139 +47,11 @@ fn requested_native_v2_is_an_explicit_unavailable_policy_failure() {
     assert_eq!(output.status.code(), Some(5));
     let report: Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(report["execution"]["stage"], "policy");
-    assert_eq!(report["policy"]["id"], "conservative-assembly-anim-v2");
+    assert_eq!(report["policy"]["id"], "unavailable-policy");
     assert_eq!(report["assignment"]["species_id"], Value::Null);
 }
 
-fn native_package() -> (tempfile::TempDir, String, Vec<u8>) {
-    use common::package::{sha256_hex, Synthetic, EXPORT_PATH, SOURCE_PATH};
-    use serde_json::json;
-    use skani::{params::SketchParams, sketch_db::SketchDbWriter, types::Sketch};
-    let mut package = Synthetic::new();
-    let verified = package.verify().unwrap();
-    let component = verified.component("primary_whole").unwrap();
-    let dir = tempfile::tempdir().unwrap();
-    let database = dir.path().join("database");
-    std::fs::create_dir(&database).unwrap();
-    let params = SketchParams::new(1000, 125, 15, false, false);
-    let original = common::dna(200_003, 42);
-    let mut markers = Vec::new();
-    let mut writer = SketchDbWriter::new(database.to_str().unwrap()).unwrap();
-    for (i, reference) in component.references.iter().enumerate() {
-        let mut seq = original.clone();
-        if i > 0 {
-            let mut state = 927_u64;
-            for base in &mut seq {
-                state ^= state << 13;
-                state ^= state >> 7;
-                state ^= state << 17;
-                if state % 100 < 8 {
-                    *base = match *base {
-                        b'A' => b'C',
-                        b'C' => b'G',
-                        b'G' => b'T',
-                        _ => b'A',
-                    };
-                }
-            }
-        }
-        let mut sketch = Sketch::new(1000, 125, 15, reference.search_label.clone(), false);
-        sketch.contigs.push("synthetic".into());
-        sketch.contig_lengths.push(seq.len() as u32);
-        sketch.total_sequence_length = seq.len();
-        skani::seeding::fmh_seeds(&seq, &params, 0, &mut sketch, true);
-        writer.add_sketch(&params, &sketch).unwrap();
-        markers.push(Sketch::get_markers_only(&sketch));
-    }
-    writer.finalize(database.to_str().unwrap()).unwrap();
-    std::fs::write(
-        database.join("markers.bin"),
-        bincode::serialize(&(params, markers)).unwrap(),
-    )
-    .unwrap();
-    let mut replacements = std::collections::BTreeMap::new();
-    for file in ["index.db", "sketches.db", "markers.bin"] {
-        let asset = &component.databases[file];
-        let bytes = std::fs::read(database.join(file)).unwrap();
-        replacements.insert(
-            asset.source_path.clone(),
-            json!({"path": asset.source_path,
-            "bytes": bytes.len(), "sha256": sha256_hex(&bytes)}),
-        );
-        package.rewrite(&asset.path, bytes);
-    }
-    // Index records use bincode's pinned u64 lengths and little-endian offsets.
-    let bytes = std::fs::read(database.join("index.db")).unwrap();
-    let mut cursor = std::io::Cursor::new(bytes);
-    use std::io::Read;
-    fn u64_at(cursor: &mut std::io::Cursor<Vec<u8>>) -> u64 {
-        let mut bytes = [0; 8];
-        cursor.read_exact(&mut bytes).unwrap();
-        u64::from_le_bytes(bytes)
-    }
-    let count = u64_at(&mut cursor);
-    let mut entries = Vec::new();
-    for _ in 0..count {
-        let size = u64_at(&mut cursor);
-        let mut label = vec![0; size as usize];
-        cursor.read_exact(&mut label).unwrap();
-        let offset = u64_at(&mut cursor);
-        let size = u64_at(&mut cursor);
-        entries.push(
-            json!({"path": String::from_utf8(label).unwrap(), "offset": offset, "bytes": size}),
-        );
-    }
-    entries.sort_by_key(|entry| entry["path"].as_str().unwrap().to_owned());
-    fn replace(value: &mut Value, replacements: &std::collections::BTreeMap<String, Value>) {
-        if let Some(replacement) = value["path"].as_str().and_then(|p| replacements.get(p)) {
-            if value.get("sha256").is_some() {
-                *value = replacement.clone();
-                return;
-            }
-        }
-        match value {
-            Value::Object(map) => {
-                for child in map.values_mut() {
-                    replace(child, replacements);
-                }
-            }
-            Value::Array(array) => {
-                for child in array {
-                    replace(child, replacements);
-                }
-            }
-            _ => {}
-        }
-    }
-    package.edit_json(SOURCE_PATH, |source| {
-        replace(source, &replacements);
-        let primary = source["components"]
-            .as_array_mut()
-            .unwrap()
-            .iter_mut()
-            .find(|c| c["component_id"] == "primary_whole")
-            .unwrap();
-        primary["database_index_entries"] = json!(entries);
-    });
-    let source_hash = sha256_hex(package.file(SOURCE_PATH));
-    let database_bytes: usize = package
-        .files()
-        .iter()
-        .filter(|(p, _)| p.starts_with("databases/"))
-        .map(|(_, b)| b.len())
-        .sum();
-    package.edit_json(EXPORT_PATH, |export| {
-        export["source_manifest_sha256"] = source_hash.clone().into();
-        export["local_validation"]["database_bytes"] = database_bytes.into();
-    });
-    package.edit_json(common::package::LICENCE_PATH, |licence| {
-        licence["source_manifest_sha256"] = source_hash.clone().into();
-    });
-    package.verify().unwrap();
-    let target = dir.path().join("package");
-    package.write_to(&target);
-    (dir, package.manifest_sha256(), original)
-}
+use common::assembly::native_package;
 
 #[test]
 fn native_whole_assembly_retains_plasmids_and_short_records_and_assigns_v1() {

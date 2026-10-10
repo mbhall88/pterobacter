@@ -1,6 +1,7 @@
 //! Helpers shared by the integration tests.
 #![allow(dead_code)] // each test crate uses a different subset
 
+pub mod assembly;
 pub mod p1;
 pub mod package;
 
