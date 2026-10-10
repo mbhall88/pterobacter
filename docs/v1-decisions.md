@@ -18,7 +18,7 @@ The schema is `terobacter.assembly-call/1`. `assignment` contains the final froz
 
 `scope_assessment`, `two_parent_alert`, `method_diagnostics` and `external_problem_warnings` retain supplied observations and concern text. A missing optional assessment is explicit; a match does not establish purity or explain residual sequence. The 95–96% near-boundary note is report-only and uses a raw-nearest reference with both AFs ≥80%.
 
-All reason codes map directly to the frozen vocabulary in [v1-reasons.tsv](v1-reasons.tsv). Semicolon-separated assignment reasons are compositions of those codes. Scope explanations and supplied concern text remain free text.
+All reason codes map directly to the frozen vocabulary in the `conservative-assembly-v1` rows of [reason-vocabulary.tsv](contracts/reason-vocabulary.tsv). Semicolon-separated assignment reasons are compositions of those codes. Scope explanations and supplied concern text remain free text.
 
 ## Optional annotations
 
@@ -34,6 +34,20 @@ Each envelope binds the exact evidence bytes, query digest and reference-package
 Under v1, each reciprocal ANIm direction is compared with that reference's saved skani triple at ANI ≥96% and both AFs ≥80%. Any gate disagreement withholds, including support for another parent. Method diagnostics retain their decimal precision; they are not skani measurements. Positive rescue belongs to v2.
 
 The pure interface validates bindings and metadata. Its output explicitly says that external artifact bytes and package authenticity require a file wrapper and a checked package. The development command does not authenticate an inventory merely because its SHA-256 matches a caller-supplied value.
+
+## Reference masks
+
+```sh
+terobacter-dev saved-evidence evidence.json \
+  (--reference-inventory inventory.json [--reference-inventory-sha256 HASH] \
+   | --reference-package DIR --expected-sha256 HASH) --exclude-references mask.txt
+```
+
+A mask file lists one primary reference ID per line. The masked references leave the skani rows and the panel counts before v1 is applied, exactly as v2 masks the evidence behind its `legacy_v1_result`. So under the same mask the two give the same status, labels and reasons. The whole primary panel comes from `--reference-inventory` or from `--reference-package`, never both. A package is checked against the whole, unmasked evidence before the mask applies, and the result then reports it under `reference_package`. Every masked ID must be in the primary panel, and none may repeat. `input.mask` lists the excluded IDs with the full and assessed panel sizes, and `input.primary_inventory_sha256` identifies the panel. A mask cannot be combined with `--diagnostics`.
+
+## Report files
+
+`--report-dir NEW_DIRECTORY` writes `report.json`, `calls.tsv`, `evidence.tsv` and `report.md`, as the public command does. The JSON file is the decision printed on stdout. An existing directory exits 2 before any work and nothing is replaced. Under either policy, saved-evidence output carries the `versions` block; under v1 it also carries the frozen `thresholds`.
 
 ## Supported and historical interfaces
 

@@ -438,6 +438,142 @@ fn evidence_bound_to_the_verified_package_is_decided_and_reports_it() {
     );
 }
 
+/// R2 and R4 take the whole primary panel from the authenticated package itself, so the
+/// evaluation needs no separately produced inventory file.
+#[test]
+fn v2_decision_and_dry_plan_take_the_panel_from_a_verified_package() {
+    let synthetic = Synthetic::new();
+    let package_dir = package_on_disk(&synthetic);
+    let evidence_dir = tempfile::tempdir().unwrap();
+    let evidence_path = packaged_evidence_in(evidence_dir.path(), &synthetic.manifest_sha256());
+    let mask = evidence_dir.path().join("mask.txt");
+    let run = |command: &str, extra: &[&std::ffi::OsStr]| {
+        let mut cmd = cargo_bin_cmd!("terobacter-dev");
+        cmd.arg(command).arg(&evidence_path);
+        if command == "saved-evidence" {
+            cmd.args(["--policy", "conservative-assembly-anim-v2"]);
+        }
+        cmd.arg("--reference-package")
+            .arg(package_dir.path())
+            .arg("--expected-sha256")
+            .arg(synthetic.manifest_sha256())
+            .args(extra)
+            .output()
+            .unwrap()
+    };
+    for command in ["saved-evidence", "rescue-plan"] {
+        let output = run(command, &[]);
+        assert!(
+            output.status.success(),
+            "{command}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let value: Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(
+            value["reference_package"]["status"], "verified",
+            "{command}"
+        );
+        assert_eq!(
+            value["reference_package"]["package"]["version"],
+            PACKAGE_VERSION
+        );
+        assert_eq!(
+            value["input"]["verification"],
+            "input_and_artifact_hashes_checked; reference_package_verified"
+        );
+        assert_eq!(value["input"]["mask"]["panel_reference_count"], 5);
+
+        let evidence = common::packaged_evidence(&synthetic.manifest_sha256());
+        let reference = evidence["ranked_reference_evidence"][0]["reference_id"]
+            .as_str()
+            .unwrap()
+            .to_owned();
+        fs::write(&mask, format!("{reference}\n")).unwrap();
+        let output = run(
+            command,
+            &["--exclude-references".as_ref(), mask.as_os_str()],
+        );
+        assert!(output.status.success(), "{command} masked");
+        let value: Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(
+            value["input"]["mask"]["excluded_reference_ids"],
+            serde_json::json!([reference])
+        );
+
+        // One panel source only.
+        let inventory = evidence_dir.path().join("inventory.json");
+        fs::write(&inventory, "{}").unwrap();
+        let output = run(
+            command,
+            &["--reference-inventory".as_ref(), inventory.as_os_str()],
+        );
+        assert_ne!(output.status.code(), Some(0), "{command}");
+        assert!(output.stdout.is_empty());
+        assert!(
+            String::from_utf8_lossy(&output.stderr)
+                .contains("either --reference-inventory or --reference-package"),
+            "{command}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+}
+
+/// P4b's Layer 2 v1 replay masks package-bound evidence. The package is checked against the
+/// whole, unmasked evidence and supplies the panel; v1 is then applied to the masked evidence,
+/// as v2 does behind `legacy_v1_result`.
+#[test]
+fn a_v1_mask_takes_the_panel_from_a_verified_package() {
+    let synthetic = Synthetic::new();
+    let package_dir = package_on_disk(&synthetic);
+    let evidence_dir = tempfile::tempdir().unwrap();
+    let evidence_path = packaged_evidence_in(evidence_dir.path(), &synthetic.manifest_sha256());
+    let evidence = common::packaged_evidence(&synthetic.manifest_sha256());
+    let reference = evidence["ranked_reference_evidence"][0]["reference_id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let mask = evidence_dir.path().join("mask.txt");
+    fs::write(&mask, format!("{reference}\n")).unwrap();
+    let run = |policy: &str| {
+        let output = cargo_bin_cmd!("terobacter-dev")
+            .arg("saved-evidence")
+            .arg(&evidence_path)
+            .args(["--policy", policy])
+            .arg("--reference-package")
+            .arg(package_dir.path())
+            .arg("--expected-sha256")
+            .arg(synthetic.manifest_sha256())
+            .arg("--exclude-references")
+            .arg(&mask)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{policy}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        serde_json::from_slice::<Value>(&output.stdout).unwrap()
+    };
+    let v1 = run("conservative-assembly-v1");
+    assert_eq!(v1["policy"]["id"], "conservative-assembly-v1");
+    assert_eq!(v1["reference_package"]["status"], "verified");
+    assert_eq!(
+        v1["input"]["verification"],
+        "input_and_artifact_hashes_checked; reference_package_verified"
+    );
+    assert_eq!(
+        v1["input"]["mask"]["excluded_reference_ids"],
+        serde_json::json!([reference])
+    );
+    assert_eq!(v1["input"]["mask"]["panel_reference_count"], 5);
+    let v2 = run("conservative-assembly-anim-v2");
+    let legacy = &v2["legacy_v1_result"];
+    assert_eq!(legacy["status"], v1["assignment"]["status"]);
+    assert_eq!(legacy["species_id"], v1["assignment"]["species_id"]);
+    assert_eq!(legacy["subspecies_id"], v1["assignment"]["subspecies_id"]);
+    assert_eq!(legacy["reasons"], v1["blocking_reasons"]);
+}
+
 #[test]
 fn saved_evidence_bound_to_another_package_is_unresolved() {
     let synthetic = Synthetic::new();
@@ -445,26 +581,40 @@ fn saved_evidence_bound_to_another_package_is_unresolved() {
     let evidence_dir = tempfile::tempdir().unwrap();
     let evidence_path = packaged_evidence_in(evidence_dir.path(), &"c".repeat(64));
 
-    let output = cargo_bin_cmd!("terobacter-dev")
-        .arg("saved-evidence")
-        .arg(&evidence_path)
-        .arg("--reference-package")
-        .arg(package_dir.path())
-        .arg("--expected-sha256")
-        .arg(synthetic.manifest_sha256())
-        .output()
-        .unwrap();
+    // v1, the v2 decision and the dry plan give the same exit code for the same binding error.
+    for (command, policy) in [
+        ("saved-evidence", "conservative-assembly-v1"),
+        ("saved-evidence", "conservative-assembly-anim-v2"),
+        ("rescue-plan", ""),
+    ] {
+        let mut cmd = cargo_bin_cmd!("terobacter-dev");
+        cmd.arg(command).arg(&evidence_path);
+        if !policy.is_empty() {
+            cmd.args(["--policy", policy]);
+        }
+        let output = cmd
+            .arg("--reference-package")
+            .arg(package_dir.path())
+            .arg("--expected-sha256")
+            .arg(synthetic.manifest_sha256())
+            .output()
+            .unwrap();
 
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert_eq!(output.status.code(), Some(8), "{stderr}");
-    assert!(
-        output.stdout.is_empty(),
-        "a binding failure prints no decision"
-    );
-    assert!(
-        stderr.starts_with("error:") && stderr.contains("another reference package"),
-        "{stderr}"
-    );
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert_eq!(
+            output.status.code(),
+            Some(8),
+            "{command} {policy}: {stderr}"
+        );
+        assert!(
+            output.stdout.is_empty(),
+            "a binding failure prints no decision"
+        );
+        assert!(
+            stderr.starts_with("error:") && stderr.contains("another reference package"),
+            "{stderr}"
+        );
+    }
 }
 
 /// An edit to a JSON record, named by what it changes.
@@ -691,8 +841,8 @@ mod v2 {
         );
         assert_ne!(code, Some(0));
         assert!(stderr.contains("reference-inventory"), "{stderr}");
-        // Package binding covers v1 decisions only, so v2 refuses it rather than report a
-        // package it did not bind.
+        assert!(stderr.contains("reference-package"), "{stderr}");
+        // The panel comes from one source, so two are refused rather than reconciled.
         let bound = [
             ("--policy", "conservative-assembly-anim-v2"),
             ("--reference-inventory", "inventory"),
@@ -706,9 +856,171 @@ mod v2 {
         assert_eq!(code, Some(1), "{stderr}");
         assert_eq!(d, Value::Null);
         assert!(
-            stderr.contains("--reference-package binds v1 evidence only"),
+            stderr.contains("either --reference-inventory or --reference-package"),
             "{stderr}"
         );
+    }
+
+    /// The standalone v1 call under a reference mask, as P4b's Layer 2 replay needs it, is the
+    /// same call v2 embeds as `legacy_v1_result` under that mask.
+    #[test]
+    fn v1_saved_evidence_applies_a_reference_mask_and_matches_the_v2_legacy_result() {
+        let f = files(
+            &json!({"references": [hit("A1", Some("A"), "97", "85", "85"),
+            hit("B1", Some("B"), "90", "85", "85"), unreturned("C1", Some("C"))]}),
+        );
+        std::fs::write(&f.mask, "A1\n").unwrap();
+        let (code, d, stderr) = dev("saved-evidence", &f, &[]);
+        assert_eq!(code, Some(0), "{stderr}");
+        assert_eq!(d["assignment"]["species_id"], "A");
+
+        let masked = [
+            ("--reference-inventory", "inventory"),
+            ("--exclude-references", "mask"),
+        ];
+        let (code, v1, stderr) = dev("saved-evidence", &f, &masked);
+        assert_eq!(code, Some(0), "{stderr}");
+        assert_eq!(v1["policy"]["id"], "conservative-assembly-v1");
+        assert_eq!(v1["assignment"]["status"], "unresolved");
+        assert_eq!(v1["assignment"]["species_id"], Value::Null);
+        // B1 is now nearest, and its only contrast, C1, was never measured.
+        assert_eq!(
+            v1["blocking_reasons"],
+            json!(["species_competitor_unmeasured"])
+        );
+        assert_eq!(v1["input"]["mask"]["excluded_reference_ids"], json!(["A1"]));
+        assert_eq!(v1["input"]["mask"]["panel_reference_count"], 3);
+
+        let mut v2_options = masked.to_vec();
+        v2_options.push(("--policy", "conservative-assembly-anim-v2"));
+        let (code, v2, stderr) = dev("saved-evidence", &f, &v2_options);
+        assert_eq!(code, Some(0), "{stderr}");
+        let legacy = &v2["legacy_v1_result"];
+        for (field, standalone) in [
+            ("status", &v1["assignment"]["status"]),
+            ("species_id", &v1["assignment"]["species_id"]),
+            ("subspecies_id", &v1["assignment"]["subspecies_id"]),
+            ("reasons", &v1["blocking_reasons"]),
+        ] {
+            assert_eq!(&legacy[field], standalone, "{field}");
+        }
+    }
+
+    #[test]
+    fn a_v1_mask_needs_the_primary_inventory_and_names_only_panel_references() {
+        let f = files(&input());
+        let (code, d, stderr) = dev("saved-evidence", &f, &[("--exclude-references", "mask")]);
+        assert_eq!(code, Some(1));
+        assert_eq!(d, Value::Null);
+        assert!(stderr.contains("--reference-inventory"), "{stderr}");
+        assert!(stderr.contains("--reference-package"), "{stderr}");
+
+        std::fs::write(&f.mask, "Z9\n").unwrap();
+        let (code, d, stderr) = dev(
+            "saved-evidence",
+            &f,
+            &[
+                ("--reference-inventory", "inventory"),
+                ("--exclude-references", "mask"),
+            ],
+        );
+        assert_eq!(code, Some(1));
+        assert_eq!(d, Value::Null);
+        assert!(stderr.contains("not in the primary panel"), "{stderr}");
+
+        // The panel comes from one source.
+        let (code, d, stderr) = dev(
+            "saved-evidence",
+            &f,
+            &[
+                ("--reference-inventory", "inventory"),
+                ("--exclude-references", "mask"),
+                ("--reference-package", crate::common::package::FIXTURE_DIR),
+                (
+                    "--expected-sha256",
+                    crate::common::package::PINNED_MANIFEST_SHA256,
+                ),
+            ],
+        );
+        assert_eq!(code, Some(1));
+        assert_eq!(d, Value::Null);
+        assert!(
+            stderr.contains("either --reference-inventory or --reference-package"),
+            "{stderr}"
+        );
+    }
+
+    /// P4b's RP-1 compares JSON, TSV and Markdown for every saved-evidence v2 record.
+    #[test]
+    fn saved_evidence_report_dir_writes_agreeing_json_tsv_and_markdown() {
+        let f = files(&input());
+        let dir = f._dir.path().join("reports");
+        let dir_arg = dir.to_str().unwrap();
+        let options = [
+            ("--policy", "conservative-assembly-anim-v2"),
+            ("--reference-inventory", "inventory"),
+            ("--anim-records", "records"),
+            ("--anim-method-profile", PROFILE),
+            ("--exclude-references", "mask"),
+            ("--report-dir", dir_arg),
+        ];
+        let (code, d, stderr) = dev("saved-evidence", &f, &options);
+        assert_eq!(code, Some(0), "{stderr}");
+        assert_eq!(d["species_id"], "A");
+        assert_eq!(
+            d["versions"]["policy"], "conservative-assembly-anim-v2",
+            "the authoritative JSON carries the version block the renderings show"
+        );
+        let saved: Value =
+            serde_json::from_str(&std::fs::read_to_string(dir.join("report.json")).unwrap())
+                .unwrap();
+        assert_eq!(saved, d);
+        let calls = std::fs::read_to_string(dir.join("calls.tsv")).unwrap();
+        let mut lines = calls.lines();
+        let header: Vec<_> = lines.next().unwrap().split('\t').collect();
+        let row: Vec<_> = lines.next().unwrap().split('\t').collect();
+        assert_eq!(lines.next(), None);
+        let cell = |name: &str| row[header.iter().position(|h| *h == name).unwrap()];
+        assert_eq!(cell("call_status"), "assigned");
+        assert_eq!(cell("species_id"), "A");
+        assert_eq!(cell("call_basis"), "ANIm_assisted");
+        assert_eq!(cell("policy_id"), "conservative-assembly-anim-v2");
+        assert_eq!(cell("validation_status"), "not_yet_validated");
+        assert!(std::fs::read_to_string(dir.join("evidence.tsv"))
+            .unwrap()
+            .contains("A1"));
+        assert!(std::fs::read_to_string(dir.join("report.md"))
+            .unwrap()
+            .contains("Synthetic A"));
+
+        // An existing directory is refused before any work, and nothing in it is replaced.
+        let before = std::fs::read(dir.join("report.json")).unwrap();
+        let (code, d, stderr) = dev("saved-evidence", &f, &options);
+        assert_eq!(code, Some(2), "{stderr}");
+        assert_eq!(d, Value::Null);
+        assert!(stderr.contains("--report-dir"), "{stderr}");
+        assert_eq!(std::fs::read(dir.join("report.json")).unwrap(), before);
+
+        // A failed run removes the directory it made, so the same command can be rerun.
+        let failed_dir = f._dir.path().join("failed-reports");
+        let failing = [
+            ("--policy", "conservative-assembly-anim-v2"),
+            ("--report-dir", failed_dir.to_str().unwrap()),
+        ];
+        let (code, d, stderr) = dev("saved-evidence", &f, &failing);
+        assert_eq!(code, Some(1), "{stderr}");
+        assert_eq!(d, Value::Null);
+        assert!(!failed_dir.exists(), "{stderr}");
+
+        let v1_dir = f._dir.path().join("v1-reports");
+        let (code, _, stderr) = dev(
+            "saved-evidence",
+            &f,
+            &[("--report-dir", v1_dir.to_str().unwrap())],
+        );
+        assert_eq!(code, Some(0), "{stderr}");
+        let calls = std::fs::read_to_string(v1_dir.join("calls.tsv")).unwrap();
+        assert!(calls.contains("conservative-assembly-v1"), "{calls}");
     }
 
     #[test]
