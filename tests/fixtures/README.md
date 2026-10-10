@@ -38,6 +38,10 @@ Passing these cases shows the implementation follows the contract. It says nothi
 
 `cases.json` contains the accepted P4a-r3 GV-4 saved-evidence perturbations used to check member masking, group removal, incomplete evidence and the separate diagnostic would-assign result. See its README for the source hash and fixture limits.
 
+## `p4a-scorer/`
+
+`scoring-cases.json` contains the 84 scoring cases of the accepted P4a-r3 design. `tests/p4a_scorer_contract.rs` checks that every reason and field they use maps from terobacter output. See [its README](p4a-scorer/README.md) for the source hashes and limits.
+
 ## `reference-v2/`
 
 A synthetic version 2 reference package for the authentication tests. It carries no real reference data. See [its README](reference-v2/README.md) for its contents, derivation and limits.

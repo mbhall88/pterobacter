@@ -61,7 +61,7 @@ The TSV and Markdown files are produced from the JSON. They state the same final
 `call_status` is `assigned`, `unresolved` or `not_evaluated`.
 
 - `assigned`: the approved rules support a species. `species_id` and `species_name` are filled. Subspecies and genomovar are separate calls and can stay empty while the species is assigned.
-- `unresolved`: the run finished and the evidence does not support a call. The species, subspecies and genomovar columns are empty. `reasons` says why, using the terms in [`v1-reasons.tsv`](v1-reasons.tsv) and [`v2-reasons.tsv`](v2-reasons.tsv).
+- `unresolved`: the run finished and the evidence does not support a call. The species, subspecies and genomovar columns are empty. `reasons` says why, using the terms in [`reason-vocabulary.tsv`](contracts/reason-vocabulary.tsv).
 - `not_evaluated`: the run did not reach a decision. Look at `execution_status`, `execution_stage` and `execution_error`. Do not read this as a biological negative.
 
 A label never appears as a call unless the decision assigned it. The nearest parent, the original v1 outcome and a rescue witness do appear, but each under a name that says it is not the call: "Nearest parent (not an assignment)", `original_v1_*` columns, and so on.

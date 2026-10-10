@@ -1,0 +1,6043 @@
+{
+ "clusters": [
+  {
+   "expected": {
+    "ci95": [
+     0.84,
+     90.57
+    ],
+    "clusters": 3,
+    "clusters_with_wrong": 1,
+    "rate": "1/3"
+   },
+   "id": "C01_species_level",
+   "rows": [
+    {
+     "category": "rescued_wrong",
+     "cluster": "sp1",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "cluster": "sp1",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "cluster": "sp2",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "cluster": "sp2",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "cluster": "sp3",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "cluster": "sp4",
+     "manifest_state": "triggered_no_skani_witness"
+    }
+   ]
+  }
+ ],
+ "description": "P4a scoring fixtures r2: synthetic records with expected categories/violations. P4b scorer must reproduce all before scoring real records.",
+ "genomovar": [
+  {
+   "expected": {
+    "category": "gv_source_group",
+    "violations": []
+   },
+   "id": "G01_loo_source_group",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": true,
+    "gv": {
+     "assigned": null,
+     "compatible": [
+      "GV03"
+     ],
+     "diagnostic_would_assign": "GV03",
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": [
+      "diagnostic_only_no_deployment_call"
+     ]
+    },
+    "masked_members": [
+     "m1"
+    ],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G01",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": "GV03"
+   }
+  },
+  {
+   "expected": {
+    "category": "gv_other_group",
+    "violations": []
+   },
+   "id": "G02_loo_other_group",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": true,
+    "gv": {
+     "assigned": null,
+     "compatible": [
+      "GV24"
+     ],
+     "diagnostic_would_assign": "GV24",
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": [
+      "diagnostic_only_no_deployment_call"
+     ]
+    },
+    "masked_members": [
+     "m1"
+    ],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G02",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": "GV01"
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "genomovar_without_group_a_parent"
+    ]
+   },
+   "id": "G03_species_only_parent",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": "GV03",
+     "compatible": [
+      "GV03"
+     ],
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": []
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null
+    },
+    "record_id": "G03",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": null
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "genomovar_on_anim_rescue"
+    ]
+   },
+   "id": "G04_anim_parent",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": "GV03",
+     "compatible": [
+      "GV03"
+     ],
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": []
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "ANIm_assisted",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G04",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": null
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "genomovar_not_unique_complete"
+    ]
+   },
+   "id": "G05_not_unique",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": "GV01",
+     "compatible": [
+      "GV01",
+      "GV24"
+     ],
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": []
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G05",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": null
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "genomovar_not_unique_complete"
+    ]
+   },
+   "id": "G06_incomplete_rival",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": "GV04",
+     "compatible": [
+      "GV04"
+     ],
+     "incomplete": [
+      "GV05"
+     ],
+     "member_af_pass": true,
+     "reasons": []
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G06",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": null
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "genomovar_member_af_not_passed"
+    ]
+   },
+   "id": "G07_member_af_failed",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": "GV03",
+     "compatible": [
+      "GV03"
+     ],
+     "incomplete": [],
+     "member_af_pass": false,
+     "reasons": []
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G07",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": null
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "genomovar_assigned_to_removed_group"
+    ]
+   },
+   "id": "G08_assigned_removed_group",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": true,
+    "gv": {
+     "assigned": null,
+     "compatible": [
+      "GV03"
+     ],
+     "diagnostic_would_assign": "GV03",
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": [
+      "diagnostic_only_no_deployment_call"
+     ]
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G08",
+    "removed_groups": [
+     "GV03"
+    ],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": "GV03"
+   }
+  },
+  {
+   "expected": {
+    "category": "gv_other_group_under_omission",
+    "violations": []
+   },
+   "id": "G09_other_under_omission",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": true,
+    "gv": {
+     "assigned": null,
+     "compatible": [
+      "GV24"
+     ],
+     "diagnostic_would_assign": "GV24",
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": [
+      "diagnostic_only_no_deployment_call"
+     ]
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G09",
+    "removed_groups": [
+     "GV01"
+    ],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": "GV01"
+   }
+  },
+  {
+   "expected": {
+    "category": "gv_withheld_overlap",
+    "violations": []
+   },
+   "id": "G10_overlap",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": null,
+     "compatible": [
+      "GV01",
+      "GV24"
+     ],
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": [
+      "overlapping_definitions"
+     ]
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G10",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": "GV01"
+   }
+  },
+  {
+   "expected": {
+    "category": "gv_withheld_member_af",
+    "violations": []
+   },
+   "id": "G11_member_af",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": null,
+     "compatible": [
+      "GV03"
+     ],
+     "incomplete": [],
+     "member_af_pass": false,
+     "reasons": [
+      "insufficient_member_coverage_proposed"
+     ]
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G11",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": "GV03"
+   }
+  },
+  {
+   "expected": {
+    "category": "gv_withheld_parent",
+    "violations": []
+   },
+   "id": "G12_parent_first",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": null,
+     "compatible": [
+      "GV01",
+      "GV24"
+     ],
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": [
+      "overlapping_definitions",
+      "absent_eligible_parent"
+     ]
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": null,
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "record_id": "G12",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": "GV01"
+   }
+  },
+  {
+   "expected": {
+    "category": "gv_no_compatible",
+    "violations": []
+   },
+   "id": "G13_no_compatible",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": null,
+     "compatible": [],
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": [
+      "no_compatible_definition"
+     ]
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G13",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": null
+   }
+  },
+  {
+   "expected": {
+    "category": "gv_unassessable_singleton",
+    "violations": []
+   },
+   "id": "G14_singleton_self_loo_unassessable",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": true,
+    "gv": {
+     "assigned": null,
+     "compatible": [],
+     "diagnostic_would_assign": null,
+     "incomplete": [
+      "GV17"
+     ],
+     "member_af_pass": true,
+     "reasons": [
+      "diagnostic_only_no_deployment_call",
+      "incomplete_alternative_or_member_evidence"
+     ]
+    },
+    "masked_members": [
+     "m17"
+    ],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G14",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": true,
+    "source_group": "GV17"
+   }
+  },
+  {
+   "expected": {
+    "category": "self_member:gv_source_group",
+    "violations": []
+   },
+   "id": "G15_self_member_native",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "native",
+    "diagnostic": false,
+    "gv": {
+     "assigned": "GV03",
+     "compatible": [
+      "GV03"
+     ],
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": []
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G15",
+    "removed_groups": [],
+    "self_member": true,
+    "singleton_source": false,
+    "source_group": "GV03"
+   }
+  },
+  {
+   "expected": {
+    "category": "gv_assigned_singleton",
+    "violations": []
+   },
+   "id": "G16_native_singleton_match",
+   "record": {
+    "assigned_singleton": true,
+    "dataset": "native",
+    "diagnostic": false,
+    "gv": {
+     "assigned": "GV17",
+     "compatible": [
+      "GV17"
+     ],
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": []
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G16",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": null
+   }
+  },
+  {
+   "expected": {
+    "category": "gv_withheld_incomplete",
+    "violations": []
+   },
+   "id": "G17_incomplete",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": null,
+     "compatible": [],
+     "incomplete": [
+      "GV05"
+     ],
+     "member_af_pass": true,
+     "reasons": [
+      "incomplete_alternative_or_member_evidence"
+     ]
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G17",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": null
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "deployment_positive_in_diagnostic_run"
+    ]
+   },
+   "id": "G18_deployment_positive_in_diagnostic",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": true,
+    "gv": {
+     "assigned": "GV03",
+     "compatible": [
+      "GV03"
+     ],
+     "diagnostic_would_assign": "GV03",
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": [
+      "diagnostic_only_no_deployment_call"
+     ]
+    },
+    "masked_members": [
+     "m1"
+    ],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G18",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": "GV03"
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "diagnostic_field_in_deployment_run"
+    ]
+   },
+   "id": "G19_diagnostic_field_in_deployment",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": "GV03",
+     "compatible": [
+      "GV03"
+     ],
+     "diagnostic_would_assign": "GV03",
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": []
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G19",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": null
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "unknown_genomovar_reason"
+    ]
+   },
+   "id": "G20_unknown_reason",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": null,
+     "compatible": [],
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": [
+      "mystery"
+     ]
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G20",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": null
+   }
+  },
+  {
+   "expected": {
+    "category": "gv_withheld_execution",
+    "violations": []
+   },
+   "id": "G21_execution_reason",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": null,
+     "compatible": [
+      "GV03"
+     ],
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": [
+      "incomplete_or_unbound_execution",
+      "overlapping_definitions"
+     ]
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G21",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": null
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "genomovar_with_withholding_reason"
+    ]
+   },
+   "id": "G22_positive_with_reason",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": "GV03",
+     "compatible": [
+      "GV03"
+     ],
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": [
+      "unresolved_scope"
+     ]
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G22",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": null
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "withheld_without_reason"
+    ]
+   },
+   "id": "G23_withheld_without_reason",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": null,
+     "compatible": [],
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": []
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G23",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": null
+   }
+  },
+  {
+   "expected": {
+    "category": "gv_no_compatible",
+    "violations": []
+   },
+   "id": "G24_removed_singleton_no_positive",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": true,
+    "gv": {
+     "assigned": null,
+     "compatible": [],
+     "diagnostic_would_assign": null,
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": [
+      "diagnostic_only_no_deployment_call",
+      "no_compatible_definition"
+     ]
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G24",
+    "removed_groups": [
+     "GV17"
+    ],
+    "self_member": false,
+    "singleton_source": true,
+    "source_group": "GV17"
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "diagnostic_reason_in_deployment_run",
+     "withheld_without_reason"
+    ]
+   },
+   "id": "G25_deployment_with_diagnostic_reason",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": false,
+    "gv": {
+     "assigned": null,
+     "compatible": [],
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": [
+      "diagnostic_only_no_deployment_call"
+     ]
+    },
+    "masked_members": [],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G25",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": null
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "diagnostic_run_without_diagnostic_reason"
+    ]
+   },
+   "id": "G26_diagnostic_without_diagnostic_reason",
+   "record": {
+    "assigned_singleton": false,
+    "dataset": "synthetic",
+    "diagnostic": true,
+    "gv": {
+     "assigned": null,
+     "compatible": [
+      "GV03"
+     ],
+     "diagnostic_would_assign": "GV03",
+     "incomplete": [],
+     "member_af_pass": true,
+     "reasons": []
+    },
+    "masked_members": [
+     "m1"
+    ],
+    "parent": {
+     "call_basis": "skani",
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "record_id": "G26",
+    "removed_groups": [],
+    "self_member": false,
+    "singleton_source": false,
+    "source_group": "GV03"
+   }
+  }
+ ],
+ "intervals": [
+  {
+   "ci": [
+    0.0,
+    40.96
+   ],
+   "k": 0,
+   "n": 7
+  },
+  {
+   "ci": [
+    0.0,
+    9.49
+   ],
+   "k": 0,
+   "n": 37
+  },
+  {
+   "ci": [
+    98.3,
+    99.62
+   ],
+   "k": 914,
+   "n": 922
+  },
+  {
+   "ci": [
+    88.14,
+    98.27
+   ],
+   "k": 90,
+   "n": 95
+  },
+  {
+   "ci": [
+    0.0,
+    21.8
+   ],
+   "k": 0,
+   "n": 15
+  },
+  {
+   "ci": null,
+   "k": 0,
+   "n": 0
+  },
+  {
+   "ci": [
+    0.0,
+    0.87
+   ],
+   "k": 0,
+   "n": 420
+  },
+  {
+   "ci": [
+    0.0,
+    0.54
+   ],
+   "k": 0,
+   "n": 678
+  },
+  {
+   "ci": [
+    0.0,
+    36.94
+   ],
+   "k": 0,
+   "n": 8
+  }
+ ],
+ "rescue": [
+  {
+   "expected": {
+    "category": "not_triggered",
+    "violations": []
+   },
+   "id": "R01_not_triggered_unchanged",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "",
+     "state": "at_or_above_96_v1_route"
+    },
+    "record_id": "R01",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "v2": {
+     "call_basis": "skani",
+     "competitor_evaluation": "not_required",
+     "legacy_v1_result": {
+      "reasons": [],
+      "species_id": "ECTX-SP025",
+      "status": "assigned",
+      "subspecies_id": "ECTX-SS007"
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007",
+     "trigger": false
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "unexpected_change_outside_band"
+    ]
+   },
+   "id": "R02_change_outside_band",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "",
+     "state": "at_or_above_96_v1_route"
+    },
+    "record_id": "R02",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "v2": {
+     "call_basis": "skani",
+     "competitor_evaluation": "not_required",
+     "legacy_v1_result": {
+      "reasons": [],
+      "species_id": "ECTX-SP025",
+      "status": "assigned",
+      "subspecies_id": "ECTX-SS007"
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP013",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007",
+     "trigger": false
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "triggered_withheld:skani_coverage_not_rescuable",
+    "violations": []
+   },
+   "id": "R03_no_witness_P1_reasons",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_no_skani_witness"
+    },
+    "record_id": "R03",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "not_required_no_witness",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "skani_coverage_not_rescuable"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "rescued_correct",
+    "violations": []
+   },
+   "id": "R04_rescue_correct",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R04",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "rescued_wrong",
+    "violations": []
+   },
+   "id": "R05_rescue_wrong_named",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R05",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP002"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "rescued_wrong",
+    "violations": []
+   },
+   "id": "R06_rescue_wrong_under_omission",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R06",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "omitted_species",
+     "species_id": "ECTX-SP002"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "rescue_species_not_manifest_parent",
+     "rescue_to_omitted_species"
+    ]
+   },
+   "id": "R07_rescue_to_omitted_species",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP013",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R07",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "omitted_species",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "rescue_assigned_subspecies"
+    ]
+   },
+   "id": "R08_rescue_with_subspecies",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R08",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007",
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "rescue_without_complete_competitor_evaluation"
+    ]
+   },
+   "id": "R09_rescue_incomplete_competitors",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R09",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "incomplete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "rescue_over_existing_v1_call"
+    ]
+   },
+   "id": "R10_rescue_over_v1_call",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R10",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": "ECTX-SS007"
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [],
+      "species_id": "ECTX-SP025",
+      "status": "assigned",
+      "subspecies_id": "ECTX-SS007"
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "embedded_v1_differs_from_standalone_v1"
+    ]
+   },
+   "id": "R11_embedded_v1_differs",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "",
+     "state": "at_or_above_96_v1_route"
+    },
+    "record_id": "R11",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "not_required",
+     "legacy_v1_result": {
+      "reasons": [],
+      "species_id": "ECTX-SP025",
+      "status": "assigned",
+      "subspecies_id": "ECTX-SS007"
+     },
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": false
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "trigger_differs_from_manifest",
+     "unexpected_change_outside_band"
+    ]
+   },
+   "id": "R12_trigger_differs_from_manifest",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "",
+     "state": "at_or_above_96_v1_route"
+    },
+    "record_id": "R12",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "not_required_no_witness",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "skani_coverage_not_rescuable"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "unexpected_change_in_band_without_rescue"
+    ]
+   },
+   "id": "R13_change_in_band_without_rescue",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R13",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "skani",
+     "competitor_evaluation": "not_required_no_witness",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "ANIm_no_strict_witness"
+     ],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "rescued_correct_structural",
+    "violations": []
+   },
+   "id": "R14_structural_S_is_label_is_parent",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R14",
+    "setting": "synthetic",
+    "truth": {
+     "ani_species_passing": [
+      "ECTX-SP025"
+     ],
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "rescued_correct_structural",
+    "violations": []
+   },
+   "id": "R15_anim_informed_correct",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R15",
+    "setting": "synthetic",
+    "truth": {
+     "anim_informed": true,
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "rescued_wrong",
+    "violations": []
+   },
+   "id": "R16_anim_informed_wrong_still_wrong",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R16",
+    "setting": "synthetic",
+    "truth": {
+     "anim_informed": true,
+     "kind": "named",
+     "species_id": "ECTX-SP002"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "rescued_wrong",
+    "violations": []
+   },
+   "id": "R17_S_is_label_not_parent_is_wrong",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R17",
+    "setting": "synthetic",
+    "truth": {
+     "ani_species_passing": [
+      "ECTX-SP002"
+     ],
+     "kind": "named",
+     "species_id": "ECTX-SP002"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "rescued_correct",
+    "violations": []
+   },
+   "id": "R18_S_two_species_not_structural",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R18",
+    "setting": "synthetic",
+    "truth": {
+     "ani_species_passing": [
+      "ECTX-SP025",
+      "ECTX-SP002"
+     ],
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "rescued_no_truth",
+    "violations": []
+   },
+   "id": "R19_context_truth",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R19",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "context",
+     "species_id": null
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "rescued_wrong",
+    "violations": []
+   },
+   "id": "R20_outside_genus",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R20",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "outside_genus",
+     "species_id": null
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "rescued_wrong",
+    "violations": []
+   },
+   "id": "R21_no_package_reference",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R21",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "no_reference",
+     "species_id": null
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "rescued_no_truth",
+    "violations": []
+   },
+   "id": "R22_unresolved_truth",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R22",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "unresolved",
+     "species_id": null
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "triggered_withheld:foreign_parent_challenge",
+    "violations": []
+   },
+   "id": "R23_foreign_challenge",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R23",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "foreign_parent_challenge"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "triggered_withheld:ANIm_competitor_incomplete",
+    "violations": []
+   },
+   "id": "R24_competitor_incomplete",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R24",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "incomplete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "ANIm_competitor_incomplete"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "triggered_withheld:foreign_parent_challenge",
+    "violations": []
+   },
+   "id": "R25_precedence_foreign_before_method",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R25",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "method_gate_disagreement",
+      "foreign_parent_challenge"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "triggered_withheld:external_problem_warning",
+    "violations": []
+   },
+   "id": "R26_precedence_hard_veto_first",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R26",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "not_required_no_witness",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "ANIm_no_strict_witness",
+      "external_problem_warning"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "in_band_result_kept_v1_low_ANI_reason",
+     "withheld_without_contract_reason"
+    ]
+   },
+   "id": "R27_in_band_kept_v1_reason",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R27",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "not_required_no_witness",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "rescue_outside_manifest_witness_state"
+    ]
+   },
+   "id": "R28_rescue_outside_witness_state",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_no_skani_witness"
+    },
+    "record_id": "R28",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "rescue_species_not_manifest_parent"
+    ]
+   },
+   "id": "R29_rescue_not_manifest_parent",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R29",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP013"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP013",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "rescue_with_withholding_reason"
+    ]
+   },
+   "id": "R30_rescue_with_withholding_reason",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R30",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "foreign_parent_challenge"
+     ],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "withholding_inconsistent_with_manifest"
+    ]
+   },
+   "id": "R31_withholding_inconsistent_tie",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_cross_parent_tie"
+    },
+    "record_id": "R31",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "not_required_no_witness",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "skani_coverage_not_rescuable"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "triggered_withheld:different_species_nearest_tie",
+    "violations": []
+   },
+   "id": "R32_tie_withheld",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "",
+     "state": "triggered_cross_parent_tie"
+    },
+    "record_id": "R32",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "not_required_no_witness",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "different_species_nearest_tie"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "triggered_withheld:two_parent_support_alert",
+    "violations": []
+   },
+   "id": "R33_no_witness_hard_veto_only",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_no_skani_witness"
+    },
+    "record_id": "R33",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "not_required_no_witness",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "two_parent_support_alert"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "rescue_without_species",
+     "rescue_species_not_manifest_parent"
+    ]
+   },
+   "id": "R34_rescue_without_species",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R34",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "not_triggered",
+    "violations": []
+   },
+   "id": "R35_reason_order_ignored",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "",
+     "state": "at_or_above_96_v1_route"
+    },
+    "record_id": "R35",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "a",
+      "b"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "not_required",
+     "legacy_v1_result": {
+      "reasons": [
+       "a",
+       "b"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "b",
+      "a"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": false
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "rescued_correct_structural",
+    "violations": []
+   },
+   "id": "R36_S_sealed_string_structural",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R36",
+    "setting": "synthetic",
+    "truth": {
+     "ani_species_passing": "ECTX-SP025",
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "rescued_correct",
+    "violations": []
+   },
+   "id": "R37_S_sealed_string_two_species",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R37",
+    "setting": "synthetic",
+    "truth": {
+     "ani_species_passing": "ECTX-SP002;ECTX-SP025",
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "withholding_inconsistent_with_manifest"
+    ]
+   },
+   "id": "R38_witness_state_skani_coverage_reason",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R38",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "not_required_no_witness",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "skani_coverage_not_rescuable"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "spec_violation",
+    "violations": [
+     "withholding_inconsistent_with_manifest"
+    ]
+   },
+   "id": "R39_no_witness_state_witness_reason",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_no_skani_witness"
+    },
+    "record_id": "R39",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "not_required_no_witness",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "skani_coverage_not_rescuable",
+      "ANIm_no_strict_witness"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "expected": {
+    "category": "triggered_withheld:ANIm_no_strict_witness",
+    "violations": []
+   },
+   "id": "R40_witness_state_method_veto_allowed",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "R40",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": null,
+     "competitor_evaluation": "not_required_no_witness",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [
+      "ANIm_no_strict_witness",
+      "method_gate_disagreement"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  }
+ ],
+ "rescue_raises": [
+  {
+   "id": "X01_sealed_structural_flag_disagrees",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "X01",
+    "setting": "synthetic",
+    "truth": {
+     "ani_species_passing": [
+      "ECTX-SP002"
+     ],
+     "kind": "named",
+     "species_id": "ECTX-SP002",
+     "structural_species": true
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "id": "X02_unknown_truth_kind",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "X02",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "guess",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "id": "X03_unknown_manifest_state",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "maybe"
+    },
+    "record_id": "X03",
+    "setting": "synthetic",
+    "truth": {
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  },
+  {
+   "id": "X04_S_neither_string_nor_list",
+   "record": {
+    "dataset": "synthetic",
+    "manifest": {
+     "parent_id": "ECTX-SP025",
+     "state": "triggered_with_witness_candidate"
+    },
+    "record_id": "X04",
+    "setting": "synthetic",
+    "truth": {
+     "ani_species_passing": 25,
+     "kind": "named",
+     "species_id": "ECTX-SP025"
+    },
+    "v1": {
+     "reasons": [
+      "nearest_below_species_ANI"
+     ],
+     "species_id": null,
+     "status": "unresolved",
+     "subspecies_id": null
+    },
+    "v2": {
+     "call_basis": "ANIm_assisted",
+     "competitor_evaluation": "complete",
+     "legacy_v1_result": {
+      "reasons": [
+       "nearest_below_species_ANI"
+      ],
+      "species_id": null,
+      "status": "unresolved",
+      "subspecies_id": null
+     },
+     "reasons": [],
+     "species_id": "ECTX-SP025",
+     "status": "assigned",
+     "subspecies_id": null,
+     "trigger": true
+    }
+   }
+  }
+ ],
+ "summary": [
+  {
+   "expected": {
+    "rescued": 0,
+    "spec_violations": 0,
+    "triggered": 678,
+    "witness_candidates": 420,
+    "wrong_rescue": "0/0",
+    "wrong_rescue_ci95": null,
+    "wrong_rescue_per_triggered": "0/678",
+    "wrong_rescue_per_triggered_ci95": [
+     0.0,
+     0.54
+    ],
+    "wrong_rescue_per_witness_candidate": "0/420",
+    "wrong_rescue_per_witness_candidate_ci95": [
+     0.0,
+     0.87
+    ]
+   },
+   "id": "S01_omission_denominators",
+   "rows": [
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:ANIm_no_strict_witness",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    },
+    {
+     "category": "triggered_withheld:skani_coverage_not_rescuable",
+     "manifest_state": "triggered_no_skani_witness"
+    }
+   ]
+  },
+  {
+   "expected": {
+    "rescue_yield": "12/12",
+    "rescued": 12,
+    "spec_violations": 0,
+    "triggered": 12,
+    "witness_candidates": 12,
+    "wrong_rescue": "0/7",
+    "wrong_rescue_ci95": [
+     0.0,
+     40.96
+    ],
+    "wrong_rescue_per_witness_candidate": "0/12",
+    "wrong_rescue_per_witness_candidate_ci95": [
+     0.0,
+     26.46
+    ]
+   },
+   "id": "S02_structural_outside_rate",
+   "rows": [
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct_structural",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct_structural",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct_structural",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct_structural",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct_structural",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "not_triggered",
+     "manifest_state": "at_or_above_96_v1_route"
+    },
+    {
+     "category": "not_triggered",
+     "manifest_state": "at_or_above_96_v1_route"
+    },
+    {
+     "category": "not_triggered",
+     "manifest_state": "at_or_above_96_v1_route"
+    }
+   ]
+  },
+  {
+   "expected": {
+    "rescued": 15,
+    "witness_candidates": 15,
+    "wrong_rescue": "1/15",
+    "wrong_rescue_ci95": [
+     0.17,
+     31.95
+    ],
+    "wrong_rescue_per_witness_candidate": "1/15",
+    "wrong_rescue_per_witness_candidate_ci95": [
+     0.17,
+     31.95
+    ]
+   },
+   "id": "S03_one_wrong",
+   "rows": [
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_correct",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "rescued_wrong",
+     "manifest_state": "triggered_with_witness_candidate"
+    }
+   ]
+  },
+  {
+   "expected": {
+    "rescued": 0,
+    "spec_violations": 2,
+    "triggered": 3,
+    "witness_candidates": 3,
+    "wrong_rescue_per_witness_candidate": "0/3"
+   },
+   "id": "S04_violations_outside_denominators",
+   "rows": [
+    {
+     "category": "spec_violation",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "spec_violation",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:foreign_parent_challenge",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:foreign_parent_challenge",
+     "manifest_state": "triggered_with_witness_candidate"
+    },
+    {
+     "category": "triggered_withheld:foreign_parent_challenge",
+     "manifest_state": "triggered_with_witness_candidate"
+    }
+   ]
+  }
+ ]
+}

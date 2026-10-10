@@ -1,0 +1,60 @@
+policy	field	terobacter_reason	contract_reason	contract_source
+conservative-assembly-v1	reasons	conditional_assembly_assignment	conditional_assembly_assignment	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	diagnostic_candidate_only	diagnostic_candidate_only	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	no_estimate	no_estimate	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	different_species_nearest_tie	different_species_nearest_tie	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	nearest_reference_has_no_species	nearest_reference_has_no_species	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	species_competitor_unmeasured	species_competitor_unmeasured	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	nearest_below_species_ANI	nearest_below_species_ANI	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	species_coverage_not_met	species_coverage_not_met	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	parent_species_unresolved	parent_species_unresolved	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	within_parent_nearest_group_tie	within_parent_nearest_group_tie	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	nearest_reference_has_no_subspecies	nearest_reference_has_no_subspecies	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	nearest_group_below_subspecies_ANI	nearest_group_below_subspecies_ANI	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	subspecies_coverage_not_met	subspecies_coverage_not_met	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	within_parent_competitor_unmeasured	within_parent_competitor_unmeasured	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	global_group_competitor_unmeasured	global_group_competitor_unmeasured	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	global_group_margin_below_guide	global_group_margin_below_guide	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	qualifying_reference_margin_below_guide	qualifying_reference_margin_below_guide	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	two_parent_support_alert	two_parent_support_alert	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	unexplained_residual_sequence	unexplained_residual_sequence	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	coverage_method_disagreement	coverage_method_disagreement	frozen 0.2.0 v1 rule
+conservative-assembly-v1	reasons	external_problem_warning	external_problem_warning	frozen 0.2.0 v1 rule
+conservative-assembly-anim-v2	reasons	no_estimate	no_estimate	P1-r1 contract_model.py
+conservative-assembly-anim-v2	reasons	different_species_nearest_tie	different_species_nearest_tie	P1-r1 contract_model.py
+conservative-assembly-anim-v2	reasons	nearest_reference_has_no_species	nearest_reference_has_no_species	P1-r1 contract_model.py
+conservative-assembly-anim-v2	reasons	species_competitor_unmeasured	species_competitor_unmeasured	P1-r1 contract_model.py
+conservative-assembly-anim-v2	reasons	nearest_below_species_ANI	nearest_below_species_ANI	P1-r1 contract_model.py
+conservative-assembly-anim-v2	reasons	species_coverage_not_met	species_coverage_not_met	P1-r1 contract_model.py
+conservative-assembly-anim-v2	reasons	two_parent_support_alert	two_parent_support_alert	P1-r1 contract_model.py
+conservative-assembly-anim-v2	reasons	unexplained_residual_sequence	unexplained_residual_sequence	P1-r1 contract_model.py
+conservative-assembly-anim-v2	reasons	external_problem_warning	external_problem_warning	P1-r1 contract_model.py
+conservative-assembly-anim-v2	reasons	skani_coverage_not_rescuable	skani_coverage_not_rescuable	P1-r1 contract_model.py
+conservative-assembly-anim-v2	reasons	ANIm_incomplete	ANIm_incomplete	P1-r1 contract_model.py
+conservative-assembly-anim-v2	reasons	ANIm_no_strict_witness	ANIm_no_strict_witness	P1-r1 contract_model.py
+conservative-assembly-anim-v2	reasons	ANIm_competitor_incomplete	ANIm_competitor_incomplete	P1-r1 contract_model.py
+conservative-assembly-anim-v2	reasons	foreign_parent_challenge	foreign_parent_challenge	P1-r1 contract_model.py
+conservative-assembly-anim-v2	reasons	method_gate_disagreement	method_gate_disagreement	P1-r1 contract_model.py
+conservative-assembly-anim-v2	subspecies_reason	diagnostic_candidate_only	diagnostic_candidate_only	frozen 0.2.0 v1 rule, unchanged
+conservative-assembly-anim-v2	subspecies_reason	parent_species_unresolved	parent_species_unresolved	frozen 0.2.0 v1 rule, unchanged
+conservative-assembly-anim-v2	subspecies_reason	within_parent_nearest_group_tie	within_parent_nearest_group_tie	frozen 0.2.0 v1 rule, unchanged
+conservative-assembly-anim-v2	subspecies_reason	nearest_reference_has_no_subspecies	nearest_reference_has_no_subspecies	frozen 0.2.0 v1 rule, unchanged
+conservative-assembly-anim-v2	subspecies_reason	nearest_group_below_subspecies_ANI	nearest_group_below_subspecies_ANI	frozen 0.2.0 v1 rule, unchanged
+conservative-assembly-anim-v2	subspecies_reason	subspecies_coverage_not_met	subspecies_coverage_not_met	frozen 0.2.0 v1 rule, unchanged
+conservative-assembly-anim-v2	subspecies_reason	within_parent_competitor_unmeasured	within_parent_competitor_unmeasured	frozen 0.2.0 v1 rule, unchanged
+conservative-assembly-anim-v2	subspecies_reason	global_group_competitor_unmeasured	global_group_competitor_unmeasured	frozen 0.2.0 v1 rule, unchanged
+conservative-assembly-anim-v2	subspecies_reason	global_group_margin_below_guide	global_group_margin_below_guide	frozen 0.2.0 v1 rule, unchanged
+conservative-assembly-anim-v2	subspecies_reason	qualifying_reference_margin_below_guide	qualifying_reference_margin_below_guide	frozen 0.2.0 v1 rule, unchanged
+conservative-assembly-anim-v2	subspecies_reason	ANIm_species_rescue_does_not_establish_subspecies	ANIm_species_rescue_does_not_establish_subspecies	P1-r1 calling contract, section 2.6
+p3a-genomovar-contract-r1	genomovar.reasons	absent_eligible_parent	absent_eligible_parent	P3a-r1 spec_model.py
+p3a-genomovar-contract-r1	genomovar.reasons	unresolved_scope	unresolved_scope	P3a-r1 spec_model.py
+p3a-genomovar-contract-r1	genomovar.reasons	upstream_veto	upstream_veto_or_missing_veto_record	P3a-r1 spec_model.py
+p3a-genomovar-contract-r1	genomovar.reasons	unsupported_scope	unsupported_scope	P3a-r1 spec_model.py
+p3a-genomovar-contract-r1	genomovar.reasons	unsupported_method_or_definition	unsupported_method_or_definition	P3a-r1 spec_model.py
+p3a-genomovar-contract-r1	genomovar.reasons	incomplete_or_unbound_execution	incomplete_or_unbound_execution	P3a-r1 spec_model.py
+p3a-genomovar-contract-r1	genomovar.reasons	diagnostic_only_no_deployment_call	diagnostic_only_no_deployment_call	P3a-r1 spec_model.py
+p3a-genomovar-contract-r1	genomovar.reasons	overlapping_definitions	overlapping_definitions	P3a-r1 spec_model.py
+p3a-genomovar-contract-r1	genomovar.reasons	incomplete_alternative_or_member_evidence	incomplete_alternative_or_member_evidence	P3a-r1 spec_model.py
+p3a-genomovar-contract-r1	genomovar.reasons	no_compatible_definition	no_compatible_definition	P3a-r1 spec_model.py
+p3a-genomovar-contract-r1	genomovar.reasons	insufficient_member_coverage	insufficient_member_coverage_proposed	P3a-r1 spec_model.py
+p3a-genomovar-contract-r1	genomovar.reasons	parent_withdrawn_before_publication	upstream_veto_or_missing_veto_record	P3a-r1 spec_model.py

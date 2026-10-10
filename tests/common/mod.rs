@@ -154,15 +154,43 @@ pub fn evidence_text_with_literals(
     text
 }
 
+/// One row of the hashed reason-vocabulary map in `docs/contracts/reason-vocabulary.tsv`.
+#[allow(dead_code)]
+pub struct VocabularyRow {
+    pub field: String,
+    pub terobacter_reason: String,
+    pub contract_reason: String,
+}
+
+/// The reason-vocabulary rows for one policy or contract, in file order.
+#[allow(dead_code)]
+pub fn reason_vocabulary(policy: &str) -> Vec<VocabularyRow> {
+    let text = include_str!("../../docs/contracts/reason-vocabulary.tsv");
+    let mut lines = text.lines();
+    assert_eq!(
+        lines.next(),
+        Some("policy\tfield\tterobacter_reason\tcontract_reason\tcontract_source")
+    );
+    lines
+        .map(|line| line.split('\t').collect::<Vec<_>>())
+        .inspect(|f| assert_eq!(f.len(), 5, "malformed vocabulary row {f:?}"))
+        .filter(|f| f[0] == policy)
+        .map(|f| VocabularyRow {
+            field: f[1].to_owned(),
+            terobacter_reason: f[2].to_owned(),
+            contract_reason: f[3].to_owned(),
+        })
+        .collect()
+}
+
 /// The decision JSON for evidence text that is expected to load.
 pub fn decision_from_text(evidence: &str) -> Value {
     let evidence = SavedEvidence::from_json(evidence).expect("evidence should load");
     let decision: Value = serde_json::from_str(&decide(&evidence, &Policy::v1()).to_json())
         .expect("decision is JSON");
-    let vocabulary: Vec<_> = include_str!("../../docs/v1-reasons.tsv")
-        .lines()
-        .skip(1)
-        .map(|line| line.split_once('\t').unwrap().0)
+    let vocabulary: Vec<String> = reason_vocabulary("conservative-assembly-v1")
+        .into_iter()
+        .map(|row| row.terobacter_reason)
         .collect();
     for reason in decision["blocking_reasons"]
         .as_array()
@@ -180,7 +208,10 @@ pub fn decision_from_text(evidence: &str) -> Value {
                 .map(|rank| decision["rank_evidence"][rank]["reason"].as_str().unwrap()),
         )
     {
-        assert!(vocabulary.contains(&reason), "unmapped reason: {reason}");
+        assert!(
+            vocabulary.iter().any(|known| known == reason),
+            "unmapped reason: {reason}"
+        );
     }
     decision
 }
