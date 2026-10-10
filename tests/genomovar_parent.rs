@@ -228,6 +228,10 @@ fn a_v2_method_veto_withholds_the_parent() {
 fn an_unknown_report_shape_fails_closed() {
     for report in [
         json!({}),
+        json!(null),
+        json!("not a report"),
+        json!(17),
+        json!([]),
         json!({"status": "assigned", "species_id": SP, "subspecies_id": SS}),
     ] {
         assert!(!supports_genomovar(&GenomovarParent::from_report(&report)));

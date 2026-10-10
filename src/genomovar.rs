@@ -707,7 +707,10 @@ pub fn parent_result_sha256(report: &Value) -> String {
             object.remove(key);
         }
     }
-    if let Some(assignment) = decision["assignment"].as_object_mut() {
+    if let Some(assignment) = decision
+        .get_mut("assignment")
+        .and_then(Value::as_object_mut)
+    {
         assignment.remove("genomovar_id");
     }
     crate::evidence::sha256_hex(&serde_json::to_vec(&decision).expect("parent decision JSON"))
