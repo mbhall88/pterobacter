@@ -1,4 +1,5 @@
 //! Bounded native execution of the pure rescue plan. No taxonomic rules live here.
+use super::cache::{copy_tree, AnimCache, CacheKey, Lookup, ReferenceKey, Stored};
 use crate::{
     anim::{self, ExpectedPair, PairRequest},
     reference::{
@@ -27,6 +28,9 @@ pub struct V2Settings {
     /// Fresh directory retaining native evidence; must not already exist
     #[arg(long)]
     pub anim_output: Option<PathBuf>,
+    /// Directory of verified reciprocal pairs to reuse and extend; created when absent
+    #[arg(long)]
+    pub anim_cache: Option<PathBuf>,
     /// Reciprocal pair wall timeout, default 120 seconds, maximum 1800
     #[arg(long, value_parser = parse_pair_seconds)]
     pub anim_pair_seconds: Option<Duration>,
@@ -69,6 +73,7 @@ impl V2Settings {
         self.anim_reference_package.is_some()
             || self.expected_anim_sha256.is_some()
             || self.anim_output.is_some()
+            || self.anim_cache.is_some()
             || self.anim_pair_seconds.is_some()
             || self.anim_query_seconds.is_some()
             || self.anim_memory_mib.is_some()
@@ -160,6 +165,13 @@ fn execute_inner(
     let component = verify_component(directory, expected, package)?;
     run.execution["reference_component"] = json!({"directory": directory, "manifest_sha256": component.manifest_sha256,
         "reference_package_sha256": component.reference_package_sha256, "licence_sha256": component.licence_sha256});
+    run.execution["stop_reason"] = "cache_unavailable".into();
+    let cache = settings
+        .anim_cache
+        .as_deref()
+        .map(AnimCache::open)
+        .transpose()?;
+    run.execution["cache"] = json!(settings.anim_cache);
     run.execution["stop_reason"] = "missing_output".into();
     let output = settings
         .anim_output
@@ -173,6 +185,9 @@ fn execute_inner(
     let query_sha = anim::hash_bytes(bytes);
     let mut records = AnimRecords::default();
     let budget = settings.query_timeout();
+    // Native time a reused pair took when it was measured. It counts against the budget as
+    // if measured now, so the cache never lets a query finish that could not finish fresh.
+    let mut reused_time = Duration::ZERO;
     loop {
         run.plan = input
             .plan(&run.bound)
@@ -200,7 +215,7 @@ fn execute_inner(
             run.execution["stop_reason"] = "plan_complete".into();
             break;
         };
-        let remaining = budget.saturating_sub(start.elapsed());
+        let remaining = budget.saturating_sub(start.elapsed() + reused_time);
         if remaining.is_zero() {
             run.execution["stop_reason"] = "query_deadline".into();
             return Err("ANIm query wall budget exhausted".into());
@@ -238,10 +253,65 @@ fn execute_inner(
             .expect("pairs")
             .push(entry);
         let index = run.execution["pairs"].as_array().expect("pairs").len() - 1;
-        let pair = anim::measure_pair(&request, context.cancelled).map_err(|e| e.to_string())?;
+        let key = cache.as_ref().map(|_| {
+            CacheKey::new(
+                &query_sha,
+                ReferenceKey {
+                    reference_id: id.into(),
+                    sha256: reference.sha256.clone(),
+                    component: "primary_whole".into(),
+                    concept_ids: reference.concept_ids.clone(),
+                    scope: "whole_assembly_as_deposited".into(),
+                    package_sha256: component.reference_package_sha256.clone(),
+                },
+                settings.pair_timeout(),
+                request.memory_mib,
+            )
+        });
+        let mut lookup = cache.as_ref().zip(key.as_ref()).map(|(c, k)| c.lookup(k));
+        if let Some(key) = &key {
+            run.execution["pairs"][index]["cache"] =
+                json!({"status": "miss", "key_sha256": key.sha256()});
+        }
+        // A saved pair stands only within the limit this pair runs under now.
+        let saved = match lookup.take() {
+            Some(Lookup::Hit(saved)) => match native_time(&saved) {
+                Ok(time) if time <= request.timeout => Some((saved, time)),
+                Ok(_) => {
+                    lookup = Some(Lookup::Rejected(
+                        "saved native time exceeds the time now remaining for this pair".into(),
+                    ));
+                    None
+                }
+                Err(why) => {
+                    lookup = Some(Lookup::Rejected(why));
+                    None
+                }
+            },
+            other => {
+                lookup = other;
+                None
+            }
+        };
+        // A reused pair is copied into this query's evidence and verified there like a new one.
+        let pair = if let Some((saved, time)) = saved {
+            run.execution["pairs"][index]["cache"]["status"] = "reused".into();
+            reused_time += time;
+            copy_tree(&saved, &pair_output).map_err(|e| e.to_string())?;
+            serde_json::from_slice(
+                &fs::read(pair_output.join("result.json")).map_err(|e| e.to_string())?,
+            )
+            .map_err(|e| e.to_string())?
+        } else {
+            if let Some(Lookup::Rejected(why)) = &lookup {
+                run.execution["pairs"][index]["cache"]["status"] = "rejected".into();
+                run.execution["pairs"][index]["cache"]["rejection"] = why.clone().into();
+            }
+            anim::measure_pair(&request, context.cancelled).map_err(|e| e.to_string())?
+        };
         run.execution["pairs"][index]["record"] =
             serde_json::to_value(&pair).map_err(|e| e.to_string())?;
-        let error = if pair.status == "complete" {
+        let verified = if pair.status == "complete" {
             match anim::verify_pair(&pair_output, &expected_pair) {
                 Ok(verified) => {
                     run.execution["pairs"][index]["status"] = "complete".into();
@@ -249,15 +319,35 @@ fn execute_inner(
                 }
                 Err(e) => {
                     run.execution["pairs"][index]["verification_error"] = e.to_string().into();
+                    if run.execution["pairs"][index]["cache"]["status"] == "reused" {
+                        run.execution["pairs"][index]["cache"]["status"] = "rejected".into();
+                        run.execution["pairs"][index]["cache"]["rejection"] =
+                            "copied pair failed verification".into();
+                    }
                     None
                 }
             }
         } else {
             None
         };
+        if let (Some(cache), Some(key)) = (&cache, &key) {
+            let status = &mut run.execution["pairs"][index]["cache"];
+            // Only a new, verified complete pair is saved; failures never enter the cache.
+            if status["status"] == "miss" {
+                status["status"] = match verified.as_ref().map(|_| cache.store(key, &pair_output)) {
+                    None => "not_stored".into(),
+                    Some(Ok(Stored::Stored)) => "stored".into(),
+                    Some(Ok(Stored::Existing)) => "already_stored".into(),
+                    Some(Err(why)) => {
+                        status["store_error"] = why.into();
+                        "store_failed".into()
+                    }
+                };
+            }
+        }
         // Failed and partially measured pairs still carry diagnostic evidence. Integrity-rejected
         // complete records are withheld from the decision; actual attempts remain in the receipts.
-        if pair.status != "complete" || error.is_some() {
+        if pair.status != "complete" || verified.is_some() {
             records.extend(
                 AnimRecords::from_json(&serde_json::to_string(&pair).map_err(|e| e.to_string())?)
                     .map_err(|e| e.to_string())?,
@@ -271,7 +361,7 @@ fn execute_inner(
                 .to_value()
                 .clone();
         }
-        if error.is_none() {
+        if verified.is_none() {
             if context.cancelled.load(Ordering::SeqCst) {
                 run.execution["stop_reason"] = "cancelled".into();
             }
@@ -286,6 +376,20 @@ fn execute_inner(
     run.execution["stop_reason"] = stop_reason;
     run.execution["wall_seconds"] = json!(start.elapsed().as_secs_f64());
     Ok(())
+}
+
+/// Native wall time recorded in a saved pair's two worker receipts.
+fn native_time(pair: &Path) -> Result<Duration, String> {
+    let record: anim::PairRecord =
+        serde_json::from_slice(&fs::read(pair.join("result.json")).map_err(|e| e.to_string())?)
+            .map_err(|e| e.to_string())?;
+    let seconds: f64 = record
+        .orientations
+        .values()
+        .filter_map(|o| o.receipt.as_ref())
+        .map(|r| r.wall_seconds)
+        .sum();
+    Duration::try_from_secs_f64(seconds).map_err(|e| format!("saved native time: {e}"))
 }
 
 pub(super) fn verify_component(

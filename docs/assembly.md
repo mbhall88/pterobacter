@@ -4,10 +4,10 @@
 
 ```sh
 tero --reference-package reference --expected-sha256 MANIFEST_SHA256 isolate.fa > isolate.json
-terobacter --reference-package reference --expected-sha256 MANIFEST_SHA256 --threads 4 first.fa second.fa > batch.json
+terobacter --reference-package reference --expected-sha256 MANIFEST_SHA256 --jobs 2 --threads 4 --output batch.json first.fa second.fa
 ```
 
-Use the SHA-256 of `portable.json` supplied through a trusted package handoff. Computing a digest from an untrusted package does not establish its origin. The command verifies every listed asset, package metadata and component membership before opening the embedded skani database, and checks the package again before writing results. A provisioned run needs no network or external executable. Archived search labels are provenance labels; no archived FASTA is opened.
+Use the SHA-256 of `portable.json` supplied through a trusted package handoff. Computing a digest from an untrusted package does not establish its origin. The command verifies every listed asset, package metadata and component membership before opening the embedded skani database, and checks the package again before writing results. A provisioned run needs no network or external executable: no dependency is a network client, the source opens no socket, and where unprivileged namespaces are available, the test suite runs v1 with MLST and a v2 rescue inside a network namespace that has no interface but loopback. Archived search labels are provenance labels; no archived FASTA is opened.
 
 The default `--policy conservative-assembly-v1` uses the frozen species ANI ≥96%, subspecies ANI ≥98%, both AF ≥80% and subspecies margin ≥1 percentage point rules. The candidate `--policy conservative-assembly-anim-v2` runs the accepted skani-first rescue plan with embedded MUMmer4. Historical MLST is optional under either policy. Both policies attach conditional genomovar results; see [genomovar.md](genomovar.md). No query CheckM2 is run.
 
@@ -34,23 +34,31 @@ MLST is supplementary. It never changes `assignment`, `species` or `subspecies`,
 
 ## Reports and failures
 
-One input produces a JSON object. Multiple inputs produce an array in argument order, with isolated statuses. They run sequentially, using `--threads` for each search. A failed input does not erase a completed input. The process exits nonzero if any input fails. Redirect stdout to retain the report; an unwritable output stream returns 1.
+One input produces a JSON object. Multiple inputs produce an array in argument order, with isolated statuses. Each report records its argument position as `input.ordinal` beside `input.file`. A failed input does not erase or change a completed input. The process exits nonzero if any input fails.
 
-A completed search may produce an unresolved biological call, including when no estimate is returned. This is `execution.status: complete` with a null assignment. Execution failure instead reports `execution.status: incomplete`, the failed stage and an error, with null assignment fields. Partial reports retain validated input metadata where available. A failed final package check invalidates all decisions in that batch while retaining their measurement evidence.
+`--jobs N` analyses up to N inputs at once (default 1). Each runs its searches with `--threads`, so a run uses up to N × `--threads` search threads, and under v2 up to N native ANIm workers, each limited by `--anim-memory-mib`. Calls, statuses, exit codes and evidence directory names do not depend on N or on the order in which inputs finish; timings and, with a shared cache, which query stored or reused a pair can.
+
+The report goes to stdout unless `--output FILE` names a new file in an existing directory. An existing file is never replaced: the run is refused before any work, and a file that appears during the run is left alone, in which case the report goes to stdout and the run exits 1. The file is written completely before it appears, so a reader never sees a partial report. An unwritable stdout returns 1.
+
+Output paths are checked before any work, and a collision exits 2 without a report. The report file, `--anim-output` and `--anim-cache` must be distinct and not nested in one another. None may be inside the reference package, the ANIm component or the MLST package, and none may be an input assembly. Paths are compared after resolving symbolic links and `..`.
+
+A completed search may produce an unresolved biological call, including when no estimate is returned. This is `execution.status: complete` with a null assignment. Execution failure instead reports `execution.status: incomplete`, the failed stage and an error, with null assignment fields. Partial reports retain validated input metadata where available. A missing or corrupt reference package or database fails each input that reaches it with exit 4, keeping the validated input metadata. A missing or invalid ANIm component fails a v2 query that needs it at the `anim` stage with exit 1, keeping its plan and any pair evidence; one that changes after its pairs complete fails the final component check with exit 4. A package changed during the run fails the final check, which invalidates all decisions in that batch while retaining their measurement evidence.
+
+The first SIGINT or SIGTERM stops the run at the next check under either policy. Inputs not yet started report `run interrupted`. A running skani search finishes, and a native ANIm worker is stopped. Every call in the batch is then withheld at the `publication` stage, measurement and ANIm evidence are kept, the report is still written and the exit code is 1. A second signal of the same kind ends the process at once without a report.
 
 Reports include authenticated data identity and version, policy ID, implementation version, skani revision and compatibility profile, floor 15%/screen 80% settings, every returned row and every unreturned reference. `evidence` is the package-bound decision input, retaining exact emitted decimal measurements. Scope is reported as not assessed when no scope assessment was performed; AF alone does not establish purity or explain extra sequence.
 
 | Public exit code | Meaning |
 |---|---|
 | 0 | All inputs completed, whether assigned or biologically withheld. |
-| 1 | Measurement, decision, genomovar search or output I/O failure. |
-| 2 | Command-line usage error, including missing package/digest, invalid digest or zero threads. No report is available. |
+| 1 | Measurement, decision, genomovar search or output I/O failure, or the run was interrupted. |
+| 2 | Command-line usage error, including missing package/digest, invalid digest, zero threads or jobs, an existing `--output` file, a missing directory for it or an output collision. No report is available. |
 | 3 | Unreadable, empty, malformed or unsupported assembly input or input kind. |
 | 4 | Package authentication, database opening or final package recheck failed. |
 | 5 | Requested native policy is unavailable, or ANIm flags are supplied to v1. No v1 fallback occurs. |
 | 6 | MLST was requested and did not complete for an input whose classification completed, or its package changed during the run. Classification results are retained. |
 
-For batches with different failures, the last failed input's code is returned; a final package recheck failure takes precedence. Inspect each report's execution status. Development commands retain their separate exit-code meanings in the README.
+For batches with different failures, the last failed input's code in argument order is returned. A final package recheck failure takes precedence over it, and an interruption over both. Inspect each report's execution status. Development commands retain their separate exit-code meanings in the README.
 
 These are implementation and development-parity checks. Independent biological validation and release/platform acceptance remain separate gates.
 
@@ -65,9 +73,24 @@ tero --reference-package reference --expected-sha256 PRIMARY_MANIFEST_SHA256 \
 
 V2 uses the same whole-input skani search. Outside the rescue band it keeps the v1 decision and requires no ANIm component. Eligible queries measure witnesses first. A passing witness requires the entire primary competitor panel, including unreturned references. A decisive veto permits an early stop; the report lists every omitted reference. A positive rescue assigns species only, with null subspecies and genomovar. The report retains `legacy_v1_result`, the original skani evidence, the final plan, exact reciprocal records, artifact directories and hashes. Validation status remains `not_yet_validated`.
 
-Missing required FASTAs, invalid metadata or bytes, failed native execution and interruption produce an incomplete report with a null call and nonzero exit. Successful zero alignment is measured evidence and counts separately from failures. Redirect stdout to save the unified report. `--anim-output` must be a new directory; each query and pair receives a separate retained directory. There is no cache reuse in this slice.
+Missing required FASTAs, invalid metadata or bytes, failed native execution and interruption produce an incomplete report with a null call and nonzero exit. Successful zero alignment is measured evidence and counts separately from failures. Redirect stdout to save the unified report. `--anim-output` must be a new directory; each query and pair receives a separate retained directory, named by the query's argument position.
 
-ANIm runs one worker at a time with one native query thread. Defaults are 120 seconds per reciprocal pair, 600 seconds total ANIm wall time per query and 1024 MiB per worker. `--anim-pair-seconds`, `--anim-query-seconds` and `--anim-memory-mib` select limits up to 1800 seconds, 7200 seconds and 6144 MiB respectively; minimum memory is 64 MiB. Time limits accept positive fractional seconds down to one nanosecond. SIGINT and SIGTERM stop the native worker and retain partial evidence. A complete execution stopped by a biological veto can still report `competitor_evaluation: incomplete`, because the pure decision records which competitors were not measured; `anim_execution.stop_reason: decisive_veto` distinguishes this valid stop from a failed required comparison. The public command never silently substitutes v1 for requested v2.
+Within each query, ANIm runs one worker at a time with one native query thread. Defaults are 120 seconds per reciprocal pair, 600 seconds total ANIm wall time per query and 1024 MiB per worker. `--anim-pair-seconds`, `--anim-query-seconds` and `--anim-memory-mib` select limits up to 1800 seconds, 7200 seconds and 6144 MiB respectively; minimum memory is 64 MiB. Time limits accept positive fractional seconds down to one nanosecond. SIGINT and SIGTERM stop the native worker and retain partial evidence. A complete execution stopped by a biological veto can still report `competitor_evaluation: incomplete`, because the pure decision records which competitors were not measured; `anim_execution.stop_reason: decisive_veto` distinguishes this valid stop from a failed required comparison. The public command never silently substitutes v1 for requested v2.
+
+## Reusing reciprocal pairs
+
+`--anim-cache DIR` keeps verified reciprocal pairs for later queries and runs. The directory is created when absent and may be shared by runs. A pair is reused only when every part of its key matches:
+
+- the query's exact file bytes, its component and its whole-assembly scope;
+- the reference ID, exact FASTA bytes, component, concept IDs, scope and the primary package the component is bound to;
+- the method profile, amendment, native build and source hashes, compiler, target and Terobacter version;
+- the pair time limit and worker memory limit, since a pair that finished under a looser limit could fail under a tighter one.
+
+A reused pair also counts the native time recorded in its receipts against the query's `--anim-query-seconds` budget, and is measured again instead when that time exceeds what remains for the pair. The cache therefore never lets a query complete that could not complete without it.
+
+The same bytes under another file name are the same query. Before reuse, the saved key must equal the requested key, and the saved pair is verified again as any saved record is: snapshot bytes, native artifacts, roles, receipts and integer metrics. The method and limits in the record must also agree with the key. A reused pair is copied into the query's `--anim-output` directory and verified there. Its record keeps the receipts of the run that measured it.
+
+Each pair reports `cache.status` and `cache.key_sha256`. The statuses are `reused`; `stored`, for a new verified pair saved for later; `already_stored`, when a concurrent query saved it first; and `rejected`, when an entry at that key fails a check or needs more time than remains. A rejected entry is measured again and left unchanged for inspection; delete it to let the cache store that pair again. `not_stored` means the pair failed and was not saved. `store_failed` means saving failed; the measurement still counts. Entries appear whole or not at all and are never replaced. The cache is local working storage: its keys and checks bind entries to comparisons, but they do not authenticate the directory against a writer who can forge a consistent entry.
 
 ## Separate reference FASTA component
 

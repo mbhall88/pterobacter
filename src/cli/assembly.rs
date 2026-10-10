@@ -7,14 +7,14 @@ use crate::decision::{decide_bound, Policy};
 use crate::evidence::{SavedEvidence, EVIDENCE_SCHEMA};
 use crate::reference::{verify_package, RegistryPins, VerifiedPackage};
 use crate::skani::{SearchReport, SearchSettings, SeedingMode, SkaniDatabase};
-use std::cell::OnceCell;
 use std::path::PathBuf;
+use std::sync::OnceLock;
 
 use crate::genomovar::{self, Context, Definition, GenomovarParent, MemberRow};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// Authenticated primary panel and its embedded measurement engine. Open once
-/// for a sequential batch; finish rechecks package bytes before reports leave.
+/// for a batch, shared by its concurrent queries; finish rechecks package bytes before reports leave.
 pub struct AssemblyWorkflow {
     directory: PathBuf,
     expected_sha256: String,
@@ -23,7 +23,7 @@ pub struct AssemblyWorkflow {
     /// The frozen definition, or why this package cannot support a genomovar call.
     genomovar: Result<Definition, String>,
     /// Opened on first use, so a batch without a Group A parent never loads it.
-    genomovar_database: OnceCell<Result<SkaniDatabase, String>>,
+    genomovar_database: OnceLock<Result<SkaniDatabase, String>>,
 }
 impl AssemblyWorkflow {
     pub fn open(directory: &Path, expected_sha256: &str) -> Result<Self, String> {
@@ -47,7 +47,7 @@ impl AssemblyWorkflow {
             package,
             database,
             genomovar,
-            genomovar_database: OnceCell::new(),
+            genomovar_database: OnceLock::new(),
         })
     }
 
