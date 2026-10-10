@@ -50,6 +50,21 @@ impl Policy {
     pub fn id(&self) -> &'static str {
         self.id
     }
+    /// The numerical minima, as the decimal text v2 reports in its own `thresholds`.
+    pub fn thresholds_json(&self) -> Value {
+        let text = |p: Percent| {
+            p.to_string()
+                .trim_end_matches('0')
+                .trim_end_matches('.')
+                .to_owned()
+        };
+        let margin =
+            Percent::from_hundredths(u32::try_from(self.subspecies_margin).expect("margin"));
+        json!({"species_ani": text(self.species_ani), "subspecies_ani": text(self.subspecies_ani),
+            "both_af_minimum": text(self.both_af),
+            "subspecies_margin_percentage_points": text(margin),
+            "two_parent_alert_ani": text(self.alert_ani), "supplied": null})
+    }
     fn passes(&self, r: &Reference, ani: Percent) -> bool {
         r.ani >= ani && r.min_af() >= self.both_af
     }

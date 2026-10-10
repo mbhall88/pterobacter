@@ -36,6 +36,8 @@ MLST is supplementary. It never changes `assignment`, `species` or `subspecies`,
 
 One input produces a JSON object. Multiple inputs produce an array in argument order, with isolated statuses. They run sequentially, using `--threads` for each search. A failed input does not erase a completed input. The process exits nonzero if any input fails. Redirect stdout to retain the report; an unwritable output stream returns 1.
 
+`--report-dir NEW_DIRECTORY` also writes `report.json` (the same JSON as standard output), `calls.tsv` (one row per assembly), `evidence.tsv` (strongest matches, whole-panel parents and challenges) and `report.md`. The directory must not exist; a collision exits 2 before any analysis, and no file is replaced. The TSV and Markdown are derived from the JSON and take a label only from its final call. See the [usage guide](usage.md).
+
 A completed search may produce an unresolved biological call, including when no estimate is returned. This is `execution.status: complete` with a null assignment. Execution failure instead reports `execution.status: incomplete`, the failed stage and an error, with null assignment fields. Partial reports retain validated input metadata where available. A failed final package check invalidates all decisions in that batch while retaining their measurement evidence.
 
 Reports include authenticated data identity and version, policy ID, implementation version, skani revision and compatibility profile, floor 15%/screen 80% settings, every returned row and every unreturned reference. `evidence` is the package-bound decision input, retaining exact emitted decimal measurements. Scope is reported as not assessed when no scope assessment was performed; AF alone does not establish purity or explain extra sequence.

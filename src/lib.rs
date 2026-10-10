@@ -1,7 +1,7 @@
 //! Terobacter: standalone Enterobacter isolate classification.
 //!
 //! One crate, one internal library. The decision logic in [`evidence`], [`reference`],
-//! [`panel`], [`decision`] (v1), [`rescue`] (v2) and [`mlst`] is pure, so command-line, browser and GUI
+//! [`panel`], [`decision`] (v1), [`rescue`] (v2), [`report`] (TSV and Markdown) and [`mlst`] is pure, so command-line, browser and GUI
 //! front ends can share it. Terminal parsing, files and process exit codes live in [`cli`], and
 //! in `dev` for the feature-gated development binary.
 
@@ -15,6 +15,7 @@ pub mod genomovar;
 pub mod mlst;
 pub mod panel;
 pub mod reference;
+pub mod report;
 pub mod rescue;
 pub mod skani;
 

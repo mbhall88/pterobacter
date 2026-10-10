@@ -72,6 +72,9 @@ struct Public {
     /// Expected SHA-256 of the MLST package manifest.json, obtained from a trusted source
     #[arg(long, value_parser = parse_sha256, requires = "mlst_package")]
     mlst_expected_sha256: Option<String>,
+    /// Write report.json, calls.tsv, evidence.tsv and report.md into this new directory
+    #[arg(long, value_name = "DIR")]
+    report_dir: Option<PathBuf>,
     #[command(flatten)]
     anim: v2::V2Settings,
 }
@@ -96,6 +99,13 @@ pub fn run_public() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
+    // A fresh directory, created first so a collision stops the run before any analysis.
+    if let Some(dir) = &args.report_dir {
+        if let Err(error) = fs::create_dir(dir) {
+            eprintln!("error: --report-dir must be a new directory: {error}");
+            return ExitCode::from(2);
+        }
+    }
     if args.policy == crate::rescue::V2_POLICY_ID {
         install_cancel_handlers();
     }
@@ -257,11 +267,24 @@ pub fn run_public() -> ExitCode {
     for report in &mut results {
         crate::genomovar::recheck(report);
     }
+    for report in &mut results {
+        crate::report::annotate(report);
+    }
+    let rendered = args
+        .report_dir
+        .as_ref()
+        .map(|_| crate::report::render(&results));
     let value = if results.len() == 1 {
         results.remove(0)
     } else {
         Value::Array(results)
     };
+    if let (Some(dir), Some(rendered)) = (&args.report_dir, &rendered) {
+        if let Err(error) = write_reports(dir, &value, rendered) {
+            eprintln!("error writing reports to {}: {error}", dir.display());
+            return ExitCode::FAILURE;
+        }
+    }
     let result = (|| -> io::Result<()> {
         let mut out = io::stdout().lock();
         serde_json::to_writer_pretty(&mut out, &value)?;
@@ -272,6 +295,26 @@ pub fn run_public() -> ExitCode {
         return ExitCode::FAILURE;
     }
     ExitCode::from(exit)
+}
+
+/// Write the JSON report and its renderings into a directory this run created. Each file is
+/// created new, so nothing is ever replaced.
+fn write_reports(dir: &Path, json: &Value, rendered: &crate::report::Rendered) -> io::Result<()> {
+    let mut report = serde_json::to_string_pretty(json)?;
+    report.push('\n');
+    for (name, content) in [
+        ("report.json", report.as_str()),
+        ("calls.tsv", rendered.calls_tsv.as_str()),
+        ("evidence.tsv", rendered.evidence_tsv.as_str()),
+        ("report.md", rendered.markdown.as_str()),
+    ] {
+        let mut file = fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(dir.join(name))?;
+        file.write_all(content.as_bytes())?;
+    }
+    Ok(())
 }
 
 /// Reads a package directory. Symbolic links and names that are not UTF-8 are refused.
