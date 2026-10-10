@@ -135,6 +135,59 @@ pub struct Parent {
     pub scope_outcome: String,
 }
 
+impl Parent {
+    /// Read the parent from a final v1 or v2 decision, or a report built on one. Anything else
+    /// gives an empty, unverified parent.
+    ///
+    /// A v1 call is verified when the decision was bound to the authenticated package its
+    /// evidence names. A v2 call is verified only across the bridge to v1: default thresholds,
+    /// a complete evaluation, a skani call basis, and the same species and subspecies as the v1
+    /// result on the same evidence. An ANIm rescue never qualifies, and its subspecies is null.
+    pub fn from_report(report: &Value) -> Self {
+        let text = |v: &Value| v.as_str().unwrap_or_default().to_owned();
+        let id = |v: &Value| v.as_str().filter(|s| !s.is_empty()).map(str::to_owned);
+        let reasons = |v: &Value| -> Vec<String> {
+            v.as_array()
+                .map(|a| a.iter().map(text).collect())
+                .unwrap_or_else(|| vec!["missing_veto_record".into()])
+        };
+        let input = &report["input"];
+        let mut parent = Parent {
+            query_sha256: text(&input["query_sha256"]),
+            package_sha256: text(&input["reference_package_sha256"]),
+            scope_outcome: text(&report["scope_assessment"]["outcome"]),
+            ..Parent::default()
+        };
+        if report["policy"]["id"] == crate::decision::V1_POLICY_ID {
+            let a = &report["assignment"];
+            let package = &report["reference_package"];
+            parent.policy_id = crate::decision::V1_POLICY_ID.into();
+            parent.status = text(&a["status"]);
+            parent.species_id = id(&a["species_id"]);
+            parent.subspecies_id = id(&a["subspecies_id"]);
+            parent.blocking_reasons = reasons(&report["blocking_reasons"]);
+            parent.verified = report["evaluation_status"] == "completed"
+                && package["status"] == "verified"
+                && package["package"]["manifest_sha256"] == input["reference_package_sha256"];
+        } else if report["policy_id"] == crate::rescue::V2_POLICY_ID {
+            let legacy = &report["legacy_v1_result"];
+            parent.policy_id = crate::rescue::V2_POLICY_ID.into();
+            parent.status = text(&report["status"]);
+            parent.species_id = id(&report["species_id"]);
+            parent.subspecies_id = id(&report["subspecies_id"]);
+            parent.blocking_reasons = reasons(&report["reasons"]);
+            parent.verified = report["policy_mode"] == "default_candidate"
+                && report["evaluation_status"] == "complete"
+                && report["call_basis"] == "skani"
+                && legacy["policy_id"] == crate::decision::V1_POLICY_ID
+                && legacy["status"] == "assigned"
+                && id(&legacy["species_id"]) == parent.species_id
+                && id(&legacy["subspecies_id"]) == parent.subspecies_id;
+        }
+        parent
+    }
+}
+
 /// What the front end's adapter verified about the parent and the genomovar search.
 /// The default context is empty and fails closed.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
