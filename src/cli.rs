@@ -1,5 +1,6 @@
 //! Public command parsing, output and exit codes.
 pub mod assembly;
+pub mod mlst;
 pub mod v2;
 
 use crate::decision::V1_POLICY_ID;
@@ -34,6 +35,12 @@ struct Public {
     /// Worker threads for each assembly
     #[arg(long, default_value_t = 1, value_parser = clap::value_parser!(u16).range(1..))]
     threads: u16,
+    /// Historical MLST scheme package directory; requests optional supplementary MLST
+    #[arg(long, requires = "mlst_expected_sha256")]
+    mlst_package: Option<PathBuf>,
+    /// Expected SHA-256 of the MLST package manifest.json, obtained from a trusted source
+    #[arg(long, value_parser = parse_sha256, requires = "mlst_package")]
+    mlst_expected_sha256: Option<String>,
     #[command(flatten)]
     anim: v2::V2Settings,
 }
@@ -66,6 +73,11 @@ pub fn run_public() -> ExitCode {
     let mut results = Vec::new();
     let mut exit = 0;
     let mut workflow = None;
+    let mut mlst = args
+        .mlst_package
+        .as_deref()
+        .zip(args.mlst_expected_sha256.as_deref())
+        .map(|(directory, sha256)| mlst::Mlst::new(directory, sha256));
     for (index, path) in args.assemblies.iter().enumerate() {
         let mut report = json!({"schema": "terobacter.assembly-call/1",
             "implementation": {"name": env!("CARGO_PKG_NAME"), "version": env!("CARGO_PKG_VERSION")},
@@ -73,7 +85,8 @@ pub fn run_public() -> ExitCode {
             "input": {"kind": args.input_kind, "file": path.to_string_lossy(), "sequence_scope": "whole_assembly_as_supplied"},
             "assignment": {"status": "not_evaluated", "species_id": null, "species_name": null,
                 "subspecies_id": null, "subspecies_name": null, "lineage_id": null, "genomovar_id": null},
-            "execution": {"status": "incomplete", "stage": "input"}});
+            "execution": {"status": "incomplete", "stage": "input"},
+            "mlst": mlst::not_requested()});
         if args.policy == crate::rescue::V2_POLICY_ID {
             report["schema"] = crate::rescue::REPORT_SCHEMA.into();
             report["policy_id"] = args.policy.clone().into();
@@ -91,9 +104,13 @@ pub fn run_public() -> ExitCode {
             report["execution"]["stage"] = "policy".into();
             report["execution"]["error"] = "requested native policy is unavailable; supported policies are conservative-assembly-v1 and conservative-assembly-anim-v2".into();
             exit = 5;
+            if let Some(mlst) = &mut mlst {
+                report["mlst"] = mlst.not_run("policy");
+            }
             results.push(report);
             continue;
         }
+        let mut validated = None;
         let result = (|| -> Result<(), (u8, String)> {
             if args.policy == V1_POLICY_ID && args.anim.supplied() {
                 report["execution"]["stage"] = "policy".into();
@@ -112,7 +129,7 @@ pub fn run_public() -> ExitCode {
             if args.input_kind != "assembly" {
                 return Err((3, "only assembly FASTA input is supported".into()));
             }
-            let bytes = read_input(path, &mut report).map_err(|e| (3, e))?;
+            let bytes: &[u8] = validated.insert(read_input(path, &mut report).map_err(|e| (3, e))?);
             report["execution"]["stage"] = "package".into();
             if workflow.is_none() {
                 workflow = Some(
@@ -128,7 +145,7 @@ pub fn run_public() -> ExitCode {
             if args.policy == crate::rescue::V2_POLICY_ID {
                 workflow.analyse_v2(
                     query_label,
-                    &bytes,
+                    bytes,
                     args.threads.into(),
                     &mut report,
                     &v2::V2Context {
@@ -138,18 +155,32 @@ pub fn run_public() -> ExitCode {
                     },
                 )
             } else {
-                workflow.analyse(query_label, &bytes, args.threads.into(), &mut report)
+                workflow.analyse(query_label, bytes, args.threads.into(), &mut report)
             }
             .map_err(|e| (1, e))?;
             Ok(())
         })();
-        if let Err((code, error)) = result {
+        if let Err((code, error)) = &result {
             report["execution"]["status"] = "incomplete".into();
             withhold(&mut report);
-            report["execution"]["error"] = error.into();
-            exit = code;
+            report["execution"]["error"] = error.as_str().into();
+            exit = *code;
+        }
+        // Classification may rebuild the report, so supplementary MLST is attached afterwards.
+        report["mlst"] = match &mut mlst {
+            Some(mlst) => mlst.report(validated.as_deref()),
+            None => mlst::not_requested(),
+        };
+        if result.is_ok() && report["mlst"]["status"] == "failed" {
+            exit = mlst::MLST_FAILED;
         }
         results.push(report);
+    }
+    if let Some(Err(error)) = mlst.as_ref().map(mlst::Mlst::finish) {
+        exit = mlst::MLST_FAILED;
+        for report in &mut results {
+            mlst::invalidate(report, &error);
+        }
     }
     if let Some(workflow) = workflow {
         if results

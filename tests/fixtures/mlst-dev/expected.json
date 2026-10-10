@@ -1,0 +1,3662 @@
+{
+ "schema": "terobacter.mlst-dev-baseline/1",
+ "fixtures": {
+  "amb_N1": {
+   "fixture_sha256": "394ca908be5c910ab220d22d4dfd18faa4634f1b01f05e6e1ad6eebee83d3392",
+   "alleles": {
+    "dnaA": "~1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 86,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "amb_N2pct": {
+   "fixture_sha256": "daf797408fcf53b03f579741952ae6d52ab1d672df0f643b468da2fe11816baa",
+   "alleles": {
+    "dnaA": "~1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 86,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "amb_Nend": {
+   "fixture_sha256": "0fa711b05794c492763286864a8cf28297b7f7db9fa943a8b9965cd2257ffb87",
+   "alleles": {
+    "dnaA": "1?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "amb_iupac_R": {
+   "fixture_sha256": "4bf3a3e4d0e1e4bdd1f8469663c211ffa79ad0c8c1478a982559801c9a58fa7e",
+   "alleles": {
+    "dnaA": "~1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 86,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "dup_diverged_90": {
+   "fixture_sha256": "fd422fef7948988dda7e1625c8d683113cc9d0a29b5bfeffc8cf882dfdf1832a",
+   "alleles": {
+    "dnaA": "1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "1",
+   "comparator_status": "PERFECT",
+   "comparator_score": 100,
+   "state": "exact_profile_match",
+   "sequence_type": "1",
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7385,
+     "end_1based_inclusive": 8030,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10531,
+     "end_1based_inclusive": 10964,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13465,
+     "end_1based_inclusive": 14042,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16543,
+     "end_1based_inclusive": 16801,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19302,
+     "end_1based_inclusive": 19908,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 22409,
+     "end_1based_inclusive": 22953,
+     "strand": "plus"
+    }
+   ]
+  },
+  "dup_diverged_96": {
+   "fixture_sha256": "a6f140114f0b4caf3a5d7369646fa0dc4e954324dc792d4d05f762991acb1d86",
+   "alleles": {
+    "dnaA": "1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "1",
+   "comparator_status": "PERFECT",
+   "comparator_score": 100,
+   "state": "exact_profile_match",
+   "sequence_type": "1",
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7385,
+     "end_1based_inclusive": 8030,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10531,
+     "end_1based_inclusive": 10964,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13465,
+     "end_1based_inclusive": 14042,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16543,
+     "end_1based_inclusive": 16801,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19302,
+     "end_1based_inclusive": 19908,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 22409,
+     "end_1based_inclusive": 22953,
+     "strand": "plus"
+    }
+   ]
+  },
+  "dup_exact_then_inexact": {
+   "fixture_sha256": "cf54caa3acb0fc56bd4f68089c43d018ad438e501eb789921963fe51039ec124",
+   "alleles": {
+    "dnaA": "1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "1",
+   "comparator_status": "PERFECT",
+   "comparator_score": 100,
+   "state": "exact_profile_match",
+   "sequence_type": "1",
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7385,
+     "end_1based_inclusive": 8030,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10531,
+     "end_1based_inclusive": 10964,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13465,
+     "end_1based_inclusive": 14042,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16543,
+     "end_1based_inclusive": 16801,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19302,
+     "end_1based_inclusive": 19908,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 22409,
+     "end_1based_inclusive": 22953,
+     "strand": "plus"
+    }
+   ]
+  },
+  "dup_inexact_then_exact": {
+   "fixture_sha256": "ee36565f42cb592fda647122c0ca853b2db94d4a958c193a397504f5ccdee0bb",
+   "alleles": {
+    "dnaA": "1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "1",
+   "comparator_status": "PERFECT",
+   "comparator_score": 100,
+   "state": "exact_profile_match",
+   "sequence_type": "1",
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 4884,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7385,
+     "end_1based_inclusive": 8030,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10531,
+     "end_1based_inclusive": 10964,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13465,
+     "end_1based_inclusive": 14042,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16543,
+     "end_1based_inclusive": 16801,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19302,
+     "end_1based_inclusive": 19908,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 22409,
+     "end_1based_inclusive": 22953,
+     "strand": "plus"
+    }
+   ]
+  },
+  "dup_same_rev": {
+   "fixture_sha256": "9eca637a481fadb8aa0fe329a35bcf8bec7137c9f36906290db446116d2080a0",
+   "alleles": {
+    "dnaA": "1,1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "MIXED",
+   "comparator_score": 90,
+   "state": "ambiguous_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": "1",
+   "copy_diagnostic_reasons": [
+    "repeated_identical_allele_copy"
+   ],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "plus"
+    },
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 4884,
+     "strand": "minus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7385,
+     "end_1based_inclusive": 8030,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10531,
+     "end_1based_inclusive": 10964,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13465,
+     "end_1based_inclusive": 14042,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16543,
+     "end_1based_inclusive": 16801,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19302,
+     "end_1based_inclusive": 19908,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 22409,
+     "end_1based_inclusive": 22953,
+     "strand": "plus"
+    }
+   ]
+  },
+  "dup_same_twice": {
+   "fixture_sha256": "e8be14c4abf24ab505081c852c688da86ddcf11ee561e1537b659cd8dc6fca6a",
+   "alleles": {
+    "dnaA": "1,1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "MIXED",
+   "comparator_score": 90,
+   "state": "ambiguous_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": "1",
+   "copy_diagnostic_reasons": [
+    "repeated_identical_allele_copy"
+   ],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "plus"
+    },
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 4884,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7385,
+     "end_1based_inclusive": 8030,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10531,
+     "end_1based_inclusive": 10964,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13465,
+     "end_1based_inclusive": 14042,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16543,
+     "end_1based_inclusive": 16801,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19302,
+     "end_1based_inclusive": 19908,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 22409,
+     "end_1based_inclusive": 22953,
+     "strand": "plus"
+    }
+   ]
+  },
+  "dup_two_alleles": {
+   "fixture_sha256": "64d5f8d5bfb58c2d7b720c80ceb25457fd0fb4dc64d5e3a03fa73a492952f2f4",
+   "alleles": {
+    "dnaA": "1,2",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "MIXED",
+   "comparator_score": 90,
+   "state": "ambiguous_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [
+    "discordant_exact_allele_sequences"
+   ],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "plus"
+    },
+    {
+     "locus": "dnaA",
+     "allele_id": "2",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 4884,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7385,
+     "end_1based_inclusive": 8030,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10531,
+     "end_1based_inclusive": 10964,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13465,
+     "end_1based_inclusive": 14042,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16543,
+     "end_1based_inclusive": 16801,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19302,
+     "end_1based_inclusive": 19908,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 22409,
+     "end_1based_inclusive": 22953,
+     "strand": "plus"
+    }
+   ]
+  },
+  "edge_exact_at_end": {
+   "fixture_sha256": "ed9ff1f2e4061d70f8394065bdaa19f63a5eb8243a8622a4a2e9cd0155c47568",
+   "alleles": {
+    "dnaA": "1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "1",
+   "comparator_status": "PERFECT",
+   "comparator_score": 100,
+   "state": "exact_profile_match",
+   "sequence_type": "1",
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 2501,
+     "end_1based_inclusive": 3146,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 5647,
+     "end_1based_inclusive": 6080,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 8581,
+     "end_1based_inclusive": 9158,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 11659,
+     "end_1based_inclusive": 11917,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 14418,
+     "end_1based_inclusive": 15024,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 17525,
+     "end_1based_inclusive": 18069,
+     "strand": "plus"
+    }
+   ]
+  },
+  "edge_exact_at_start": {
+   "fixture_sha256": "087f1f8ff8d960fc991295083c8032e90f86fbf744f73b727fef5ebea8c31b4d",
+   "alleles": {
+    "dnaA": "1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "1",
+   "comparator_status": "PERFECT",
+   "comparator_score": 100,
+   "state": "exact_profile_match",
+   "sequence_type": "1",
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 1,
+     "end_1based_inclusive": 442,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 2501,
+     "end_1based_inclusive": 3146,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 5647,
+     "end_1based_inclusive": 6080,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 8581,
+     "end_1based_inclusive": 9158,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 11659,
+     "end_1based_inclusive": 11917,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 14418,
+     "end_1based_inclusive": 15024,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 17525,
+     "end_1based_inclusive": 18069,
+     "strand": "plus"
+    }
+   ]
+  },
+  "edge_one_contig_per_allele": {
+   "fixture_sha256": "5f5e33f951ddfd4a9cfaad928bd811ad7afd59d39eea2f5ee8c4075c02730455",
+   "alleles": {
+    "dnaA": "1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "1",
+   "comparator_status": "PERFECT",
+   "comparator_score": 100,
+   "state": "exact_profile_match",
+   "sequence_type": "1",
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 801,
+     "end_1based_inclusive": 1242,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 801,
+     "end_1based_inclusive": 1446,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig3",
+     "start_1based": 801,
+     "end_1based_inclusive": 1234,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig4",
+     "start_1based": 801,
+     "end_1based_inclusive": 1378,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig5",
+     "start_1based": 801,
+     "end_1based_inclusive": 1059,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig6",
+     "start_1based": 801,
+     "end_1based_inclusive": 1407,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig7",
+     "start_1based": 801,
+     "end_1based_inclusive": 1345,
+     "strand": "plus"
+    }
+   ]
+  },
+  "edge_split_two_contigs": {
+   "fixture_sha256": "c254c2cb32dfb533277596c6f3f0f65a2a472af9bc1d9a8741000f4fca047964",
+   "alleles": {
+    "dnaA": "733?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig3",
+     "start_1based": 2501,
+     "end_1based_inclusive": 3146,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig3",
+     "start_1based": 5647,
+     "end_1based_inclusive": 6080,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig3",
+     "start_1based": 8581,
+     "end_1based_inclusive": 9158,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig3",
+     "start_1based": 11659,
+     "end_1based_inclusive": 11917,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig3",
+     "start_1based": 14418,
+     "end_1based_inclusive": 15024,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig3",
+     "start_1based": 17525,
+     "end_1based_inclusive": 18069,
+     "strand": "plus"
+    }
+   ]
+  },
+  "edge_trunc_30_end": {
+   "fixture_sha256": "3f75428549764d41f9eaf7d49a1e544aa8f054172927e79d504c9a467d6038e4",
+   "alleles": {
+    "dnaA": "551?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 2501,
+     "end_1based_inclusive": 3146,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 5647,
+     "end_1based_inclusive": 6080,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 8581,
+     "end_1based_inclusive": 9158,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 11659,
+     "end_1based_inclusive": 11917,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 14418,
+     "end_1based_inclusive": 15024,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 17525,
+     "end_1based_inclusive": 18069,
+     "strand": "plus"
+    }
+   ]
+  },
+  "edge_trunc_30_start": {
+   "fixture_sha256": "ef8a760adaf92b255a235424ee946e97922624fe5ef2974e7b998d77889c528c",
+   "alleles": {
+    "dnaA": "772?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 2501,
+     "end_1based_inclusive": 3146,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 5647,
+     "end_1based_inclusive": 6080,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 8581,
+     "end_1based_inclusive": 9158,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 11659,
+     "end_1based_inclusive": 11917,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 14418,
+     "end_1based_inclusive": 15024,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig2",
+     "start_1based": 17525,
+     "end_1based_inclusive": 18069,
+     "strand": "plus"
+    }
+   ]
+  },
+  "exact_st1": {
+   "fixture_sha256": "3a568c8ad3c22cfdabbb35d3e6f3693cd9f2643461b3e0be6646d00cb6fd5e0d",
+   "alleles": {
+    "dnaA": "1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "1",
+   "comparator_status": "PERFECT",
+   "comparator_score": 100,
+   "state": "exact_profile_match",
+   "sequence_type": "1",
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "exact_st1648": {
+   "fixture_sha256": "10cd3c203542f99429b433e20ea58bcae4a63e9dcf6501e14c5c6ff0973fb03f",
+   "alleles": {
+    "dnaA": "22",
+    "fusA": "15",
+    "gyrB": "102",
+    "leuS": "540",
+    "pyrG": "118",
+    "rplB": "11",
+    "rpoB": "10"
+   },
+   "comparator_st": "1648",
+   "comparator_status": "PERFECT",
+   "comparator_score": 100,
+   "state": "exact_profile_match",
+   "sequence_type": "1648",
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "22",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "15",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "102",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "540",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "118",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "11",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "10",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "exact_st1_mixed": {
+   "fixture_sha256": "6a64d9691d1cdf78fac88359a1661e64dbc044de2786b32d7a1ce3309e2edd2d",
+   "alleles": {
+    "dnaA": "1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "1",
+   "comparator_status": "PERFECT",
+   "comparator_score": 100,
+   "state": "exact_profile_match",
+   "sequence_type": "1",
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "minus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "minus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "minus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "exact_st1_rev": {
+   "fixture_sha256": "7f4a23591a58426cacea25c996701fae62972b5fc561448f388e31d25e6763d2",
+   "alleles": {
+    "dnaA": "1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "1",
+   "comparator_status": "PERFECT",
+   "comparator_score": 100,
+   "state": "exact_profile_match",
+   "sequence_type": "1",
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "minus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "minus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "minus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "minus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "minus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "minus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "minus"
+    }
+   ]
+  },
+  "exact_st2480": {
+   "fixture_sha256": "3c6f1f80f082d9cb9c3ee34d855c521e9ca5daca631588c1b241d97f553ab845",
+   "alleles": {
+    "dnaA": "8",
+    "fusA": "9",
+    "gyrB": "6",
+    "leuS": "9",
+    "pyrG": "9",
+    "rplB": "6",
+    "rpoB": "414"
+   },
+   "comparator_st": "2480",
+   "comparator_status": "PERFECT",
+   "comparator_score": 100,
+   "state": "exact_profile_match",
+   "sequence_type": "2480",
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "8",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "9",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "6",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "9",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "9",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "6",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "414",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "exact_st3295": {
+   "fixture_sha256": "78f6ad55866f624de5750f9398d70bfd99c3a590249693afcd275afd917786db",
+   "alleles": {
+    "dnaA": "772",
+    "fusA": "1",
+    "gyrB": "158",
+    "leuS": "214",
+    "pyrG": "1",
+    "rplB": "22",
+    "rpoB": "1"
+   },
+   "comparator_st": "3295",
+   "comparator_status": "PERFECT",
+   "comparator_score": 100,
+   "state": "exact_profile_match",
+   "sequence_type": "3295",
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "772",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "158",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "214",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "22",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "exact_unmatched_profile": {
+   "fixture_sha256": "48d477f1992286ace3c41f1f2046785bd1f4e45b2e8d312f844f6b1037ab8967",
+   "alleles": {
+    "dnaA": "2",
+    "fusA": "2",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "NOVEL",
+   "comparator_score": 90,
+   "state": "unmatched_profile",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "2",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "2",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "frag_12_contigs": {
+   "fixture_sha256": "3af682306b840f5cf13665f9e076b11c41ae356184f927d5c316ab6d3886cf28",
+   "alleles": {
+    "dnaA": "551?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "371?"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 77,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig3",
+     "start_1based": 1687,
+     "end_1based_inclusive": 2332,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig3",
+     "start_1based": 3833,
+     "end_1based_inclusive": 4266,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig5",
+     "start_1based": 261,
+     "end_1based_inclusive": 838,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig5",
+     "start_1based": 2339,
+     "end_1based_inclusive": 2597,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig7",
+     "start_1based": 268,
+     "end_1based_inclusive": 874,
+     "strand": "plus"
+    }
+   ]
+  },
+  "fragment_40": {
+   "fixture_sha256": "f076306db4d0cceca3d0689837b5278b90fecb51161eb013636a4c98ec2a1b0d",
+   "alleles": {
+    "dnaA": "-",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "MISSING",
+   "comparator_score": 77,
+   "state": "incomplete_profile",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4041,
+     "end_1based_inclusive": 4686,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7187,
+     "end_1based_inclusive": 7620,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10121,
+     "end_1based_inclusive": 10698,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13199,
+     "end_1based_inclusive": 13457,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 15958,
+     "end_1based_inclusive": 16564,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19065,
+     "end_1based_inclusive": 19609,
+     "strand": "plus"
+    }
+   ]
+  },
+  "fragment_60": {
+   "fixture_sha256": "796070ac0b138b70ab6b60bda44e77c68d3a0e82be9986f007d667604758eece",
+   "alleles": {
+    "dnaA": "-",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "MISSING",
+   "comparator_score": 77,
+   "state": "incomplete_profile",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4061,
+     "end_1based_inclusive": 4706,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7207,
+     "end_1based_inclusive": 7640,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10141,
+     "end_1based_inclusive": 10718,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13219,
+     "end_1based_inclusive": 13477,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 15978,
+     "end_1based_inclusive": 16584,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19085,
+     "end_1based_inclusive": 19629,
+     "strand": "plus"
+    }
+   ]
+  },
+  "indel_del1": {
+   "fixture_sha256": "b8a01147a595da5c9e3362022f9a0b1d618017255403f8df23b46401e24f6bc6",
+   "alleles": {
+    "dnaA": "733?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4442,
+     "end_1based_inclusive": 5087,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7588,
+     "end_1based_inclusive": 8021,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10522,
+     "end_1based_inclusive": 11099,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13600,
+     "end_1based_inclusive": 13858,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16359,
+     "end_1based_inclusive": 16965,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19466,
+     "end_1based_inclusive": 20010,
+     "strand": "plus"
+    }
+   ]
+  },
+  "indel_del1_30pct": {
+   "fixture_sha256": "c5562f0527ca053a2b28a2c36263648ee86f777b6031cf71ccdc89b737bddad4",
+   "alleles": {
+    "dnaA": "772?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4442,
+     "end_1based_inclusive": 5087,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7588,
+     "end_1based_inclusive": 8021,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10522,
+     "end_1based_inclusive": 11099,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13600,
+     "end_1based_inclusive": 13858,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16359,
+     "end_1based_inclusive": 16965,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19466,
+     "end_1based_inclusive": 20010,
+     "strand": "plus"
+    }
+   ]
+  },
+  "indel_ins1": {
+   "fixture_sha256": "6ded1c253f817ed5ac7997bb50dc41ee15a70d100b8056203b284c6de36da9ef",
+   "alleles": {
+    "dnaA": "772?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4444,
+     "end_1based_inclusive": 5089,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7590,
+     "end_1based_inclusive": 8023,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10524,
+     "end_1based_inclusive": 11101,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13602,
+     "end_1based_inclusive": 13860,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16361,
+     "end_1based_inclusive": 16967,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19468,
+     "end_1based_inclusive": 20012,
+     "strand": "plus"
+    }
+   ]
+  },
+  "indel_ins1_end10": {
+   "fixture_sha256": "13cc8f455e20c2baaa2632d116e24761295261616d31860bc3527a6c34a4c507",
+   "alleles": {
+    "dnaA": "1?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4444,
+     "end_1based_inclusive": 5089,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7590,
+     "end_1based_inclusive": 8023,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10524,
+     "end_1based_inclusive": 11101,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13602,
+     "end_1based_inclusive": 13860,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16361,
+     "end_1based_inclusive": 16967,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19468,
+     "end_1based_inclusive": 20012,
+     "strand": "plus"
+    }
+   ]
+  },
+  "indel_ins3": {
+   "fixture_sha256": "e028948edfbe5be9c7f0d34cb7349ee43f5ebe692fdf4d822a6ef010090422aa",
+   "alleles": {
+    "dnaA": "772?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4446,
+     "end_1based_inclusive": 5091,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7592,
+     "end_1based_inclusive": 8025,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10526,
+     "end_1based_inclusive": 11103,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13604,
+     "end_1based_inclusive": 13862,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16363,
+     "end_1based_inclusive": 16969,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19470,
+     "end_1based_inclusive": 20014,
+     "strand": "plus"
+    }
+   ]
+  },
+  "inexact_end1": {
+   "fixture_sha256": "c64e9be0c242ebc234b43a9db0246ed93429a42b8e19ed8534888558409862a2",
+   "alleles": {
+    "dnaA": "1?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "inexact_end10": {
+   "fixture_sha256": "a3c6d4103aedab174b1d367b5ce794c4e653345b875ef96efa5cb567178fcdf9",
+   "alleles": {
+    "dnaA": "~1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 86,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "inexact_end3": {
+   "fixture_sha256": "2c5577946f0c47ff96f6918aa534375c8b349b4ba179c7a64ac1eb5c4d69fe42",
+   "alleles": {
+    "dnaA": "1?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "inexact_five_loci": {
+   "fixture_sha256": "559519f6397243074d6e732ffe3bdffbb63286df9e61ee9927700697673254f6",
+   "alleles": {
+    "dnaA": "~1",
+    "fusA": "~1",
+    "gyrB": "~1",
+    "leuS": "~1",
+    "pyrG": "~1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 70,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "inexact_id949": {
+   "fixture_sha256": "e4808dd83289bda4d962c4071bab98d6ad2674e3adf57f4c47ab299cafd9fbea",
+   "alleles": {
+    "dnaA": "1?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "inexact_id951": {
+   "fixture_sha256": "50422e74971dd290b6a870f2281752747e46f6a9b6a64dd3b17dd18d6cbc20cb",
+   "alleles": {
+    "dnaA": "~198",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 86,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "inexact_mid": {
+   "fixture_sha256": "e0364dd8aa4f1c974b8fe308c4d1a5e5f0dd2558b2179170ef0ecb265d90964f",
+   "alleles": {
+    "dnaA": "~1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 86,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "inexact_start1": {
+   "fixture_sha256": "5e5f4fd8b0ff73329c41fe886bc9bf05fa9f73591ca593566ad8715ab1129cb9",
+   "alleles": {
+    "dnaA": "1?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "inexact_start10": {
+   "fixture_sha256": "cc539e4dafb5dca2a8012c6f1ee341959c942fe7055c234434abd31cde528c37",
+   "alleles": {
+    "dnaA": "~1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 86,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "inexact_start3": {
+   "fixture_sha256": "b41c1ac7918801514ac2b94223bbd5fa729419fd7e144fb7568d28238d2a1ecf",
+   "alleles": {
+    "dnaA": "1?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "lowercase": {
+   "fixture_sha256": "5be111f7d16577f0abfb462147dd586bf50df1e281206e854e0a751bab7a7fac",
+   "alleles": {
+    "dnaA": "1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "1",
+   "comparator_status": "PERFECT",
+   "comparator_score": 100,
+   "state": "exact_profile_match",
+   "sequence_type": "1",
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "dnaA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 1942,
+     "strand": "plus"
+    },
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "missing_1": {
+   "fixture_sha256": "6b49092da710e3469ece97d018f90eb64d03f8daf64adebb6155523fcdb7586e",
+   "alleles": {
+    "dnaA": "-",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "MISSING",
+   "comparator_score": 77,
+   "state": "incomplete_profile",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 2146,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4647,
+     "end_1based_inclusive": 5080,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7581,
+     "end_1based_inclusive": 8158,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10659,
+     "end_1based_inclusive": 10917,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13418,
+     "end_1based_inclusive": 14024,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16525,
+     "end_1based_inclusive": 17069,
+     "strand": "plus"
+    }
+   ]
+  },
+  "missing_3": {
+   "fixture_sha256": "77aea9e819432e7763c7c485157c618b7c395c9e8e2d83b80b1d103bf20e040f",
+   "alleles": {
+    "dnaA": "-",
+    "fusA": "1",
+    "gyrB": "-",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "-"
+   },
+   "comparator_st": "-",
+   "comparator_status": "MISSING",
+   "comparator_score": 51,
+   "state": "incomplete_profile",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 1501,
+     "end_1based_inclusive": 2146,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4647,
+     "end_1based_inclusive": 5224,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7725,
+     "end_1based_inclusive": 7983,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10484,
+     "end_1based_inclusive": 11090,
+     "strand": "plus"
+    }
+   ]
+  },
+  "partial_30": {
+   "fixture_sha256": "407a6a11673ccbbaed9c8e1e0c06f1d5340dc753d64aae92d2d0797ee59cb4b4",
+   "alleles": {
+    "dnaA": "-",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "MISSING",
+   "comparator_score": 77,
+   "state": "incomplete_profile",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4133,
+     "end_1based_inclusive": 4778,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7279,
+     "end_1based_inclusive": 7712,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10213,
+     "end_1based_inclusive": 10790,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13291,
+     "end_1based_inclusive": 13549,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16050,
+     "end_1based_inclusive": 16656,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19157,
+     "end_1based_inclusive": 19701,
+     "strand": "plus"
+    }
+   ]
+  },
+  "partial_49": {
+   "fixture_sha256": "9f6d3d03a36caeea449890f218b1c0c6e41ad4a4f7a4256226c2b0de85c2de59",
+   "alleles": {
+    "dnaA": "-",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "MISSING",
+   "comparator_score": 77,
+   "state": "incomplete_profile",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4217,
+     "end_1based_inclusive": 4862,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7363,
+     "end_1based_inclusive": 7796,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10297,
+     "end_1based_inclusive": 10874,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13375,
+     "end_1based_inclusive": 13633,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16134,
+     "end_1based_inclusive": 16740,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19241,
+     "end_1based_inclusive": 19785,
+     "strand": "plus"
+    }
+   ]
+  },
+  "partial_51": {
+   "fixture_sha256": "84a3879cee2d8c4c107dd70fa665c3b15e78e4b2cac73a546d7a42ef6a0d366f",
+   "alleles": {
+    "dnaA": "733?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4226,
+     "end_1based_inclusive": 4871,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7372,
+     "end_1based_inclusive": 7805,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10306,
+     "end_1based_inclusive": 10883,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13384,
+     "end_1based_inclusive": 13642,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16143,
+     "end_1based_inclusive": 16749,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19250,
+     "end_1based_inclusive": 19794,
+     "strand": "plus"
+    }
+   ]
+  },
+  "partial_70": {
+   "fixture_sha256": "c33581f6a644ac11d1b691978a1df98e29ec17a70f8f009b40c6d137232730fc",
+   "alleles": {
+    "dnaA": "551?",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 83,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4310,
+     "end_1based_inclusive": 4955,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7456,
+     "end_1based_inclusive": 7889,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10390,
+     "end_1based_inclusive": 10967,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13468,
+     "end_1based_inclusive": 13726,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16227,
+     "end_1based_inclusive": 16833,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19334,
+     "end_1based_inclusive": 19878,
+     "strand": "plus"
+    }
+   ]
+  },
+  "random_only": {
+   "fixture_sha256": "e4b66244de14f0b999290eb0c5dbba895b669e095b5ebf03dac4760d4012c520",
+   "alleles": {
+    "dnaA": "-",
+    "fusA": "-",
+    "gyrB": "-",
+    "leuS": "-",
+    "pyrG": "-",
+    "rplB": "-",
+    "rpoB": "-"
+   },
+   "comparator_st": "-",
+   "comparator_status": "NONE",
+   "comparator_score": 0,
+   "state": "incomplete_profile",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": []
+  },
+  "tie_broken_by_one_snp": {
+   "fixture_sha256": "7ed1d643493042b7b88a562f4ad2469bd3d3e0fc33bb4847040de14c878f35a2",
+   "alleles": {
+    "dnaA": "~1",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 86,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  },
+  "tie_two_alleles": {
+   "fixture_sha256": "63c64deebff7e7f73121124ad32484d141ceea8844f5733da6ced9f57aadd9f9",
+   "alleles": {
+    "dnaA": "~73",
+    "fusA": "1",
+    "gyrB": "1",
+    "leuS": "1",
+    "pyrG": "1",
+    "rplB": "1",
+    "rpoB": "1"
+   },
+   "comparator_st": "-",
+   "comparator_status": "OK",
+   "comparator_score": 86,
+   "state": "inexact_alleles",
+   "sequence_type": null,
+   "profile_compatible_candidate_ST": null,
+   "copy_diagnostic_reasons": [],
+   "exact_locations": [
+    {
+     "locus": "fusA",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 4443,
+     "end_1based_inclusive": 5088,
+     "strand": "plus"
+    },
+    {
+     "locus": "gyrB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 7589,
+     "end_1based_inclusive": 8022,
+     "strand": "plus"
+    },
+    {
+     "locus": "leuS",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 10523,
+     "end_1based_inclusive": 11100,
+     "strand": "plus"
+    },
+    {
+     "locus": "pyrG",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 13601,
+     "end_1based_inclusive": 13859,
+     "strand": "plus"
+    },
+    {
+     "locus": "rplB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 16360,
+     "end_1based_inclusive": 16966,
+     "strand": "plus"
+    },
+    {
+     "locus": "rpoB",
+     "allele_id": "1",
+     "record_id": "contig1",
+     "start_1based": 19467,
+     "end_1based_inclusive": 20011,
+     "strand": "plus"
+    }
+   ]
+  }
+ }
+}
