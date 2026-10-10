@@ -614,3 +614,80 @@ fn a_v2_report_with_no_challenge_still_says_none_challenged() {
         .markdown
         .contains("No reference challenged the call."));
 }
+
+/// A missing measurement is not a negative result: only a finished run whose competitor panel
+/// was fully measured may say that nothing challenged the call.
+#[test]
+fn challenge_assessment_separates_unmeasured_partial_and_completed_checks() {
+    let cases = [
+        // (competitor_evaluation, execution status, assessment, markdown fragment)
+        (
+            "complete",
+            "complete",
+            "completed",
+            "No reference challenged the call.",
+        ),
+        ("incomplete", "complete", "partial", "Partially assessed"),
+        (
+            "not_run_already_blocked",
+            "complete",
+            "not_assessed",
+            "Not assessed",
+        ),
+        (
+            "not_required_no_witness",
+            "complete",
+            "not_assessed",
+            "Not assessed",
+        ),
+        (
+            "not_required",
+            "complete",
+            "not_applicable",
+            "Not applicable",
+        ),
+        ("complete", "incomplete", "not_assessed", "Not assessed"),
+    ];
+    for (evaluation, execution, assessment, fragment) in cases {
+        let mut report = v2_rescued();
+        report["competitor_evaluation"] = evaluation.into();
+        report["execution"]["status"] = execution.into();
+        report["challenge_evidence"] = json!([]);
+        let rendered = render(&[report]);
+        assert_eq!(
+            cell(&rendered.calls_tsv, 0, "challenge_assessment"),
+            assessment,
+            "{evaluation}/{execution}"
+        );
+        assert!(
+            rendered.markdown.contains(fragment),
+            "{evaluation}/{execution}: {}",
+            rendered.markdown
+        );
+        assert_eq!(
+            rendered
+                .markdown
+                .contains("No reference challenged the call."),
+            assessment == "completed",
+            "{evaluation}/{execution}"
+        );
+    }
+}
+
+#[test]
+fn a_report_without_competitor_evidence_never_claims_an_unchallenged_call() {
+    let mut report = v2_rescued();
+    report
+        .as_object_mut()
+        .unwrap()
+        .remove("competitor_evaluation");
+    report["challenge_evidence"] = Value::Null;
+    let rendered = render(&[report]);
+    assert!(!rendered
+        .markdown
+        .contains("No reference challenged the call."));
+    assert_eq!(
+        cell(&rendered.calls_tsv, 0, "challenge_assessment"),
+        "not_assessed"
+    );
+}

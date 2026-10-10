@@ -54,6 +54,7 @@ const CALL_COLUMNS: &[&str] = &[
     "trigger_state",
     "rescue_status",
     "competitor_evaluation",
+    "challenge_assessment",
     "anim_required",
     "anim_attempted",
     "anim_completed",
@@ -111,6 +112,26 @@ const EVIDENCE_COLUMNS: &[&str] = &[
 
 fn is_v2(report: &Value) -> bool {
     report["schema"] == REPORT_SCHEMA || report["policy_id"].is_string()
+}
+
+/// How far the foreign-parent challenge check was carried out. Absent measurements are not a
+/// negative result, so only a finished run with a fully measured competitor panel is `completed`.
+fn challenge_assessment(report: &Value) -> &'static str {
+    if !is_v2(report) {
+        return "not_applicable";
+    }
+    if report["execution"]["status"]
+        .as_str()
+        .is_some_and(|s| s != "complete")
+    {
+        return "not_assessed";
+    }
+    match report["competitor_evaluation"].as_str() {
+        Some("complete") => "completed",
+        Some("incomplete") => "partial",
+        Some("not_required") => "not_applicable",
+        _ => "not_assessed",
+    }
 }
 
 /// A scalar as text. Numbers keep their emitted digits; lists of scalars join with `;`.
@@ -295,6 +316,10 @@ fn summary(index: usize, report: &Value) -> BTreeMap<&'static str, String> {
     put(
         "competitor_evaluation",
         text(&report["competitor_evaluation"]),
+    );
+    put(
+        "challenge_assessment",
+        challenge_assessment(report).to_owned(),
     );
     for (column, key) in [
         ("anim_required", "required"),
@@ -603,6 +628,7 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
             "- Competitor panel: {}",
             or_dash(g("competitor_evaluation"))
         );
+        let _ = writeln!(md, "- Challenge check: {}", g("challenge_assessment"));
         let _ = writeln!(
             md,
             "- ANIm pairs: {} required, {} attempted, {} completed, {} no alignment, {} failed, {} not run",
@@ -713,9 +739,27 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
             "The v1 policy has no foreign-parent challenge test, so none is listed. Every other \
              parent's best skani ANI is in the whole-panel summary above; compare it with the call.\n"
         );
-    } else if challenges.is_empty() {
-        let _ = writeln!(md, "No reference challenged the call.\n");
     } else {
+        let note = match challenge_assessment(report) {
+            "completed" if challenges.is_empty() => {
+                Some("No reference challenged the call. The competitor panel was fully measured.")
+            }
+            "completed" => None,
+            "partial" => Some(
+                "Partially assessed: some competitor measurements are missing, so a reference not \
+                 listed here has not been shown to leave the call unchallenged.",
+            ),
+            "not_applicable" => Some(
+                "Not applicable: no rescue was attempted, so no challenge test ran.",
+            ),
+            _ => Some(
+                "Not assessed: the run stopped before the competitor panel was measured, or the \
+                 policy did not need it. The absence of a listed challenge is not a negative result.",
+            ),
+        };
+        if let Some(note) = note {
+            let _ = writeln!(md, "{note}\n");
+        }
         for entry in &challenges {
             let reference = text(&entry["reference_id"]);
             let (kind, id) = parent_of(entry);
@@ -733,7 +777,9 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
                 or_dash(&orientations)
             );
         }
-        let _ = writeln!(md);
+        if !challenges.is_empty() {
+            let _ = writeln!(md);
+        }
     }
     let _ = writeln!(md, "### Supplementary results\n");
     let _ = writeln!(md, "- Historical MLST: {}", or_dash(g("mlst_status")));

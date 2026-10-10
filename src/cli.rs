@@ -101,6 +101,14 @@ pub fn run_public() -> ExitCode {
     };
     // A fresh directory, created first so a collision stops the run before any analysis.
     if let Some(dir) = &args.report_dir {
+        if let Some(package) = package_containing(dir, &args) {
+            eprintln!(
+                "error: --report-dir {} is inside the input package {}; reports are never written into a reference package",
+                dir.display(),
+                package.display()
+            );
+            return ExitCode::from(2);
+        }
         if let Err(error) = fs::create_dir(dir) {
             eprintln!("error: --report-dir must be a new directory: {error}");
             return ExitCode::from(2);
@@ -279,10 +287,12 @@ pub fn run_public() -> ExitCode {
     } else {
         Value::Array(results)
     };
+    // A failed report write must not discard the JSON this run produced: stdout still carries it.
+    let mut write_failed = false;
     if let (Some(dir), Some(rendered)) = (&args.report_dir, &rendered) {
         if let Err(error) = write_reports(dir, &value, rendered) {
             eprintln!("error writing reports to {}: {error}", dir.display());
-            return ExitCode::FAILURE;
+            write_failed = true;
         }
     }
     let result = (|| -> io::Result<()> {
@@ -294,7 +304,48 @@ pub fn run_public() -> ExitCode {
         eprintln!("error writing report: {error}");
         return ExitCode::FAILURE;
     }
+    if write_failed {
+        return ExitCode::FAILURE;
+    }
     ExitCode::from(exit)
+}
+
+/// The input package, if any, that contains the report directory this run is about to create.
+/// A package inventory rejects any unlisted file, so output must never land inside one.
+fn package_containing(dir: &Path, args: &Public) -> Option<PathBuf> {
+    let target = resolve_path(dir).ok()?;
+    [
+        Some(&args.reference_package),
+        args.mlst_package.as_ref(),
+        args.anim.anim_reference_package.as_ref(),
+    ]
+    .into_iter()
+    .flatten()
+    .find(|package| resolve_path(package).is_ok_and(|package| target.starts_with(package)))
+    .cloned()
+}
+
+/// An absolute path with symbolic links resolved for every existing ancestor and `.` / `..`
+/// applied to the rest, so two spellings of one location compare equal.
+fn resolve_path(path: &Path) -> io::Result<PathBuf> {
+    use std::path::Component;
+    let mut resolved = PathBuf::new();
+    for component in std::env::current_dir()?.join(path).components() {
+        match component {
+            Component::Prefix(_) | Component::RootDir => resolved.push(component),
+            Component::CurDir => {}
+            Component::ParentDir => {
+                resolved.pop();
+            }
+            Component::Normal(name) => {
+                resolved.push(name);
+                if let Ok(canonical) = fs::canonicalize(&resolved) {
+                    resolved = canonical;
+                }
+            }
+        }
+    }
+    Ok(resolved)
 }
 
 /// Write the JSON report and its renderings into a directory this run created. Each file is

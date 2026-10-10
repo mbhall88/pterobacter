@@ -32,7 +32,7 @@ Pass the whole assembly as you have it. Plasmids and short records stay in; you 
 | `--reference-package DIR`, `--expected-sha256 SHA` | The reference package and the digest you trust for it. Both are required. |
 | `--policy NAME` | `conservative-assembly-v1` (default) or `conservative-assembly-anim-v2`. |
 | `--threads N` | Worker threads for each assembly. |
-| `--report-dir DIR` | Write the four report files into `DIR`, which must not exist yet. |
+| `--report-dir DIR` | Write the four report files into `DIR`, which must not exist yet and must not sit inside an input package. |
 | `--mlst-package DIR`, `--mlst-expected-sha256 SHA` | Add optional historical MLST. It never changes the classification. |
 | `--anim-reference-package DIR`, `--expected-anim-sha256 SHA`, `--anim-output DIR` | Provide the reference FASTAs to the v2 policy and keep its alignment evidence in a new directory. |
 
@@ -42,7 +42,7 @@ The exit status is 0 when every input finished, including inputs that ended unre
 
 ## Outputs
 
-`--report-dir` writes four files. If the directory exists, the command stops before doing any analysis and leaves it alone. It never replaces a file.
+`--report-dir` writes four files. If the directory exists, or lies inside the reference, MLST or ANIm reference package, the command exits 2 before doing any analysis and leaves it alone. It never replaces a file. If the files cannot be written, the JSON report still goes to standard output and the command exits 1, so the current result is not lost.
 
 | File | What it holds |
 |---|---|
@@ -69,7 +69,16 @@ The report shows the five highest skani references and every exact tie at fifth 
 
 The top table does not cover the whole panel. The panel summary lists every parent in the reference panel, whether skani returned it or not, with its best ANI and any challenging references. A challenge outside the top table appears there and in the challenges list, marked as outside the strongest matches.
 
-The v1 policy has no foreign-parent challenge test, so its challenge list is always empty; compare each parent's best ANI in the panel summary instead. ANI methods are not mixed in one ranking. skani orders the table; ANIm values, where the v2 policy measured them, sit beside it as separate columns.
+The v1 policy has no foreign-parent challenge test, so its challenge list is always empty; compare each parent's best ANI in the panel summary instead.
+
+For the v2 policy, an empty challenge list is a result only when the check was carried out. `challenge_assessment` says how far it went:
+
+| Value | Meaning |
+|---|---|
+| `completed` | The run finished and every competitor pair was measured. An empty list means nothing challenged the call. |
+| `partial` | Some competitor pairs are missing. Any challenge listed is real; an unlisted reference has not been cleared. |
+| `not_assessed` | The run did not finish, or stopped before the competitor panel was measured. Nothing can be said about challenges. |
+| `not_applicable` | The query was outside the rescue band, so no challenge test ran (always the case for v1). | ANI methods are not mixed in one ranking. skani orders the table; ANIm values, where the v2 policy measured them, sit beside it as separate columns.
 
 ### Counts and versions
 
@@ -125,13 +134,18 @@ datasets download genome accession --inputfile accessions.txt --include genome
 
 Unpack them into one directory with `isolate_17.fa`. Add a type anchor for each parent; the `reference_role` column in `evidence.tsv` marks them.
 
-**Step 4: repeat the ANI.** First reproduce the reported values with the same method on the collected genomes:
+**Step 4: repeat the ANI.** A reproduction is only as exact as the settings you pin. Read them from the report first. `measurement.engine_version` and `measurement.engine_profile` (also `versions.skani_method`) name the skani build, `0.3.2` here, and `measurement.reporting_floor_percent` gives the aligned-fraction floor. The package search also screens at 80% and takes its sketch compression from the reference package's database, not from a skani default. Use the same inputs: the isolate file must hash to `input.query_sha256` in the report, and a reference downloaded from NCBI may differ from the copy in the package if the assembly was updated, so use the package's reference FASTA component when you have it. The isolate is always the query and the reference genome is the reference. skani's ANI and aligned fractions are not symmetric, so swapping them changes the numbers.
+
+With the same skani version, `skani dist` on the isolate and one reference checks that pair. It is not an exact replay of the package search, so a default invocation does not guarantee the same value:
 
 ```sh
-skani dist -q isolate_17.fa -r refs/*.fa -o follow_up_ani.tsv
+skani --version    # must report 0.3.2
+skani dist -q isolate_17.fa -r refs/ACCESSION_A1.fa -o follow_up_ani.tsv
 ```
 
-This checks the reported numbers, not the method. For an independent view, run a different ANI method on the same pairs, such as fastANI or a whole-genome alignment, and compare its values and aligned fractions.
+Compare `ANI` with `skani_ani`, and `Align_fraction_query` with `skani_af_query`, in the `evidence.tsv` row for that reference. Small differences are expected unless you also match the database's compression settings. A large difference points at the wrong genome, the wrong orientation or a different skani build.
+
+For an independent view, run a different ANI method on the same pairs, such as fastANI or a whole-genome alignment, and compare its values and aligned fractions.
 
 If the follow-up agrees that species A and species B are both near 95%, the isolate sits between two parents and the tool was right to withhold. If the follow-up puts one parent clearly ahead, check the isolate for contamination or a second genome: compare the record lengths and sequence hashes in `report.json` under `input.records` with what you expect.
 

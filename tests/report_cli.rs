@@ -323,3 +323,102 @@ fn custom_v2_thresholds_are_custom_unvalidated_in_the_json_and_every_rendering()
     let markdown = std::fs::read_to_string(reports.join("report.md")).unwrap();
     assert!(markdown.contains("custom_unvalidated"));
 }
+
+#[test]
+fn a_report_write_failure_still_prints_the_json_and_exits_nonzero() {
+    use std::io::Write;
+    use std::os::unix::ffi::OsStrExt;
+    use std::process::Stdio;
+    use std::time::{Duration, Instant};
+    let (dir, pin, seq) = native_package();
+    // A FIFO query pauses the run after the report directory exists and before it writes.
+    let query = dir.path().join("query.fa");
+    let name = std::ffi::CString::new(query.as_os_str().as_bytes()).unwrap();
+    assert_eq!(unsafe { libc::mkfifo(name.as_ptr(), 0o600) }, 0);
+    let reports = dir.path().join("reports");
+    let mut cmd = cargo_bin_cmd!("tero");
+    cmd.arg("--reference-package")
+        .arg(dir.path().join("package"))
+        .args(["--expected-sha256", &pin, "--report-dir"])
+        .arg(&reports)
+        .arg(&query);
+    let child = std::process::Command::new(cmd.get_program())
+        .args(cmd.get_args())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let start = Instant::now();
+    while !reports.is_dir() && start.elapsed() < Duration::from_secs(20) {
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    assert!(reports.is_dir(), "the run creates the directory first");
+    // The earlier file is kept and makes the final write fail.
+    std::fs::write(reports.join("report.json"), b"earlier").unwrap();
+    let mut fifo = std::fs::OpenOptions::new()
+        .write(true)
+        .open(&query)
+        .unwrap();
+    fifo.write_all(&[b">chr\n".as_slice(), &seq, b"\n"].concat())
+        .unwrap();
+    drop(fifo);
+    let output = child.wait_with_output().unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("error writing reports"));
+    let report: Value = serde_json::from_slice(&output.stdout)
+        .expect("the current report stays on stdout when the files cannot be written");
+    assert_eq!(report["assignment"]["status"], "assigned");
+    assert_eq!(
+        std::fs::read(reports.join("report.json")).unwrap(),
+        b"earlier",
+        "an existing file is never replaced"
+    );
+}
+
+#[test]
+fn a_report_dir_inside_an_input_package_is_refused_before_any_analysis() {
+    let (dir, pin, seq) = native_package();
+    let query = dir.path().join("query.fa");
+    std::fs::write(&query, [b">chr\n".as_slice(), &seq, b"\n"].concat()).unwrap();
+    let inside = dir.path().join("package").join("reports");
+    let output = tero(
+        dir.path(),
+        &pin,
+        &["--report-dir".as_ref(), inside.as_os_str()],
+        &[&query],
+    );
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("inside the input package"));
+    assert!(!inside.exists(), "nothing is created inside the package");
+}
+
+#[test]
+fn unmeasured_challenges_are_not_reported_as_negative_evidence() {
+    let (dir, pin, _) = native_package();
+    let missing = dir.path().join("missing.fa");
+    let reports = dir.path().join("reports");
+    let output = std::process::Command::new(cargo_bin_cmd!("tero").get_program())
+        .arg("--reference-package")
+        .arg(dir.path().join("package"))
+        .args([
+            "--expected-sha256",
+            &pin,
+            "--policy",
+            "conservative-assembly-anim-v2",
+        ])
+        .arg("--report-dir")
+        .arg(&reports)
+        .arg(&missing)
+        .output()
+        .unwrap();
+    assert_ne!(output.status.code(), Some(0));
+    let markdown = std::fs::read_to_string(reports.join("report.md")).unwrap();
+    assert!(
+        !markdown.contains("No reference challenged the call"),
+        "{markdown}"
+    );
+    assert!(markdown.contains("Not assessed"), "{markdown}");
+    let calls = std::fs::read_to_string(reports.join("calls.tsv")).unwrap();
+    assert_eq!(column(&calls, 0, "challenge_assessment"), "not_assessed");
+}
