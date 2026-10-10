@@ -2,6 +2,7 @@ use super::{parse_delta, AnimError, Metrics};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
+    borrow::Cow,
     collections::BTreeMap,
     ffi::{CStr, CString},
     fs::{self, File, OpenOptions},
@@ -66,7 +67,9 @@ impl Method {
 #[serde(deny_unknown_fields)]
 pub struct InputBinding {
     pub id: String,
+    /// Exact supplied file bytes, including compression when present.
     pub sha256: String,
+    /// Decoded, formatting-normalized FASTA bytes read by the native worker.
     pub native_sha256: String,
     pub total_bases: u64,
     pub scope: String,
@@ -229,6 +232,35 @@ fn native_fasta(bytes: &[u8]) -> Result<Vec<u8>, AnimError> {
     }
     Ok(output)
 }
+
+// Preserve plain-input formatting and historical native hashes. For compressed
+// inputs, use the same content-based decoder as the public assembly reader and
+// retain record bytes before the existing validation/normalization steps.
+fn decoded_fasta(bytes: &[u8]) -> Result<Cow<'_, [u8]>, AnimError> {
+    if bytes.iter().copied().find(|b| !b.is_ascii_whitespace()) == Some(b'>') {
+        return Ok(Cow::Borrowed(bytes));
+    }
+    let mut reader = needletail::parse_fastx_reader(std::io::Cursor::new(bytes))
+        .map_err(|e| invalid(e.to_string()))?;
+    let mut decoded = Vec::new();
+    while let Some(record) = reader.next() {
+        let record = record.map_err(|e| invalid(e.to_string()))?;
+        if record.format() != needletail::parser::Format::Fasta {
+            return Err(invalid("input must be assembly FASTA, not FASTQ"));
+        }
+        let size = decoded
+            .len()
+            .checked_add(record.all().len())
+            .and_then(|n| n.checked_add(1))
+            .ok_or(AnimError::Overflow)?;
+        if size as u64 > MAX_INPUT_BYTES {
+            return Err(invalid("decoded FASTA exceeds the 256-MiB per-input limit"));
+        }
+        decoded.extend_from_slice(record.all());
+        decoded.push(b'\n');
+    }
+    Ok(Cow::Owned(decoded))
+}
 fn snapshot(
     path: &Path,
     dest: &Path,
@@ -254,8 +286,9 @@ fn snapshot(
     if expected.is_some_and(|value| value != digest) {
         return Err(invalid(format!("{role} SHA256 mismatch")));
     }
-    let record_lengths = lengths(&bytes)?;
-    let native = native_fasta(&bytes)?;
+    let decoded = decoded_fasta(&bytes)?;
+    let record_lengths = lengths(&decoded)?;
+    let native = native_fasta(&decoded)?;
     write_new(&dest.with_extension("native.fa"), &native)?;
     let total_bases = record_lengths
         .values()
@@ -821,7 +854,8 @@ pub fn verify_pair(directory: &Path, expected: &ExpectedPair) -> Result<PairReco
     }
     for (input, name) in [(query, "query.fa"), (reference, "reference.fa")] {
         let bytes = fs::read(directory.join("inputs").join(name))?;
-        let native = native_fasta(&bytes)?;
+        let decoded = decoded_fasta(&bytes)?;
+        let native = native_fasta(&decoded)?;
         let native_path = directory
             .join("inputs")
             .join(name)
@@ -829,7 +863,7 @@ pub fn verify_pair(directory: &Path, expected: &ExpectedPair) -> Result<PairReco
         if hash_bytes(&bytes) != input.sha256
             || hash_bytes(&native) != input.native_sha256
             || fs::read(native_path)? != native
-            || lengths(&bytes)? != input.record_lengths
+            || lengths(&decoded)? != input.record_lengths
             || input.scope != "whole_assembly"
             || input
                 .record_lengths

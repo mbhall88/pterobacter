@@ -10,7 +10,7 @@ The same decisions must be reachable from the command line now and, possibly, fr
 
 `src/evidence.rs`, `src/annotations.rs`, `src/reference/`, `src/decision.rs`, `src/panel.rs`, `src/rescue/` and `src/mlst/` take text and values and return values. They never read files, parse arguments, print, or exit. `src/reference/` and `src/mlst/` read package bytes only through the `PackageSource` port that a front end implements. `src/cli.rs` and, for the development binary, `src/dev.rs` own all of that and call the pure modules.
 
-The seam for tests is `SavedEvidence::from_json`, `verify_package`, `decide` and `decide_bound`, plus the executables as processes. For v2 it is `Panel::from_json`, `AnimRecords::from_jsonl`, `RescueInput` and its `decide` and `plan`. Tests do not reach into private helpers.
+The seam for tests is `SavedEvidence::from_json`, `verify_package`, `decide` and `decide_bound`, plus the executables as processes. For v2 it is `Panel::from_json`, `AnimRecords::from_jsonl`, `RescueInput` and its `decide` and `plan`. Tests normally use these interfaces rather than private helpers. Focused module-local tests may exercise pure algorithm helpers when they isolate ordering or alignment edge cases that would be obscured through the public interface. Such tests supplement package, typing and CLI tests; they do not replace them. The MLST `extend_diagonal` and `report_order` tests use this exception.
 
 ## Consequences
 

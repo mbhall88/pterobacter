@@ -102,6 +102,11 @@ fn alleles(bytes: &[u8], locus: &str, path: &str) -> Result<Vec<(String, Vec<u8>
                 .and_then(|rest| rest.strip_prefix('_'))
                 .filter(|id| !id.is_empty() && id.bytes().all(|b| b.is_ascii_digit()))
                 .ok_or_else(|| invalid(format!("{path}: unexpected allele record {name:?}")))?;
+            if id.parse::<u64>().is_err() {
+                return Err(invalid(format!(
+                    "{path}: allele ID {id} exceeds the supported u64 range"
+                )));
+            }
             records.push((id.to_owned(), Vec::new()));
         } else if !line.is_empty() {
             let record = records.last_mut().expect("first byte is a header");

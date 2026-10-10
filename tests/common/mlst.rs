@@ -100,6 +100,26 @@ impl SyntheticScheme {
         self.set_manifest(&manifest);
     }
 
+    /// Replace dnaA allele 1's ID and reauthenticate the synthetic package.
+    pub fn with_dnaa_id(mut self, id: &str) -> Self {
+        let path = "pubmlst/ecloacae/dnaA.tfa";
+        let fasta = String::from_utf8(self.files[path].clone())
+            .unwrap()
+            .replace(">dnaA_1\n", &format!(">dnaA_{id}\n"));
+        self.files.insert(path.into(), fasta.into_bytes());
+        let path = "pubmlst/ecloacae/ecloacae.txt";
+        let table = String::from_utf8(self.files[path].clone())
+            .unwrap()
+            .replace("5\t1\t", &format!("5\t{id}\t"));
+        self.files.insert(path.into(), table.into_bytes());
+        let mut manifest = self.manifest();
+        for path in ["pubmlst/ecloacae/dnaA.tfa", "pubmlst/ecloacae/ecloacae.txt"] {
+            manifest["data_sha256"][path] = sha256_hex(&self.files[path]).into();
+        }
+        self.set_manifest(&manifest);
+        self
+    }
+
     pub fn manifest(&self) -> Value {
         serde_json::from_slice(&self.files["manifest.json"]).unwrap()
     }

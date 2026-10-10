@@ -11,6 +11,7 @@
 //! package exposes are the ones its registry gives. Bytes arrive through [`PackageSource`], so this
 //! module never opens a path itself.
 
+pub mod anim;
 mod derive;
 mod index;
 mod manifest;

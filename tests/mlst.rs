@@ -333,3 +333,29 @@ fn a_recheck_rejects_a_package_changed_after_verification() {
         Err(MlstError::Package(_))
     ));
 }
+
+#[test]
+fn overflowing_allele_ids_are_rejected_at_the_package_boundary() {
+    let package = SyntheticScheme::new().with_dnaa_id("18446744073709551616");
+    let error = Scheme::verify(&package, &package.manifest_sha256())
+        .err()
+        .unwrap();
+    assert!(matches!(error, MlstError::Package(_)));
+    assert!(error
+        .to_string()
+        .contains("exceeds the supported u64 range"));
+}
+
+#[test]
+fn largest_supported_allele_id_can_be_typed_at_repeated_exact_locations() {
+    let package = SyntheticScheme::new().with_dnaa_id("18446744073709551615");
+    let mut pieces = package.st5_pieces();
+    pieces.push(package.allele(0, 1));
+    let record = type_one(&package, &pieces);
+    assert_eq!(record["status"], "complete");
+    assert_eq!(record["state"], "ambiguous_alleles");
+    assert_eq!(
+        record["loci"][0]["raw_token"],
+        "18446744073709551615,18446744073709551615"
+    );
+}
