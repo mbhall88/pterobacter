@@ -326,7 +326,7 @@ fn independent_mlst_receipts_preserve_genomovar_but_parent_changes_still_veto() 
     let hash = parent_result_sha256(&original);
     for mlst in [
         json!({"status": "not_requested"}),
-        json!({"status": "assigned", "sequence_type": "42", "scheme": "synthetic"}),
+        json!({"status": "complete", "state": "assigned", "sequence_type": "42", "scheme": "synthetic"}),
         json!({"status": "failed", "detail": "synthetic standalone typing failure"}),
     ] {
         let mut report = original.clone();
@@ -345,5 +345,57 @@ fn independent_mlst_receipts_preserve_genomovar_but_parent_changes_still_veto() 
             report["genomovar"]["compatible_groups"],
             original["genomovar"]["compatible_groups"]
         );
+    }
+}
+
+#[test]
+fn public_command_combines_mlst_and_genomovar_for_both_parent_policies() {
+    let (dir, pin) = package(&[]);
+    let path = dir.path().join("query.fa");
+    std::fs::write(&path, query()).unwrap();
+    for policy in ["conservative-assembly-v1", "conservative-assembly-anim-v2"] {
+        for mode in ["not_requested", "complete", "failed"] {
+            let mut command = cargo_bin_cmd!("tero");
+            command
+                .arg("--reference-package")
+                .arg(dir.path().join("package"))
+                .args(["--expected-sha256", &pin, "--policy", policy]);
+            if mode != "not_requested" {
+                let id = if mode == "failed" {
+                    "18446744073709551616"
+                } else {
+                    "1"
+                };
+                let scheme = common::mlst::SyntheticScheme::new().with_dnaa_id(id);
+                scheme.write_to(&dir.path().join("mlst"));
+                command
+                    .arg("--mlst-package")
+                    .arg(dir.path().join("mlst"))
+                    .args(["--mlst-expected-sha256", &scheme.manifest_sha256()]);
+            }
+            let output = command.arg(&path).output().unwrap();
+            assert_eq!(
+                output.status.code(),
+                Some(if mode == "failed" { 6 } else { 0 }),
+                "{}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+            assert_eq!(report["execution"]["status"], "complete");
+            assert_eq!(report["mlst"]["status"], mode);
+            let assignment = if policy == "conservative-assembly-v1" {
+                &report["assignment"]
+            } else {
+                &report
+            };
+            assert_eq!(assignment["species_id"], "SYN-SP01");
+            assert_eq!(assignment["genomovar_id"], Value::Null);
+            assert_eq!(report["genomovar"]["status"], "withheld");
+            assert_eq!(report["genomovar"]["search"]["status"], "not_run");
+            assert!(report["genomovar"]["reasons"]
+                .as_array()
+                .unwrap()
+                .contains(&json!("absent_eligible_parent")));
+        }
     }
 }
