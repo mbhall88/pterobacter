@@ -5,21 +5,20 @@ use serde::Deserialize;
 
 use crate::evidence::{EvidenceError, Percent};
 
-/// More fractional digits than this are refused, which keeps every gate within checked u128.
-const MAX_FRACTION_DIGITS: usize = 12;
-
 /// A nonnegative exact decimal percentage, `num / den`.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub(crate) struct Exact {
-    num: u128,
-    den: u128,
+    num: num_bigint::BigUint,
+    den: num_bigint::BigUint,
+    scale: usize,
 }
 
 impl Exact {
-    const fn whole(percent: u128) -> Self {
-        Exact {
-            num: percent,
-            den: 1,
+    fn whole(percent: u128) -> Self {
+        Self {
+            num: percent.into(),
+            den: 1u32.into(),
+            scale: 0,
         }
     }
 
@@ -27,41 +26,47 @@ impl Exact {
         let (whole, fraction) = text.split_once('.').unwrap_or((text, ""));
         let digits = |s: &str| s.bytes().all(|b| b.is_ascii_digit());
         if whole.is_empty()
-            || whole.len() > 3
             || !digits(whole)
             || !digits(fraction)
             || (text.contains('.') && fraction.is_empty())
-            || fraction.len() > MAX_FRACTION_DIGITS
         {
             return None;
         }
-        let den = 10u128.pow(u32::try_from(fraction.len()).ok()?);
+        let fraction = fraction.trim_end_matches('0');
+        let scale = fraction.len();
+        let den = num_bigint::BigUint::from(10u32).pow(u32::try_from(scale).ok()?);
         let num = format!("{whole}{fraction}").parse().ok()?;
-        Some(Exact { num, den })
+        Some(Self { num, den, scale })
     }
 
-    /// Compare `self` with the rational `num / den`, both percentages.
-    pub(crate) fn cmp_ratio(self, num: u128, den: u128) -> Option<Ordering> {
-        Some(self.num.checked_mul(den)?.cmp(&num.checked_mul(self.den)?))
+    /// Compare with a metric's exact percentage, without a decimal precision limit.
+    pub(crate) fn cmp_ratio(&self, num: u128, den: u128) -> Option<Ordering> {
+        if den == 0 {
+            return None;
+        }
+        Some(
+            (&self.num * num_bigint::BigUint::from(den))
+                .cmp(&(num_bigint::BigUint::from(num) * &self.den)),
+        )
     }
 
-    /// The smallest two-decimal percentage at or above this value. skani emits two decimals,
-    /// so `ani >= self` is exactly `ani >= self.ceil_hundredths()` for every emitted value.
-    pub(crate) fn ceil_hundredths(self) -> Percent {
-        let hundredths = (self.num * 100).div_ceil(self.den);
+    /// skani emits hundredths, so comparing with this ceiling is exact for its values.
+    pub(crate) fn ceil_hundredths(&self) -> Percent {
+        let hundredths = (&self.num * 100u32 + &self.den - 1u32) / &self.den;
         Percent::from_hundredths(u32::try_from(hundredths).expect("threshold at most 100%"))
     }
 
-    /// `self − 1.5`, keeping a power-of-ten denominator. Only called on values ≥ 80.
-    fn sub_one_and_a_half(self) -> Self {
-        Exact {
-            num: 10 * self.num - 15 * self.den,
-            den: 10 * self.den,
+    /// `self − 1.5`, retaining a power-of-ten denominator. Only called on values ≥ 80.
+    fn sub_one_and_a_half(&self) -> Self {
+        Self {
+            num: &self.num * 10u32 - &self.den * 15u32,
+            den: &self.den * 10u32,
+            scale: self.scale + 1,
         }
     }
 
     fn min(self, other: Self) -> Self {
-        if self.cmp_ratio(other.num, other.den) == Some(Ordering::Greater) {
+        if &self.num * &other.den > &other.num * &self.den {
             other
         } else {
             self
@@ -69,17 +74,16 @@ impl Exact {
     }
 
     fn max(self, other: Self) -> Self {
-        if self.cmp_ratio(other.num, other.den) == Some(Ordering::Less) {
+        if &self.num * &other.den < &other.num * &self.den {
             other
         } else {
             self
         }
     }
 
-    fn display(self) -> String {
-        let scale = self.den.ilog10() as usize;
-        let text = format!("{:0>width$}", self.num, width = scale + 1);
-        let (whole, fraction) = text.split_at(text.len() - scale);
+    fn display(&self) -> String {
+        let text = format!("{:0>width$}", self.num.to_string(), width = self.scale + 1);
+        let (whole, fraction) = text.split_at(text.len() - self.scale);
         let fraction = fraction.trim_end_matches('0');
         if fraction.is_empty() {
             whole.to_owned()
@@ -137,20 +141,17 @@ impl Thresholds {
         let parse = |text: Option<&str>, default: Exact| -> Result<Exact, EvidenceError> {
             text.map_or(Ok(default), |t| {
                 Exact::parse(t).ok_or_else(|| {
-                    EvidenceError::Settings(format!(
-                        "{t} is not a finite decimal percentage with at most \
-                         {MAX_FRACTION_DIGITS} decimals"
-                    ))
+                    EvidenceError::Settings(format!("{t} is not a finite decimal percentage"))
                 })
             })
         };
         let standard = Self::standard();
         let species_ani = parse(species, standard.species)?;
         let subspecies_ani = parse(subspecies, standard.subspecies)?;
-        let in_order = |a: Exact, b: Exact| a.cmp_ratio(b.num, b.den) != Some(Ordering::Greater);
-        if !(in_order(Exact::whole(80), species_ani)
-            && in_order(species_ani, subspecies_ani)
-            && in_order(subspecies_ani, Exact::whole(100)))
+        let in_order = |a: &Exact, b: &Exact| &a.num * &b.den <= &b.num * &a.den;
+        if !(in_order(&Exact::whole(80), &species_ani)
+            && in_order(&species_ani, &subspecies_ani)
+            && in_order(&subspecies_ani, &Exact::whole(100)))
         {
             return Err(EvidenceError::Settings(
                 "thresholds must satisfy 80 <= species ANI <= subspecies ANI <= 100".into(),
@@ -176,12 +177,33 @@ impl Thresholds {
         self.supplied.is_some()
     }
 
-    pub(crate) fn species(&self) -> Exact {
-        self.species
+    /// Policy settings and their canonical digest, available before any evidence is read.
+    pub fn policy_value(&self) -> serde_json::Value {
+        use super::{CONTRACT_REVISION, CUSTOM_UNVALIDATED, NOT_YET_VALIDATED, V2_POLICY_ID};
+        use serde_json::json;
+        let custom = self.is_custom();
+        let mut policy = json!({"policy_id": V2_POLICY_ID, "contract_revision": CONTRACT_REVISION,
+            "policy_mode": if custom { "custom" } else { "default_candidate" },
+            "validation_status": if custom { CUSTOM_UNVALIDATED } else { NOT_YET_VALIDATED },
+            "thresholds": self.to_json()});
+        // Hash effective settings and mode, retaining literal flags separately in the report.
+        let mut canonical = policy.clone();
+        canonical["thresholds"]
+            .as_object_mut()
+            .expect("threshold object")
+            .remove("supplied");
+        policy["settings_sha256"] = json!(crate::evidence::sha256_hex(
+            canonical.to_string().as_bytes()
+        ));
+        policy
     }
 
-    pub(crate) fn subspecies(&self) -> Exact {
-        self.subspecies
+    pub(crate) fn species(&self) -> &Exact {
+        &self.species
+    }
+
+    pub(crate) fn subspecies(&self) -> &Exact {
+        &self.subspecies
     }
 
     /// Lower trigger endpoint, max(80, T − 1.5).
@@ -191,7 +213,7 @@ impl Thresholds {
 
     /// The conflict ANI for the two-parent alert and foreign-parent challenge, min(96, T).
     pub(crate) fn conflict(&self) -> Exact {
-        self.species.min(Exact::whole(96))
+        self.species.clone().min(Exact::whole(96))
     }
 
     pub(crate) fn to_json(&self) -> serde_json::Value {
