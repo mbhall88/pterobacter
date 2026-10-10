@@ -294,6 +294,8 @@ impl Scheme {
             "post_cutoff_currency": "not_claimed",
             "limitation": LIMITATION,
             "data_terms_url": m["data_terms_url"],
+            "cutoff_evidence": m.get("cutoff_evidence"),
+            "source_urls": m.get("source_urls"),
             "data_sha256": m["data_sha256"],
             "allele_count": self.alleles.len(),
             "profile_count": self.profiles.len(),

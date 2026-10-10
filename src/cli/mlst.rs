@@ -49,13 +49,18 @@ impl Mlst {
         }
     }
 
+    /// The `mlst` report field when an earlier stage stopped the input before MLST could run.
+    pub fn not_run(&self, stage: &str) -> Value {
+        failed(
+            stage,
+            &format!("the {stage} stage failed, so MLST did not run"),
+        )
+    }
+
     /// The `mlst` report field for one input. `bytes` is `None` when the input was not validated.
     pub fn report(&mut self, bytes: Option<&[u8]>) -> Value {
         let Some(bytes) = bytes else {
-            return failed(
-                "input",
-                "assembly input was not validated, so MLST did not run",
-            );
+            return self.not_run("input");
         };
         let (directory, expected) = (&self.directory, &self.expected_sha256);
         let scheme = self.scheme.get_or_insert_with(|| {

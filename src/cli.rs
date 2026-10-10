@@ -77,7 +77,7 @@ pub fn run_public() -> ExitCode {
             report["execution"]["error"] = "requested native policy is unavailable; only conservative-assembly-v1 is implemented".into();
             exit = 5;
             if let Some(mlst) = &mut mlst {
-                report["mlst"] = mlst.report(None);
+                report["mlst"] = mlst.not_run("policy");
             }
             results.push(report);
             continue;
