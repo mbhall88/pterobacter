@@ -121,7 +121,9 @@ fn a_v1_call_without_a_verified_package_binding_is_not_a_parent() {
 
 #[test]
 fn a_vetoed_v1_call_is_not_a_parent() {
-    let parent = GenomovarParent::from_report(&v1(&group_a(), &["concern"]));
+    let report = v1(&group_a(), &["concern"]);
+    assert!(GenomovarParent::provenance_verified(&report));
+    let parent = GenomovarParent::from_report(&report);
     assert_eq!(parent.status, "unresolved");
     assert_eq!(parent.blocking_reasons, vec!["external_problem_warning"]);
     assert!(!supports_genomovar(&parent));

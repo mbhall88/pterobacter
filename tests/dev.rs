@@ -37,6 +37,11 @@ fn genomovar_diagnostic_is_exposed_only_by_the_development_binary() {
         "--reference-package",
         "--mask-member",
         "--remove-group",
+        "--exclude-evidence-row",
+        "--setting",
+        "--exclude-references",
+        "--exclude-references-sha256",
+        "--problem-warnings",
     ] {
         assert!(help.contains(option), "missing {option} from:\n{help}");
     }
@@ -52,6 +57,20 @@ fn genomovar_diagnostic_is_exposed_only_by_the_development_binary() {
         assert!(!help.contains("genomovar-diagnostic"), "{binary}: {help}");
         assert!(!help.contains("--mask-member"), "{binary}: {help}");
         assert!(!help.contains("--remove-group"), "{binary}: {help}");
+        assert!(!help.contains("--exclude-evidence-row"), "{binary}: {help}");
+        let output = if binary == "tero" {
+            cargo_bin_cmd!("tero")
+                .args(["--exclude-evidence-row", "member"])
+                .output()
+                .unwrap()
+        } else {
+            cargo_bin_cmd!("terobacter")
+                .args(["--exclude-evidence-row", "member"])
+                .output()
+                .unwrap()
+        };
+        assert!(!output.status.success());
+        assert!(output.stdout.is_empty());
     }
 }
 

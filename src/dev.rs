@@ -80,26 +80,7 @@ enum DevCommand {
         v2: V2Inputs,
     },
     /// Reassess saved genomovar member evidence after development-only masks or group removals
-    GenomovarDiagnostic {
-        /// Completed assembly report produced by terobacter
-        #[arg(long)]
-        report: PathBuf,
-        /// SHA-256 of the exact report bytes
-        #[arg(long, value_name = "SHA256", value_parser = parse_sha256)]
-        expected_report_sha256: String,
-        /// Authenticated reference package directory used by the report
-        #[arg(long, value_name = "DIR")]
-        reference_package: PathBuf,
-        /// SHA-256 that the package's portable.json must have
-        #[arg(long, value_name = "SHA256", value_parser = parse_sha256)]
-        expected_sha256: String,
-        /// Member reference ID to mask; repeat for multiple members
-        #[arg(long = "mask-member")]
-        masked_members: Vec<String>,
-        /// Entire genomovar group ID to remove; repeat for multiple groups
-        #[arg(long = "remove-group")]
-        removed_groups: Vec<String>,
-    },
+    GenomovarDiagnostic(Box<GenomovarDiagnosticArgs>),
     /// Measure one assembly with the embedded skani compatibility profile
     SkaniSearch {
         #[arg(long)]
@@ -115,6 +96,50 @@ enum DevCommand {
         #[arg(long)]
         portable: bool,
     },
+}
+
+#[derive(Debug, Args)]
+struct GenomovarDiagnosticArgs {
+    /// Completed assembly report produced by terobacter
+    #[arg(long)]
+    report: PathBuf,
+    /// SHA-256 of the exact report bytes
+    #[arg(long, value_name = "SHA256", value_parser = parse_sha256)]
+    expected_report_sha256: String,
+    /// Authenticated reference package directory used by the report
+    #[arg(long, value_name = "DIR")]
+    reference_package: PathBuf,
+    /// SHA-256 that the package's portable.json must have
+    #[arg(long, value_name = "SHA256", value_parser = parse_sha256)]
+    expected_sha256: String,
+    /// Member reference ID to mask; repeat for multiple members
+    #[arg(long = "mask-member")]
+    masked_members: Vec<String>,
+    /// Entire genomovar group ID to remove; repeat for multiple groups
+    #[arg(long = "remove-group")]
+    removed_groups: Vec<String>,
+    /// Omit a saved member row while retaining its required definition membership
+    #[arg(long = "exclude-evidence-row")]
+    excluded_evidence_rows: Vec<String>,
+    /// Primary-mask setting used for this diagnostic
+    #[arg(long, default_value = "unmasked", value_parser = ["unmasked", "self_alias", "clone_block"])]
+    setting: String,
+    /// Matching primary-reference mask: one reference ID per line
+    #[arg(long, requires = "exclude_references_sha256")]
+    exclude_references: Option<PathBuf>,
+    /// SHA-256 of the matching primary-mask file
+    #[arg(long, value_parser = parse_sha256, requires = "exclude_references")]
+    exclude_references_sha256: Option<String>,
+    /// Additional bound warning envelope for the recomputed parent
+    #[arg(long, requires = "problem_warnings_sha256")]
+    problem_warnings: Option<PathBuf>,
+    #[arg(long, value_parser = parse_sha256, requires = "problem_warnings")]
+    problem_warnings_sha256: Option<String>,
+    /// Bound reciprocal ANIm records for a recomputed v2 parent
+    #[arg(long, requires = "anim_method_profile")]
+    anim_records: Vec<PathBuf>,
+    #[arg(long, requires = "anim_records")]
+    anim_method_profile: Option<String>,
 }
 #[derive(Debug, Args)]
 struct Inputs {
@@ -300,7 +325,7 @@ pub fn run() -> ExitCode {
         | DevCommand::ReferencePackage { .. }
         | DevCommand::SkaniSearch { .. }
         | DevCommand::RescuePlan { .. }
-        | DevCommand::GenomovarDiagnostic { .. }) => match execute(command) {
+        | DevCommand::GenomovarDiagnostic(_)) => match execute(command) {
             Ok(json) => {
                 println!("{json}");
                 ExitCode::SUCCESS
@@ -558,22 +583,8 @@ fn execute(command: DevCommand) -> Result<String, Failure> {
         DevCommand::AnimPair(_) | DevCommand::AnimParse { .. } => {
             return Err("ANIm command must be dispatched through run".into());
         }
-        DevCommand::GenomovarDiagnostic {
-            report,
-            expected_report_sha256,
-            reference_package,
-            expected_sha256,
-            masked_members,
-            removed_groups,
-        } => {
-            return genomovar_diagnostic(
-                &report,
-                &expected_report_sha256,
-                &reference_package,
-                &expected_sha256,
-                &masked_members,
-                &removed_groups,
-            );
+        DevCommand::GenomovarDiagnostic(args) => {
+            return genomovar_diagnostic(&args);
         }
         DevCommand::SavedEvidence {
             inputs,
@@ -702,14 +713,12 @@ fn execute(command: DevCommand) -> Result<String, Failure> {
     Ok(output)
 }
 
-fn genomovar_diagnostic(
-    report_path: &Path,
-    expected_report_sha256: &str,
-    package_path: &Path,
-    expected_package_sha256: &str,
-    masked_members: &[String],
-    removed_groups: &[String],
-) -> Result<String, Failure> {
+fn genomovar_diagnostic(args: &GenomovarDiagnosticArgs) -> Result<String, Failure> {
+    let report_path = &args.report;
+    let expected_report_sha256 = args.expected_report_sha256.as_str();
+    let package_path = &args.reference_package;
+    let expected_package_sha256 = args.expected_sha256.as_str();
+    let mut pins = Vec::new();
     let report_bytes = std::fs::read(report_path)
         .map_err(|error| format!("{}: {error}", report_path.display()))?;
     let report_sha256 = sha256_hex(&report_bytes);
@@ -719,6 +728,7 @@ fn genomovar_diagnostic(
         )
         .into());
     }
+    pins.push((report_path.clone(), report_sha256.clone()));
     let report: Value = serde_json::from_slice(&report_bytes)
         .map_err(|error| format!("{}: invalid report JSON: {error}", report_path.display()))?;
     let package = verify_package(
@@ -768,15 +778,10 @@ fn genomovar_diagnostic(
     }
 
     let parent = crate::genomovar::GenomovarParent::from_report(&report);
-    if !parent.verified
-        || parent.status != "assigned"
-        || parent.species_id.as_deref() != Some(crate::genomovar::PARENT_SPECIES_ID)
-        || parent.subspecies_id.as_deref() != Some(crate::genomovar::PARENT_SUBSPECIES_ID)
-        || !crate::genomovar::ACCEPTED_PARENT_POLICIES.contains(&parent.policy_id.as_str())
-        || !parent.blocking_reasons.is_empty()
-        || !["not_assessed", "explained_after_checks"].contains(&parent.scope_outcome.as_str())
-    {
-        return Err(fail("report has no verified eligible parent call"));
+    if !crate::genomovar::GenomovarParent::provenance_verified(&report) {
+        return Err(fail(
+            "report parent decision has invalid or incomplete provenance",
+        ));
     }
 
     let rows: Vec<crate::genomovar::MemberRow> =
@@ -811,7 +816,7 @@ fn genomovar_diagnostic(
     }
 
     let text = |key: &str| search[key].as_str().unwrap_or_default().to_owned();
-    let context = crate::genomovar::Context {
+    let mut context = crate::genomovar::Context {
         parent,
         input_kind: report["input"]["kind"]
             .as_str()
@@ -854,12 +859,18 @@ fn genomovar_diagnostic(
         ));
     }
 
+    let parent_recomputation = recompute_diagnostic_parent(args, &report, &package, &mut pins)?;
+    if let Some(recomputation) = &parent_recomputation {
+        context.parent = crate::genomovar::GenomovarParent::from_report(&recomputation["decision"]);
+    }
+
     let assessment = crate::genomovar::diagnostic_assess(
         &definition,
         &rows,
         &context,
-        masked_members,
-        removed_groups,
+        &args.masked_members,
+        &args.removed_groups,
+        &args.excluded_evidence_rows,
     )
     .map_err(|error| error.to_string())?;
     if assessment.assigned_genomovar_id().is_some() {
@@ -874,6 +885,9 @@ fn genomovar_diagnostic(
         "reference_package_sha256": expected_package_sha256,
         "genomovar_id": null,
         "diagnostic_would_assign_genomovar_id": candidate,
+        "diagnostic_outcome": assessment.to_value()["diagnostic_outcome"],
+        "setting": args.setting,
+        "parent_recomputation": parent_recomputation,
         "baseline": {
             "genomovar_id": section["genomovar_id"],
             "status": section["status"],
@@ -883,16 +897,103 @@ fn genomovar_diagnostic(
         "diagnostic": assessment.to_value(),
     });
 
-    let current_bytes = std::fs::read(report_path)
-        .map_err(|error| format!("{}: {error}", report_path.display()))?;
-    if sha256_hex(&current_bytes) != report_sha256 {
-        return Err(format!(
-            "{}: report changed during diagnostic",
-            report_path.display()
-        )
-        .into());
+    for (path, hash) in &pins {
+        let current_bytes =
+            std::fs::read(path).map_err(|error| format!("{}: {error}", path.display()))?;
+        if sha256_hex(&current_bytes) != *hash {
+            return Err(format!("{}: input changed during diagnostic", path.display()).into());
+        }
     }
+    verify_package(
+        &Directory(package_path.clone()),
+        expected_package_sha256,
+        &RegistryPins::default(),
+    )?;
     serde_json::to_string_pretty(&output).map_err(|error| error.to_string().into())
+}
+
+/// Read declared files and bind a recomputed parent to the pinned report's original evidence.
+fn recompute_diagnostic_parent(
+    args: &GenomovarDiagnosticArgs,
+    report: &Value,
+    package: &VerifiedPackage,
+    pins: &mut Pins,
+) -> Result<Option<Value>, Failure> {
+    let masked_setting = args.setting != "unmasked";
+    if masked_setting != args.exclude_references.is_some()
+        || (!args.masked_members.is_empty() && !masked_setting)
+    {
+        return Err("member masks require self_alias or clone_block and a pinned matching primary-reference mask; unmasked forbids a primary mask".into());
+    }
+    if !masked_setting && args.problem_warnings.is_none() && args.anim_records.is_empty() {
+        return Ok(None);
+    }
+    let mask: Vec<String> = args
+        .exclude_references
+        .as_ref()
+        .map(|path| {
+            read(path, args.exclude_references_sha256.as_deref(), pins).map(|text| {
+                text.lines()
+                    .map(str::trim)
+                    .filter(|line| !line.is_empty())
+                    .map(str::to_owned)
+                    .collect()
+            })
+        })
+        .transpose()?
+        .unwrap_or_default();
+    if masked_setting && mask.is_empty() {
+        return Err("a masked setting requires a nonempty matching primary-reference mask".into());
+    }
+    let saved = SavedEvidence::from_json(&report["evidence"].to_string())
+        .map_err(|error| format!("report primary evidence is invalid: {error}"))?;
+    if saved.provenance().query_sha256 != report["input"]["query_sha256"]
+        || saved.provenance().reference_package_sha256 != args.expected_sha256
+        || saved.source_sha256() != report["input"]["evidence_sha256"]
+    {
+        return Err(
+            "report primary evidence does not match its query, package or evidence binding".into(),
+        );
+    }
+    let warnings = args
+        .problem_warnings
+        .as_ref()
+        .map(|path| read(path, args.problem_warnings_sha256.as_deref(), pins))
+        .transpose()?;
+    let saved = saved
+        .with_annotations(None, warnings.as_deref(), None)
+        .map_err(|error| error.to_string())?;
+    verify_artifacts(&saved, pins)?;
+    let mut records = AnimRecords::default();
+    for path in record_files(&args.anim_records)? {
+        let text = read(&path, None, pins)?;
+        let parsed = if path
+            .extension()
+            .is_some_and(|extension| extension == "json")
+        {
+            AnimRecords::from_json(&text)
+        } else {
+            AnimRecords::from_jsonl(&text)
+        }
+        .map_err(|error| format!("{}: {error}", path.display()))?;
+        records.extend(parsed);
+    }
+    let policy = crate::genomovar::DiagnosticParentPolicy::from_report(report)
+        .map_err(|error| error.to_string())?;
+    let decision = crate::genomovar::diagnostic_parent(
+        saved,
+        package,
+        &mask,
+        &policy,
+        &records,
+        args.anim_method_profile.as_deref(),
+    )
+    .map_err(|error| error.to_string())?;
+    Ok(Some(json!({"setting": args.setting,
+        "primary_mask_sha256": args.exclude_references_sha256,
+        "excluded_reference_ids": decision["input"]["mask"]["excluded_reference_ids"],
+        "problem_warnings_sha256": args.problem_warnings_sha256,
+        "decision": decision})))
 }
 
 /// v1 reports keep the genomovar deployment field in `assignment`; v2 reports put it at root.
