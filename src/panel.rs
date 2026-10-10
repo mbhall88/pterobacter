@@ -67,6 +67,35 @@ fn taxon(id: &str, name: &str, reference: &str) -> Result<Option<Taxon>, Evidenc
 }
 
 impl Panel {
+    /// Build the complete primary panel from an authenticated package and bind its metadata
+    /// to the original, unmasked saved evidence.
+    pub fn from_package(
+        package: &crate::reference::VerifiedPackage,
+        evidence: &SavedEvidence,
+    ) -> Result<Self, EvidenceError> {
+        package
+            .check_evidence(evidence)
+            .map_err(|error| EvidenceError::Invalid(error.to_string()))?;
+        let component = package
+            .component("primary_whole")
+            .ok_or_else(|| EvidenceError::Invalid("missing primary component".into()))?;
+        let references: Vec<_> = component.references.iter().map(|r| {
+            let species = package.concept(&r.species_id).expect("verified species");
+            let subspecies = r.subspecies_id.as_deref().and_then(|id| package.concept(id));
+            serde_json::json!({"reference_id": r.reference_id, "source_sha256": r.source.sha256,
+                "species_id": species.id, "species_name": species.display_name,
+                "subspecies_id": subspecies.map_or("", |c| c.id.as_str()),
+                "subspecies_name": subspecies.map_or("", |c| c.display_name.as_str()),
+                "lineage_id": "", "reference_role": if r.type_anchor { "type_anchor" } else { "diversity" },
+                "name_status": subspecies.unwrap_or(species).nomenclature_status})
+        }).collect();
+        let inventory = serde_json::json!({"schema_version": INVENTORY_SCHEMA,
+            "package_sha256": evidence.provenance().reference_package_sha256,
+            "component_id": "primary_whole", "representation": {"source": "authenticated_package"},
+            "references": references});
+        Self::from_json(&inventory.to_string(), evidence)
+    }
+
     /// Parse a primary inventory and check it against `evidence`: the same package, the same
     /// reference count, and identical metadata for every reference skani returned.
     pub fn from_json(text: &str, evidence: &SavedEvidence) -> Result<Self, EvidenceError> {
