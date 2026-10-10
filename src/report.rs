@@ -115,7 +115,7 @@ fn is_v2(report: &Value) -> bool {
 }
 
 /// How far the foreign-parent challenge check was carried out. Absent measurements are not a
-/// negative result, so only a finished run with a fully measured competitor panel is `completed`.
+/// negative result. Panel coverage is independent of execution and integrity status.
 fn challenge_assessment(report: &Value) -> &'static str {
     if !is_v2(report) {
         return "not_applicable";

@@ -219,7 +219,7 @@ pub fn run_public() -> ExitCode {
     } else {
         Value::Array(results)
     };
-    // A failed report write must not discard the JSON this run produced: stdout still carries it.
+    // A failed bundle write must not discard the main JSON output.
     let mut write_failed = false;
     if let (Some(dir), Some(rendered)) = (&args.report_dir, &rendered) {
         if let Err(error) = write_reports(dir, &value, rendered) {

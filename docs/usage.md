@@ -32,17 +32,20 @@ Pass the whole assembly as you have it. Plasmids and short records stay in; you 
 | `--reference-package DIR`, `--expected-sha256 SHA` | The reference package and the digest you trust for it. Both are required. |
 | `--policy NAME` | `conservative-assembly-v1` (default) or `conservative-assembly-anim-v2`. |
 | `--threads N` | Worker threads for each assembly. |
+| `--jobs N` | Analyse up to N assemblies at once, each with its own threads. |
+| `--output FILE` | Write the main JSON to a new file instead of standard output. |
+| `--anim-cache DIR` | Reuse verified v2 alignments across runs. |
 | `--report-dir DIR` | Write the four report files into `DIR`, which must not exist yet and must not sit inside an input package. |
 | `--mlst-package DIR`, `--mlst-expected-sha256 SHA` | Add optional historical MLST. It never changes the classification. |
 | `--anim-reference-package DIR`, `--expected-anim-sha256 SHA`, `--anim-output DIR` | Provide the reference FASTAs to the v2 policy and keep its alignment evidence in a new directory. |
 
-Without `--report-dir`, the JSON report goes to standard output and nothing else is written. With it, standard output still carries the same JSON, so a pipeline that already reads it keeps working.
+The main JSON report goes to standard output unless `--output FILE` is supplied. `--report-dir` adds the four report files without changing that destination. ANIm evidence and cache files use their own options.
 
 The exit status is 0 when every input finished, including inputs that ended unresolved. Any other status means some part of a run failed; [the exit-code table](assembly.md#reports-and-failures) lists them. A non-zero status still leaves reports behind where it can: a failed input gets a row and a section that say so.
 
 ## Outputs
 
-`--report-dir` writes four files. If the directory exists, or lies inside the reference, MLST or ANIm reference package, the command exits 2 before doing any analysis and leaves it alone. It never replaces a file. If the files cannot be written, the JSON report still goes to standard output and the command exits 1, so the current result is not lost.
+`--report-dir` writes four files. If the directory exists, or lies inside the reference, MLST or ANIm reference package, the command exits 2 before doing any analysis and leaves it alone. It never replaces a file. If a bundle file cannot be written, the main JSON still goes to its chosen destination and the command exits 1. If writing `--output FILE` fails, the main JSON falls back to standard output. Output destinations must be distinct and must not sit inside one another; see [output-path checks](assembly.md#reports-and-failures).
 
 | File | What it holds |
 |---|---|
