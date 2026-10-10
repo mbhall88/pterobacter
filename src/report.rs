@@ -574,6 +574,14 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
     if !g("execution_error").is_empty() {
         let _ = writeln!(md, "- Execution error: {}", g("execution_error"));
     }
+    if !is_v2(report) {
+        let _ = writeln!(md, "\n### Original v1 outcome and rescue\n");
+        let _ = writeln!(
+            md,
+            "- Original v1 outcome: this report is the v1 outcome; no rescue applies."
+        );
+        let _ = writeln!(md, "- ANIm: not applicable under this policy");
+    }
     if is_v2(report) {
         let _ = writeln!(md, "\n### Original v1 outcome and rescue\n");
         let _ = writeln!(
@@ -699,7 +707,13 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
         .as_array()
         .cloned()
         .unwrap_or_default();
-    if challenges.is_empty() {
+    if !is_v2(report) {
+        let _ = writeln!(
+            md,
+            "The v1 policy has no foreign-parent challenge test, so none is listed. Every other \
+             parent's best skani ANI is in the whole-panel summary above; compare it with the call.\n"
+        );
+    } else if challenges.is_empty() {
         let _ = writeln!(md, "No reference challenged the call.\n");
     } else {
         for entry in &challenges {
@@ -834,11 +848,9 @@ pub fn render(reports: &[Value]) -> Rendered {
         calls.push_str(&tsv_row(CALL_COLUMNS, &row));
         calls.push('\n');
         for entry in evidence_rows(index, report) {
-            let cleaned: BTreeMap<&str, String> = entry
-                .into_iter()
-                .map(|(k, v)| (k, self::cleaned(&v)))
-                .collect();
-            evidence.push_str(&tsv_row(EVIDENCE_COLUMNS, &cleaned));
+            let one_line: BTreeMap<&str, String> =
+                entry.into_iter().map(|(k, v)| (k, cleaned(&v))).collect();
+            evidence.push_str(&tsv_row(EVIDENCE_COLUMNS, &one_line));
             evidence.push('\n');
         }
         markdown.push_str(&markdown_assembly(index, report, &row));

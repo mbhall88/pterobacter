@@ -69,7 +69,7 @@ The report shows the five highest skani references and every exact tie at fifth 
 
 The top table does not cover the whole panel. The panel summary lists every parent in the reference panel, whether skani returned it or not, with its best ANI and any challenging references. A challenge outside the top table appears there and in the challenges list, marked as outside the strongest matches.
 
-ANI methods are not mixed in one ranking. skani orders the table; ANIm values, where the v2 policy measured them, sit beside it as separate columns.
+The v1 policy has no foreign-parent challenge test, so its challenge list is always empty; compare each parent's best ANI in the panel summary instead. ANI methods are not mixed in one ranking. skani orders the table; ANIm values, where the v2 policy measured them, sit beside it as separate columns.
 
 ### Counts and versions
 
@@ -125,11 +125,13 @@ datasets download genome accession --inputfile accessions.txt --include genome
 
 Unpack them into one directory with `isolate_17.fa`. Add a type anchor for each parent; the `reference_role` column in `evidence.tsv` marks them.
 
-**Step 4: repeat the ANI with another tool.** Run an independent ANI measurement of the isolate against those references, for example:
+**Step 4: repeat the ANI.** First reproduce the reported values with the same method on the collected genomes:
 
 ```sh
 skani dist -q isolate_17.fa -r refs/*.fa -o follow_up_ani.tsv
 ```
+
+This checks the reported numbers, not the method. For an independent view, run a different ANI method on the same pairs, such as fastANI or a whole-genome alignment, and compare its values and aligned fractions.
 
 If the follow-up agrees that species A and species B are both near 95%, the isolate sits between two parents and the tool was right to withhold. If the follow-up puts one parent clearly ahead, check the isolate for contamination or a second genome: compare the record lengths and sequence hashes in `report.json` under `input.records` with what you expect.
 

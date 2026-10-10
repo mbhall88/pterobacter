@@ -596,3 +596,21 @@ fn production_decisions_agree_across_formats_for_every_p1_case() {
         }
     }
 }
+
+#[test]
+fn a_v1_report_says_which_sections_do_not_apply_instead_of_implying_a_clean_result() {
+    let rendered = render(&[v1_assigned()]);
+    let md = &rendered.markdown;
+    assert!(md.contains("Original v1 outcome: this report is the v1 outcome"));
+    assert!(md.contains("ANIm: not applicable under this policy"));
+    assert!(md.contains("no foreign-parent challenge test"));
+    assert!(!md.contains("No reference challenged the call."));
+}
+
+#[test]
+fn a_v2_report_with_no_challenge_still_says_none_challenged() {
+    let rendered = render(&[v2_rescued()]);
+    assert!(rendered
+        .markdown
+        .contains("No reference challenged the call."));
+}
