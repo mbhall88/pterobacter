@@ -316,3 +316,34 @@ fn emitted_provenance_binds_contract_parent_policy_and_decision() {
         section["compatible_groups"]
     );
 }
+
+#[test]
+fn independent_mlst_receipts_preserve_genomovar_but_parent_changes_still_veto() {
+    use terobacter::genomovar::parent_result_sha256;
+
+    let original = analyse(&[], |_| {});
+    assert_eq!(original["genomovar"]["status"], "assigned");
+    let hash = parent_result_sha256(&original);
+    for mlst in [
+        json!({"status": "not_requested"}),
+        json!({"status": "assigned", "sequence_type": "42", "scheme": "synthetic"}),
+        json!({"status": "failed", "detail": "synthetic standalone typing failure"}),
+    ] {
+        let mut report = original.clone();
+        report["mlst"] = mlst;
+        assert_eq!(parent_result_sha256(&report), hash);
+        recheck(&mut report);
+        assert_eq!(report["assignment"]["genomovar_id"], GV01);
+        assert_eq!(report["genomovar"]["status"], "assigned");
+
+        report["blocking_reasons"] = json!(["late_parent_veto"]);
+        assert_ne!(parent_result_sha256(&report), hash);
+        recheck(&mut report);
+        assert_eq!(report["assignment"]["genomovar_id"], Value::Null);
+        assert_eq!(report["genomovar"]["status"], "withheld");
+        assert_eq!(
+            report["genomovar"]["compatible_groups"],
+            original["genomovar"]["compatible_groups"]
+        );
+    }
+}

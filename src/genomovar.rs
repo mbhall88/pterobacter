@@ -696,6 +696,7 @@ pub fn parent_result_sha256(report: &Value) -> String {
     if let Some(object) = decision.as_object_mut() {
         for key in [
             "genomovar",
+            "mlst",
             "genomovar_id",
             "execution",
             "measurement",
