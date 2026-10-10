@@ -176,6 +176,23 @@ impl AssemblyWorkflow {
         Ok(())
     }
 
+    fn reference_metadata(&self, reference: &crate::reference::PackageReference) -> Value {
+        let species = self
+            .package
+            .concept(&reference.species_id)
+            .expect("verified species");
+        let subspecies = reference
+            .subspecies_id
+            .as_deref()
+            .and_then(|id| self.package.concept(id));
+        json!({"reference_id": reference.reference_id,
+            "species_id": species.id, "species_name": species.display_name,
+            "subspecies_id": subspecies.map_or("", |c| c.id.as_str()),
+            "subspecies_name": subspecies.map_or("", |c| c.display_name.as_str()),
+            "lineage_id": "", "reference_role": if reference.type_anchor { "type_anchor" } else { "diversity" },
+            "name_status": subspecies.unwrap_or(species).nomenclature_status})
+    }
+
     fn panel(&self, saved: &SavedEvidence) -> Result<crate::panel::Panel, String> {
         let references: Vec<Value> = self
             .package
@@ -184,20 +201,9 @@ impl AssemblyWorkflow {
             .references
             .iter()
             .map(|r| {
-                let species = self
-                    .package
-                    .concept(&r.species_id)
-                    .expect("verified species");
-                let subspecies = r
-                    .subspecies_id
-                    .as_deref()
-                    .and_then(|id| self.package.concept(id));
-                json!({"reference_id": r.reference_id, "source_sha256": r.source.sha256,
-                "species_id": species.id, "species_name": species.display_name,
-                "subspecies_id": subspecies.map_or("", |c| c.id.as_str()),
-                "subspecies_name": subspecies.map_or("", |c| c.display_name.as_str()),
-                "lineage_id": "", "name_status": subspecies.unwrap_or(species).nomenclature_status,
-                "reference_role": if r.type_anchor { "type_anchor" } else { "diversity" }})
+                let mut row = self.reference_metadata(r);
+                row["source_sha256"] = r.source.sha256.clone().into();
+                row
             })
             .collect();
         let value = json!({"schema_version": "1.0-shadow-primary-inventory", "package_sha256": self.expected_sha256,
@@ -235,23 +241,12 @@ impl AssemblyWorkflow {
             if !seen.insert(&reference.reference_id) {
                 return Err("duplicate skani reference".into());
             }
-            let species = self
-                .package
-                .concept(&reference.species_id)
-                .expect("verified concept");
-            let subspecies = reference
-                .subspecies_id
-                .as_deref()
-                .and_then(|id| self.package.concept(id));
-            rows.push(json!({"reference_id": reference.reference_id,
-                "species_id": species.id, "species_name": species.display_name,
-                "subspecies_id": subspecies.map_or("", |c| c.id.as_str()),
-                "subspecies_name": subspecies.map_or("", |c| c.display_name.as_str()),
-                "lineage_id": "", "reference_role": if reference.type_anchor { "type_anchor" } else { "diversity" },
-                "name_status": subspecies.unwrap_or(species).nomenclature_status,
-                "ani_percent": row.ani, "aligned_fraction_query_percent": row.af_query,
-                "aligned_fraction_reference_percent": row.af_reference,
-                "minimum_directional_af_percent": row.af_query.min(row.af_reference)}));
+            let mut value = self.reference_metadata(reference);
+            value["ani_percent"] = json!(row.ani);
+            value["aligned_fraction_query_percent"] = json!(row.af_query);
+            value["aligned_fraction_reference_percent"] = json!(row.af_reference);
+            value["minimum_directional_af_percent"] = json!(row.af_query.min(row.af_reference));
+            rows.push(value);
         }
         for label in &measurement.not_returned_reference_files {
             let reference = by_label

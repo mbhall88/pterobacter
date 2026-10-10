@@ -28,16 +28,43 @@ pub struct V2Settings {
     #[arg(long)]
     pub anim_output: Option<PathBuf>,
     /// Reciprocal pair wall timeout, default 120 seconds, maximum 1800
-    #[arg(long, value_parser = clap::value_parser!(u64).range(1..=1800))]
-    pub anim_pair_seconds: Option<u64>,
+    #[arg(long, value_parser = parse_pair_seconds)]
+    pub anim_pair_seconds: Option<Duration>,
     /// Total ANIm wall budget per query, default 600 seconds, maximum 7200
-    #[arg(long, value_parser = clap::value_parser!(u64).range(1..=7200))]
-    pub anim_query_seconds: Option<u64>,
+    #[arg(long, value_parser = parse_query_seconds)]
+    pub anim_query_seconds: Option<Duration>,
     /// Native worker memory ceiling, default 1024 MiB, maximum 6144 MiB
     #[arg(long, value_parser = clap::value_parser!(u64).range(64..=6144))]
     pub anim_memory_mib: Option<u64>,
 }
+fn parse_seconds(text: &str, ceiling: f64) -> Result<Duration, String> {
+    let seconds: f64 = text
+        .parse()
+        .map_err(|_| "timeout must be a positive finite number of seconds")?;
+    if !seconds.is_finite() || seconds <= 0.0 || seconds > ceiling {
+        return Err(format!(
+            "timeout must be positive and at most {ceiling} seconds"
+        ));
+    }
+    let duration = Duration::try_from_secs_f64(seconds).map_err(|e| e.to_string())?;
+    if duration.is_zero() {
+        return Err("timeout must be at least one nanosecond".into());
+    }
+    Ok(duration)
+}
+fn parse_pair_seconds(text: &str) -> Result<Duration, String> {
+    parse_seconds(text, 1800.0)
+}
+fn parse_query_seconds(text: &str) -> Result<Duration, String> {
+    parse_seconds(text, 7200.0)
+}
 impl V2Settings {
+    fn pair_timeout(&self) -> Duration {
+        self.anim_pair_seconds.unwrap_or(Duration::from_secs(120))
+    }
+    fn query_timeout(&self) -> Duration {
+        self.anim_query_seconds.unwrap_or(Duration::from_secs(600))
+    }
     pub fn supplied(&self) -> bool {
         self.anim_reference_package.is_some()
             || self.expected_anim_sha256.is_some()
@@ -70,8 +97,8 @@ pub fn execute(
         plan: Value::Null,
         execution: json!({"method_profile": anim::METHOD_PROFILE, "amendment": anim::AMENDMENT,
             "diagnostic_origin": "generated", "pair_workers": 1, "query_threads": 1,
-            "pair_seconds": context.settings.anim_pair_seconds.unwrap_or(120),
-            "query_seconds": context.settings.anim_query_seconds.unwrap_or(600),
+            "pair_seconds": context.settings.pair_timeout().as_secs_f64(),
+            "query_seconds": context.settings.query_timeout().as_secs_f64(),
             "memory_mib": context.settings.anim_memory_mib.unwrap_or(1024),
             "pairs": [], "stop_reason": "not_required"}),
         error: None,
@@ -145,7 +172,7 @@ fn execute_inner(
     fs::write(&query, bytes).map_err(|e| e.to_string())?;
     let query_sha = anim::hash_bytes(bytes);
     let mut records = AnimRecords::default();
-    let budget = Duration::from_secs(settings.anim_query_seconds.unwrap_or(600));
+    let budget = settings.query_timeout();
     loop {
         run.plan = input
             .plan(&run.bound)
@@ -201,9 +228,7 @@ fn execute_inner(
             reference_concept_ids: reference.concept_ids.clone(),
             expect_query_sha256: Some(query_sha.clone()),
             expect_reference_sha256: Some(reference.sha256.clone()),
-            timeout: remaining.min(Duration::from_secs(
-                settings.anim_pair_seconds.unwrap_or(120),
-            )),
+            timeout: remaining.min(settings.pair_timeout()),
             memory_mib: settings.anim_memory_mib.unwrap_or(1024),
         };
         run.execution["stop_reason"] = "pair_failure".into();
@@ -276,4 +301,21 @@ pub(super) fn verify_component(
         return Err("symbolic link component root is refused".into());
     }
     verify_anim_reference(&super::Directory(directory.to_owned()), expected, package)
+}
+
+/// The publication boundary is after all final hash rechecks. An interruption before
+/// this point invalidates completed calls while preserving their measurement receipts.
+pub fn cancel_before_publication(reports: &mut [Value], cancelled: &AtomicBool) -> bool {
+    if !cancelled.load(Ordering::SeqCst) {
+        return false;
+    }
+    for report in reports {
+        if report["execution"]["status"] == "complete" {
+            report["execution"] = json!({"status": "incomplete", "stage": "publication", "error": "run interrupted before publication"});
+        } else {
+            report["execution"]["cancelled_before_publication"] = true.into();
+        }
+        super::withhold(report);
+    }
+    true
 }

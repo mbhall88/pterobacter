@@ -104,7 +104,7 @@ fn native_rescue_measures_every_primary_competitor_including_unreturned() {
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
-    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    let mut report: Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(report["rescue_status"], "rescued", "{report}");
     assert_eq!(report["species_id"], "SYN-SP01");
     assert_eq!(report["subspecies_id"], Value::Null);
@@ -134,6 +134,16 @@ fn native_rescue_measures_every_primary_competitor_including_unreturned() {
         );
         assert_eq!(pair["record"]["reference"]["component"], "primary_whole");
     }
+    let receipts = report["anim_execution"]["pairs"].clone();
+    assert!(terobacter::cli::v2::cancel_before_publication(
+        std::slice::from_mut(&mut report),
+        &std::sync::atomic::AtomicBool::new(true)
+    ));
+    assert_eq!(report["execution"]["stage"], "publication");
+    assert_eq!(report["execution"]["status"], "incomplete");
+    assert_eq!(report["species_id"], Value::Null);
+    assert_eq!(report["rescue_status"], "incomplete");
+    assert_eq!(report["anim_execution"]["pairs"], receipts);
 }
 
 struct Prepared {
@@ -288,7 +298,12 @@ fn query_budget_retains_partial_receipts_and_returns_nonzero() {
     let prepared = Prepared::new(common::assembly::NativeCase::Rescue);
     let output = prepared
         .command()
-        .args(["--anim-pair-seconds", "120", "--anim-query-seconds", "1"])
+        .args([
+            "--anim-pair-seconds",
+            "120",
+            "--anim-query-seconds",
+            "0.000000001",
+        ])
         .output()
         .unwrap();
     let report: Value = serde_json::from_slice(&output.stdout).unwrap();
@@ -311,6 +326,12 @@ fn query_budget_retains_partial_receipts_and_returns_nonzero() {
                 .contains("deadline"),
         "{report}"
     );
+    assert_eq!(report["counts"]["attempted"], 0);
+    assert!(prepared
+        .dir
+        .path()
+        .join("receipts/query-000001/query.fa")
+        .exists());
     for pair in report["anim_execution"]["pairs"].as_array().unwrap() {
         assert!(std::path::Path::new(pair["directory"].as_str().unwrap())
             .join("result.json")
@@ -494,4 +515,43 @@ fn changed_component_after_a_completed_witness_cannot_publish_a_rescue() {
         report["witness"]["reference_id"],
         "primary_whole:GCA_900000001.1"
     );
+}
+
+#[test]
+fn pair_deadline_before_worker_start_is_failed_and_retained() {
+    let prepared = Prepared::new(common::assembly::NativeCase::Rescue);
+    let output = prepared
+        .command()
+        .args(["--anim-pair-seconds", "0.000000001"])
+        .output()
+        .unwrap();
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert!(!output.status.success(), "{report}");
+    assert_eq!(report["counts"]["attempted"], 1);
+    assert_eq!(report["counts"]["failed"], 1);
+    assert_eq!(report["counts"]["no_alignment"], 0);
+    assert_eq!(report["species_id"], Value::Null);
+    assert!(report["anim_execution"]["pairs"][0]["record"]["error"]
+        .as_str()
+        .unwrap()
+        .contains("deadline"));
+}
+
+#[test]
+fn invalid_time_and_memory_limits_are_usage_errors() {
+    let prepared = Prepared::new(common::assembly::NativeCase::Rescue);
+    for (flag, value) in [
+        ("--anim-pair-seconds", "1801"),
+        ("--anim-query-seconds", "7201"),
+        ("--anim-pair-seconds", "NaN"),
+        ("--anim-query-seconds", "inf"),
+        ("--anim-pair-seconds", "0"),
+        ("--anim-query-seconds", "0.00000000001"),
+        ("--anim-memory-mib", "63"),
+        ("--anim-memory-mib", "6145"),
+    ] {
+        let output = prepared.command().args([flag, value]).output().unwrap();
+        assert_eq!(output.status.code(), Some(2), "{flag} {value}");
+        assert!(output.stdout.is_empty());
+    }
 }

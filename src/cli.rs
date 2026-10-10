@@ -174,12 +174,13 @@ pub fn run_public() -> ExitCode {
                 if report["execution"]["status"] == "complete" {
                     report["execution"] =
                         json!({"status": "incomplete", "stage": "package_recheck", "error": error});
-                    report["assignment"] = json!({"status": "not_evaluated", "species_id": null, "species_name": null,
-                        "subspecies_id": null, "subspecies_name": null, "lineage_id": null, "genomovar_id": null});
                     withhold(report);
                 }
             }
         }
+    }
+    if v2::cancel_before_publication(&mut results, &CANCELLED) {
+        exit = 1;
     }
     let value = if results.len() == 1 {
         results.remove(0)
@@ -312,6 +313,19 @@ pub(crate) fn read_input(path: &Path, report: &mut Value) -> Result<Vec<u8>, Str
 
 /// Clear all parent-dependent calls when a wrapper integrity or execution check fails.
 pub(crate) fn withhold(report: &mut Value) {
+    if let Some(assignment) = report["assignment"].as_object_mut() {
+        for key in [
+            "species_id",
+            "species_name",
+            "subspecies_id",
+            "subspecies_name",
+            "lineage_id",
+            "genomovar_id",
+        ] {
+            assignment.insert(key.into(), Value::Null);
+        }
+        assignment.insert("status".into(), "not_evaluated".into());
+    }
     for key in [
         "species_id",
         "species_name",
@@ -331,11 +345,7 @@ pub(crate) fn withhold(report: &mut Value) {
     }
     if report.get("rescue_status").is_some() {
         report["rescue_status"] = "incomplete".into();
-        if let Some(reasons) = report["reasons"].as_array_mut() {
-            if !reasons.iter().any(|r| r == "execution_incomplete") {
-                reasons.push("execution_incomplete".into());
-            }
-        }
+        report["execution"]["withholding_reason"] = "execution_incomplete".into();
     }
     if report.get("call_basis").is_some() {
         report["call_basis"] = Value::Null;
