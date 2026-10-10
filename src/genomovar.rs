@@ -14,6 +14,7 @@ use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 
 use crate::evidence::Percent;
+use crate::reference::{Rank, VerifiedPackage};
 
 pub const POLICY_ID: &str = "p3a-genomovar-contract-r1";
 pub const DEFINITION_VERSION: &str = "2026-10-02-v1";
@@ -27,6 +28,13 @@ pub const SEARCH_PARAMETERS: &str = "c125_m1000_learnedANI_s80_minAF0_uncapped";
 pub const QUERY_SCOPE: &str = "whole_assembly_as_supplied";
 pub const REFERENCE_SCOPE: &str = "historical_chromosome_record_set";
 pub const COMPONENT_ID: &str = "genomovar_chromosome";
+
+/// The frozen definition's size and its [`Definition::membership_sha256`], computed from the
+/// frozen membership table. The package must carry exactly this definition.
+pub const FROZEN_GROUP_COUNT: usize = 25;
+pub const FROZEN_MEMBER_COUNT: usize = 173;
+pub const FROZEN_MEMBERSHIP_SHA256: &str =
+    "1a2202dde4e0afcf78a89c1e6c084563169bd5cdea0f102da8113b1a87ebf0ab";
 
 const ANI_MINIMUM: Percent = Percent::from_hundredths(9950);
 const AF_MINIMUM: Percent = Percent::from_whole(80);
@@ -75,6 +83,79 @@ impl Definition {
             version: version.to_owned(),
             groups: sorted,
         })
+    }
+
+    /// The frozen definition, exactly as the authenticated package carries it: every genomovar
+    /// concept at version [`DEFINITION_VERSION`] under `ECTX-SS007`, whose members are exactly
+    /// the references of the `genomovar_chromosome` component, with the pinned group count,
+    /// member count and membership digest. Any other definition is refused, not adapted.
+    pub fn from_package(package: &VerifiedPackage) -> Result<Self, GenomovarError> {
+        let refuse = |why: String| {
+            reject(format!(
+                "the package does not carry the frozen genomovar definition {DEFINITION_VERSION}: {why}"
+            ))
+        };
+        match package.concept(PARENT_SUBSPECIES_ID) {
+            Some(c) if c.parent_id.as_deref() == Some(PARENT_SPECIES_ID) => {}
+            _ => {
+                return refuse(format!(
+                    "{PARENT_SUBSPECIES_ID} is not a subspecies of {PARENT_SPECIES_ID}"
+                ))
+            }
+        }
+        let mut groups = BTreeMap::new();
+        for concept in package
+            .concepts()
+            .iter()
+            .filter(|c| c.rank == Rank::Genomovar)
+        {
+            let definition = match &concept.definition {
+                Some(d)
+                    if d.version == DEFINITION_VERSION
+                        && d.sequence_scope == REFERENCE_SCOPE
+                        && concept.parent_id.as_deref() == Some(PARENT_SUBSPECIES_ID) =>
+                {
+                    d
+                }
+                _ => return refuse(format!("{} is another definition", concept.id)),
+            };
+            groups.insert(concept.id.clone(), definition.member_ids.clone());
+        }
+        let component = match package.component(COMPONENT_ID) {
+            Some(c)
+                if c.engine == ENGINE
+                    && c.engine_version == ENGINE_VERSION
+                    && c.sequence_scope == REFERENCE_SCOPE =>
+            {
+                c
+            }
+            _ => return refuse(format!("no pinned {COMPONENT_ID} component")),
+        };
+        let definition = Definition::new(DEFINITION_VERSION, groups).or_else(|e| refuse(e.0))?;
+        let mut members: Vec<&String> = definition.groups.values().flatten().collect();
+        members.sort();
+        let references: Vec<&String> = component
+            .references
+            .iter()
+            .map(|r| &r.reference_id)
+            .collect();
+        if members != references {
+            return refuse(format!(
+                "the {COMPONENT_ID} references are not the definition members"
+            ));
+        }
+        if definition.groups.len() != FROZEN_GROUP_COUNT
+            || definition.member_count() != FROZEN_MEMBER_COUNT
+            || definition.membership_sha256() != FROZEN_MEMBERSHIP_SHA256
+        {
+            return refuse(format!(
+                "{} groups of {} members with membership SHA-256 {}",
+                definition.groups.len(),
+                definition.member_count(),
+                definition.membership_sha256()
+            ));
+        }
+        Ok(definition)
     }
 
     pub fn version(&self) -> &str {

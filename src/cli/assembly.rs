@@ -7,7 +7,10 @@ use crate::decision::{decide_bound, Policy};
 use crate::evidence::{SavedEvidence, EVIDENCE_SCHEMA};
 use crate::reference::{verify_package, RegistryPins, VerifiedPackage};
 use crate::skani::{SearchReport, SearchSettings, SeedingMode, SkaniDatabase};
+use std::cell::OnceCell;
 use std::path::PathBuf;
+
+use crate::genomovar::{self, Definition};
 
 /// Authenticated primary panel and its embedded measurement engine. Open once
 /// for a sequential batch; finish rechecks package bytes before reports leave.
@@ -16,6 +19,10 @@ pub struct AssemblyWorkflow {
     expected_sha256: String,
     package: VerifiedPackage,
     database: SkaniDatabase,
+    /// The frozen definition, or why this package cannot support a genomovar call.
+    genomovar: Result<Definition, String>,
+    /// Opened on first use, so a batch without a Group A parent never loads it.
+    genomovar_database: OnceCell<Result<SkaniDatabase, String>>,
 }
 impl AssemblyWorkflow {
     pub fn open(directory: &Path, expected_sha256: &str) -> Result<Self, String> {
@@ -32,12 +39,43 @@ impl AssemblyWorkflow {
             .parent()
             .ok_or("index has no directory")?;
         let database = SkaniDatabase::open(&directory.join(parent)).map_err(|e| e.to_string())?;
+        let genomovar = Definition::from_package(&package).map_err(|e| e.to_string());
         Ok(Self {
             directory: directory.to_owned(),
             expected_sha256: expected_sha256.into(),
             package,
             database,
+            genomovar,
+            genomovar_database: OnceCell::new(),
         })
+    }
+
+    /// The frozen genomovar definition this package carries.
+    pub fn genomovar_definition(&self) -> Result<&Definition, String> {
+        self.genomovar.as_ref().map_err(Clone::clone)
+    }
+
+    /// The pinned settings of the genomovar search, read from its database.
+    pub fn genomovar_search_parameters(&self) -> Result<String, String> {
+        Ok(self
+            .genomovar_database()?
+            .settings_label(SearchSettings::Genomovar))
+    }
+
+    fn genomovar_database(&self) -> Result<&SkaniDatabase, String> {
+        self.genomovar_database
+            .get_or_init(|| {
+                let component = self
+                    .package
+                    .component(genomovar::COMPONENT_ID)
+                    .ok_or("package has no genomovar component")?;
+                let parent = Path::new(&component.databases["index.db"].path)
+                    .parent()
+                    .ok_or("index has no directory")?;
+                SkaniDatabase::open(&self.directory.join(parent)).map_err(|e| e.to_string())
+            })
+            .as_ref()
+            .map_err(Clone::clone)
     }
 
     /// Classify validated whole-input bytes with v1, retaining each completed

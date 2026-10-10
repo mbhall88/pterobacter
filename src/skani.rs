@@ -215,6 +215,23 @@ impl SkaniDatabase {
         })
     }
 
+    /// The pinned settings of a search of this database, in the form
+    /// `c<compression>_m<marker compression>_learnedANI_s<screen>_minAF<floor>_uncapped`.
+    pub fn settings_label(&self, settings: SearchSettings) -> String {
+        let ani = if regression::use_learned_ani(self.params.c, false, false, false) {
+            "learnedANI"
+        } else {
+            "unlearnedANI"
+        };
+        format!(
+            "c{}_m{}_{ani}_s{}_minAF{}_uncapped",
+            self.params.c,
+            self.params.marker_c,
+            settings.screen_percent(),
+            settings.reporting_floor_percent()
+        )
+    }
+
     pub fn search(
         &self,
         query: &Path,
