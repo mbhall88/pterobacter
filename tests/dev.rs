@@ -19,6 +19,69 @@ use tempfile::TempDir;
 const V1_SCHEMA: &str = "1.0.0-dev-portable-reference-package";
 const PRIMARY_INDEX: &str = "databases/primary_whole/index.db";
 
+#[test]
+fn genomovar_diagnostic_is_exposed_only_by_the_development_binary() {
+    let development_help = cargo_bin_cmd!("terobacter-dev")
+        .args(["genomovar-diagnostic", "--help"])
+        .output()
+        .unwrap();
+    assert!(
+        development_help.status.success(),
+        "{}",
+        String::from_utf8_lossy(&development_help.stderr)
+    );
+    let help = String::from_utf8_lossy(&development_help.stdout);
+    for option in [
+        "--report",
+        "--expected-report-sha256",
+        "--reference-package",
+        "--mask-member",
+        "--remove-group",
+    ] {
+        assert!(help.contains(option), "missing {option} from:\n{help}");
+    }
+
+    for binary in ["tero", "terobacter"] {
+        let output = if binary == "tero" {
+            cargo_bin_cmd!("tero").arg("--help").output().unwrap()
+        } else {
+            cargo_bin_cmd!("terobacter").arg("--help").output().unwrap()
+        };
+        assert!(output.status.success());
+        let help = String::from_utf8_lossy(&output.stdout);
+        assert!(!help.contains("genomovar-diagnostic"), "{binary}: {help}");
+        assert!(!help.contains("--mask-member"), "{binary}: {help}");
+        assert!(!help.contains("--remove-group"), "{binary}: {help}");
+    }
+}
+
+#[test]
+fn genomovar_diagnostic_rejects_report_bytes_that_do_not_match_the_pin() {
+    let report_dir = tempfile::tempdir().unwrap();
+    let report = report_dir.path().join("report.json");
+    fs::write(&report, "{}\n").unwrap();
+    let output = cargo_bin_cmd!("terobacter-dev")
+        .args([
+            "genomovar-diagnostic",
+            "--report",
+            report.to_str().unwrap(),
+            "--expected-report-sha256",
+            &"0".repeat(64),
+            "--reference-package",
+            "/not-read",
+            "--expected-sha256",
+            &"1".repeat(64),
+            "--mask-member",
+            "synthetic-member",
+        ])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("report SHA-256 is"));
+}
+
 fn package_on_disk(synthetic: &Synthetic) -> TempDir {
     let dir = tempfile::tempdir().unwrap();
     synthetic.write_to(dir.path());

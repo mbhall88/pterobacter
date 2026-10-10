@@ -449,17 +449,35 @@ pub struct Assessment {
     membership_sha256: String,
     member_count: usize,
     assigned: Option<String>,
+    #[cfg(feature = "dev")]
+    would_assign: Option<String>,
     compatible: Vec<String>,
     incomplete: Vec<String>,
     reasons: Vec<&'static str>,
     cells: Vec<Cell>,
     warnings: Vec<&'static str>,
     context: Context,
+    #[cfg(feature = "dev")]
+    diagnostic_actions: Option<DiagnosticActions>,
+}
+
+#[derive(Debug, Clone)]
+#[cfg(feature = "dev")]
+struct DiagnosticActions {
+    masked_members: Vec<String>,
+    removed_groups: Vec<String>,
 }
 
 impl Assessment {
     pub fn assigned_genomovar_id(&self) -> Option<&str> {
         self.assigned.as_deref()
+    }
+
+    /// Candidate under the same evidence and gates before the diagnostic suppression is applied.
+    /// In an ordinary assessment this equals the deployment assignment.
+    #[cfg(feature = "dev")]
+    pub fn would_assign_genomovar_id(&self) -> Option<&str> {
+        self.would_assign.as_deref()
     }
 
     pub fn to_value(&self) -> Value {
@@ -477,7 +495,7 @@ impl Assessment {
                 "minimum_af_reference_percent": c.minimum.map(|m| pct(m.2))})
             })
             .collect();
-        json!({"policy_id": POLICY_ID, "policy_sha256": reporting_policy_sha256(),
+        let value = json!({"policy_id": POLICY_ID, "policy_sha256": reporting_policy_sha256(),
             "approval": approval(),
             "status": if self.assigned.is_some() { "assigned" } else { "withheld" },
             "genomovar_id": self.assigned,
@@ -497,7 +515,20 @@ impl Assessment {
                 "engine": c.engine, "engine_version": c.engine_version, "parameters": c.parameters,
                 "adapter_verified": c.adapter_verified, "query_sha256": c.query_sha256,
                 "reference_package_sha256": c.package_sha256,
-                "diagnostic_exclusion": c.diagnostic_exclusion}})
+                "diagnostic_exclusion": c.diagnostic_exclusion}});
+        #[cfg(feature = "dev")]
+        let value = {
+            let mut value = value;
+            if let Some(actions) = &self.diagnostic_actions {
+                value["diagnostic_would_assign_genomovar_id"] = self.would_assign.clone().into();
+                value["diagnostic_actions"] = json!({
+                    "masked_members": actions.masked_members,
+                    "removed_groups": actions.removed_groups,
+                });
+            }
+            value
+        };
+        value
     }
 }
 
@@ -640,21 +671,98 @@ pub fn assess(
             );
         }
     }
-    let assigned = selected
-        .filter(|_| reasons.is_empty())
+    let would_assign = selected
+        .filter(|_| {
+            reasons
+                .iter()
+                .all(|reason| *reason == "diagnostic_only_no_deployment_call")
+        })
         .map(|c| c.group.clone());
+    let assigned = if context.diagnostic_exclusion {
+        None
+    } else {
+        would_assign.clone()
+    };
     Ok(Assessment {
         version: definition.version.clone(),
         membership_sha256: definition.membership_sha256(),
         member_count: definition.member_count(),
         assigned,
+        #[cfg(feature = "dev")]
+        would_assign,
         compatible,
         incomplete,
         reasons,
         cells,
         warnings,
         context: context.clone(),
+        #[cfg(feature = "dev")]
+        diagnostic_actions: None,
     })
+}
+
+/// Apply development-only member masks and whole-group removals to saved evidence. The resulting
+/// assessment is permanently marked diagnostic and cannot publish a deployment assignment.
+#[cfg(feature = "dev")]
+pub fn diagnostic_assess(
+    definition: &Definition,
+    rows: &[MemberRow],
+    context: &Context,
+    masked_members: &[String],
+    removed_groups: &[String],
+) -> Result<Assessment, GenomovarError> {
+    let mut masked = std::collections::BTreeSet::new();
+    for member in masked_members {
+        if !definition.contains(member) || !masked.insert(member.as_str()) {
+            return reject(format!("{member}: unknown or duplicate masked member"));
+        }
+    }
+    let mut removed = std::collections::BTreeSet::new();
+    for group in removed_groups {
+        if !definition.groups.contains_key(group) || !removed.insert(group.as_str()) {
+            return reject(format!("{group}: unknown or duplicate removed group"));
+        }
+    }
+
+    // Validate the original complete evidence before filtering it, so an invalid row cannot be
+    // hidden by a mask or group removal.
+    assess(definition, rows, context)?;
+
+    let reduced_groups = definition
+        .groups
+        .iter()
+        .filter(|(group, _)| !removed.contains(group.as_str()))
+        .map(|(group, members)| {
+            (
+                group.clone(),
+                members
+                    .iter()
+                    .filter(|member| !masked.contains(member.as_str()))
+                    .cloned()
+                    .collect(),
+            )
+        })
+        .collect();
+    let reduced = Definition::new(&definition.version, reduced_groups)?;
+    let remaining: std::collections::BTreeSet<&str> = reduced
+        .groups
+        .values()
+        .flatten()
+        .map(String::as_str)
+        .collect();
+    let reduced_rows: Vec<MemberRow> = rows
+        .iter()
+        .filter(|row| remaining.contains(row.reference_id.as_str()))
+        .cloned()
+        .collect();
+    let mut diagnostic_context = context.clone();
+    diagnostic_context.diagnostic_exclusion = true;
+    let mut assessment = assess(&reduced, &reduced_rows, &diagnostic_context)?;
+    assessment.diagnostic_actions = Some(DiagnosticActions {
+        masked_members: masked_members.to_vec(),
+        removed_groups: removed_groups.to_vec(),
+    });
+    Ok(assessment)
 }
 
 /// v1, and the v2 successor when its call is the unchanged v1 skani call (see [`GenomovarParent`]).

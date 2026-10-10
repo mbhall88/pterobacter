@@ -44,6 +44,7 @@ Evaluation-only operations live in `terobacter-dev`. It is built only on request
 cargo run --features dev --bin terobacter-dev -- saved-evidence tests/fixtures/v1-species-assigned/evidence.json
 cargo run --features dev --bin terobacter-dev -- reference-package <DIR> --expected-sha256 <SHA256> [--named-registry-sha256 <SHA256>] [--lineage-registry-sha256 <SHA256>]
 cargo run --features dev --bin terobacter-dev -- saved-evidence <EVIDENCE> --reference-package <DIR> --expected-sha256 <SHA256> [--named-registry-sha256 <SHA256>] [--lineage-registry-sha256 <SHA256>]
+cargo run --features dev --bin terobacter-dev -- genomovar-diagnostic --report <REPORT.json> --expected-report-sha256 <SHA256> --reference-package <DIR> --expected-sha256 <SHA256> [--mask-member <REFERENCE_ID>]... [--remove-group <GENOMOVAR_ID>]...
 ```
 
 `saved-evidence` reads frozen 0.2.0 saved evidence and prints the v1 species/subspecies decision as JSON, including raw nearest evidence, competitors, scope assessments and all withholding reasons. It runs no new comparisons. See [the v1 contract](docs/v1-decisions.md) for optional bound method/problem envelopes and the supported API boundary.
@@ -55,6 +56,8 @@ The source manifest must be exactly the record the package's eleven tables, reci
 A package converted from the version 1 format carries the version 1 `portable.json` as an attested conversion record. The verifier checks that the record lists the same package, source manifest, export attestation and assets as the version 2 manifest.
 
 `--reference-package` authenticates the package in the same way, then requires the evidence to be bound to it. The evidence's reference package digest must equal the verified manifest digest, or the digest of the attested version 1 manifest it was converted from. The evidence must cover the whole primary component. Each row must give what the package gives for its reference: the species and subspecies with their display names, the name status of the more specific of the two, the role (`type_anchor` or `diversity`), and no lineage. Contradictory evidence is refused, never corrected. The two flags must be given together. Package binding applies to v1 decisions only; `--policy conservative-assembly-anim-v2` refuses `--reference-package`. Without `--reference-package` the decision reports `reference_package.status` as `not_verified`.
+
+`genomovar-diagnostic` accepts only a completed assembly report with a completed, package-bound genomovar search. It checks the exact report bytes against `--expected-report-sha256`, verifies the package, and reuses the report's saved member evidence without running a new search. Repeat `--mask-member` to exclude members from the frozen definition, or `--remove-group` to omit whole groups. Its `genomovar_id` remains null; the separate `diagnostic_would_assign_genomovar_id` field records the candidate under the reduced definition. This command exists only in the feature-gated development binary.
 
 ### Development exit codes
 

@@ -79,6 +79,27 @@ enum DevCommand {
         #[command(flatten)]
         v2: V2Inputs,
     },
+    /// Reassess saved genomovar member evidence after development-only masks or group removals
+    GenomovarDiagnostic {
+        /// Completed assembly report produced by terobacter
+        #[arg(long)]
+        report: PathBuf,
+        /// SHA-256 of the exact report bytes
+        #[arg(long, value_name = "SHA256", value_parser = parse_sha256)]
+        expected_report_sha256: String,
+        /// Authenticated reference package directory used by the report
+        #[arg(long, value_name = "DIR")]
+        reference_package: PathBuf,
+        /// SHA-256 that the package's portable.json must have
+        #[arg(long, value_name = "SHA256", value_parser = parse_sha256)]
+        expected_sha256: String,
+        /// Member reference ID to mask; repeat for multiple members
+        #[arg(long = "mask-member")]
+        masked_members: Vec<String>,
+        /// Entire genomovar group ID to remove; repeat for multiple groups
+        #[arg(long = "remove-group")]
+        removed_groups: Vec<String>,
+    },
     /// Measure one assembly with the embedded skani compatibility profile
     SkaniSearch {
         #[arg(long)]
@@ -278,7 +299,8 @@ pub fn run() -> ExitCode {
         command @ (DevCommand::SavedEvidence { .. }
         | DevCommand::ReferencePackage { .. }
         | DevCommand::SkaniSearch { .. }
-        | DevCommand::RescuePlan { .. }) => match execute(command) {
+        | DevCommand::RescuePlan { .. }
+        | DevCommand::GenomovarDiagnostic { .. }) => match execute(command) {
             Ok(json) => {
                 println!("{json}");
                 ExitCode::SUCCESS
@@ -536,6 +558,23 @@ fn execute(command: DevCommand) -> Result<String, Failure> {
         DevCommand::AnimPair(_) | DevCommand::AnimParse { .. } => {
             return Err("ANIm command must be dispatched through run".into());
         }
+        DevCommand::GenomovarDiagnostic {
+            report,
+            expected_report_sha256,
+            reference_package,
+            expected_sha256,
+            masked_members,
+            removed_groups,
+        } => {
+            return genomovar_diagnostic(
+                &report,
+                &expected_report_sha256,
+                &reference_package,
+                &expected_sha256,
+                &masked_members,
+                &removed_groups,
+            );
+        }
         DevCommand::SavedEvidence {
             inputs,
             policy,
@@ -661,4 +700,225 @@ fn execute(command: DevCommand) -> Result<String, Failure> {
         }
     }
     Ok(output)
+}
+
+fn genomovar_diagnostic(
+    report_path: &Path,
+    expected_report_sha256: &str,
+    package_path: &Path,
+    expected_package_sha256: &str,
+    masked_members: &[String],
+    removed_groups: &[String],
+) -> Result<String, Failure> {
+    let report_bytes = std::fs::read(report_path)
+        .map_err(|error| format!("{}: {error}", report_path.display()))?;
+    let report_sha256 = sha256_hex(&report_bytes);
+    if report_sha256 != expected_report_sha256 {
+        return Err(format!(
+            "report SHA-256 is {report_sha256}, not the expected {expected_report_sha256}"
+        )
+        .into());
+    }
+    let report: Value = serde_json::from_slice(&report_bytes)
+        .map_err(|error| format!("{}: invalid report JSON: {error}", report_path.display()))?;
+    let package = verify_package(
+        &Directory(package_path.to_path_buf()),
+        expected_package_sha256,
+        &RegistryPins::default(),
+    )?;
+    let definition =
+        crate::genomovar::Definition::from_package(&package).map_err(|error| error.to_string())?;
+    let component = package
+        .component(crate::genomovar::COMPONENT_ID)
+        .ok_or("verified package has no genomovar component")?;
+    let section = &report["genomovar"];
+    let search = &section["search"];
+    let fail = |message: &str| -> Failure { message.to_string().into() };
+
+    if report["execution"]["status"] != "complete"
+        || report["execution"]["stage"] != "genomovar"
+        || report["input"]["kind"] != "assembly"
+        || report["input"]["sequence_scope"] != crate::genomovar::QUERY_SCOPE
+        || report["input"]["verification"] != "query_bytes_hashed; reference_package_verified"
+        || !report["input"]["query_sha256"]
+            .as_str()
+            .is_some_and(is_sha256)
+        || report["input"]["reference_package_sha256"] != expected_package_sha256
+        || report["reference_package"]["package"]["manifest_sha256"] != expected_package_sha256
+    {
+        return Err(fail("report is not a completed assembly genomovar report"));
+    }
+    if search["status"] != "completed"
+        || search["component_id"] != crate::genomovar::COMPONENT_ID
+        || search["input_kind"] != "assembly"
+        || search["query_scope"] != crate::genomovar::QUERY_SCOPE
+        || search["diagnostic_exclusion"] != false
+        || search["adapter_verified"] != true
+        || search["query_sha256"] != report["input"]["query_sha256"]
+        || search["reference_package_sha256"] != expected_package_sha256
+        || search["reference_scope"] != component.sequence_scope
+        || search["engine"] != component.engine
+        || search["engine_version"] != component.engine_version
+        || search["parameters"] != crate::genomovar::SEARCH_PARAMETERS
+        || search["reference_count"] != component.references.len()
+    {
+        return Err(fail(
+            "report search is incomplete or does not match the verified package",
+        ));
+    }
+
+    let parent = crate::genomovar::GenomovarParent::from_report(&report);
+    if !parent.verified
+        || parent.status != "assigned"
+        || parent.species_id.as_deref() != Some(crate::genomovar::PARENT_SPECIES_ID)
+        || parent.subspecies_id.as_deref() != Some(crate::genomovar::PARENT_SUBSPECIES_ID)
+        || !crate::genomovar::ACCEPTED_PARENT_POLICIES.contains(&parent.policy_id.as_str())
+        || !parent.blocking_reasons.is_empty()
+        || !["not_assessed", "explained_after_checks"].contains(&parent.scope_outcome.as_str())
+    {
+        return Err(fail("report has no verified eligible parent call"));
+    }
+
+    let rows: Vec<crate::genomovar::MemberRow> =
+        serde_json::from_value(search["member_evidence"].clone())
+            .map_err(|error| format!("report member_evidence is invalid: {error}"))?;
+    let not_returned: Vec<String> =
+        serde_json::from_value(search["not_returned_reference_ids"].clone())
+            .map_err(|error| format!("report not_returned_reference_ids is invalid: {error}"))?;
+    let expected_members: std::collections::BTreeSet<&str> = definition
+        .groups()
+        .values()
+        .flatten()
+        .map(String::as_str)
+        .collect();
+    let mut observed_members = std::collections::BTreeSet::new();
+    for member in rows
+        .iter()
+        .map(|row| row.reference_id.as_str())
+        .chain(not_returned.iter().map(String::as_str))
+    {
+        if !expected_members.contains(member) || !observed_members.insert(member) {
+            return Err(fail("report has unexpected or duplicate member accounting"));
+        }
+    }
+    if observed_members != expected_members
+        || search["returned_count"] != rows.len()
+        || rows.len() + not_returned.len() != expected_members.len()
+    {
+        return Err(fail(
+            "report does not account for the complete genomovar component",
+        ));
+    }
+
+    let text = |key: &str| search[key].as_str().unwrap_or_default().to_owned();
+    let context = crate::genomovar::Context {
+        parent,
+        input_kind: report["input"]["kind"]
+            .as_str()
+            .unwrap_or_default()
+            .to_owned(),
+        query_scope: report["input"]["sequence_scope"]
+            .as_str()
+            .unwrap_or_default()
+            .to_owned(),
+        reference_scope: text("reference_scope"),
+        engine: text("engine"),
+        engine_version: text("engine_version"),
+        parameters: text("parameters"),
+        search_status: text("status"),
+        adapter_verified: search["adapter_verified"] == true,
+        query_sha256: text("query_sha256"),
+        package_sha256: text("reference_package_sha256"),
+        diagnostic_exclusion: false,
+    };
+    let baseline = crate::genomovar::assess(&definition, &rows, &context)
+        .map_err(|error| error.to_string())?;
+    let baseline_value = baseline.to_value();
+    for field in [
+        "status",
+        "genomovar_id",
+        "reasons",
+        "compatible_groups",
+        "incomplete_groups",
+        "parent",
+    ] {
+        if baseline_value[field] != section[field] {
+            return Err(fail(
+                "saved genomovar assessment does not match its member evidence",
+            ));
+        }
+    }
+    if deployment_genomovar_id(&report) != &section["genomovar_id"] {
+        return Err(fail(
+            "report deployment assignment disagrees with its genomovar result",
+        ));
+    }
+
+    let assessment = crate::genomovar::diagnostic_assess(
+        &definition,
+        &rows,
+        &context,
+        masked_members,
+        removed_groups,
+    )
+    .map_err(|error| error.to_string())?;
+    if assessment.assigned_genomovar_id().is_some() {
+        return Err(fail(
+            "diagnostic unexpectedly produced a deployment assignment",
+        ));
+    }
+    let candidate = assessment.would_assign_genomovar_id();
+    let output = json!({
+        "schema_version": "1.0-terobacter-genomovar-diagnostic",
+        "source_report_sha256": report_sha256,
+        "reference_package_sha256": expected_package_sha256,
+        "genomovar_id": null,
+        "diagnostic_would_assign_genomovar_id": candidate,
+        "baseline": {
+            "genomovar_id": section["genomovar_id"],
+            "status": section["status"],
+            "compatible_groups": section["compatible_groups"],
+            "incomplete_groups": section["incomplete_groups"],
+        },
+        "diagnostic": assessment.to_value(),
+    });
+
+    let current_bytes = std::fs::read(report_path)
+        .map_err(|error| format!("{}: {error}", report_path.display()))?;
+    if sha256_hex(&current_bytes) != report_sha256 {
+        return Err(format!(
+            "{}: report changed during diagnostic",
+            report_path.display()
+        )
+        .into());
+    }
+    serde_json::to_string_pretty(&output).map_err(|error| error.to_string().into())
+}
+
+/// v1 reports keep the genomovar deployment field in `assignment`; v2 reports put it at root.
+fn deployment_genomovar_id(report: &Value) -> &Value {
+    let target = if report["assignment"].is_object() {
+        &report["assignment"]
+    } else {
+        report
+    };
+    &target["genomovar_id"]
+}
+
+#[cfg(test)]
+mod genomovar_diagnostic_report_tests {
+    use super::deployment_genomovar_id;
+    use serde_json::json;
+
+    #[test]
+    fn deployment_genomovar_field_matches_v1_and_v2_report_shapes() {
+        let v1 = json!({"assignment": {"genomovar_id": "GV01"}, "genomovar": {}});
+        let v2 = json!({"genomovar_id": "GV02", "genomovar": {}});
+
+        assert_eq!(
+            deployment_genomovar_id(&v1),
+            &v1["assignment"]["genomovar_id"]
+        );
+        assert_eq!(deployment_genomovar_id(&v2), &v2["genomovar_id"]);
+    }
 }
