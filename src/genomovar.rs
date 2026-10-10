@@ -936,8 +936,9 @@ pub fn parent_policy_sha256(id: &str) -> String {
     };
     crate::evidence::sha256_hex(source.as_bytes())
 }
-/// Digest the parent decision before attachment. Runtime receipts and supplementary fields
-/// are excluded; decision evidence identities, assignments, reasons and input binding remain.
+/// Digest the parent decision before attachment. Runtime receipts, supplementary fields
+/// and presentation-only report blocks (`versions`, and v1 `thresholds`) are excluded; decision
+/// evidence identities, assignments, reasons and input binding remain.
 pub fn parent_result_sha256(report: &Value) -> String {
     let mut decision = report.clone();
     if let Some(object) = decision.as_object_mut() {
@@ -953,6 +954,14 @@ pub fn parent_result_sha256(report: &Value) -> String {
             "implementation",
         ] {
             object.remove(key);
+        }
+    }
+    // Presentation added after publication checks: the version block always, and the v1 minima
+    // (constants of the digested v1 policy source). v2's `thresholds` are decision evidence and stay.
+    if let Some(object) = decision.as_object_mut() {
+        object.remove("versions");
+        if object.get("policy_id") != Some(&json!(crate::rescue::V2_POLICY_ID)) {
+            object.remove("thresholds");
         }
     }
     if let Some(assignment) = decision

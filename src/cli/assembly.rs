@@ -105,6 +105,19 @@ impl AssemblyWorkflow {
         complete["input"]["sequence_scope"] = "whole_assembly_as_supplied".into();
         complete["measurement"] = report["measurement"].take();
         complete["evidence"] = evidence_value;
+        // The same strongest-match and whole-panel views v2 carries. v1 runs no ANIm.
+        let panel = self.panel(&saved)?;
+        complete["top_references"] = json!(crate::rescue::top_reference_rows(
+            saved.references(),
+            &panel,
+            |_| Value::Null
+        ));
+        complete["panel_summary"] = json!(crate::rescue::panel_summary_rows(
+            saved.references(),
+            &panel,
+            &BTreeSet::new(),
+            None
+        ));
         *report = complete;
         self.attach_genomovar(query_label, bytes, threads, report)
     }

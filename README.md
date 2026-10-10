@@ -21,7 +21,7 @@ There are no subcommands. Classify a whole assembly with a provisioned reference
 tero --reference-package REFERENCE_DIR --expected-sha256 MANIFEST_SHA256 --threads 4 isolate.fa > isolate.json
 ```
 
-The default policy is `conservative-assembly-v1`. Use `--policy conservative-assembly-anim-v2` for the candidate ANIm rescue branch; it requires a separate authenticated FASTA component when the rescue plan requests alignments. Every supplied FASTA record is retained, including plasmids and drafts. JSON records lengths, sequence and input byte hashes, the authenticated package identity, engine profile, measurements and the decision. Optional historical MLST runs when `--mlst-package` and `--mlst-expected-sha256` are supplied, and never changes classification. `--jobs` analyses several assemblies at once, `--output` writes the report to a new file, and `--anim-cache` reuses verified v2 alignments across runs. A provisioned run needs no network. See [whole-assembly classification](docs/assembly.md) for input rules, batches, caching, partial reports and exit codes.
+The default policy is `conservative-assembly-v1`. Use `--policy conservative-assembly-anim-v2` for the candidate ANIm rescue branch; it requires a separate authenticated FASTA component when the rescue plan requests alignments. Every supplied FASTA record is retained, including plasmids and drafts. JSON records lengths, sequence and input byte hashes, the authenticated package identity, engine profile, measurements and the decision. Optional historical MLST runs when `--mlst-package` and `--mlst-expected-sha256` are supplied, and never changes classification. `--jobs` analyses several assemblies at once, `--output` writes the report to a new file, and `--anim-cache` reuses verified v2 alignments across runs. A provisioned run needs no network. See [whole-assembly classification](docs/assembly.md) for input rules, batches, caching, partial reports and exit codes. Add `--report-dir NEW_DIRECTORY` to write `report.json`, `calls.tsv`, `evidence.tsv` and `report.md`. The [usage guide](docs/usage.md) explains these outputs and gives a worked manual-review example.
 
 ## Build, test, install
 
@@ -92,7 +92,7 @@ See [the method amendment](docs/contracts/P1-ANIM-MUMMER4-r1.md) and [P4a-r3 com
 
 | Path | Role |
 |---|---|
-| `src/evidence.rs`, `src/annotations.rs`, `src/reference/`, `src/decision.rs`, `src/mlst/` | Pure decision and typing logic. Package bytes arrive through a port, so there is no file, terminal or process code. |
+| `src/evidence.rs`, `src/annotations.rs`, `src/reference/`, `src/decision.rs`, `src/report.rs`, `src/mlst/` | Pure decision and typing logic. Package bytes arrive through a port, so there is no file, terminal or process code. |
 | `src/cli.rs`, `src/cli/assembly.rs`, `src/cli/mlst.rs`, `src/dev.rs` | Argument parsing, files and exit codes for the public and development commands. |
 | `src/bin/` | Thin entry points for `tero`, `terobacter` and `terobacter-dev`. |
 | `tests/` | Tests at the decision, command-line and packaging seams, with fixtures. |

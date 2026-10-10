@@ -858,68 +858,99 @@ impl RescueInput {
         Ok(Decision::from_value(value))
     }
 
-    /// The five highest skani references, plus every exact tie at fifth place.
-    fn shown(&self) -> &[Reference] {
-        let hits = self.evidence.references();
-        let cut = hits.get(4).map(|r| r.ani);
-        let n = hits
-            .iter()
-            .take_while(|r| cut.is_none_or(|c| r.ani >= c))
-            .count();
-        &hits[..n]
-    }
-
-    /// The [`shown`](Self::shown) references. Ties are ordered by reference ID for display only.
+    /// The [`shown_references`] of this input's evidence. Ties are ordered by reference ID for display only.
     fn top_references(&self, anim: &BoundAnim) -> Vec<Value> {
-        let hits = self.shown();
-        let mut group = 0;
-        hits.iter()
-            .enumerate()
-            .map(|(i, r)| {
-                if i > 0 && hits[i - 1].ani != r.ani {
-                    group += 1;
-                }
-                let panel = self.panel.get(&r.id).expect("returned rows are in the panel");
-                json!({"reference_id": r.id, "tie_group": group,
-                    "species_id": r.species.as_ref().map(|s| &s.id), "species_name": r.species.as_ref().map(|s| &s.name),
-                    "subspecies_id": r.subspecies.as_ref().map(|s| &s.id), "lineage_id": r.lineage_id,
-                    "reference_role": r.reference_role, "parent": hit_parent(r).to_json(),
-                    "reference_sha256": panel.source_sha256, "skani": skani_triple(r),
-                    "anim": anim.pairs.get(&r.id).map(|p| p.to_json())})
-            })
-            .collect()
+        top_reference_rows(self.evidence.references(), &self.panel, |id| {
+            anim.pairs.get(id).map_or(Value::Null, |p| p.to_json())
+        })
     }
 
     /// Every parent in the assessed panel, with its best skani evidence and any challenge,
     /// whether or not it reaches the displayed top references.
     fn panel_summary(&self, anim: &BoundAnim, a: &Analysis<'_>) -> Vec<Value> {
-        let hits = self.evidence.references();
-        let shown: BTreeSet<&str> = self.shown().iter().map(|r| r.id.as_str()).collect();
         let challenged: BTreeSet<&str> = a
             .challenges
             .iter()
             .filter_map(|c| c["reference_id"].as_str())
             .collect();
-        let mut groups: BTreeMap<ParentKey, Vec<&PanelReference>> = BTreeMap::new();
-        for r in self.panel.references() {
-            groups.entry(panel_parent(r)).or_default().push(r);
-        }
-        let mut rows: Vec<(Option<Percent>, Value)> = groups.into_iter().map(|(parent, members)| {
-            let returned: Vec<&Reference> = hits.iter().filter(|h| members.iter().any(|m| m.id == h.id)).collect();
-            let best = returned.first().map(|h| h.ani);
-            let unmeasured: Vec<&String> = members.iter().map(|m| &m.id)
-                .filter(|id| !anim.finished(id)).collect();
-            (best, json!({"parent": parent.to_json(), "panel_reference_count": members.len(),
-                "returned_reference_count": returned.len(),
-                "best_skani_ani_percent": best.map(percent),
-                "best_skani_reference_ids": returned.iter().take_while(|h| Some(h.ani) == best).map(|h| &h.id).collect::<Vec<_>>(),
-                "in_top_references": returned.iter().any(|h| shown.contains(h.id.as_str())),
-                "challenging_reference_ids": members.iter().map(|m| m.id.as_str()).filter(|id| challenged.contains(id)).collect::<Vec<_>>(),
-                "anim_unmeasured_reference_count": unmeasured.len()}))
-        }).collect();
-        rows.sort_by(|(x, _), (y, _)| y.cmp(x));
-        rows.into_iter().map(|(_, v)| v).collect()
+        panel_summary_rows(
+            self.evidence.references(),
+            &self.panel,
+            &challenged,
+            Some(&|id: &str| !anim.finished(id)),
+        )
     }
+}
+
+/// The five highest skani references, plus every exact tie at fifth place. `hits` must already
+/// be ranked by ANI, as saved evidence is.
+pub(crate) fn shown_references(hits: &[Reference]) -> &[Reference] {
+    let cut = hits.get(4).map(|r| r.ani);
+    let n = hits
+        .iter()
+        .take_while(|r| cut.is_none_or(|c| r.ani >= c))
+        .count();
+    &hits[..n]
+}
+
+/// Rows for [`shown_references`], skani only. Ties are ordered by reference ID for display
+/// only, and share a `tie_group`. `anim` supplies each reference's ANIm record, or null.
+pub(crate) fn top_reference_rows(
+    hits: &[Reference],
+    panel: &Panel,
+    anim: impl Fn(&str) -> Value,
+) -> Vec<Value> {
+    let hits = shown_references(hits);
+    let mut group = 0;
+    hits.iter()
+        .enumerate()
+        .map(|(i, r)| {
+            if i > 0 && hits[i - 1].ani != r.ani {
+                group += 1;
+            }
+            let panel = panel.get(&r.id).expect("returned rows are in the panel");
+            json!({"reference_id": r.id, "tie_group": group,
+                "species_id": r.species.as_ref().map(|s| &s.id), "species_name": r.species.as_ref().map(|s| &s.name),
+                "subspecies_id": r.subspecies.as_ref().map(|s| &s.id), "lineage_id": r.lineage_id,
+                "reference_role": r.reference_role, "parent": hit_parent(r).to_json(),
+                "reference_sha256": panel.source_sha256, "skani": skani_triple(r),
+                "anim": anim(&r.id)})
+        })
+        .collect()
+}
+
+/// One row per parent in the whole panel. `unmeasured` says which references lack a finished
+/// ANIm pair; under v1, which runs no ANIm, pass `None` and the count is null.
+pub(crate) fn panel_summary_rows(
+    hits: &[Reference],
+    panel: &Panel,
+    challenged: &BTreeSet<&str>,
+    unmeasured: Option<&dyn Fn(&str) -> bool>,
+) -> Vec<Value> {
+    let shown: BTreeSet<&str> = shown_references(hits)
+        .iter()
+        .map(|r| r.id.as_str())
+        .collect();
+    let mut groups: BTreeMap<ParentKey, Vec<&PanelReference>> = BTreeMap::new();
+    for r in panel.references() {
+        groups.entry(panel_parent(r)).or_default().push(r);
+    }
+    let mut rows: Vec<(Option<Percent>, Value)> = groups.into_iter().map(|(parent, members)| {
+        let returned: Vec<&Reference> = hits.iter().filter(|h| members.iter().any(|m| m.id == h.id)).collect();
+        let best = returned.first().map(|h| h.ani);
+        let unmeasured_count = unmeasured.map_or(Value::Null, |f| {
+            json!(members.iter().filter(|m| f(&m.id)).count())
+        });
+        (best, json!({"parent": parent.to_json(), "panel_reference_count": members.len(),
+            "returned_reference_count": returned.len(),
+            "best_skani_ani_percent": best.map(percent),
+            "best_skani_reference_ids": returned.iter().take_while(|h| Some(h.ani) == best).map(|h| &h.id).collect::<Vec<_>>(),
+            "in_top_references": returned.iter().any(|h| shown.contains(h.id.as_str())),
+            "challenging_reference_ids": members.iter().map(|m| m.id.as_str()).filter(|id| challenged.contains(id)).collect::<Vec<_>>(),
+            "anim_unmeasured_reference_count": unmeasured_count}))
+    }).collect();
+    rows.sort_by(|(x, _), (y, _)| y.cmp(x));
+    rows.into_iter().map(|(_, v)| v).collect()
 }
 
 /// A dry rescue plan; see [`RescueInput::plan`].

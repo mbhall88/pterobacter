@@ -392,10 +392,107 @@ fn public_command_combines_mlst_and_genomovar_for_both_parent_policies() {
             assert_eq!(assignment["genomovar_id"], Value::Null);
             assert_eq!(report["genomovar"]["status"], "withheld");
             assert_eq!(report["genomovar"]["search"]["status"], "not_run");
+            // The published report is stable under a consumer's own recheck.
+            let mut again = report.clone();
+            recheck(&mut again);
+            assert_eq!(again["genomovar"], report["genomovar"]);
             assert!(report["genomovar"]["reasons"]
                 .as_array()
                 .unwrap()
                 .contains(&json!("absent_eligible_parent")));
         }
+    }
+}
+
+/// A v2-shaped final call that is the unchanged v1 skani call.
+fn as_v2(report: &mut Value) {
+    report["policy_id"] = "conservative-assembly-anim-v2".into();
+    report["policy"] = Value::Null;
+    report["policy_mode"] = "default_candidate".into();
+    report["evaluation_status"] = "complete".into();
+    report["call_basis"] = "skani".into();
+    report["status"] = "assigned".into();
+    report["reasons"] = json!([]);
+    report["species_id"] = "ECTX-SP025".into();
+    report["subspecies_id"] = "ECTX-SS007".into();
+    report["legacy_v1_result"] = json!({"policy_id": "conservative-assembly-v1",
+        "status": "assigned", "species_id": "ECTX-SP025", "subspecies_id": "ECTX-SS007"});
+    report["assignment"] = Value::Null;
+}
+
+/// The annotations the CLI adds after the publication recheck must not break the receipt that
+/// recheck verified, or a later recheck of the published report would withdraw the genomovar.
+#[test]
+fn final_annotations_keep_the_genomovar_parent_receipt_valid() {
+    use terobacter::genomovar::parent_result_sha256;
+    for v2 in [false, true] {
+        let mut report = analyse(&[], |r| {
+            if v2 {
+                as_v2(r);
+            }
+        });
+        recheck(&mut report);
+        let call = |r: &Value| {
+            (if v2 {
+                &r["genomovar_id"]
+            } else {
+                &r["assignment"]["genomovar_id"]
+            })
+            .clone()
+        };
+        assert_eq!(call(&report), GV01, "v2={v2}: assigned at publication");
+        let receipt = report["genomovar"]["parent"]["result_sha256"].clone();
+
+        terobacter::report::annotate(&mut report);
+        assert!(report["versions"].is_object(), "v2={v2}: annotated");
+        assert_eq!(
+            parent_result_sha256(&report),
+            receipt.as_str().unwrap(),
+            "v2={v2}: the published report still matches its own parent receipt"
+        );
+        recheck(&mut report);
+        assert_eq!(
+            call(&report),
+            GV01,
+            "v2={v2}: a later recheck keeps the call"
+        );
+        assert_eq!(report["genomovar"]["status"], "assigned");
+    }
+}
+
+/// The excluded blocks are presentation only: a real change of the call, the query or the
+/// package binding after publication still withdraws the genomovar.
+#[test]
+fn annotations_do_not_weaken_the_parent_checks() {
+    type Edit = fn(&mut Value);
+    let changes: [(&str, Edit); 4] = [
+        ("species", |r| {
+            r["assignment"]["species_id"] = "ECTX-SP001".into()
+        }),
+        ("subspecies", |r| {
+            r["assignment"]["subspecies_id"] = "ECTX-SS001".into()
+        }),
+        ("query", |r| {
+            r["input"]["query_sha256"] = "0".repeat(64).into()
+        }),
+        ("reasons", |r| {
+            r["blocking_reasons"] = json!(["problem_warning"])
+        }),
+    ];
+    for (name, change) in changes {
+        let mut report = analyse(&[], |_| {});
+        recheck(&mut report);
+        terobacter::report::annotate(&mut report);
+        change(&mut report);
+        recheck(&mut report);
+        assert_eq!(report["genomovar"]["status"], "withheld", "{name}");
+        assert_eq!(report["assignment"]["genomovar_id"], Value::Null, "{name}");
+        assert!(
+            report["genomovar"]["reasons"]
+                .as_array()
+                .unwrap()
+                .contains(&json!("parent_withdrawn_before_publication")),
+            "{name}"
+        );
     }
 }

@@ -82,6 +82,9 @@ struct Public {
     /// Expected SHA-256 of the MLST package manifest.json, obtained from a trusted source
     #[arg(long, value_parser = parse_sha256, requires = "mlst_package")]
     mlst_expected_sha256: Option<String>,
+    /// Write report.json, calls.tsv, evidence.tsv and report.md into this new directory
+    #[arg(long, value_name = "DIR")]
+    report_dir: Option<PathBuf>,
     #[command(flatten)]
     anim: v2::V2Settings,
 }
@@ -108,6 +111,7 @@ pub fn run_public() -> ExitCode {
     };
     if let Err(error) = outputs::check(&outputs::Paths {
         report: args.output.as_deref(),
+        report_dir: args.report_dir.as_deref(),
         anim_output: args.anim.anim_output.as_deref(),
         anim_cache: args.anim.anim_cache.as_deref(),
         packages: [
@@ -122,6 +126,12 @@ pub fn run_public() -> ExitCode {
     }) {
         eprintln!("error: {error}");
         return ExitCode::from(2);
+    }
+    if let Some(dir) = &args.report_dir {
+        if let Err(error) = fs::create_dir(dir) {
+            eprintln!("error: --report-dir must be a new directory: {error}");
+            return ExitCode::from(2);
+        }
     }
     install_cancel_handlers();
     let output_error = if args.policy == crate::rescue::V2_POLICY_ID {
@@ -197,11 +207,26 @@ pub fn run_public() -> ExitCode {
     for report in &mut results {
         crate::genomovar::recheck(report);
     }
+    for report in &mut results {
+        crate::report::annotate(report);
+    }
+    let rendered = args
+        .report_dir
+        .as_ref()
+        .map(|_| crate::report::render(&results));
     let value = if results.len() == 1 {
         results.remove(0)
     } else {
         Value::Array(results)
     };
+    // A failed bundle write must not discard the main JSON output.
+    let mut write_failed = false;
+    if let (Some(dir), Some(rendered)) = (&args.report_dir, &rendered) {
+        if let Err(error) = write_reports(dir, &value, rendered) {
+            eprintln!("error writing reports to {}: {error}", dir.display());
+            write_failed = true;
+        }
+    }
     let write_stdout = || -> io::Result<()> {
         let mut out = io::stdout().lock();
         serde_json::to_writer_pretty(&mut out, &value)?;
@@ -229,7 +254,26 @@ pub fn run_public() -> ExitCode {
         eprintln!("error writing report: {error}");
         return ExitCode::FAILURE;
     }
+    if write_failed {
+        return ExitCode::FAILURE;
+    }
     ExitCode::from(exit)
+}
+
+/// Write the JSON report and its renderings into a directory this run created. Each file is
+/// created new, so nothing is ever replaced.
+fn write_reports(dir: &Path, json: &Value, rendered: &crate::report::Rendered) -> io::Result<()> {
+    let mut report = serde_json::to_string_pretty(json)?;
+    report.push('\n');
+    for (name, content) in [
+        ("report.json", report.as_str()),
+        ("calls.tsv", rendered.calls_tsv.as_str()),
+        ("evidence.tsv", rendered.evidence_tsv.as_str()),
+        ("report.md", rendered.markdown.as_str()),
+    ] {
+        outputs::write_new(&dir.join(name), content.as_bytes())?;
+    }
+    Ok(())
 }
 
 /// Shared, read-only state for the queries of one run.

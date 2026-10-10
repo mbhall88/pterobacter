@@ -7,6 +7,7 @@ use std::path::{Component, Path, PathBuf};
 /// Everything a run writes, and the inputs it must not write into.
 pub(crate) struct Paths<'a> {
     pub report: Option<&'a Path>,
+    pub report_dir: Option<&'a Path>,
     pub anim_output: Option<&'a Path>,
     pub anim_cache: Option<&'a Path>,
     /// Package directories; their inventories reject any unlisted file.
@@ -27,6 +28,7 @@ pub(crate) fn check(paths: &Paths<'_>) -> Result<(), String> {
     }
     let outputs: Vec<(&str, &Path, PathBuf)> = [
         ("report file", paths.report),
+        ("report directory", paths.report_dir),
         ("ANIm evidence directory", paths.anim_output),
         ("ANIm cache", paths.anim_cache),
     ]
