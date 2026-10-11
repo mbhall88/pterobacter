@@ -47,7 +47,7 @@ A mask file lists one primary reference ID per line. The masked references leave
 
 ## Report files
 
-`--report-dir NEW_DIRECTORY` writes `report.json`, `calls.tsv`, `evidence.tsv` and `report.md`, as the public command does. The JSON file is the decision printed on stdout. An existing directory exits 2 before any work and nothing is replaced. Under either policy, saved-evidence output carries the `versions` block; under v1 it also carries the frozen `thresholds`.
+`--report-dir NEW_DIRECTORY` writes `report.json`, `calls.tsv`, `evidence.tsv` and `report.md`, as the public command does. The JSON file is the decision printed on stdout. An existing directory exits 2 before any work and nothing is replaced. So does a destination inside the `--reference-package` directory, however it is spelled through symbolic links or `..`, because unlisted files would invalidate the package. Under either policy, saved-evidence output carries the `versions` block; under v1 it also carries the frozen `thresholds`.
 
 ## Supported and historical interfaces
 
