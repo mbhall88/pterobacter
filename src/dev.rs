@@ -56,6 +56,9 @@ enum DevCommand {
         v2: V2Inputs,
         #[command(flatten)]
         package: PackageInputs,
+        /// Also write report.json, calls.tsv, evidence.tsv and report.md to this new directory
+        #[arg(long, value_name = "NEW_DIRECTORY")]
+        report_dir: Option<PathBuf>,
     },
     /// Verify a reference package directory and print its identity and components as JSON
     ReferencePackage {
@@ -78,6 +81,8 @@ enum DevCommand {
         inputs: Inputs,
         #[command(flatten)]
         v2: V2Inputs,
+        #[command(flatten)]
+        package: PackageInputs,
     },
     /// Reassess saved genomovar member evidence after development-only masks or group removals
     GenomovarDiagnostic(Box<GenomovarDiagnosticArgs>),
@@ -148,8 +153,8 @@ struct Inputs {
     /// Optional expected SHA-256 of the exact saved evidence bytes
     #[arg(long)]
     evidence_sha256: Option<String>,
-    /// Primary inventory from a checked reference package; required for method diagnostics,
-    /// for v2 and for the rescue plan
+    /// Primary inventory from a checked reference package; required for v1 method diagnostics
+    /// and masks. v2 and the rescue plan take it or --reference-package
     #[arg(long)]
     reference_inventory: Option<PathBuf>,
     #[arg(long, requires = "reference_inventory")]
@@ -177,7 +182,8 @@ struct V2Inputs {
     #[arg(long)]
     exclude_references: Option<PathBuf>,
 }
-/// A reference package to verify and bind the evidence to (v1 only).
+/// A reference package to verify and bind the evidence to. Under v2 it also supplies the
+/// primary panel.
 #[derive(Debug, Args)]
 struct PackageInputs {
     /// Verify this reference package and require the evidence to be bound to it
@@ -207,6 +213,28 @@ struct PackageInputs {
         requires = "reference_package"
     )]
     lineage_registry_sha256: Option<String>,
+}
+
+impl PackageInputs {
+    /// Verify the named package, or return `None` when no package was given.
+    fn verify(&self) -> Result<Option<VerifiedPackage>, Failure> {
+        let Some((directory, expected)) = self
+            .reference_package
+            .as_ref()
+            .zip(self.expected_sha256.as_ref())
+        else {
+            return Ok(None);
+        };
+        let pins = RegistryPins {
+            named_registry_sha256: self.named_registry_sha256.clone(),
+            lineage_registry_sha256: self.lineage_registry_sha256.clone(),
+        };
+        Ok(Some(verify_package(
+            &Directory(directory.clone()),
+            expected,
+            &pins,
+        )?))
+    }
 }
 
 fn parse_sha256(text: &str) -> Result<String, String> {
@@ -244,6 +272,7 @@ struct AnimPairArgs {
 }
 
 const EXIT_FAILURE: u8 = 1;
+const EXIT_USAGE: u8 = 2;
 const EXIT_MISSING: u8 = 3;
 const EXIT_ALTERED: u8 = 4;
 const EXIT_TRUNCATED: u8 = 5;
@@ -517,32 +546,90 @@ fn record_files(paths: &[PathBuf]) -> Result<Vec<PathBuf>, String> {
     Ok(files)
 }
 
+/// A primary-reference mask file: one reference ID per line, blank lines ignored.
+fn read_mask(path: &Path, pins: &mut Pins) -> Result<Vec<String>, String> {
+    Ok(read(path, None, pins)?
+        .lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty())
+        .map(str::to_owned)
+        .collect())
+}
+
+/// The v1 decision on saved evidence with masked references removed from the rows and the
+/// panel counts, exactly as v2 masks the evidence behind its `legacy_v1_result`. A package
+/// that supplied the panel is checked against the whole, unmasked evidence and returned so the
+/// result can record it.
+fn masked_v1(
+    inputs: &Inputs,
+    package: &PackageInputs,
+    mask: &Path,
+    pins: &mut Pins,
+) -> Result<(Value, Option<VerifiedPackage>), Failure> {
+    let saved = load(inputs, None, pins)?;
+    let (panel, verified) = primary_panel(inputs, package, &saved, pins, "under v1, a mask")?;
+    let (masked, assessed, excluded) = panel
+        .mask(&saved, &read_mask(mask, pins)?)
+        .map_err(|e| e.to_string())?;
+    let mut value = decide(&masked, &Policy::v1()).to_value().clone();
+    value["input"]["primary_inventory_sha256"] = panel.source_sha256().into();
+    value["input"]["mask"] = json!({"excluded_reference_ids": excluded,
+        "panel_reference_count": panel.references().len(),
+        "assessed_panel_reference_count": assessed.references().len()});
+    Ok((value, verified))
+}
+
+/// The whole primary panel, from exactly one of a pinned inventory file or an authenticated
+/// package, checked against `saved`. `needed_by` names what requires it in the refusal.
+fn primary_panel(
+    inputs: &Inputs,
+    package: &PackageInputs,
+    saved: &SavedEvidence,
+    pins: &mut Pins,
+    needed_by: &str,
+) -> Result<(Panel, Option<VerifiedPackage>), Failure> {
+    match (&inputs.reference_inventory, &package.reference_package) {
+        (Some(_), Some(_)) => {
+            Err("give either --reference-inventory or --reference-package, not both".into())
+        }
+        (None, None) => Err(format!(
+            "{needed_by} needs the whole primary panel: give --reference-inventory \
+             or --reference-package"
+        )
+        .into()),
+        (Some(inventory), None) => {
+            let text = read(
+                inventory,
+                inputs.reference_inventory_sha256.as_deref(),
+                pins,
+            )?;
+            let panel = Panel::from_json(&text, saved).map_err(|e| e.to_string())?;
+            Ok((panel, None))
+        }
+        (None, Some(_)) => {
+            let verified = package.verify()?.expect("package given");
+            // Checked here first so evidence bound to another package keeps its exit code.
+            verified.check_evidence(saved)?;
+            let panel = Panel::from_package(&verified, saved).map_err(|e| e.to_string())?;
+            Ok((panel, Some(verified)))
+        }
+    }
+}
+
 /// v2 inputs: evidence, panel, mask and any saved ANIm records, bound by the dry-plan rule.
+/// The panel comes from a primary inventory or from an authenticated package, which is then
+/// returned so the result can record it.
 fn rescue_inputs(
     inputs: &Inputs,
     v2: &V2Inputs,
+    package: &PackageInputs,
     pins: &mut Pins,
-) -> Result<(RescueInput, BoundAnim, Value), String> {
+) -> Result<(RescueInput, BoundAnim, Value, Option<VerifiedPackage>), Failure> {
     let thresholds = v2.thresholds.for_policy(V2_POLICY_ID)?;
     let saved = load(inputs, None, pins)?;
-    let Some(inventory) = &inputs.reference_inventory else {
-        return Err(format!(
-            "{V2_POLICY_ID} needs --reference-inventory, the whole primary panel"
-        ));
-    };
-    let inventory = read(
-        inventory,
-        inputs.reference_inventory_sha256.as_deref(),
-        pins,
-    )?;
-    let panel = Panel::from_json(&inventory, &saved).map_err(|e| e.to_string())?;
-    let mask: Vec<String> = match &v2.exclude_references {
-        Some(path) => read(path, None, pins)?
-            .lines()
-            .map(str::trim)
-            .filter(|l| !l.is_empty())
-            .map(str::to_owned)
-            .collect(),
+    let (panel, verified) = primary_panel(inputs, package, &saved, pins, V2_POLICY_ID)?;
+    let mask = match &v2.exclude_references {
+        Some(path) => read_mask(path, pins)?,
         None => vec![],
     };
     let rescue = RescueInput::new(saved, panel, &mask, thresholds).map_err(|e| e.to_string())?;
@@ -569,22 +656,100 @@ fn rescue_inputs(
             .map_err(|e| e.to_string())?,
         None => BoundAnim::none(),
     };
-    Ok((rescue, bound, Value::Array(files)))
+    Ok((rescue, bound, Value::Array(files), verified))
 }
 
 const UNBOUND: &str =
     "input_and_artifact_hashes_checked; package_authentication_requires_checked_inventory";
 const BOUND: &str = "input_and_artifact_hashes_checked; reference_package_verified";
 
+/// Record the package that supplied a v2 panel, as v1 bound decisions do, and return the
+/// verification label that applies.
+fn record_package(value: &mut Value, package: Option<VerifiedPackage>) -> &'static str {
+    match package {
+        Some(package) => {
+            value["reference_package"] = package.to_value();
+            BOUND
+        }
+        None => UNBOUND,
+    }
+}
+
 fn execute(command: DevCommand) -> Result<String, Failure> {
+    // The report directory is checked and created before any work, so a collision changes
+    // nothing. The shared output checks refuse a destination inside the reference package,
+    // however it is spelled, because the package's inventory rejects any unlisted file.
+    let report_dir = match &command {
+        DevCommand::SavedEvidence {
+            report_dir: Some(dir),
+            package,
+            ..
+        } => {
+            crate::cli::outputs::check(&crate::cli::outputs::Paths {
+                report: None,
+                report_dir: Some(dir),
+                anim_output: None,
+                anim_cache: None,
+                packages: package
+                    .reference_package
+                    .iter()
+                    .map(PathBuf::as_path)
+                    .collect(),
+                assemblies: vec![],
+            })
+            .map_err(|message| Failure {
+                code: EXIT_USAGE,
+                message,
+            })?;
+            std::fs::create_dir(dir).map_err(|error| Failure {
+                code: EXIT_USAGE,
+                message: format!("--report-dir must be a new directory: {error}"),
+            })?;
+            Some(dir.clone())
+        }
+        _ => None,
+    };
+    let result = match evaluate(command) {
+        Ok(Evaluated::Printed(output)) => return Ok(output),
+        Ok(Evaluated::Report(result)) => result,
+        Err(failure) => {
+            // Nothing has been written yet, so this removes only the directory made above,
+            // and the same command can be run again.
+            if let Some(dir) = &report_dir {
+                let _ = std::fs::remove_dir(dir);
+            }
+            return Err(failure);
+        }
+    };
+    let output = serde_json::to_string_pretty(&result).map_err(|e| e.to_string())?;
+    if let Some(dir) = report_dir {
+        let rendered = crate::report::render(std::slice::from_ref(&result));
+        if let Err(error) = crate::cli::write_reports(&dir, &result, &rendered) {
+            // As in the public command, a failed report write keeps the main JSON output.
+            println!("{output}");
+            return Err(format!("error writing reports to {}: {error}", dir.display()).into());
+        }
+    }
+    Ok(output)
+}
+
+/// What a development command produced: output it already formatted, or a decision report
+/// whose pinned inputs have been rechecked.
+enum Evaluated {
+    Printed(String),
+    Report(Value),
+}
+
+fn evaluate(command: DevCommand) -> Result<Evaluated, Failure> {
     let mut pins = Vec::new();
     let mut verification = UNBOUND;
+    let annotate_report = matches!(command, DevCommand::SavedEvidence { .. });
     let mut result = match command {
         DevCommand::AnimPair(_) | DevCommand::AnimParse { .. } => {
             return Err("ANIm command must be dispatched through run".into());
         }
         DevCommand::GenomovarDiagnostic(args) => {
-            return genomovar_diagnostic(&args);
+            return genomovar_diagnostic(&args).map(Evaluated::Printed);
         }
         DevCommand::SavedEvidence {
             inputs,
@@ -593,35 +758,46 @@ fn execute(command: DevCommand) -> Result<String, Failure> {
             diagnostics_sha256,
             v2,
             package,
+            ..
         } if policy == V1_POLICY_ID => {
             v2.thresholds.for_policy(V1_POLICY_ID)?;
-            if !v2.anim_records.is_empty() || v2.exclude_references.is_some() {
+            if !v2.anim_records.is_empty() {
                 return Err(format!(
-                    "--anim-records and --exclude-references need --policy {V2_POLICY_ID}; \
+                    "--anim-records needs --policy {V2_POLICY_ID}; \
                      v1 takes method diagnostics through --diagnostics"
                 )
                 .into());
             }
-            if inputs.reference_inventory.is_some() && diagnostics.is_none() {
-                return Err("under v1, --reference-inventory pairs with --diagnostics".into());
-            }
-            let diagnostics = diagnostics
-                .as_deref()
-                .map(|path| (path, diagnostics_sha256.as_deref()));
-            let saved = load(&inputs, diagnostics, &mut pins)?;
-            match package.reference_package.zip(package.expected_sha256) {
-                Some((directory, expected)) => {
-                    let registry_pins = RegistryPins {
-                        named_registry_sha256: package.named_registry_sha256,
-                        lineage_registry_sha256: package.lineage_registry_sha256,
-                    };
-                    let package = verify_package(&Directory(directory), &expected, &registry_pins)?;
-                    verification = BOUND;
-                    decide_bound(&saved, &package, &Policy::v1())?
-                        .to_value()
-                        .clone()
+            if let Some(mask) = &v2.exclude_references {
+                if diagnostics.is_some() {
+                    return Err(
+                        "under v1, --exclude-references cannot be combined with --diagnostics"
+                            .into(),
+                    );
                 }
-                None => decide(&saved, &Policy::v1()).to_value().clone(),
+                let (mut value, verified) = masked_v1(&inputs, &package, mask, &mut pins)?;
+                verification = record_package(&mut value, verified);
+                value
+            } else if inputs.reference_inventory.is_some() && diagnostics.is_none() {
+                return Err(
+                    "under v1, --reference-inventory pairs with --diagnostics or \
+                     --exclude-references"
+                        .into(),
+                );
+            } else {
+                let diagnostics = diagnostics
+                    .as_deref()
+                    .map(|path| (path, diagnostics_sha256.as_deref()));
+                let saved = load(&inputs, diagnostics, &mut pins)?;
+                match package.verify()? {
+                    Some(package) => {
+                        verification = BOUND;
+                        decide_bound(&saved, &package, &Policy::v1())?
+                            .to_value()
+                            .clone()
+                    }
+                    None => decide(&saved, &Policy::v1()).to_value().clone(),
+                }
             }
         }
         DevCommand::SavedEvidence {
@@ -637,19 +813,15 @@ fn execute(command: DevCommand) -> Result<String, Failure> {
                 )
                 .into());
             }
-            if package.reference_package.is_some() {
-                return Err(format!(
-                    "--reference-package binds v1 evidence only; {V2_POLICY_ID} does not take it yet"
-                )
-                .into());
-            }
-            let (rescue, bound, files) = rescue_inputs(&inputs, &v2, &mut pins)?;
+            let (rescue, bound, files, verified) =
+                rescue_inputs(&inputs, &v2, &package, &mut pins)?;
             let mut value = rescue
                 .decide(&bound)
                 .map_err(|e| e.to_string())?
                 .to_value()
                 .clone();
             value["input"]["anim_record_files"] = files;
+            verification = record_package(&mut value, verified);
             value
         }
         DevCommand::ReferencePackage {
@@ -665,7 +837,8 @@ fn execute(command: DevCommand) -> Result<String, Failure> {
                     named_registry_sha256,
                     lineage_registry_sha256,
                 },
-            );
+            )
+            .map(Evaluated::Printed);
         }
         DevCommand::SkaniSearch {
             database,
@@ -688,21 +861,30 @@ fn execute(command: DevCommand) -> Result<String, Failure> {
                 .and_then(|db| db.search(&query, settings, threads, mode))
                 .map_err(|e| e.to_string())
                 .and_then(|report| serde_json::to_string_pretty(&report).map_err(|e| e.to_string()))
+                .map(Evaluated::Printed)
                 .map_err(Failure::from);
         }
-        DevCommand::RescuePlan { inputs, v2 } => {
-            let (rescue, bound, files) = rescue_inputs(&inputs, &v2, &mut pins)?;
+        DevCommand::RescuePlan {
+            inputs,
+            v2,
+            package,
+        } => {
+            let (rescue, bound, files, verified) =
+                rescue_inputs(&inputs, &v2, &package, &mut pins)?;
             let mut value = rescue
                 .plan(&bound)
                 .map_err(|e| e.to_string())?
                 .to_value()
                 .clone();
             value["input"]["anim_record_files"] = files;
+            verification = record_package(&mut value, verified);
             value
         }
     };
     result["input"]["verification"] = Value::String(verification.into());
-    let output = serde_json::to_string_pretty(&result).map_err(|e| e.to_string())?;
+    if annotate_report {
+        crate::report::annotate(&mut result);
+    }
     // Recheck the originally pinned bytes before a successful result can leave this wrapper.
     for (path, hash) in &pins {
         let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
@@ -710,7 +892,7 @@ fn execute(command: DevCommand) -> Result<String, Failure> {
             return Err(format!("{}: input changed during decision", path.display()).into());
         }
     }
-    Ok(output)
+    Ok(Evaluated::Report(result))
 }
 
 fn genomovar_diagnostic(args: &GenomovarDiagnosticArgs) -> Result<String, Failure> {

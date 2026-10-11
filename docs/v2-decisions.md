@@ -5,7 +5,7 @@ The policy `conservative-assembly-anim-v2` implements the P1-r1 calling contract
 The decision core is pure, like v1. A front end supplies text:
 
 1. `SavedEvidence::from_json`, then `with_annotations` for bound problem warnings.
-2. `Panel::from_json`: the primary inventory, checked against the evidence. It lists every primary reference, including those skani did not return.
+2. `Panel::from_json` or `Panel::from_package`: the primary inventory, checked against the evidence. It lists every primary reference, including those skani did not return. `from_package` builds it from an authenticated reference package.
 3. `RescueInput::new(evidence, panel, mask, thresholds)`. The mask removes references from the skani rows, the panel counts and the ANIm competitor set. The legacy v1 result is computed on the masked evidence too.
 4. `AnimRecords::from_jsonl` (or `from_json` for one record), then `bind_to_plan` (or `bind_supplied`).
 5. `decide` for the v2 result, or `plan` for the dry rescue plan.
@@ -57,22 +57,25 @@ The schema is `3.0.0-conditional-assembly-report`. Every v2 result carries the f
 
 `input` records the evidence, inventory and query hashes, the mask and how each ANIm record was bound.
 
-Reason codes map to the contract vocabulary in [v2-reasons.tsv](v2-reasons.tsv).
+Reason codes map to the contract vocabulary in the `conservative-assembly-anim-v2` rows of [reason-vocabulary.tsv](contracts/reason-vocabulary.tsv).
 
 ## Development binary
 
 ```sh
-terobacter-dev rescue-plan evidence.json --reference-inventory inventory.json \
+terobacter-dev rescue-plan evidence.json \
+  (--reference-inventory inventory.json | --reference-package DIR --expected-sha256 HASH) \
   [--anim-records records.jsonl|records/ --anim-method-profile PROFILE] \
   [--exclude-references mask.txt] [--problem-warnings warnings.json --problem-warnings-sha256 HASH]
 
 terobacter-dev saved-evidence evidence.json --policy conservative-assembly-anim-v2 \
-  --reference-inventory inventory.json [--reference-inventory-sha256 HASH] \
+  (--reference-inventory inventory.json [--reference-inventory-sha256 HASH] \
+   | --reference-package DIR --expected-sha256 HASH) \
   [--anim-records records.jsonl|records/ --anim-method-profile PROFILE] \
-  [--exclude-references mask.txt] [--species-ani T] [--subspecies-ani S]
+  [--exclude-references mask.txt] [--species-ani T] [--subspecies-ani S] \
+  [--report-dir NEW_DIRECTORY]
 ```
 
-`--anim-records` takes JSON Lines files, single-record `.json` files or directories of `.jsonl` files, and both commands bind records by the dry-plan rule. A mask file lists one reference ID per line. `rescue-plan` takes no sequence input and runs no alignment. A valid decision exits 0 even when the rescue is incomplete; `rescue_status` and `evaluation_status` say so. v1 refuses `--anim-records` and `--exclude-references`.
+`--anim-records` takes JSON Lines files, single-record `.json` files or directories of `.jsonl` files, and both commands bind records by the dry-plan rule. A mask file lists one reference ID per line. The panel comes from exactly one source. `--reference-package` verifies the package as the v1 binding does, requires the evidence to be bound to it and builds the panel from its primary component, so no separate inventory is needed. The result then reports the package under `reference_package`, and `input.verification` ends `reference_package_verified`. `rescue-plan` takes no sequence input and runs no alignment. A valid decision exits 0 even when the rescue is incomplete; `rescue_status` and `evaluation_status` say so. `--report-dir` writes the same report files as the public command; see [v1-decisions.md](v1-decisions.md#report-files). v1 refuses `--anim-records` and accepts a mask on its own; see [reference masks](v1-decisions.md#reference-masks).
 
 ## Custom ANI thresholds
 

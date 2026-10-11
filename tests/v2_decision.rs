@@ -310,13 +310,9 @@ fn custom_thresholds_equal_to_the_defaults_are_still_custom_and_recorded() {
 
 #[test]
 fn every_v2_reason_maps_to_the_contract_vocabulary() {
-    let map: Vec<(String, String)> = include_str!("../docs/v2-reasons.tsv")
-        .lines()
-        .skip(1)
-        .map(|l| {
-            let f: Vec<_> = l.split('\t').collect();
-            (f[0].to_owned(), f[2].to_owned())
-        })
+    let map: Vec<(String, String)> = common::reason_vocabulary("conservative-assembly-anim-v2")
+        .into_iter()
+        .map(|row| (row.terobacter_reason, row.field))
         .collect();
     let known = |reason: &str, field: &str| map.iter().any(|(r, f)| r == reason && f == field);
     let mut extra = vec![decide(&rescuable())];

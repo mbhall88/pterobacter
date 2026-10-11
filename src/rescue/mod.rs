@@ -304,28 +304,11 @@ impl RescueInput {
         mask: &[String],
         thresholds: Thresholds,
     ) -> Result<Self, EvidenceError> {
-        if panel.evidence_sha256() != evidence.source_sha256() {
-            return invalid("the primary inventory was checked against different evidence");
-        }
-        let mut set = BTreeSet::new();
-        for id in mask {
-            if panel.get(id).is_none() {
-                return invalid(format!(
-                    "{id}: masked reference is not in the primary panel"
-                ));
-            }
-            if !set.insert(id.as_str()) {
-                return invalid(format!("{id}: reference masked twice"));
-            }
-        }
-        let unreturned = set
-            .iter()
-            .filter(|id| !evidence.references().iter().any(|r| r.id == **id))
-            .count();
+        let (evidence, masked_panel, mask) = panel.mask(&evidence, mask)?;
         Ok(RescueInput {
-            evidence: evidence.without_references(&set, unreturned),
-            panel: panel.without(&set),
-            mask: set.iter().map(|id| (*id).to_owned()).collect(),
+            evidence,
+            panel: masked_panel,
+            mask,
             full_panel: panel,
             thresholds,
         })

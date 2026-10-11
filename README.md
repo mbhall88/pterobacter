@@ -30,7 +30,7 @@ You need a recent stable Rust toolchain and [`just`](https://github.com/casey/ju
 ```sh
 just test            # tests as a default build, then with the development feature
 just lint            # clippy with warnings denied
-just install-check   # a default install exposes only tero and terobacter
+just install-check   # install exposes only tero and terobacter, then smoke-test them
 cargo install --path .
 ```
 
@@ -44,6 +44,10 @@ Evaluation-only operations live in `terobacter-dev`. It is built only on request
 cargo run --features dev --bin terobacter-dev -- saved-evidence tests/fixtures/v1-species-assigned/evidence.json
 cargo run --features dev --bin terobacter-dev -- reference-package <DIR> --expected-sha256 <SHA256> [--named-registry-sha256 <SHA256>] [--lineage-registry-sha256 <SHA256>]
 cargo run --features dev --bin terobacter-dev -- saved-evidence <EVIDENCE> --reference-package <DIR> --expected-sha256 <SHA256> [--named-registry-sha256 <SHA256>] [--lineage-registry-sha256 <SHA256>]
+cargo run --features dev --bin terobacter-dev -- saved-evidence <EVIDENCE> --reference-package <DIR> --expected-sha256 <SHA256> --exclude-references <MASK.txt> [--report-dir <NEW_DIRECTORY>]
+cargo run --features dev --bin terobacter-dev -- saved-evidence <EVIDENCE> --policy conservative-assembly-anim-v2 --reference-package <DIR> --expected-sha256 <SHA256> [--anim-records <RECORDS> --anim-method-profile <PROFILE>] [--exclude-references <MASK.txt>]
+cargo run --features dev --bin terobacter-dev -- rescue-plan <EVIDENCE> --reference-package <DIR> --expected-sha256 <SHA256> [--anim-records <RECORDS> --anim-method-profile <PROFILE>]
+cargo run --features dev --bin terobacter-dev -- skani-search --database <DIR>/databases/primary_whole --query <QUERY.fa> [--genomovar]
 cargo run --features dev --bin terobacter-dev -- genomovar-diagnostic --report <REPORT.json> --expected-report-sha256 <SHA256> --reference-package <DIR> --expected-sha256 <SHA256> [--exclude-evidence-row <REFERENCE_ID>]... [--remove-group <GENOMOVAR_ID>]...
 cargo run --features dev --bin terobacter-dev -- genomovar-diagnostic --report <REPORT.json> --expected-report-sha256 <SHA256> --reference-package <DIR> --expected-sha256 <SHA256> --setting self_alias --exclude-references <PRIMARY_MASK.txt> --exclude-references-sha256 <SHA256> --mask-member <REFERENCE_ID>
 ```
@@ -56,7 +60,7 @@ The source manifest must be exactly the record the package's eleven tables, reci
 
 A package converted from the version 1 format carries the version 1 `portable.json` as an attested conversion record. The verifier checks that the record lists the same package, source manifest, export attestation and assets as the version 2 manifest.
 
-`--reference-package` authenticates the package in the same way, then requires the evidence to be bound to it. The evidence's reference package digest must equal the verified manifest digest, or the digest of the attested version 1 manifest it was converted from. The evidence must cover the whole primary component. Each row must give what the package gives for its reference: the species and subspecies with their display names, the name status of the more specific of the two, the role (`type_anchor` or `diversity`), and no lineage. Contradictory evidence is refused, never corrected. The two flags must be given together. Package binding applies to v1 decisions only; `--policy conservative-assembly-anim-v2` refuses `--reference-package`. Without `--reference-package` the decision reports `reference_package.status` as `not_verified`.
+`--reference-package` authenticates the package in the same way, then requires the evidence to be bound to it. The evidence's reference package digest must equal the verified manifest digest, or the digest of the attested version 1 manifest it was converted from. The evidence must cover the whole primary component. Each row must give what the package gives for its reference: the species and subspecies with their display names, the name status of the more specific of the two, the role (`type_anchor` or `diversity`), and no lineage. Contradictory evidence is refused, never corrected. The two flags must be given together. Under `--policy conservative-assembly-anim-v2`, for `rescue-plan` and for a v1 reference mask, the verified package also supplies the primary panel in place of `--reference-inventory`; give one or the other. Without `--reference-package` the decision reports `reference_package.status` as `not_verified`.
 
 `genomovar-diagnostic` accepts a completed assembly report with a completed, package-bound genomovar search. It checks the exact report bytes against `--expected-report-sha256`, verifies the package, and reuses saved evidence without running a new search. Repeat `--mask-member` to exclude definition members, `--remove-group` to omit whole groups, or `--exclude-evidence-row` to drop saved comparisons while retaining their required membership. The source report stays pinned and unchanged. Its `genomovar_id` remains null; `diagnostic_would_assign_genomovar_id` records the diagnostic candidate.
 
@@ -86,7 +90,7 @@ The reciprocal ANIm development operation measures one pair with the approved ma
 cargo run --features dev --bin terobacter-dev -- anim-pair --query QUERY.fa --reference REFERENCE.fa --output NEW_DIRECTORY
 ```
 
-See [the method amendment](docs/contracts/P1-ANIM-MUMMER4-r1.md) and [P4a-r3 command binding](docs/contracts/P4a-r3.md) for provenance, parser replay, resource limits and remaining acceptance gates.
+See [the method amendment](docs/contracts/P1-ANIM-MUMMER4-r1.md) and [P4a-r3 command binding](docs/contracts/P4a-r3.md) for provenance, parser replay, resource limits and remaining acceptance gates. [The evaluation handoff](docs/contracts/evaluation-handoff.md) binds each evaluation step to a command and maps terobacter's reasons and fields to the reference scorer.
 
 ## Layout
 

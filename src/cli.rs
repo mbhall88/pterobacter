@@ -2,7 +2,7 @@
 pub mod assembly;
 pub mod cache;
 pub mod mlst;
-mod outputs;
+pub(crate) mod outputs;
 pub mod v2;
 
 use crate::decision::V1_POLICY_ID;
@@ -262,7 +262,11 @@ pub fn run_public() -> ExitCode {
 
 /// Write the JSON report and its renderings into a directory this run created. Each file is
 /// created new, so nothing is ever replaced.
-fn write_reports(dir: &Path, json: &Value, rendered: &crate::report::Rendered) -> io::Result<()> {
+pub(crate) fn write_reports(
+    dir: &Path,
+    json: &Value,
+    rendered: &crate::report::Rendered,
+) -> io::Result<()> {
     let mut report = serde_json::to_string_pretty(json)?;
     report.push('\n');
     for (name, content) in [

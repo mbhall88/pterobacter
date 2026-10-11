@@ -17,7 +17,7 @@ test:
     cargo test -v --all-targets --no-fail-fast
     cargo test -v --all-targets --all-features --no-fail-fast
 
-# check that a default install exposes only the public commands
+# check that a default install exposes only the public commands, then smoke-test them
 install-check:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -31,6 +31,7 @@ install-check:
     fi
     "$root/bin/tero" --version
     "$root/bin/terobacter" --version
+    TEROBACTER_INSTALLED_BIN="$root/bin" cargo test --locked --test installed_smoke -- --ignored
 
 # get coverage with tarpaulin
 coverage:

@@ -170,7 +170,40 @@ impl Panel {
         &self.evidence_sha256
     }
 
-    pub(crate) fn without(&self, mask: &BTreeSet<&str>) -> Panel {
+    /// Remove masked references from the evidence rows, its panel counts and this panel. The
+    /// panel must be bound to `evidence`, every masked reference must be in it, and none may be
+    /// named twice. Returns the masked evidence and panel with the sorted masked IDs.
+    pub(crate) fn mask(
+        &self,
+        evidence: &SavedEvidence,
+        mask: &[String],
+    ) -> Result<(SavedEvidence, Panel, BTreeSet<String>), EvidenceError> {
+        if self.evidence_sha256() != evidence.source_sha256() {
+            return invalid("the primary inventory was checked against different evidence");
+        }
+        let mut set = BTreeSet::new();
+        for id in mask {
+            if self.get(id).is_none() {
+                return invalid(format!(
+                    "{id}: masked reference is not in the primary panel"
+                ));
+            }
+            if !set.insert(id.as_str()) {
+                return invalid(format!("{id}: reference masked twice"));
+            }
+        }
+        let unreturned = set
+            .iter()
+            .filter(|id| !evidence.references().iter().any(|r| r.id == **id))
+            .count();
+        Ok((
+            evidence.without_references(&set, unreturned),
+            self.without(&set),
+            set.iter().map(|id| (*id).to_owned()).collect(),
+        ))
+    }
+
+    fn without(&self, mask: &BTreeSet<&str>) -> Panel {
         Panel {
             references: self
                 .references

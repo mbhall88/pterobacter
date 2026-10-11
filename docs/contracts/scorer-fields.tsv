@@ -1,0 +1,41 @@
+record	scorer_field	supplied_by	terobacter_output	terobacter_path	rule
+rescue	v1.status	terobacter	v1-report	assignment.status	copy
+rescue	v1.species_id	terobacter	v1-report	assignment.species_id	copy
+rescue	v1.subspecies_id	terobacter	v1-report	assignment.subspecies_id	copy
+rescue	v1.reasons	terobacter	v1-report	blocking_reasons	map conservative-assembly-v1
+rescue	v2.status	terobacter	v2-report	status	copy
+rescue	v2.species_id	terobacter	v2-report	species_id	copy
+rescue	v2.subspecies_id	terobacter	v2-report	subspecies_id	copy
+rescue	v2.reasons	terobacter	v2-report	reasons	map conservative-assembly-anim-v2
+rescue	v2.trigger	terobacter	v2-report	trigger	copy
+rescue	v2.call_basis	terobacter	v2-report	call_basis	copy
+rescue	v2.competitor_evaluation	terobacter	v2-report	competitor_evaluation	copy
+rescue	v2.legacy_v1_result.status	terobacter	v2-report	legacy_v1_result.status	copy
+rescue	v2.legacy_v1_result.species_id	terobacter	v2-report	legacy_v1_result.species_id	copy
+rescue	v2.legacy_v1_result.subspecies_id	terobacter	v2-report	legacy_v1_result.subspecies_id	copy
+rescue	v2.legacy_v1_result.reasons	terobacter	v2-report	legacy_v1_result.reasons	map conservative-assembly-v1
+rescue	manifest.state	p4b	rescue-plan	trigger_state	P4b trigger manifest, built from R4 and checked against the P4a enumeration; never read from the v2 report
+rescue	manifest.parent_id	p4b	rescue-plan	nearest_parent.concept_id	P4b trigger manifest, built from R4; reference_id for an untyped nearest reference; null outside the band
+rescue	truth	p4b	-	-	P4b truth and record bookkeeping
+rescue	record_id	p4b	-	-	P4b truth and record bookkeeping
+rescue	dataset	p4b	-	-	P4b truth and record bookkeeping
+rescue	setting	p4b	-	-	P4b truth and record bookkeeping
+genomovar	parent.status	terobacter	genomovar-section	parent.status	copy
+genomovar	parent.species_id	terobacter	genomovar-section	parent.species_id	copy
+genomovar	parent.subspecies_id	terobacter	genomovar-section	parent.subspecies_id	copy
+genomovar	parent.call_basis	terobacter	parent-report	call_basis	v2 report: copy; v1 report: skani
+genomovar	gv.assigned	terobacter	genomovar-section	genomovar_id	copy
+genomovar	gv.compatible	terobacter	genomovar-section	compatible_groups	copy
+genomovar	gv.incomplete	terobacter	genomovar-section	incomplete_groups	copy
+genomovar	gv.reasons	terobacter	genomovar-section	reasons	map p3a-genomovar-contract-r1, keeping the first of any duplicate
+genomovar	gv.member_af_pass	terobacter	genomovar-section	groups	true when exactly one group is compatible and its below_member_af is empty
+genomovar	gv.diagnostic_would_assign	terobacter	genomovar-diagnostic	diagnostic.diagnostic_would_assign_genomovar_id	copy; absent from deployment reports
+genomovar	diagnostic	terobacter	genomovar-diagnostic	diagnostic.search.diagnostic_exclusion	copy; false for a report's genomovar section
+genomovar	masked_members	terobacter	genomovar-diagnostic	diagnostic.diagnostic_actions.masked_members	copy; empty for a report's genomovar section
+genomovar	removed_groups	terobacter	genomovar-diagnostic	diagnostic.diagnostic_actions.removed_groups	copy; empty for a report's genomovar section
+genomovar	record_id	p4b	-	-	P4b record bookkeeping from the frozen definition and selection
+genomovar	dataset	p4b	-	-	P4b record bookkeeping from the frozen definition and selection
+genomovar	source_group	p4b	-	-	P4b record bookkeeping from the frozen definition and selection
+genomovar	self_member	p4b	-	-	P4b record bookkeeping from the frozen definition and selection
+genomovar	singleton_source	p4b	-	-	P4b record bookkeeping from the frozen definition and selection
+genomovar	assigned_singleton	p4b	-	-	P4b record bookkeeping from the frozen definition and selection

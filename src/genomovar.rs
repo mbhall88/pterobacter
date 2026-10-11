@@ -867,17 +867,9 @@ pub fn diagnostic_parent(
             if !records.is_empty() || method_profile.is_some() {
                 return reject("v1 diagnostic parents do not accept v2 ANIm records");
             }
-            let mut excluded = std::collections::BTreeSet::new();
-            for id in mask {
-                if panel.get(id).is_none() || !excluded.insert(id.as_str()) {
-                    return reject(format!("{id}: unknown or duplicate primary mask reference"));
-                }
-            }
-            let unreturned = excluded
-                .iter()
-                .filter(|id| !evidence.references().iter().any(|row| row.id == **id))
-                .count();
-            let masked = evidence.without_references(&excluded, unreturned);
+            let (masked, _, excluded) = panel
+                .mask(&evidence, mask)
+                .map_err(|error| GenomovarError(error.to_string()))?;
             let mut value = crate::decision::decide(&masked, &crate::decision::Policy::v1())
                 .to_value()
                 .clone();
