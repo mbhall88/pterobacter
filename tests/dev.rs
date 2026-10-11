@@ -574,6 +574,95 @@ fn a_v1_mask_takes_the_panel_from_a_verified_package() {
     assert_eq!(legacy["reasons"], v1["blocking_reasons"]);
 }
 
+/// A report directory inside the reference package would add unlisted files and invalidate
+/// it. Every spelling of such a destination is refused before any directory is created, and
+/// the package still verifies.
+#[test]
+fn a_report_directory_inside_the_reference_package_is_refused() {
+    let synthetic = Synthetic::new();
+    let package_dir = package_on_disk(&synthetic);
+    let package = package_dir.path();
+    let evidence_dir = tempfile::tempdir().unwrap();
+    let evidence_path = packaged_evidence_in(evidence_dir.path(), &synthetic.manifest_sha256());
+    let link = evidence_dir.path().join("package-link");
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(package, &link).unwrap();
+    let verify = || {
+        cargo_bin_cmd!("terobacter-dev")
+            .arg("reference-package")
+            .arg(package)
+            .arg("--expected-sha256")
+            .arg(synthetic.manifest_sha256())
+            .output()
+            .unwrap()
+    };
+    let listing = || {
+        let mut names: Vec<_> = fs::read_dir(package)
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name())
+            .collect();
+        names.sort();
+        names
+    };
+    assert!(verify().status.success());
+    let before = listing();
+    let mut destinations = vec![
+        package.join("reports"),
+        package.join("databases").join("..").join("reports"),
+    ];
+    if cfg!(unix) {
+        destinations.push(link.join("reports"));
+    }
+    for policy in ["conservative-assembly-v1", "conservative-assembly-anim-v2"] {
+        for destination in &destinations {
+            let output = cargo_bin_cmd!("terobacter-dev")
+                .arg("saved-evidence")
+                .arg(&evidence_path)
+                .args(["--policy", policy])
+                .arg("--reference-package")
+                .arg(package)
+                .arg("--expected-sha256")
+                .arg(synthetic.manifest_sha256())
+                .arg("--report-dir")
+                .arg(destination)
+                .output()
+                .unwrap();
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            assert_eq!(
+                output.status.code(),
+                Some(2),
+                "{policy} {destination:?}: {stderr}"
+            );
+            assert!(output.stdout.is_empty());
+            assert!(stderr.contains("inside package"), "{stderr}");
+            assert_eq!(listing(), before, "{policy} {destination:?}");
+            assert!(verify().status.success(), "{policy} {destination:?}");
+        }
+    }
+
+    // A destination outside the package still works.
+    let reports = evidence_dir.path().join("reports");
+    let output = cargo_bin_cmd!("terobacter-dev")
+        .arg("saved-evidence")
+        .arg(&evidence_path)
+        .arg("--reference-package")
+        .arg(package)
+        .arg("--expected-sha256")
+        .arg(synthetic.manifest_sha256())
+        .arg("--report-dir")
+        .arg(&reports)
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(reports.join("calls.tsv").is_file());
+    assert_eq!(listing(), before);
+    assert!(verify().status.success());
+}
+
 #[test]
 fn saved_evidence_bound_to_another_package_is_unresolved() {
     let synthetic = Synthetic::new();

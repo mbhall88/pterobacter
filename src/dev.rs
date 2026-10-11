@@ -676,12 +676,31 @@ fn record_package(value: &mut Value, package: Option<VerifiedPackage>) -> &'stat
 }
 
 fn execute(command: DevCommand) -> Result<String, Failure> {
-    // The report directory is created before any work, so a collision changes nothing.
+    // The report directory is checked and created before any work, so a collision changes
+    // nothing. The shared output checks refuse a destination inside the reference package,
+    // however it is spelled, because the package's inventory rejects any unlisted file.
     let report_dir = match &command {
         DevCommand::SavedEvidence {
             report_dir: Some(dir),
+            package,
             ..
         } => {
+            crate::cli::outputs::check(&crate::cli::outputs::Paths {
+                report: None,
+                report_dir: Some(dir),
+                anim_output: None,
+                anim_cache: None,
+                packages: package
+                    .reference_package
+                    .iter()
+                    .map(PathBuf::as_path)
+                    .collect(),
+                assemblies: vec![],
+            })
+            .map_err(|message| Failure {
+                code: EXIT_USAGE,
+                message,
+            })?;
             std::fs::create_dir(dir).map_err(|error| Failure {
                 code: EXIT_USAGE,
                 message: format!("--report-dir must be a new directory: {error}"),

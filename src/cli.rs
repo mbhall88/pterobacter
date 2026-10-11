@@ -2,7 +2,7 @@
 pub mod assembly;
 pub mod cache;
 pub mod mlst;
-mod outputs;
+pub(crate) mod outputs;
 pub mod v2;
 
 use crate::decision::V1_POLICY_ID;
