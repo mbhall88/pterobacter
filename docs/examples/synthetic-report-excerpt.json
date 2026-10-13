@@ -1,0 +1,15 @@
+{
+  "assignment": {
+    "status": "assigned",
+    "species_name": "Enterobacter syntheticus",
+    "subspecies_name": "Enterobacter syntheticus subsp. syntheticus",
+    "genomovar_id": null
+  },
+  "genomovar": {
+    "status": "withheld",
+    "genomovar_id": null,
+    "reasons": [
+      "absent_eligible_parent"
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+# Analyse assemblies
+
+Pass one whole isolate assembly per FASTA input. Keep plasmids, draft contigs and short records: no manual chromosome selection is required. Gzip, bzip2, xz and zstd FASTA are supported. Reads, metagenomes and mixed samples are outside the supported input.
+
+First [install the program](installation.md) and [set up the reference variables](reference-setup.md).
+
+## One assembly
+
+```sh
+tero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256"   --threads 2 --output isolate.json --report-dir isolate-report isolate.fa
+```
+
+Open `isolate-report/report.md` for the answer and warnings. The full JSON is in `isolate.json` and `isolate-report/report.json`; [reading results](results.md) explains the fields. Without `--output`, the full JSON goes to standard output. `--report-dir` adds the report files without changing that destination.
+
+## A batch
+
+```sh
+tero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256"   --jobs 2 --threads 2 --output batch.json --report-dir batch-report   isolate_1.fa isolate_2.fa
+```
+
+The main JSON is an array in input order. `calls.tsv` has one row per assembly, and `report.md` has a section for each. Inspect every input's execution status; a failure in one input does not erase a completed result from another. Jobs multiply the per-assembly thread allocation.
+
+All output files and report directories must be new, distinct, outside the input/reference directories and not nested within one another. The program refuses existing paths. Analysis makes no network request after provisioning.
+
+## Common controls
+
+| Option | Use |
+|---|---|
+| `--threads N` | Search threads per assembly; default 1. |
+| `--jobs N` | Assemblies analysed concurrently; default 1. |
+| `--output FILE` | Save the JSON to a new file. |
+| `--report-dir DIR` | Add readable Markdown and TSV reports in a new directory. |
+| `--help` | Show the complete current option list. |
+
+[Historical MLST](historical-mlst.md) is optional. The [command reference](assembly.md) covers explicit policy selection, ANIm components, resource limits and verified alignment caching. The default remains `conservative-assembly-v1`; this guide does not change it.
