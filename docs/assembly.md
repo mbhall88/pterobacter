@@ -60,7 +60,7 @@ Reports include authenticated data identity and version, policy ID, implementati
 | 5 | Requested native policy is unavailable, or ANIm flags are supplied to v1. No v1 fallback occurs. |
 | 6 | MLST was requested and did not complete for an input whose classification completed, or its package changed during the run. Classification results are retained. |
 
-For batches with different failures, the last failed input's code in argument order is returned. A final package recheck failure takes precedence over it, and an interruption over both. Inspect each report's execution status. Development commands retain their separate exit-code meanings in the README.
+For batches with different failures, the last failed input's code in argument order is returned. A final package recheck failure takes precedence over it, and an interruption over both. Inspect each report's execution status. Development commands retain their separate [exit-code meanings](development.md#development-exit-codes).
 
 These are implementation and development-parity checks. Independent biological validation and release/platform acceptance remain separate gates.
 
