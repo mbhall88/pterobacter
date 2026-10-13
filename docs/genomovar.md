@@ -62,4 +62,6 @@ A genomovar search failure is an execution failure, not a negative result. As wi
 
 ## Limits
 
+An unrepresented group can match a neighbouring reference group. A unique match means compatibility with the supplied definition; it does not prove that the query's source group is represented or that all unsampled groups have been excluded. The frozen omission diagnostics observed this limitation between GV01/GV24 and GV04/GV05. With the full reference set, overlapping compatible groups remain withheld. Singleton matches retain the sparse-reference warning. These observations do not justify changing the frozen threshold after seeing the results.
+
 The 15 singleton groups have no independently demonstrated population boundary. Identical sequence is not evidence of isolate identity. Nothing reclusters the definition, changes a membership, updates the package from a query or uses ST as a tiebreaker. Queries matching the same group are not necessarily ≥99.5% to each other. Skani aligned fraction does not certify exact whole-input base coverage, and records shorter than 500 bases are not sketched. These are implementation checks against the accepted contract; the evaluation of genomovar calls on new genomes is separate.
