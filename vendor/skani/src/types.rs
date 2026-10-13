@@ -308,7 +308,7 @@ impl Sketch {
     }
 
     /// Get SeedPositions for a seed using Cow
-    pub fn get_seed_positions(&self, seed: SeedBits) -> Cow<[SeedPosition]> {
+    pub fn get_seed_positions(&self, seed: SeedBits) -> Cow<'_, [SeedPosition]> {
         if let Some(kmer_seeds) = &self.kmer_seeds_k {
             if let Some(&tagged_index) = kmer_seeds.get(&seed) {
                 if TaggedIndex::is_single(tagged_index) {

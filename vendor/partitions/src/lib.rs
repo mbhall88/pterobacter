@@ -44,7 +44,6 @@
 //! [`make_singleton`]: partition_vec/struct.PartitionVec.html#method.make_singleton
 
 //#![warn(missing_docs)]
-#![cfg_attr(feature = "cargo-clippy", warn(clippy::pedantic))]
 
 extern crate bit_vec;
 

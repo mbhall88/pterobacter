@@ -96,7 +96,7 @@ jobs:
           fi
           cargo test --locked -p skani --lib
           cargo test --locked -p partitions
-          cargo test --manifest-path vendor/partitions/Cargo.toml --features compact
+          CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$PWD/target}" cargo test --manifest-path vendor/partitions/Cargo.toml --features compact
       - name: Check what a default install exposes
         run: |
           if [ "${{ runner.os }}" = macOS ]; then

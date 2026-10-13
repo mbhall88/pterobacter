@@ -1142,8 +1142,7 @@ fn get_nonoverlapping_chains(
 
             interval_tree_q.insert(q_interval, i);
             interval_tree_r.insert(r_interval, i);
-            let mut cloned_int = int.clone();
-            cloned_int.overlap = sum_overlaps_query;
+            // Preserve upstream insertion of the original interval and its overlap.
             good_non_overlap_intervals[int.chunk_id].push(int.clone());
         }
     }
@@ -1153,4 +1152,31 @@ fn get_nonoverlapping_chains(
     );
     //good_non_overlap_intervals.sort_by(|x, y| y.partial_cmp(&x).unwrap());
     good_non_overlap_intervals
+}
+
+#[cfg(test)]
+mod maintenance_tests {
+    use super::*;
+
+    #[test]
+    fn accepted_small_overlaps_retain_the_original_interval() {
+        let interval = |start, end, score, overlap| ChainInterval {
+            score,
+            num_anchors: 10,
+            interval_on_query: (start, end),
+            interval_on_ref: (start, end),
+            ref_contig: 0,
+            query_contig: 0,
+            chunk_id: 0,
+            reverse_chain: false,
+            overlap,
+        };
+        let mut intervals = vec![interval(0, 100, 20.0, 7), interval(90, 190, 10.0, 3)];
+        let accepted = get_nonoverlapping_chains(&mut intervals, 1);
+        assert_eq!(accepted[0].len(), 2);
+        assert_eq!(accepted[0][0].overlap, 7);
+        // The overlap is 10 bases, but upstream pushes the original overlap of 3.
+        assert_eq!(accepted[0][1].overlap, 3);
+        assert_eq!(accepted[0][1].interval_on_query, (90, 190));
+    }
 }

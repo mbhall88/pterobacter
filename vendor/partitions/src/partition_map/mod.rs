@@ -176,7 +176,7 @@ macro_rules! partition_map {
                 self.vec.clear_lazy_removed();
             }
 
-            pub fn entry(&mut self, key: K) -> Entry<K, V> {
+            pub fn entry(&mut self, key: K) -> Entry<'_, K, V> {
                 let entry = unsafe { self.map.entry(UnboundedRef::from(&key)) };
 
                 match entry {
@@ -277,35 +277,35 @@ macro_rules! partition_map {
                 unsafe { Some(self.vec.lazy_remove(index, last_removed)) }
             }
 
-            pub fn keys(&self) -> Keys<K, V> {
+            pub fn keys(&self) -> Keys<'_, K, V> {
                 Keys {
                     iter: self.map.keys(),
                     marker: std::marker::PhantomData,
                 }
             }
 
-            pub fn values(&self) -> Values<K, V> {
+            pub fn values(&self) -> Values<'_, K, V> {
                 Values {
                     iter: self.map.values(),
                     vec: &self.vec,
                 }
             }
 
-            pub fn values_mut(&mut self) -> ValuesMut<K, V> {
+            pub fn values_mut(&mut self) -> ValuesMut<'_, K, V> {
                 ValuesMut {
                     iter: self.map.values(),
                     vec: &mut self.vec,
                 }
             }
 
-            pub fn iter(&self) -> Iter<K, V> {
+            pub fn iter(&self) -> Iter<'_, K, V> {
                 Iter {
                     iter: self.map.values(),
                     vec: &self.vec,
                 }
             }
 
-            pub fn iter_mut(&mut self) -> IterMut<K, V> {
+            pub fn iter_mut(&mut self) -> IterMut<'_, K, V> {
                 IterMut {
                     iter: self.map.values_mut(),
                     vec: &mut self.vec,
