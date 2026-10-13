@@ -1,0 +1,141 @@
+reference_id	role	species	subspecies	ani_percent	reference_af_percent	query_af_percent	passes_95_80_screen
+primary_whole:GCA_009834325.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. hoffmannii	99.97	92.61	93.65	True
+primary_whole:GCA_001729745.1	type_anchor	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. hoffmannii	99.03	91.66	84.29	True
+primary_whole:GCA_052921675.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. hoffmannii	99.02	86.15	85.68	True
+primary_whole:GCA_040096145.1	type_anchor	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. hoffmannii	99.01	90.22	86.22	True
+primary_whole:GCA_013625435.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. hoffmannii	98.97	88.32	85.46	True
+primary_whole:GCA_052922205.1	type_anchor	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. hoffmannii	98.92	88.95	85.48	True
+primary_whole:GCA_013738375.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. hoffmannii	98.86	84.57	86.69	True
+primary_whole:GCA_027595125.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. hoffmannii	98.81	91.37	86.3	True
+primary_whole:GCA_050871265.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. steigerwaltii	96.05	80.12	81.66	True
+primary_whole:GCA_030848005.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. xiangfangensis	96.03	86.07	82.65	True
+primary_whole:GCA_043965205.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. steigerwaltii	95.94	79.15	81.35	False
+primary_whole:GCA_046097115.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. steigerwaltii	95.91	77.93	82.14	False
+primary_whole:GCA_051092005.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. xiangfangensis	95.88	83.59	78.85	False
+primary_whole:GCA_013743295.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. oharae	95.87	85.27	81.34	True
+primary_whole:GCA_001729785.1	type_anchor	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. xiangfangensis	95.84	87.24	79.94	False
+primary_whole:GCA_025369895.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. xiangfangensis	95.76	82.81	79.19	False
+primary_whole:GCA_032389435.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. steigerwaltii	95.76	81.08	78.03	False
+primary_whole:GCA_053699795.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. steigerwaltii	95.76	81.92	80.59	True
+primary_whole:GCA_001729705.1	type_anchor	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. oharae	95.75	85.94	79.8	False
+primary_whole:GCA_013726395.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. oharae	95.75	84.26	80.31	True
+primary_whole:GCA_013731155.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. oharae	95.75	84.16	80.87	True
+primary_whole:GCA_002204775.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. xiangfangensis	95.74	82.17	81.41	True
+primary_whole:GCA_030411255.2	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. steigerwaltii	95.74	82.19	81.68	True
+primary_whole:GCA_054871305.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. steigerwaltii	95.74	83.03	79.49	False
+primary_whole:GCA_013743755.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. oharae	95.73	86.5	81.76	True
+primary_whole:GCA_030848125.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. xiangfangensis	95.72	84.86	81.84	True
+primary_whole:GCA_051091715.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. xiangfangensis	95.72	82.27	80.57	True
+primary_whole:GCA_036936505.1	diversity	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. xiangfangensis	95.7	78.78	79.64	False
+primary_whole:GCA_001729725.1	type_anchor	Enterobacter xiangfangensis	Enterobacter xiangfangensis subsp. steigerwaltii	95.51	84.71	79.63	False
+primary_whole:GCA_039734725.2	diversity	Enterobacter xiangfangensis		95.01	81.31	78.49	False
+primary_whole:GCA_043973395.1	diversity	Enterobacter hormaechei		94.45	82.87	77.24	False
+primary_whole:GCA_053349035.1	diversity	Enterobacter hormaechei		94.33	78.83	75.39	False
+primary_whole:GCA_019048245.1	type_anchor	Enterobacter hormaechei		94.32	82.75	79.96	False
+primary_whole:GCA_045037665.1	diversity	Enterobacter hormaechei		94.32	78.91	78.02	False
+primary_whole:GCA_031852185.1	diversity	Enterobacter hormaechei		94.18	85.89	76.75	False
+primary_whole:GCA_004331385.1	type_anchor	Enterobacter quasihormaechei		93.49	83.91	75.11	False
+primary_whole:GCA_013376835.1	diversity	Enterobacter pasteurii		91.55	71.33	70.96	False
+primary_whole:GCA_028890245.1	type_anchor	Enterobacter pasteurii		91.37	73.92	69.97	False
+primary_whole:GCA_031218175.1	diversity	Enterobacter bugandensis		89.67	60.41	56.43	False
+primary_whole:GCA_053165385.1	diversity	Enterobacter bugandensis		89.6	59.73	56.99	False
+primary_whole:GCA_004804395.1	diversity	Enterobacter bugandensis		89.49	61.11	57.06	False
+primary_whole:GCA_019046905.1	type_anchor	Enterobacter bugandensis		89.49	57.73	57.17	False
+primary_whole:GCA_054382355.1	diversity	Enterobacter bugandensis		89.49	60.28	57.59	False
+primary_whole:GCA_039718975.1	diversity	Enterobacter chuandaensis		89.46	57.36	55.46	False
+primary_whole:GCA_043967505.1	diversity	Enterobacter bugandensis		89.36	60.68	56.74	False
+primary_whole:GCA_043970685.1	diversity	Enterobacter bugandensis		89.34	60.81	56.12	False
+primary_whole:GCA_045278925.1	diversity	Enterobacter chuandaensis		89.34	55.1	56.01	False
+primary_whole:GCA_045348695.1	diversity	Enterobacter chuandaensis		89.34	59.89	56.41	False
+primary_whole:GCA_054382275.1	diversity	Enterobacter mori		89.32	56.73	57.19	False
+primary_whole:GCA_977007405.1	diversity	Enterobacter mori		89.25	60.93	58.5	False
+primary_whole:GCA_043966825.1	diversity	Enterobacter bugandensis		89.19	59.3	56.17	False
+primary_whole:GCA_026344075.1	type_anchor	Enterobacter nematophilus		89.16	60.99	56.44	False
+primary_whole:GCA_003594915.1	type_anchor	Enterobacter chuandaensis		89.0	59.01	53.74	False
+primary_whole:GCA_022014715.1	diversity	Enterobacter mori		88.99	60.39	57.49	False
+primary_whole:GCA_030410235.2	diversity	Enterobacter roggenkampii	Enterobacter roggenkampii subsp. roggenkampii	88.98	53.83	52.26	False
+primary_whole:GCA_001521715.1	type_anchor	Enterobacter asburiae		88.93	54.16	51.17	False
+primary_whole:GCA_009184765.2	diversity	Enterobacter roggenkampii	Enterobacter roggenkampii subsp. roggenkampii	88.92	53.01	51.63	False
+primary_whole:GCA_025244905.1	diversity	Enterobacter mori		88.91	61.06	57.45	False
+primary_whole:GCA_003964905.1	type_anchor	Enterobacter mori		88.9	60.17	55.68	False
+primary_whole:GCA_008931545.1	diversity	Enterobacter kobei		88.89	50.51	53.28	False
+primary_whole:GCA_014490825.1	diversity	Enterobacter roggenkampii	Enterobacter roggenkampii subsp. roggenkampii	88.88	55.58	53.95	False
+primary_whole:GCA_051517475.1	diversity	Enterobacter mori		88.87	60.73	56.91	False
+primary_whole:GCA_043973405.1	diversity	Enterobacter mori		88.79	58.63	56.85	False
+primary_whole:GCA_001729805.1	type_anchor	Enterobacter roggenkampii	Enterobacter roggenkampii subsp. roggenkampii	88.78	54.53	52.52	False
+primary_whole:GCA_019968825.1	diversity	Enterobacter roggenkampii	Enterobacter roggenkampii subsp. quasiroggenkampii	88.77	48.77	52.44	False
+primary_whole:GCA_052569525.1	diversity	Enterobacter asburiae		88.77	52.26	54.4	False
+primary_whole:GCA_001984825.2	type_anchor	Enterobacter chengduensis	Enterobacter chengduensis subsp. chengduensis	88.75	52.99	54.35	False
+primary_whole:GCA_014490845.1	diversity	Enterobacter roggenkampii	Enterobacter roggenkampii subsp. roggenkampii	88.75	55.58	54.47	False
+primary_whole:GCA_045866555.1	diversity	Enterobacter pseudoroggenkampii		88.72	52.83	52.52	False
+primary_whole:GCA_013784425.1	diversity	Enterobacter asburiae		88.71	55.73	50.67	False
+primary_whole:GCA_009176645.1	type_anchor	Enterobacter oligotrophicus		88.7	58.36	51.35	False
+primary_whole:GCA_015137465.1	diversity	Enterobacter kobei		88.69	48.84	51.85	False
+primary_whole:GCA_021347605.1	diversity	Enterobacter roggenkampii	Enterobacter roggenkampii subsp. roggenkampii	88.69	56.19	53.11	False
+primary_whole:GCA_029542725.1	diversity	Enterobacter roggenkampii	Enterobacter roggenkampii subsp. quasiroggenkampii	88.69	56.94	52.74	False
+primary_whole:GCA_031851495.1	diversity	Enterobacter asburiae		88.68	58.75	55.01	False
+primary_whole:GCA_052974775.1	diversity	Enterobacter roggenkampii	Enterobacter roggenkampii subsp. roggenkampii	88.66	55.58	53.36	False
+primary_whole:GCA_030406165.1	diversity	Enterobacter pseudoroggenkampii		88.63	55.18	51.3	False
+primary_whole:GCA_008364625.2	type_anchor	Enterobacter asburiae		88.62	57.14	51.16	False
+primary_whole:GCA_025999975.1	diversity	Enterobacter asburiae		88.62	53.04	53.3	False
+primary_whole:GCA_034331165.2	diversity	Enterobacter asburiae		88.62	54.5	52.53	False
+primary_whole:GCA_040834095.1	diversity	Enterobacter vonholyi		88.62	58.79	51.63	False
+primary_whole:GCA_003594935.2	type_anchor	Enterobacter huaxiensis		88.61	54.85	54.31	False
+primary_whole:GCA_007035975.1	diversity	Enterobacter vonholyi		88.6	55.05	52.07	False
+primary_whole:GCA_047116295.1	diversity	Enterobacter roggenkampii	Enterobacter roggenkampii subsp. roggenkampii	88.57	53.32	52.82	False
+primary_whole:GCA_015135855.1	diversity	Enterobacter kobei		88.55	47.99	51.06	False
+primary_whole:GCA_019968805.1	diversity	Enterobacter vonholyi		88.55	51.56	50.87	False
+primary_whole:GCA_035835995.1	diversity	Enterobacter wuhouensis		88.55	56.49	53.54	False
+primary_whole:GCA_004006055.1	diversity	Enterobacter vonholyi		88.53	54.93	50.61	False
+primary_whole:GCA_004355165.1	diversity	Enterobacter vonholyi		88.53	57.55	51.92	False
+primary_whole:GCA_004331265.1	type_anchor	Enterobacter wuhouensis		88.52	54.2	52.13	False
+primary_whole:GCA_040059225.1	diversity	Enterobacter roggenkampii	Enterobacter roggenkampii subsp. quasiroggenkampii	88.52	56.88	52.59	False
+primary_whole:GCA_035556915.2	diversity	Enterobacter asburiae		88.49	56.15	53.85	False
+primary_whole:GCA_030406125.1	diversity	Enterobacter pseudoroggenkampii		88.48	55.69	52.69	False
+primary_whole:GCA_053699365.1	diversity	Enterobacter kobei		88.47	53.25	52.08	False
+primary_whole:GCA_043971375.1	diversity	Enterobacter chengduensis	Enterobacter chengduensis subsp. chengduensis	88.46	52.69	52.69	False
+primary_whole:GCA_002952735.2	diversity	Enterobacter roggenkampii	Enterobacter roggenkampii subsp. quasiroggenkampii	88.45	56.06	53.18	False
+primary_whole:GCA_000211415.1	type_anchor	Enterobacter mori		88.44	55.24	53.85	False
+primary_whole:GCA_003665375.1	diversity	Enterobacter kobei		88.44	51.48	52.28	False
+primary_whole:GCA_053698735.1	diversity	Enterobacter kobei		88.44	52.98	51.48	False
+primary_whole:GCA_050847275.1	diversity	Enterobacter wuhouensis		88.41	54.57	52.91	False
+primary_whole:GCA_045278755.1	diversity	Enterobacter kobei		88.4	54.39	50.4	False
+primary_whole:GCA_026420145.1	type_anchor	Enterobacter pseudoroggenkampii		88.39	54.13	51.76	False
+primary_whole:GCA_001039365.2	type_anchor	Enterobacter roggenkampii	Enterobacter roggenkampii subsp. quasiroggenkampii	88.37	54.39	51.39	False
+primary_whole:GCA_028735835.1	diversity	Enterobacter vonholyi		88.37	56.46	51.17	False
+primary_whole:GCA_043972695.1	diversity	Enterobacter roggenkampii	Enterobacter roggenkampii subsp. quasiroggenkampii	88.37	56.11	52.13	False
+primary_whole:GCA_001729765.1	type_anchor	Enterobacter kobei		88.31	50.77	49.17	False
+primary_whole:GCA_008364555.1	type_anchor	Enterobacter vonholyi		88.31	55.98	50.51	False
+primary_whole:GCA_905331265.2	diversity	Enterobacter cloacae	Enterobacter cloacae subsp. cloacae	88.31	54.18	53.49	False
+primary_whole:GCA_034008275.1	type_anchor	Enterobacter chengduensis	Enterobacter chengduensis subsp. rongchengensis	88.27	51.78	50.34	False
+primary_whole:GCA_000025565.1	type_anchor	Enterobacter cloacae	Enterobacter cloacae subsp. cloacae	88.24	47.38	52.14	False
+primary_whole:GCA_053691555.1	diversity	Enterobacter cloacae	Enterobacter cloacae subsp. cloacae	88.24	48.37	52.56	False
+primary_whole:GCA_002303275.1	diversity	Enterobacter cloacae	Enterobacter cloacae subsp. cloacae	88.21	51.74	51.74	False
+primary_whole:GCA_009036245.1	diversity	Enterobacter sichuanensis		88.15	52.27	48.4	False
+primary_whole:GCA_002939185.1	type_anchor	Enterobacter sichuanensis		88.13	49.04	47.13	False
+primary_whole:GCA_042434935.1	diversity	Enterobacter sichuanensis		88.09	50.02	48.53	False
+primary_whole:GCA_043972705.1	diversity	Enterobacter cloacae	Enterobacter cloacae subsp. dissolvens	88.06	49.03	50.62	False
+primary_whole:GCA_034008295.1	type_anchor	Enterobacter chinensis		88.0	52.6	50.09	False
+primary_whole:GCA_020540925.1	diversity	Enterobacter cloacae	Enterobacter cloacae subsp. cloacae	87.99	52.57	50.82	False
+primary_whole:GCA_043964395.1	diversity	Enterobacter sichuanensis		87.99	49.31	48.56	False
+primary_whole:GCA_000235765.3	diversity	Enterobacter cloacae	Enterobacter cloacae subsp. dissolvens	87.97	51.71	50.5	False
+primary_whole:GCA_024599795.1	diversity	Enterobacter cloacae	Enterobacter cloacae subsp. dissolvens	87.95	51.53	50.16	False
+primary_whole:GCA_046015535.2	diversity	Enterobacter cloacae	Enterobacter cloacae subsp. cloacae	87.9	53.2	51.28	False
+primary_whole:GCA_040892575.1	diversity	Enterobacter cloacae	Enterobacter cloacae subsp. cloacae	87.89	53.18	50.18	False
+primary_whole:GCA_009660455.1	type_anchor	Enterobacter cloacae	Enterobacter cloacae subsp. dissolvens	87.84	52.69	50.11	False
+primary_whole:GCA_016864115.1	diversity	Enterobacter cloacae	Enterobacter cloacae subsp. dissolvens	87.79	51.4	50.57	False
+primary_whole:GCA_031851625.1	diversity	Enterobacter cloacae	Enterobacter cloacae subsp. cloacae	87.76	52.89	50.47	False
+primary_whole:GCA_050626905.1	diversity	Enterobacter ludwigii		87.6	48.78	47.78	False
+primary_whole:GCA_019047785.1	type_anchor	Enterobacter cancerogenus		87.56	49.25	46.68	False
+primary_whole:GCA_043647335.2	diversity	Enterobacter ludwigii		87.54	50.16	47.92	False
+primary_whole:GCA_035323105.1	diversity	Enterobacter ludwigii		87.53	48.73	47.41	False
+primary_whole:GCA_904425455.1	diversity	Enterobacter cancerogenus		87.53	47.48	46.06	False
+primary_whole:GCA_023023105.1	diversity	Enterobacter adelaidei		87.51	45.39	43.14	False
+primary_whole:GCA_002850575.1	diversity	Enterobacter cancerogenus		87.5	48.77	45.98	False
+primary_whole:GCA_029721015.1	diversity	Enterobacter ludwigii		87.5	49.3	47.54	False
+primary_whole:GCA_031851515.1	diversity	Enterobacter ludwigii		87.47	48.64	47.77	False
+primary_whole:GCA_001750725.1	type_anchor	Enterobacter ludwigii		87.42	48.77	47.47	False
+primary_whole:GCA_029718255.1	diversity	Enterobacter ludwigii		87.33	51.11	47.09	False
+primary_whole:GCA_003071645.1	diversity	Enterobacter ludwigii		87.22	49.19	46.89	False
+primary_whole:GCA_025152625.1	diversity	Enterobacter soli		86.79	43.1	41.44	False
+primary_whole:GCA_001654845.1	type_anchor	Enterobacter soli		86.08	41.68	40.62	False

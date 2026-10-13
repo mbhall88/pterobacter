@@ -4,6 +4,8 @@ Classify Enterobacter isolate assemblies with one self-contained command.
 
 > **Status: development.** Whole-assembly v1 and candidate v2 classification and saved-evidence decisions are implemented. No release version is selected. Production implementation, scientific acceptance and release are separate gates tracked in this repository's issues.
 
+The integrated implementation and frozen evaluation have been accepted for private release preparation. The [release record](docs/release-preparation.md) distinguishes those checks from final macOS scientific parity, data redistribution and public release approval. See [installation](docs/installation.md), [reference coverage](docs/supported-taxa.md) and the [boundary-review example](docs/boundary-review.md).
+
 Terobacter reports a species and subspecies call only when the approved rules support one. It shows the nearest-reference evidence either way, so a borderline result is never hidden behind a label.
 
 ## Commands
@@ -23,15 +25,17 @@ tero --reference-package REFERENCE_DIR --expected-sha256 MANIFEST_SHA256 --threa
 
 The default policy is `conservative-assembly-v1`. Use `--policy conservative-assembly-anim-v2` for the candidate ANIm rescue branch; it requires a separate authenticated FASTA component when the rescue plan requests alignments. Every supplied FASTA record is retained, including plasmids and drafts. JSON records lengths, sequence and input byte hashes, the authenticated package identity, engine profile, measurements and the decision. Optional historical MLST runs when `--mlst-package` and `--mlst-expected-sha256` are supplied, and never changes classification. `--jobs` analyses several assemblies at once, `--output` writes the report to a new file, and `--anim-cache` reuses verified v2 alignments across runs. A provisioned run needs no network. See [whole-assembly classification](docs/assembly.md) for input rules, batches, caching, partial reports and exit codes. Add `--report-dir NEW_DIRECTORY` to write `report.json`, `calls.tsv`, `evidence.tsv` and `report.md`. The [usage guide](docs/usage.md) explains these outputs and gives a worked manual-review example.
 
+Genomovar results are conditional matches to the frozen definitions. An unrepresented group can match a neighbouring reference group. Terobacter withholds overlapping compatible matches and warns about singleton groups; a unique match does not prove that the source group is represented. See [genomovar reporting](docs/genomovar.md).
+
 ## Build, test, install
 
-You need a recent stable Rust toolchain and [`just`](https://github.com/casey/just). Native ANIm also requires GNU C++ with C++17 support. On macOS, install Homebrew GCC and set `CXX` to its `g++` executable.
+You need a recent stable Rust toolchain. [`just`](https://github.com/casey/just) is optional and runs the repository checks below. Native ANIm also requires GNU C++ with C++17 support. On macOS, install Homebrew GCC and set `CXX` to its `g++` executable.
 
 ```sh
 just test            # tests as a default build, then with the development feature
 just lint            # clippy with warnings denied
 just install-check   # install exposes only tero and terobacter, then smoke-test them
-cargo install --path .
+cargo install --path . --locked
 ```
 
 Without `just`, `cargo test` and `cargo test --all-features` do the same job.
