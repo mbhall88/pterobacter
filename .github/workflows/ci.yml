@@ -73,10 +73,8 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew install gcc
-          compiler=$(find "$(brew --prefix gcc)/bin" -name 'g++-[0-9]*' | head -n 1)
-          test -n "$compiler"
-          echo "CXX=$compiler" >> "$GITHUB_ENV"
       - uses: actions/cache@v6
+        if: runner.os != 'macOS'
         with:
           path: |
             ~/.cargo/registry/index/
@@ -87,9 +85,46 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
       - name: Run the tests
-        run: just test
+        run: |
+          if [ "${{ runner.os }}" = macOS ]; then
+            export CARGO_TARGET_DIR="$RUNNER_TEMP/terobacter-fresh-native"
+          fi
+          if [ "${{ runner.os }}" = macOS ]; then
+            python3 scripts/without_cxx_overrides.py just test
+          else
+            just test
+          fi
+          cargo test --locked -p skani --lib
+          cargo test --locked -p partitions
+          cargo test --manifest-path vendor/partitions/Cargo.toml --features compact
       - name: Check what a default install exposes
-        run: just install-check
+        run: |
+          if [ "${{ runner.os }}" = macOS ]; then
+            export CARGO_TARGET_DIR="$RUNNER_TEMP/terobacter-fresh-native"
+          fi
+          if [ "${{ runner.os }}" = macOS ]; then
+            python3 scripts/without_cxx_overrides.py just install-check
+          else
+            just install-check
+          fi
+      - name: Check explicit GNU C++ overrides on macOS
+        if: runner.os == 'macOS'
+        run: |
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/terobacter-fresh-native"
+          compiler=$(find "$(brew --prefix gcc)/bin" -name 'g++-[0-9]*' | head -n 1)
+          test -n "$compiler"
+          target=$(rustc -vV | sed -n 's/^host: //p')
+          # Target-specific override wins over invalid HOST_CXX and CXX.
+          python3 scripts/without_cxx_overrides.py env "CXX_$target=$compiler" HOST_CXX=/missing/gnu-cxx CXX=clang++ cargo check --locked
+          # A lower-priority explicit Clang/missing override must not trigger discovery.
+          for invalid in clang++ /missing/gnu-cxx; do
+            if python3 scripts/without_cxx_overrides.py env CXX="$invalid" cargo check --locked > override-error.log 2>&1; then
+              echo "invalid explicit compiler unexpectedly succeeded" >&2
+              exit 1
+            fi
+            cat override-error.log
+            grep -E 'requires GNU C\+\+|Invalid GNU C\+\+ compiler' override-error.log
+          done
 
   fmt:
     name: rustfmt

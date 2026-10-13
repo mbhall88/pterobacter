@@ -12,7 +12,7 @@ There is no packaged release yet. Build from source:
 cargo install --path . --locked
 ```
 
-You need a recent stable Rust toolchain and GNU C++ with C++17 support, because the ANIm step embeds native code. On macOS, install Homebrew GCC and set `CXX` to its `g++`. The install puts two commands on your path, `tero` and `terobacter`. They are the same program; use `terobacter` if another tool already uses `tero`.
+You need a recent stable Rust toolchain and GNU C++ with C++17 support, because the ANIm step embeds native code. On macOS, install Homebrew GCC with `brew install gcc`; native builds discover its versioned `g++` automatically. The install puts two commands on your path, `tero` and `terobacter`. They are the same program; use `terobacter` if another tool already uses `tero`.
 
 A run also needs a reference package: a directory of skani databases and tables, listed in a manifest. Obtain it from a trusted source together with the SHA-256 of its `portable.json`. The command refuses a package whose digest differs. Once the package is on disk, a run needs no network and no other program.
 

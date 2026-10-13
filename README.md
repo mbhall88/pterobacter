@@ -25,7 +25,7 @@ The default policy is `conservative-assembly-v1`. Use `--policy conservative-ass
 
 ## Build, test, install
 
-You need a recent stable Rust toolchain and [`just`](https://github.com/casey/just). Native ANIm also requires GNU C++ with C++17 support. On macOS, install Homebrew GCC and set `CXX` to its `g++` executable.
+You need a recent stable Rust toolchain and [`just`](https://github.com/casey/just). Native ANIm also requires GNU C++ with C++17 support. On macOS, install Homebrew GCC with `brew install gcc`. Native builds discover its versioned `g++` automatically.
 
 ```sh
 just test            # tests as a default build, then with the development feature

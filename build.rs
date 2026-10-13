@@ -1,6 +1,9 @@
 use sha2::{Digest, Sha256};
 use std::{env, fs, path::Path, process::Command};
 
+#[path = "native/compiler.rs"]
+mod compiler;
+
 fn hash_tree(path: &Path, hash: &mut Sha256) {
     let mut entries: Vec<_> = fs::read_dir(path)
         .unwrap()
@@ -21,6 +24,8 @@ fn hash_tree(path: &Path, hash: &mut Sha256) {
 fn main() {
     println!("cargo:rerun-if-changed=vendor/mummer4");
     println!("cargo:rerun-if-changed=native/anim.cc");
+    println!("cargo:rerun-if-changed=native/compiler.rs");
+    println!("cargo:rerun-if-env-changed=PATH");
     println!("cargo:rerun-if-changed=src");
     println!("cargo:rerun-if-changed=Cargo.toml");
     println!("cargo:rerun-if-changed=Cargo.lock");
@@ -37,7 +42,28 @@ fn main() {
         target.contains("linux") || target.contains("apple-darwin"),
         "ANIm process containment currently requires Linux or macOS"
     );
+    let host = env::var("HOST").unwrap();
+    for key in compiler::override_keys(&host, &target) {
+        println!("cargo:rerun-if-env-changed={key}");
+    }
+    let explicit = compiler::explicit_override(&host, &target, |key| env::var_os(key));
+    let discover = compiler::needs_discovery(&host, &target, explicit.is_some())
+        .unwrap_or_else(|error| panic!("{error}"));
     let mut build = cc::Build::new();
+    if discover {
+        let prefixes = compiler::homebrew_prefixes();
+        for prefix in &prefixes {
+            println!("cargo:rerun-if-changed={}", prefix.join("bin").display());
+        }
+        let path = compiler::discover(&prefixes, compiler::is_gnu).expect(
+            "Native macOS ANIm requires Homebrew GNU C++ with C++17 support. Install Homebrew gcc before building, or set CXX to an installed GNU g++ compiler",
+        );
+        println!(
+            "cargo:warning=ANIm selected Homebrew GNU C++: {}",
+            path.display()
+        );
+        build.compiler(path);
+    }
     build
         .cpp(true)
         .cpp_link_stdlib("stdc++")
@@ -50,8 +76,16 @@ fn main() {
         .flag("-fno-openmp")
         .include("vendor/mummer4/include")
         .warnings(false);
-    let compiler = build.get_compiler();
-    assert!(compiler.is_like_gnu() && !compiler.is_like_clang(), "Pinned MUMmer4 requires GCC: set CXX to a supported g++ compiler; macOS native parity remains a validation gate");
+    let selected_by = explicit.as_deref().unwrap_or(if discover {
+        "Homebrew discovery"
+    } else {
+        "cc-rs default"
+    });
+    let compiler = build.try_get_compiler().unwrap_or_else(|error| {
+        panic!("Invalid GNU C++ compiler selected by {selected_by}: {error}")
+    });
+    assert!(compiler.is_like_gnu() && !compiler.is_like_clang() && compiler::is_gnu(compiler.path()),
+        "Pinned MUMmer4 requires GNU C++ with C++17 support; compiler selected by {selected_by} at {} is not GNU C++. Explicit overrides are never replaced", compiler.path().display());
     let version = Command::new(compiler.path())
         .arg("--version")
         .output()
@@ -82,6 +116,9 @@ fn main() {
     hash_tree(Path::new("vendor/mummer4"), &mut hash);
     hash.update(fs::read("native/anim.cc").unwrap());
     hash.update(fs::read("build.rs").unwrap());
+    hash.update(fs::read("native/compiler.rs").unwrap());
+    hash.update(compiler.path().as_os_str().as_encoded_bytes());
+    hash.update(host.as_bytes());
     hash.update(version.as_bytes());
     hash.update(target.as_bytes());
     hash.update(format!("{:?}", compiler.to_command().get_args()).as_bytes());
