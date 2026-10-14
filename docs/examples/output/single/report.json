@@ -1,0 +1,156 @@
+{
+  "assignment": {
+    "genomovar_id": null,
+    "lineage_id": null,
+    "reason": "conditional_assembly_assignment",
+    "species_id": "SYN-SP01",
+    "species_name": "Enterobacter syntheticus",
+    "status": "assigned",
+    "subspecies_id": "SYN-SS01",
+    "subspecies_name": "Enterobacter syntheticus subsp. syntheticus",
+    "subspecies_reason": "diagnostic_candidate_only"
+  },
+  "blocking_reasons": [],
+  "evidence": {
+    "not_returned_reference_count": 0,
+    "raw_hit_count": 5,
+    "reference_count": 5
+  },
+  "execution": {
+    "stage": "genomovar",
+    "status": "complete"
+  },
+  "genomovar": {
+    "genomovar_id": null,
+    "reasons": [
+      "absent_eligible_parent"
+    ],
+    "status": "withheld"
+  },
+  "implementation": {
+    "name": "terobacter",
+    "version": "0.1.0"
+  },
+  "input": {
+    "evidence_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "file": "isolate.fa",
+    "kind": "assembly",
+    "query_sha256": "3fa07c219f750c844d195aaf6f5802748b9025ef5c9d0af7f7a0367d326e52ff",
+    "records": [
+      {
+        "header": "chr",
+        "length": 200003,
+        "ordinal": 1,
+        "sequence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      {
+        "header": "p1",
+        "length": 5,
+        "ordinal": 2,
+        "sequence_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    ],
+    "sequence_scope": "whole_assembly_as_supplied",
+    "total_bases": 200008
+  },
+  "measurement": {
+    "engine_profile": "skani-0.3.2-avx2-compatible-dna-v1",
+    "engine_version": "0.3.2"
+  },
+  "mlst": {
+    "requested": false,
+    "status": "not_requested"
+  },
+  "panel_summary": [
+    {
+      "anim_unmeasured_reference_count": null,
+      "best_skani_ani_percent": 100.0,
+      "best_skani_reference_ids": [
+        "primary_whole:A"
+      ],
+      "challenging_reference_ids": [],
+      "in_top_references": true,
+      "panel_reference_count": 3,
+      "parent": {
+        "concept_id": "SYN-SP01",
+        "kind": "species"
+      },
+      "returned_reference_count": 3
+    },
+    {
+      "anim_unmeasured_reference_count": null,
+      "best_skani_ani_percent": 91.38,
+      "best_skani_reference_ids": [
+        "primary_whole:B"
+      ],
+      "challenging_reference_ids": [],
+      "in_top_references": true,
+      "panel_reference_count": 2,
+      "parent": {
+        "concept_id": "SYN-SP02",
+        "kind": "species"
+      },
+      "returned_reference_count": 2
+    }
+  ],
+  "policy": {
+    "id": "conservative-assembly-v1"
+  },
+  "reference_package": {
+    "package": {
+      "id": "synthetic-enterobacter-reference",
+      "manifest_sha256": "84f87508cf27391c97ed753af11855955bda371b561c38e4aeb22c2c5bd0b459",
+      "version": "2026-10-09.test2"
+    },
+    "status": "verified"
+  },
+  "schema": "terobacter.assembly-call/1",
+  "thresholds": {
+    "both_af_minimum": "80",
+    "species_ani": "96",
+    "subspecies_ani": "98",
+    "subspecies_margin_percentage_points": "1",
+    "supplied": null,
+    "two_parent_alert_ani": "96"
+  },
+  "top_references": [
+    {
+      "anim": null,
+      "lineage_id": null,
+      "parent": {
+        "concept_id": "SYN-SP01",
+        "kind": "species"
+      },
+      "reference_id": "primary_whole:A",
+      "reference_role": "type_anchor",
+      "skani": {
+        "af_query_percent": 99.0,
+        "af_reference_percent": 99.0,
+        "ani_percent": 100.0
+      },
+      "species_id": "SYN-SP01",
+      "species_name": "Enterobacter syn-sp01",
+      "subspecies_id": null,
+      "tie_group": 0
+    },
+    {
+      "anim": null,
+      "lineage_id": null,
+      "parent": {
+        "concept_id": "SYN-SP02",
+        "kind": "species"
+      },
+      "reference_id": "primary_whole:B",
+      "reference_role": "type_anchor",
+      "skani": {
+        "af_query_percent": 99.0,
+        "af_reference_percent": 99.0,
+        "ani_percent": 91.38
+      },
+      "species_id": "SYN-SP02",
+      "species_name": "Enterobacter syn-sp02",
+      "subspecies_id": null,
+      "tie_group": 1
+    }
+  ]
+}

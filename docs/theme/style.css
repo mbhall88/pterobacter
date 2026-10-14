@@ -1,0 +1,10 @@
+:root { --content-max-width: 920px; }
+.light { --links: #236b73; --sidebar-active: #236b73; }
+.navy { --links: #70c7ce; --sidebar-active: #70c7ce; }
+.content { line-height: 1.65; }
+.content h1 { letter-spacing: -0.025em; }
+.content h2 { margin-top: 2em; }
+.content table { display: block; overflow-x: auto; width: 100%; }
+.content td, .content th { padding: 0.6em 0.8em; }
+.content pre { border-radius: 6px; }
+.content img { max-width: 100%; height: auto; }

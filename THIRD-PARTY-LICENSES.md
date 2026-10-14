@@ -8,6 +8,8 @@ skani 0.3.2 is vendored from `22da4ae9e44b2e3e686c8e5c71fcd16cec2b9791`, with it
 
 ## Regeneration
 
+The Cargo licence bundle does not cover the separately embedded MUMmer4 source. Ship `vendor/mummer4/LICENSE.md`, `GPL-3.0.txt`, `COPYRIGHT`, `ACKNOWLEDGEMENTS` and `README.md` with a binary distribution, together with the corresponding source and the maintenance patch. MUMmer4 includes Artistic-2.0 code and GPL-3.0-or-later Jellyfish/mt_skip_list headers. The root MIT licence applies to Terobacter's own code; it does not replace those terms. Combined-binary redistribution remains a release review item. See the [native-source notes](vendor/mummer4/README.md) and [private release status](docs/release-preparation.md).
+
 Install the pinned tool once, then fetch the locked sources before generating notices:
 
 ```sh

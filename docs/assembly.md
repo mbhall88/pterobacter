@@ -9,11 +9,22 @@ terobacter --reference-package reference --expected-sha256 MANIFEST_SHA256 --job
 
 Use the SHA-256 of `portable.json` supplied through a trusted package handoff. Computing a digest from an untrusted package does not establish its origin. The command verifies every listed asset, package metadata and component membership before opening the embedded skani database, and checks the package again before writing results. A provisioned run needs no network or external executable: no dependency is a network client, the source opens no socket, and where unprivileged namespaces are available, the test suite runs v1 with MLST and a v2 rescue inside a network namespace that has no interface but loopback. Archived search labels are provenance labels; no archived FASTA is opened.
 
-The default `--policy conservative-assembly-v1` uses the frozen species ANI ≥96%, subspecies ANI ≥98%, both AF ≥80% and subspecies margin ≥1 percentage point rules. The candidate `--policy conservative-assembly-anim-v2` runs the accepted skani-first rescue plan with embedded MUMmer4. Historical MLST is optional under either policy. Both policies attach conditional genomovar results; see [genomovar.md](genomovar.md). No query CheckM2 is run.
+## Classification modes
+
+The current default is **skani-only classification**. Select **skani plus MUMmer4 rescue** explicitly to add alignment-based checks for eligible uncertain species calls. The `v1` and `v2` suffixes identify calling rules, not software versions.
+
+| Mode | Selection | Behaviour |
+|---|---|---|
+| skani only | Default, or `--policy conservative-assembly-v1` | Assigns from skani ANI and aligned fractions, using the standard species/subspecies rules. |
+| skani plus MUMmer4 rescue | `--policy conservative-assembly-anim-v2` | Starts with the same skani search. Eligible queries just below the species threshold receive reciprocal genome alignments before a possible species-only rescue. |
+
+Both modes use the standard species ANI ≥96%, subspecies ANI ≥98%, both aligned fractions (AF) ≥80% and subspecies margin ≥1 percentage point rules for skani calls. Under the rescue mode, the standard trigger band is 94.5% ≤ maximum skani ANI <96%; eligibility also depends on coverage and the absence of vetoes. A rescued call needs ANIm strictly above 96% in both directions, the AF safeguards and completed required competitor comparisons. It assigns species only, leaving subspecies and genomovar unset. Outside the trigger band, the rescue mode keeps the skani-only decision.
+
+The rescue implementation is available, but this build has not made it the default. It still records `validation_status: not_yet_validated`; selecting the mode does not change that status. Use the [rescue command below](#candidate-v2-anim-rescue) with its matching reference FASTAs and evidence directory. MLST is optional under either mode. Both modes can attach conditional [genomovar results](genomovar.md) when the parent call permits them. No query CheckM2 is run.
 
 ## Input and sequence scope
 
-`--input-kind assembly` is the supported kind. FASTQ, empty input, empty records, missing identifiers, malformed FASTA and non-IUPAC nucleotide sequences fail. Needletail's supported compressed FASTA formats are accepted. Record headers must be UTF-8; duplicate headers remain separate records identified by ordinal.
+Supply isolate assembly FASTAs; `--input-kind assembly` is already the default and can be omitted. FASTQ, empty input, empty records, missing identifiers, malformed FASTA and non-IUPAC nucleotide sequences fail. Needletail's supported compressed FASTA formats are accepted. Record headers must be UTF-8; duplicate headers remain separate records identified by ordinal.
 
 All supplied records are passed to skani without plasmid filtering or trimming. Its pinned profile ignores records shorter than 500 bases when constructing sketches. `input.total_bases` and `input.records` include those records; `measurement.sketched_bases` shows the engine denominator. Eligibility by length does not guarantee informative sketch anchors. Sequence hashes cover each parser-emitted sequence as supplied, with case preserved and line breaks removed. `input.query_sha256` covers the exact file bytes, including compression when present. The engine measures the byte snapshot that was hashed and validated. The original query path string, recorded in `input.file`, also reaches skani: its upstream orientation tie rule uses that label. Preserve query and reference labels when replaying native evidence.
 
@@ -60,7 +71,7 @@ Reports include authenticated data identity and version, policy ID, implementati
 | 5 | Requested native policy is unavailable, or ANIm flags are supplied to v1. No v1 fallback occurs. |
 | 6 | MLST was requested and did not complete for an input whose classification completed, or its package changed during the run. Classification results are retained. |
 
-For batches with different failures, the last failed input's code in argument order is returned. A final package recheck failure takes precedence over it, and an interruption over both. Inspect each report's execution status. Development commands retain their separate exit-code meanings in the README.
+For batches with different failures, the last failed input's code in argument order is returned. A final package recheck failure takes precedence over it, and an interruption over both. Inspect each report's execution status. Development commands retain their separate [exit-code meanings](development.md#development-exit-codes).
 
 These are implementation and development-parity checks. Independent biological validation and release/platform acceptance remain separate gates.
 
