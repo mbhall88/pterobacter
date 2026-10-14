@@ -220,6 +220,7 @@ fn the_public_command_reports_a_withheld_genomovar_for_a_package_without_the_def
     let path = dir.path().join("query.fa");
     std::fs::write(&path, query()).unwrap();
     let output = cargo_bin_cmd!("tero")
+        .arg("--no-anim")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args(["--expected-sha256", &pin])

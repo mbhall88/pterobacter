@@ -66,6 +66,7 @@ fn installed_commands_classify_identically_under_v1_and_v2() {
             &bin,
             name,
             &[
+                "--no-anim".as_ref(),
                 "--reference-package".as_ref(),
                 package.as_os_str(),
                 "--expected-sha256".as_ref(),
@@ -108,8 +109,6 @@ fn installed_commands_classify_identically_under_v1_and_v2() {
                 dir.path().join("package").as_os_str(),
                 "--expected-sha256".as_ref(),
                 pin.as_ref(),
-                "--policy".as_ref(),
-                "conservative-assembly-anim-v2".as_ref(),
                 "--anim-reference-package".as_ref(),
                 dir.path().join("fastas").as_os_str(),
                 "--expected-anim-sha256".as_ref(),

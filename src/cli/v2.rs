@@ -19,26 +19,26 @@ use std::{
 
 #[derive(Debug, Args)]
 pub struct V2Settings {
-    /// Optional separate whole-assembly reference FASTA component
-    #[arg(long)]
+    /// Reference genome FASTAs for MUMmer4 rescue; needed when alignments are triggered
+    #[arg(short = 'a', long)]
     pub anim_reference_package: Option<PathBuf>,
     /// Trusted SHA-256 of the component's anim.json
-    #[arg(long, value_parser = super::parse_sha256)]
+    #[arg(short = 'A', long, value_parser = super::parse_sha256)]
     pub expected_anim_sha256: Option<String>,
-    /// Fresh directory retaining native evidence; must not already exist
-    #[arg(long)]
+    /// New directory for alignments and execution records; see the assembly guide
+    #[arg(short = 'e', long)]
     pub anim_output: Option<PathBuf>,
     /// Directory of verified reciprocal pairs to reuse and extend; created when absent
-    #[arg(long)]
+    #[arg(short = 'c', long)]
     pub anim_cache: Option<PathBuf>,
     /// Reciprocal pair wall timeout, default 120 seconds, maximum 1800
-    #[arg(long, value_parser = parse_pair_seconds)]
+    #[arg(short = 'T', long, value_parser = parse_pair_seconds)]
     pub anim_pair_seconds: Option<Duration>,
     /// Total ANIm wall budget per query, default 600 seconds, maximum 7200
-    #[arg(long, value_parser = parse_query_seconds)]
+    #[arg(short = 'Q', long, value_parser = parse_query_seconds)]
     pub anim_query_seconds: Option<Duration>,
     /// Native worker memory ceiling, default 1024 MiB, maximum 6144 MiB
-    #[arg(long, value_parser = clap::value_parser!(u64).range(64..=6144))]
+    #[arg(short = 'L', long, value_parser = clap::value_parser!(u64).range(64..=6144))]
     pub anim_memory_mib: Option<u64>,
 }
 fn parse_seconds(text: &str, ceiling: f64) -> Result<Duration, String> {

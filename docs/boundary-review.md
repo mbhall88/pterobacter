@@ -4,7 +4,7 @@ Keep the automatic report and record any expert interpretation separately. A nea
 
 Start with the reported reason. Inspect both aligned fractions, the closest type and diversity references, competing groups, and the sequence scopes. Percent values remain percentages: an AF of 0.8 is 0.8%, not 80%. A missing estimate is not zero ANI. An unresolved species/subspecies field stays null even if the nearest-reference name is present.
 
-The current default uses skani only. The optional skani plus MUMmer4 rescue mode adds genome alignments for eligible queries just below the species threshold. These are called `v1` and `v2` in the report and command options. [Classification modes](assembly.md#classification-modes) compares them and states the default; the [rescue command](assembly.md#candidate-v2-anim-rescue) shows how to select the alignment mode and supply its reference FASTAs.
+The default uses skani plus MUMmer4 rescue, adding genome alignments for eligible queries just below the species threshold. `--no-anim` selects skani-only classification. These are called `v1` and `v2` in the report and command options. [Classification modes](assembly.md#classification-modes) compares them and states the default; the [rescue command](assembly.md#candidate-v2-anim-rescue) shows the reference FASTAs and evidence directory needed for alignments.
 
 A successful rescue requires ANIm strictly above 96% in both directions, the AF and competitor safeguards, and a complete required panel. It assigns species only. Preserve method disagreement rather than selecting an estimator because it produces a preferred label. The [worked manual review](report-reference.md#a-worked-manual-review-example) shows an invented unresolved case with a competing species match.
 

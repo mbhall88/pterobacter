@@ -542,6 +542,7 @@ fn existing_output_is_preserved_and_v1_rejects_anim_options() {
         "preserve"
     );
     let output = cargo_bin_cmd!("terobacter")
+        .arg("--no-anim")
         .arg("--reference-package")
         .arg(prepared.dir.path().join("package"))
         .args([

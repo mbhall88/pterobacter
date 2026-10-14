@@ -206,8 +206,8 @@ fn premeasurement_failures_retain_custom_provenance_and_unknown_policy_runs_noth
 fn v1_and_invalid_custom_flags_are_rejected_before_inputs_are_read() {
     for name in ["tero", "terobacter"] {
         for flags in [
-            vec!["--species-ani", "96"],
-            vec!["--subspecies-ani", "98"],
+            vec!["--no-anim", "--species-ani", "96"],
+            vec!["--no-anim", "--subspecies-ani", "98"],
             vec!["--policy", V2, "--species-ani", "79.99"],
             vec!["--policy", V2, "--species-ani", "NaN"],
             vec!["--policy", V2, "--subspecies-ani", "95"],

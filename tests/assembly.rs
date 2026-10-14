@@ -4,12 +4,22 @@ use serde_json::Value;
 mod common;
 use common::package::{FIXTURE_DIR, PINNED_MANIFEST_SHA256};
 
+fn skani_only(name: &str) -> assert_cmd::Command {
+    let mut command = match name {
+        "tero" => cargo_bin_cmd!("tero"),
+        "terobacter" => cargo_bin_cmd!("terobacter"),
+        _ => unreachable!(),
+    };
+    command.arg("--no-anim");
+    command
+}
+
 #[test]
 fn invalid_input_retains_a_partial_report_and_never_assigns() {
     let dir = tempfile::tempdir().unwrap();
     let query = dir.path().join("bad.fa");
     std::fs::write(&query, b"@reads\nACGT\n+\n!!!!\n").unwrap();
-    let output = cargo_bin_cmd!("tero")
+    let output = skani_only("tero")
         .args([
             "--reference-package",
             FIXTURE_DIR,
@@ -64,7 +74,7 @@ fn native_whole_assembly_retains_plasmids_and_short_records_and_assigns_v1() {
     ]
     .concat();
     std::fs::write(&query, &bytes).unwrap();
-    let output = cargo_bin_cmd!("tero")
+    let output = skani_only("tero")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args(["--expected-sha256", &pin])
@@ -112,7 +122,7 @@ fn empty_malformed_and_non_fasta_inputs_fail_with_null_calls() {
     ] {
         let query = dir.path().join(name);
         std::fs::write(&query, bytes).unwrap();
-        let output = cargo_bin_cmd!("tero")
+        let output = skani_only("tero")
             .args([
                 "--reference-package",
                 FIXTURE_DIR,
@@ -144,7 +154,7 @@ fn changed_package_is_rejected_before_any_assignment() {
         b"corrupt",
     )
     .unwrap();
-    let output = cargo_bin_cmd!("tero")
+    let output = skani_only("tero")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args(["--expected-sha256", &pin])
@@ -169,8 +179,8 @@ fn complete_no_estimate_is_withheld_and_batch_failure_does_not_change_other_quer
     let mut observed = Vec::new();
     for name in ["tero", "terobacter"] {
         let mut cmd = match name {
-            "tero" => cargo_bin_cmd!("tero"),
-            _ => cargo_bin_cmd!("terobacter"),
+            "tero" => skani_only("tero"),
+            _ => skani_only("terobacter"),
         };
         let output = cmd
             .arg("--reference-package")
@@ -226,7 +236,7 @@ fn run_with_mlst(
     mlst_sha256: &str,
     queries: &[&std::path::Path],
 ) -> (Option<i32>, Value) {
-    let output = cargo_bin_cmd!("tero")
+    let output = skani_only("tero")
         .arg("--reference-package")
         .arg(dir.join("package"))
         .args(["--expected-sha256", pin])
@@ -298,7 +308,7 @@ fn requested_mlst_that_fails_is_explicit_and_keeps_the_classification() {
 
 #[test]
 fn an_mlst_package_needs_its_expected_sha256() {
-    let output = cargo_bin_cmd!("tero")
+    let output = skani_only("tero")
         .args([
             "--reference-package",
             FIXTURE_DIR,

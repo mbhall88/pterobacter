@@ -23,11 +23,11 @@ use crate::rescue::{Thresholds, V2_POLICY_ID};
 /// Shared threshold flags for native and saved-evidence front ends.
 #[derive(Debug, Default, clap::Args)]
 pub(crate) struct ThresholdArgs {
-    /// Custom v2 species ANI percentage; always marks results custom_unvalidated
-    #[arg(long, value_name = "T")]
+    /// Custom species ANI percentage for rescue mode; marks results custom_unvalidated
+    #[arg(short = 's', long, value_name = "T")]
     species_ani: Option<String>,
-    /// Custom v2 subspecies ANI percentage; requires 80 <= T <= S <= 100
-    #[arg(long, value_name = "S")]
+    /// Custom subspecies ANI percentage for rescue mode; requires 80 <= T <= S <= 100
+    #[arg(short = 'S', long, value_name = "S")]
     subspecies_ani: Option<String>,
 }
 
@@ -48,7 +48,13 @@ impl ThresholdArgs {
 // fixed so `--version` always names Terobacter; usage lines still show whichever name the user
 // typed, because clap takes that from the executable.
 #[derive(Debug, Parser)]
-#[command(name = "terobacter", version, about)]
+#[command(
+    name = "terobacter",
+    version,
+    about,
+    after_help = "Uses skani plus MUMmer4 rescue by default. Use -n/--no-anim for skani only.
+Guide: https://github.com/mbhall88/terobacter/blob/main/docs/assembly.md"
+)]
 struct Public {
     #[command(flatten)]
     thresholds: ThresholdArgs,
@@ -56,34 +62,37 @@ struct Public {
     #[arg(value_name = "ASSEMBLY", required = true, num_args = 1..)]
     assemblies: Vec<PathBuf>,
     /// Authenticated reference package directory
-    #[arg(long)]
+    #[arg(short = 'r', long)]
     reference_package: PathBuf,
     /// Expected SHA-256 of portable.json, obtained from a trusted source
-    #[arg(long, value_parser = parse_sha256)]
+    #[arg(short = 'R', long, value_parser = parse_sha256)]
     expected_sha256: String,
-    /// Native classification policy; v1 or conservative-assembly-anim-v2
-    #[arg(long, visible_alias = "assignment-policy", default_value = V1_POLICY_ID)]
+    /// Explicit calling rules (compatibility option); use --no-anim for skani only
+    #[arg(short = 'p', long, visible_alias = "assignment-policy", default_value = V2_POLICY_ID)]
     policy: String,
+    /// Use skani only, without MUMmer4 alignment rescue
+    #[arg(short = 'n', long, conflicts_with = "policy")]
+    no_anim: bool,
     /// Kind of input; assembly FASTA is the supported kind
-    #[arg(long, default_value = "assembly")]
+    #[arg(short = 'i', long, default_value = "assembly")]
     input_kind: String,
     /// Worker threads for each assembly
-    #[arg(long, default_value_t = 1, value_parser = clap::value_parser!(u16).range(1..))]
+    #[arg(short = 't', long, default_value_t = 1, value_parser = clap::value_parser!(u16).range(1..))]
     threads: u16,
     /// Assemblies analysed at the same time, each with its own --threads
-    #[arg(long, default_value_t = 1, value_parser = clap::value_parser!(u16).range(1..))]
+    #[arg(short = 'j', long, default_value_t = 1, value_parser = clap::value_parser!(u16).range(1..))]
     jobs: u16,
     /// Write the JSON report to this new file instead of standard output; never replaced
-    #[arg(long, value_name = "FILE")]
+    #[arg(short = 'o', long, value_name = "FILE")]
     output: Option<PathBuf>,
     /// Historical MLST scheme package directory; requests optional supplementary MLST
-    #[arg(long, requires = "mlst_expected_sha256")]
+    #[arg(short = 'm', long, requires = "mlst_expected_sha256")]
     mlst_package: Option<PathBuf>,
     /// Expected SHA-256 of the MLST package manifest.json, obtained from a trusted source
-    #[arg(long, value_parser = parse_sha256, requires = "mlst_package")]
+    #[arg(short = 'M', long, value_parser = parse_sha256, requires = "mlst_package")]
     mlst_expected_sha256: Option<String>,
     /// Write report.json, calls.tsv, evidence.tsv and report.md into this new directory
-    #[arg(long, value_name = "DIR")]
+    #[arg(short = 'd', long, value_name = "DIR")]
     report_dir: Option<PathBuf>,
     #[command(flatten)]
     anim: v2::V2Settings,
@@ -101,7 +110,10 @@ pub fn run_public() -> ExitCode {
     if let Some(status) = crate::anim::run_worker_if_requested() {
         return status;
     }
-    let args = Public::parse();
+    let mut args = Public::parse();
+    if args.no_anim {
+        args.policy = V1_POLICY_ID.into();
+    }
     let thresholds = match args.thresholds.for_policy(&args.policy) {
         Ok(thresholds) => thresholds,
         Err(error) => {
@@ -639,5 +651,64 @@ mod supplementary_integrity_tests {
             assert_eq!(report["species_id"], Value::Null);
             assert_eq!(report["assignment"]["species_id"], Value::Null);
         }
+    }
+}
+
+#[cfg(test)]
+mod public_option_tests {
+    use super::*;
+    use clap::CommandFactory;
+
+    #[test]
+    fn every_public_option_has_a_unique_short_form() {
+        let command = Public::command();
+        command.clone().debug_assert();
+        let mut seen = BTreeSet::new();
+        for arg in command.get_arguments().filter(|a| a.get_long().is_some()) {
+            let short = arg
+                .get_short()
+                .unwrap_or_else(|| panic!("missing short form: {}", arg.get_id()));
+            assert!(seen.insert(short), "duplicate -{short}");
+        }
+    }
+
+    #[test]
+    fn short_options_preserve_every_long_option_value() {
+        let pin = "1".repeat(64);
+        let mlst_pin = "2".repeat(64);
+        let anim_pin = "3".repeat(64);
+        let options = [
+            ("--species-ani", "-s", "95.5"),
+            ("--subspecies-ani", "-S", "97.5"),
+            ("--reference-package", "-r", "refs"),
+            ("--expected-sha256", "-R", pin.as_str()),
+            ("--policy", "-p", V2_POLICY_ID),
+            ("--input-kind", "-i", "assembly"),
+            ("--threads", "-t", "2"),
+            ("--jobs", "-j", "3"),
+            ("--output", "-o", "calls.json"),
+            ("--mlst-package", "-m", "mlst"),
+            ("--mlst-expected-sha256", "-M", mlst_pin.as_str()),
+            ("--report-dir", "-d", "reports"),
+            ("--anim-reference-package", "-a", "fastas"),
+            ("--expected-anim-sha256", "-A", anim_pin.as_str()),
+            ("--anim-output", "-e", "evidence"),
+            ("--anim-cache", "-c", "cache"),
+            ("--anim-pair-seconds", "-T", "12.5"),
+            ("--anim-query-seconds", "-Q", "120.5"),
+            ("--anim-memory-mib", "-L", "512"),
+        ];
+        let mut long = vec!["tero", "query.fa"];
+        let mut short = long.clone();
+        for (l, s, value) in options {
+            long.extend([l, value]);
+            short.extend([s, value]);
+        }
+        let long = Public::try_parse_from(long).unwrap();
+        let short = Public::try_parse_from(short).unwrap();
+        assert_eq!(format!("{long:?}"), format!("{short:?}"));
+        assert_eq!(short.policy, V2_POLICY_ID);
+        assert_eq!(short.anim.anim_pair_seconds.unwrap().as_secs_f64(), 12.5);
+        assert_eq!(short.anim.anim_query_seconds.unwrap().as_secs_f64(), 120.5);
     }
 }

@@ -3,24 +3,29 @@
 `tero` and `terobacter` accept one or more isolate assembly FASTAs, without a subcommand:
 
 ```sh
-tero --reference-package reference --expected-sha256 MANIFEST_SHA256 isolate.fa > isolate.json
-terobacter --reference-package reference --expected-sha256 MANIFEST_SHA256 --jobs 2 --threads 4 --output batch.json first.fa second.fa
+tero --reference-package reference --expected-sha256 MANIFEST_SHA256 \
+  --anim-reference-package reference-fastas --expected-anim-sha256 ANIM_MANIFEST_SHA256 \
+  --anim-output isolate-alignments isolate.fa > isolate.json
+terobacter --no-anim --reference-package reference --expected-sha256 MANIFEST_SHA256 \
+  --jobs 2 --threads 4 --output batch.json first.fa second.fa
 ```
 
 Use the SHA-256 of `portable.json` supplied through a trusted package handoff. Computing a digest from an untrusted package does not establish its origin. The command verifies every listed asset, package metadata and component membership before opening the embedded skani database, and checks the package again before writing results. A provisioned run needs no network or external executable: no dependency is a network client, the source opens no socket, and where unprivileged namespaces are available, the test suite runs v1 with MLST and a v2 rescue inside a network namespace that has no interface but loopback. Archived search labels are provenance labels; no archived FASTA is opened.
 
 ## Classification modes
 
-The current default is **skani-only classification**. Select **skani plus MUMmer4 rescue** explicitly to add alignment-based checks for eligible uncertain species calls. The `v1` and `v2` suffixes identify calling rules, not software versions.
+The default is **skani plus MUMmer4 rescue**: a skani search followed by alignment-based checks for eligible uncertain species calls. Use `-n` or `--no-anim` for skani-only classification. The `v1` and `v2` suffixes identify calling rules, not software versions.
 
 | Mode | Selection | Behaviour |
 |---|---|---|
-| skani only | Default, or `--policy conservative-assembly-v1` | Assigns from skani ANI and aligned fractions, using the standard species/subspecies rules. |
-| skani plus MUMmer4 rescue | `--policy conservative-assembly-anim-v2` | Starts with the same skani search. Eligible queries just below the species threshold receive reciprocal genome alignments before a possible species-only rescue. |
+| skani only | `-n` / `--no-anim`, or `--policy conservative-assembly-v1` | Assigns from skani ANI and aligned fractions, using the standard species/subspecies rules. |
+| skani plus MUMmer4 rescue | Default, or `--policy conservative-assembly-anim-v2` | Starts with the same skani search. Eligible queries just below the species threshold receive reciprocal genome alignments before a possible species-only rescue. |
 
 Both modes use the standard species ANI ≥96%, subspecies ANI ≥98%, both aligned fractions (AF) ≥80% and subspecies margin ≥1 percentage point rules for skani calls. Under the rescue mode, the standard trigger band is 94.5% ≤ maximum skani ANI <96%; eligibility also depends on coverage and the absence of vetoes. A rescued call needs ANIm strictly above 96% in both directions, the AF safeguards and completed required competitor comparisons. It assigns species only, leaving subspecies and genomovar unset. Outside the trigger band, the rescue mode keeps the skani-only decision.
 
-The rescue implementation is available, but this build has not made it the default. It still records `validation_status: not_yet_validated`; selecting the mode does not change that status. Use the [rescue command below](#candidate-v2-anim-rescue) with its matching reference FASTAs and evidence directory. MLST is optional under either mode. Both modes can attach conditional [genomovar results](genomovar.md) when the parent call permits them. No query CheckM2 is run.
+The default rescue mode still records `validation_status: not_yet_validated`; making it the default does not change that status. Use the [rescue command below](#candidate-v2-anim-rescue) with its matching reference FASTAs and evidence directory. MLST is optional under either mode. Both modes can attach conditional [genomovar results](genomovar.md) when the parent call permits them. No query CheckM2 is run.
+
+`--policy` and its `--assignment-policy` alias remain available for compatibility. They cannot be combined with `--no-anim`. The opt-out selects the existing v1 rules and report format; it rejects custom ANI thresholds and alignment-specific options. It avoids MUMmer4 at runtime, but the executable still includes the embedded aligner and its build dependencies. See [all short options](cli-help.md).
 
 ## Input and sequence scope
 
@@ -34,6 +39,8 @@ MLST runs only on request: pass a historical scheme package directory and the SH
 
 ```sh
 tero --reference-package reference --expected-sha256 MANIFEST_SHA256 \
+  --anim-reference-package reference-fastas --expected-anim-sha256 ANIM_MANIFEST_SHA256 \
+  --anim-output typed-alignments \
   --mlst-package mlst --mlst-expected-sha256 MLST_MANIFEST_SHA256 isolate.fa > isolate.json
 ```
 

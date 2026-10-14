@@ -14,6 +14,9 @@ fn tero(
     cmd.arg("--reference-package")
         .arg(dir.join("package"))
         .args(["--expected-sha256", pin]);
+    if !extra.iter().any(|a| *a == std::ffi::OsStr::new("--policy")) {
+        cmd.arg("--no-anim");
+    }
     cmd.args(extra);
     cmd.args(query);
     cmd.output().unwrap()
@@ -337,7 +340,8 @@ fn a_report_write_failure_still_prints_the_json_and_exits_nonzero() {
     assert_eq!(unsafe { libc::mkfifo(name.as_ptr(), 0o600) }, 0);
     let reports = dir.path().join("reports");
     let mut cmd = cargo_bin_cmd!("tero");
-    cmd.arg("--reference-package")
+    cmd.arg("--no-anim")
+        .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args(["--expected-sha256", &pin, "--report-dir"])
         .arg(&reports)

@@ -4,11 +4,13 @@ For a first run, follow [classify an assembly](running.md). This page explains t
 
 ## Classification mode and ANI thresholds
 
-The current default uses **skani only**. The optional **skani plus MUMmer4 rescue** mode checks some uncertain species calls with whole-genome alignments. The internal names `conservative-assembly-v1` and `conservative-assembly-anim-v2` identify these calling rules; they are not software release numbers. See [the comparison and selection command](assembly.md#classification-modes).
+The default uses **skani plus MUMmer4 rescue**, adding whole-genome alignments for eligible uncertain species calls. Use `-n` or `--no-anim` for skani-only classification. The internal names `conservative-assembly-v1` and `conservative-assembly-anim-v2` identify these calling rules; they are not software release numbers. See [the comparison and selection command](assembly.md#classification-modes).
 
-`--species-ani` and `--subspecies-ani` change the minimum average nucleotide identity (ANI) percentages for species and subspecies calls. They are advanced options for the rescue mode, with defaults of 96 and 98 respectively. Supplying either option marks the result `custom_unvalidated`, even if you supply the default number. Leave them out to use the standard rules. [Threshold details](v2-decisions.md#custom-ani-thresholds) explain which comparisons and safeguards apply.
+`--species-ani` and `--subspecies-ani` change the minimum average nucleotide identity (ANI) percentages for species and subspecies calls. They are advanced options for the default rescue mode, with defaults of 96 and 98 respectively. Supplying either option marks the result `custom_unvalidated`, even if you supply the default number. Leave them out to use the standard rules. [Threshold details](v2-decisions.md#custom-ani-thresholds) explain which comparisons and safeguards apply.
 
-Assemblies are already the only supported input. Omit `--input-kind`; it defaults to `assembly` and does not enable read classification. [Issue43](https://github.com/mbhall88/terobacter/issues/43) tracks simplifying this interface and the terminal help.
+Assemblies are already the only supported input. Omit `--input-kind`; it defaults to `assembly` and does not enable read classification. The explicit input-kind option remains available for compatibility.
+
+`--policy` (`-p`) and `--assignment-policy` accept the existing policy IDs. Combining either with `--no-anim` is an error. Custom ANI thresholds and alignment options are also incompatible with skani-only mode. Every public option has a short form, shown in the terminal output below.
 
 ## MLST
 
@@ -34,7 +36,7 @@ The current limits bound native alignment work. Reaching a limit leaves the requ
 
 ## Exact terminal output
 
-Captured from `tero --help` at source commit `63bd432`. The `terobacter` alias accepts the same options. The descriptions above explain the internal terms that still appear in this output.
+Captured from the current `tero --help`. The `terobacter` alias accepts the same options.
 
 ```text
 Standalone, self-contained Enterobacter isolate classification
@@ -45,46 +47,51 @@ Arguments:
   <ASSEMBLY>...  Isolate assembly FASTA files, analysed whole and as supplied
 
 Options:
-      --species-ani <T>
-          Custom v2 species ANI percentage; always marks results custom_unvalidated
-      --subspecies-ani <S>
-          Custom v2 subspecies ANI percentage; requires 80 <= T <= S <= 100
-      --reference-package <REFERENCE_PACKAGE>
+  -s, --species-ani <T>
+          Custom species ANI percentage for rescue mode; marks results custom_unvalidated
+  -S, --subspecies-ani <S>
+          Custom subspecies ANI percentage for rescue mode; requires 80 <= T <= S <= 100
+  -r, --reference-package <REFERENCE_PACKAGE>
           Authenticated reference package directory
-      --expected-sha256 <EXPECTED_SHA256>
+  -R, --expected-sha256 <EXPECTED_SHA256>
           Expected SHA-256 of portable.json, obtained from a trusted source
-      --policy <POLICY>
-          Native classification policy; v1 or conservative-assembly-anim-v2 [default: conservative-assembly-v1] [alias: --assignment-policy]
-      --input-kind <INPUT_KIND>
+  -p, --policy <POLICY>
+          Explicit calling rules (compatibility option); use --no-anim for skani only [default: conservative-assembly-anim-v2] [alias: --assignment-policy]
+  -n, --no-anim
+          Use skani only, without MUMmer4 alignment rescue
+  -i, --input-kind <INPUT_KIND>
           Kind of input; assembly FASTA is the supported kind [default: assembly]
-      --threads <THREADS>
+  -t, --threads <THREADS>
           Worker threads for each assembly [default: 1]
-      --jobs <JOBS>
+  -j, --jobs <JOBS>
           Assemblies analysed at the same time, each with its own --threads [default: 1]
-      --output <FILE>
+  -o, --output <FILE>
           Write the JSON report to this new file instead of standard output; never replaced
-      --mlst-package <MLST_PACKAGE>
+  -m, --mlst-package <MLST_PACKAGE>
           Historical MLST scheme package directory; requests optional supplementary MLST
-      --mlst-expected-sha256 <MLST_EXPECTED_SHA256>
+  -M, --mlst-expected-sha256 <MLST_EXPECTED_SHA256>
           Expected SHA-256 of the MLST package manifest.json, obtained from a trusted source
-      --report-dir <DIR>
+  -d, --report-dir <DIR>
           Write report.json, calls.tsv, evidence.tsv and report.md into this new directory
-      --anim-reference-package <ANIM_REFERENCE_PACKAGE>
-          Optional separate whole-assembly reference FASTA component
-      --expected-anim-sha256 <EXPECTED_ANIM_SHA256>
+  -a, --anim-reference-package <ANIM_REFERENCE_PACKAGE>
+          Reference genome FASTAs for MUMmer4 rescue; needed when alignments are triggered
+  -A, --expected-anim-sha256 <EXPECTED_ANIM_SHA256>
           Trusted SHA-256 of the component's anim.json
-      --anim-output <ANIM_OUTPUT>
-          Fresh directory retaining native evidence; must not already exist
-      --anim-cache <ANIM_CACHE>
+  -e, --anim-output <ANIM_OUTPUT>
+          New directory for alignments and execution records; see the assembly guide
+  -c, --anim-cache <ANIM_CACHE>
           Directory of verified reciprocal pairs to reuse and extend; created when absent
-      --anim-pair-seconds <ANIM_PAIR_SECONDS>
+  -T, --anim-pair-seconds <ANIM_PAIR_SECONDS>
           Reciprocal pair wall timeout, default 120 seconds, maximum 1800
-      --anim-query-seconds <ANIM_QUERY_SECONDS>
+  -Q, --anim-query-seconds <ANIM_QUERY_SECONDS>
           Total ANIm wall budget per query, default 600 seconds, maximum 7200
-      --anim-memory-mib <ANIM_MEMORY_MIB>
+  -L, --anim-memory-mib <ANIM_MEMORY_MIB>
           Native worker memory ceiling, default 1024 MiB, maximum 6144 MiB
   -h, --help
           Print help
   -V, --version
           Print version
+
+Uses skani plus MUMmer4 rescue by default. Use -n/--no-anim for skani only.
+Guide: https://github.com/mbhall88/terobacter/blob/main/docs/assembly.md
 ```
