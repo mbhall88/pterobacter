@@ -1,5 +1,21 @@
 # Genomovar reporting
 
+Look for a genomovar only after an eligible species and subspecies call. In this reference package the definitions cover the proposed *Enterobacter xiangfangensis* subsp. *hoffmannii*: 25 informal chromosome ANI groups built from 173 historical chromosome members. They are not formal taxonomic names.
+
+A match requires sufficient ANI and coverage to every member of exactly one definition, with measured evidence excluding the alternatives. The query remains the whole assembly as supplied; the reference definition uses historical chromosome record sets. A missing rival comparison can block the match.
+
+A unique result means compatibility with the supplied definition. An unrepresented group can match a neighbouring group, so the result does not prove that the query's source group is present in the database. Two compatible groups are withheld, rather than choosing the nearest one. Fifteen of the definitions have only one member; matching one carries a sparse-reference warning and does not establish its population boundary.
+
+Read the `genomovar` section for the result, reasons, warnings and member comparisons. A withheld genomovar does not by itself erase a supported species or subspecies call. A candidate ANIm species rescue supports neither subspecies nor genomovar; custom thresholds do not support a genomovar either.
+
+Two queries with the same result are not necessarily at least 99.5% ANI to each other. ST does not break a genomovar tie. Exact gates and reason codes follow below. For deeper investigation, use [boundary review](boundary-review.md).
+
+## What is a genomovar?
+
+Rosselló and colleagues introduced the term for genomic groups within a named species in their 1991 study, [Genotypic and phenotypic diversity of *Pseudomonas stutzeri*](https://doi.org/10.1016/S0723-2020(11)80294-8). For the more recent use of 99.5% ANI to describe within-species units, see [Rodriguez-R et al. (2024)](https://doi.org/10.1128/mbio.02696-23). The definition below is specific to this reference collection.
+
+## Definition and reporting contract
+
 A genomovar is an informal chromosome ANI group within *Enterobacter xiangfangensis* subsp. *hoffmannii* (`ECTX-SS007`, Group A), the project's proposed combination. The definition is frozen as `2026-10-02-v1`: 25 groups (GV01 to GV25) of 173 historical chromosome members. Each group was built by complete linkage at chromosome ANI ≥99.50%. A genomovar call matches a query to one frozen group under the accepted P3a contract, `p3a-genomovar-contract-r1`. It is an operational match, not a population boundary, a purity estimate or a new taxon.
 
 Every whole-assembly report has a `genomovar` section. `assignment.genomovar_id` in v1, or the top-level `genomovar_id` in v2, is set only when that section's status is `assigned`, and only after the final recheck described below.

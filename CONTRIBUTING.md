@@ -16,3 +16,5 @@ cargo fmt --all -- --check
 Without `just`, run `cargo test --all-targets --no-fail-fast`, `cargo test --all-targets --all-features --no-fail-fast` and `cargo clippy --all-features --all-targets -- -D warnings`. Tests use synthetic fixtures and retained development evidence; do not add private data or research paths.
 
 See [development commands and source layout](docs/development.md), [AGENTS.md](AGENTS.md) and [CONTEXT.md](CONTEXT.md) for implementation guidance. Public commands have no subcommands; evaluation operations stay in the optional development binary. Changes to scientific rules, references, defaults or output schemas require their own scoped review and validation.
+
+For the searchable documentation preview, see [building the docs site](docs/documentation-site.md).

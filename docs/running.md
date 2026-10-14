@@ -18,9 +18,9 @@ Open `isolate-report/report.md` for the answer and warnings. The full JSON is in
 tero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256"   --jobs 2 --threads 2 --output batch.json --report-dir batch-report   isolate_1.fa isolate_2.fa
 ```
 
-The main JSON is an array in input order. `calls.tsv` has one row per assembly, and `report.md` has a section for each. Inspect every input's execution status; a failure in one input does not erase a completed result from another. Jobs multiply the per-assembly thread allocation.
+The main JSON is an array in input order. `calls.tsv` has one row per assembly, and `report.md` has a section for each. Inspect every input's execution status; a failure in one input does not erase a completed result from another. `--jobs` controls concurrent assemblies; `--threads` controls the embedded search threads within each assembly. Two jobs with two threads each allow up to four search threads. See the [complete synthetic batch outputs](examples/README.md#batch-outputs).
 
-All output files and report directories must be new, distinct, outside the input/reference directories and not nested within one another. The program refuses existing paths. Analysis makes no network request after provisioning.
+All output files and report directories must be new, distinct, outside reference-package directories and not nested within one another. Outputs can sit beside the input assembly, but must not replace it. The program refuses existing paths. Analysis makes no network request after provisioning.
 
 ## Common controls
 

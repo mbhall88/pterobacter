@@ -1,0 +1,16 @@
+[book]
+title = "Terobacter"
+authors = ["Michael Hall"]
+language = "en"
+src = "src"
+
+[output.html]
+site-url = "/terobacter/"
+default-theme = "light"
+preferred-dark-theme = "navy"
+additional-css = ["theme/style.css"]
+git-repository-url = "https://github.com/mbhall88/terobacter"
+
+[output.html.search]
+enable = true
+limit-results = 20

@@ -6,7 +6,7 @@ Check the terminal error and the execution status for every input before interpr
 |---|---|
 | GNU compiler error during installation | Use GNU C++ with C++17 support. On macOS set `CXX` to Homebrew's `g++`; the native build refuses Apple clang. |
 | Reference digest or file mismatch | Use the intact directory and trusted digest from the same handoff. Do not bypass a failure by hashing an untrusted replacement and trusting that value. |
-| Existing output path or path collision | Choose new output names outside the input/reference directories. Report, alignment and cache paths must be distinct and not nested. |
+| Existing output path or path collision | Choose new output names outside reference-package directories. Report, alignment and cache paths must be distinct and not nested. |
 | Assembly rejected | Supply a nonempty nucleotide FASTA with identifiers and nonempty records. FASTQ and reads are unsupported. |
 | No assigned name after a completed run | Read the reasons and comparisons. Do not replace an empty assignment with the nearest reference. See [uncertain results](boundary-review.md). |
 | Candidate ANIm run needs more data | Supply the matching authenticated reference FASTA component and a new evidence directory. No automatic fallback to the default policy occurs. |
