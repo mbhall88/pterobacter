@@ -1185,6 +1185,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pterobacter"
+version = "0.0.0"
+dependencies = [
+ "assert_cmd",
+ "bincode",
+ "cc",
+ "clap 4.6.7",
+ "libc",
+ "needletail",
+ "num-bigint",
+ "rayon",
+ "serde",
+ "serde_json",
+ "sha2",
+ "skani",
+ "tempfile",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1780,26 +1800,6 @@ name = "termtree"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f50febec83f5ee1df3015341d8bd429f2d1cc62bcba7ea2076759d315084683"
-
-[[package]]
-name = "pterobacter"
-version = "0.0.0"
-dependencies = [
- "assert_cmd",
- "bincode",
- "cc",
- "clap 4.6.7",
- "libc",
- "needletail",
- "num-bigint",
- "rayon",
- "serde",
- "serde_json",
- "sha2",
- "skani",
- "tempfile",
- "thiserror 2.0.21",
-]
 
 [[package]]
 name = "textwrap"
