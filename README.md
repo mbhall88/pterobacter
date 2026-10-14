@@ -1,5 +1,7 @@
 # Pterobacter
 
+<img src="docs/assets/pterobacter.png" alt="Pterobacter mascot" width="180" align="right">
+
 Pronounced with a silent P, like pterodactyl.
 
 [![CI](https://github.com/mbhall88/terobacter/actions/workflows/ci.yml/badge.svg)](https://github.com/mbhall88/terobacter/actions/workflows/ci.yml) [![User guide](https://img.shields.io/badge/docs-user_guide-236b73)](docs/usage.md)

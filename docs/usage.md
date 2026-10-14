@@ -1,5 +1,7 @@
 # User guide
 
+![Pterobacter mascot](assets/pterobacter.png)
+
 Start with a whole isolate assembly in FASTA format. Pterobacter keeps all supplied records, including plasmids and short contigs, and reports the most specific supported call with its reasons.
 
 | Task | Guide |
