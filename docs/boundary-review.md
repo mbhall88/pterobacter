@@ -4,7 +4,9 @@ Keep the automatic report and record any expert interpretation separately. A nea
 
 Start with the reported reason. Inspect both aligned fractions, the closest type and diversity references, competing groups, and the sequence scopes. Percent values remain percentages: an AF of 0.8 is 0.8%, not 80%. A missing estimate is not zero ANI. An unresolved species/subspecies field stays null even if the nearest-reference name is present.
 
-The optional `conservative-assembly-anim-v2` policy (v2) adds alignment-based ANI using embedded MUMmer4 when the initial skani result meets its trigger conditions. It is selected with `--policy conservative-assembly-anim-v2`; the default remains `conservative-assembly-v1`. See [policy selection](assembly.md) for the required reference FASTA component. Under v2, a species rescue requires strict reciprocal ANIm above 96%, the retained AF and competitor safeguards, and a complete required panel. It does not assign a subspecies or genomovar. Preserve method disagreement rather than selecting an estimator because it produces a preferred label. The [usage guide](report-reference.md#a-worked-manual-review-example) shows an invented unresolved case with a visible foreign-parent challenge.
+The current default uses skani only. The optional skani plus MUMmer4 rescue mode adds genome alignments for eligible queries just below the species threshold. These are called `v1` and `v2` in the report and command options. [Classification modes](assembly.md#classification-modes) compares them and states the default; the [rescue command](assembly.md#candidate-v2-anim-rescue) shows how to select the alignment mode and supply its reference FASTAs.
+
+A successful rescue requires ANIm strictly above 96% in both directions, the AF and competitor safeguards, and a complete required panel. It assigns species only. Preserve method disagreement rather than selecting an estimator because it produces a preferred label. The [worked manual review](report-reference.md#a-worked-manual-review-example) shows an invented unresolved case with a competing species match.
 
 ## A recorded wider-context example
 
