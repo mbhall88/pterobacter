@@ -159,7 +159,6 @@ fn output_collisions_are_refused_before_any_work() {
     let (dir, pin, seq) = native_package();
     let root = dir.path();
     let query = write_query(root, "query.fa", &seq);
-    let v2 = ["--policy", "conservative-assembly-anim-v2"];
     let mut cases: Vec<(&str, Vec<std::ffi::OsString>)> = vec![
         (
             "report inside the ANIm evidence directory",
@@ -226,7 +225,6 @@ fn output_collisions_are_refused_before_any_work() {
     let before = inventory(root);
     for (label, args) in cases {
         let output = public_command(root, &pin)
-            .args(v2)
             .args(&args)
             .arg(&query)
             .output()
@@ -432,7 +430,7 @@ fn interrupted_concurrent_v2_batch_withholds_every_call_and_keeps_pair_evidence(
     let target = dir.path().join("report.json");
     let mut command = public_command(dir.path(), &pin);
     command
-        .args(["--policy", "conservative-assembly-anim-v2", "--jobs", "2"])
+        .args(["--jobs", "2"])
         .args(["--expected-anim-sha256", &anim_pin])
         .arg("--anim-reference-package")
         .arg(dir.path().join("fastas"))
@@ -589,7 +587,6 @@ fn provisioned_v2_rescue_completes_without_a_network() {
         common::package::sha256_hex(&std::fs::read(dir.path().join("fastas/anim.json")).unwrap());
     let mut command = public_command(dir.path(), &pin);
     command
-        .args(["--policy", "conservative-assembly-anim-v2"])
         .args(["--expected-anim-sha256", &anim_pin])
         .arg("--anim-reference-package")
         .arg(dir.path().join("fastas"))

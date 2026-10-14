@@ -52,7 +52,7 @@ tero --reference-package reference --expected-sha256 "$REFERENCE_SHA256" \
   --output isolate.json --report-dir isolate-report isolate.fa
 ```
 
-The default starts with skani and uses embedded MUMmer4 to check eligible uncertain species calls. Use `-n` or `--no-anim` for skani only, omitting the alignment package and evidence options. This opt-out changes runtime analysis; building the executable still requires the C++ compiler. [All short options](docs/cli-help.md) are listed in the command help.
+Terobacter first estimates ANI with skani. For eligible samples just below the species boundary, it also runs ANIm using whole-genome alignments to refine the estimate. ANIm can take longer, especially in large batches with many borderline samples; samples outside that band do not incur alignment work. Use `-n` or `--no-anim` to skip ANIm and use skani only. When using `--no-anim`, omit the alignment package and evidence options. This opt-out changes runtime analysis; building the executable still requires the C++ compiler. [All short options](docs/cli-help.md) are listed in the command help.
 
 `tero` and `terobacter` are equivalent commands. Open `isolate-report/report.md` for the readable result, or `isolate-report/calls.tsv` for one row per assembly. `isolate.json` and `isolate-report/report.json` retain the detailed report; `evidence.tsv` contains the comparisons. Choose their names with `--output FILE` and `--report-dir DIR`; both paths must be new. The four filenames inside the report directory are fixed.
 
@@ -74,7 +74,7 @@ Here are selected fields from a saved skani-only report fixture, corresponding t
 }
 ```
 
-This synthetic fixture assigns species and subspecies while withholding the genomovar. The default rescue-mode JSON uses top-level `species_id` and `subspecies_id` fields; the [report guide](docs/report-reference.md) describes both formats. An assigned genomovar looks like this in the synthetic policy fixture:
+This synthetic fixture assigns species and subspecies while withholding the genomovar. The default rescue-mode JSON uses top-level `species_id` and `subspecies_id` fields; the [report guide](docs/report-reference.md) describes both formats. An assigned genomovar looks like this in the synthetic fixture:
 
 ```json
 {
@@ -100,7 +100,7 @@ tero --reference-package reference --expected-sha256 "$REFERENCE_SHA256" \
   isolate_1.fa isolate_2.fa
 ```
 
-`--jobs 2` processes two assemblies concurrently. `--threads 2` gives each assembly two threads for the embedded search, for up to four search threads in total. Each input has its own result and execution status. See the [batch JSON](docs/examples/output/batch/report.json), [calls table](docs/examples/output/batch/calls.tsv) and [readable report](docs/examples/output/batch/report.md) for a synthetic batch with both completed and failed inputs.
+`--jobs 2` processes two assemblies concurrently. `--threads 2` gives each assembly two threads for the embedded search, for up to four search threads in total. Each input has its own result and execution status. See the [batch JSON](docs/examples/output/batch/report.json), [calls table](docs/examples/output/batch/calls.tsv) and [readable report](docs/examples/readable/batch.md) for a synthetic batch with both completed and failed inputs.
 
 ## Guides
 

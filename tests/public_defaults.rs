@@ -12,13 +12,13 @@ fn command(name: &str) -> assert_cmd::Command {
 }
 
 #[test]
-fn default_and_explicit_rescue_agree_and_never_fall_back_when_fastas_are_missing() {
+fn default_never_falls_back_when_fastas_are_missing() {
     let (dir, pin, seq) = common::assembly::rescue_package();
     let query = dir.path().join("query.fa");
     std::fs::write(&query, [b">query\n".as_slice(), &seq, b"\n"].concat()).unwrap();
     for name in ["tero", "terobacter"] {
         let mut results = Vec::new();
-        for mode in [vec![], vec!["--policy", "conservative-assembly-anim-v2"]] {
+        for mode in [vec![], vec!["--threads", "1"]] {
             let output = command(name)
                 .args(mode)
                 .arg("-r")
@@ -45,17 +45,13 @@ fn default_and_explicit_rescue_agree_and_never_fall_back_when_fastas_are_missing
 }
 
 #[test]
-fn no_anim_and_its_short_form_reproduce_explicit_v1() {
+fn no_anim_and_its_short_form_agree_for_both_aliases() {
     let (dir, pin, seq) = common::assembly::native_package();
     let query = dir.path().join("query.fa");
     std::fs::write(&query, [b">query\n".as_slice(), &seq, b"\n"].concat()).unwrap();
     let mut results = Vec::new();
     for name in ["tero", "terobacter"] {
-        for mode in [
-            vec!["--no-anim"],
-            vec!["-n"],
-            vec!["-p", "conservative-assembly-v1"],
-        ] {
+        for mode in [vec!["--no-anim"], vec!["-n"]] {
             let output = command(name)
                 .args(mode)
                 .arg("-r")
@@ -79,11 +75,14 @@ fn no_anim_and_its_short_form_reproduce_explicit_v1() {
 }
 
 #[test]
-fn no_anim_rejects_explicit_policy_and_custom_thresholds() {
+fn removed_options_and_incompatible_thresholds_are_rejected() {
     let pin = "0".repeat(64);
     for name in ["tero", "terobacter"] {
         for flags in [
-            vec!["-n", "--policy", "conservative-assembly-anim-v2"],
+            vec!["--policy", "conservative-assembly-anim-v2"],
+            vec!["-p", "conservative-assembly-v1"],
+            vec!["--input-kind", "assembly"],
+            vec!["-i", "assembly"],
             vec![
                 "--no-anim",
                 "--assignment-policy",
@@ -104,10 +103,36 @@ fn no_anim_rejects_explicit_policy_and_custom_thresholds() {
             );
             let error = String::from_utf8_lossy(&output.stderr);
             assert!(
-                error.contains("cannot be used with")
-                    || error.contains("v1 rejects threshold overrides"),
+                error.contains("unexpected argument")
+                    || error.contains("--no-anim cannot be combined"),
                 "{error}"
             );
+        }
+    }
+}
+
+#[test]
+fn help_explains_boundary_anim_without_internal_selectors() {
+    for name in ["tero", "terobacter"] {
+        for flag in ["--help", "-h"] {
+            let output = command(name).arg(flag).output().unwrap();
+            assert!(output.status.success());
+            let text = String::from_utf8(output.stdout).unwrap();
+            for forbidden in ["policy", "--input-kind", "v1", "v2"] {
+                assert!(!text.contains(forbidden), "{text}");
+            }
+            for expected in [
+                "--no-anim",
+                "near the species boundary",
+                "ANIm can be slower",
+                "default: 96",
+                "default: 98",
+                "skani >=",
+                "strictly greater",
+                "--species-ani 96.5",
+            ] {
+                assert!(text.contains(expected), "missing {expected}: {text}");
+            }
         }
     }
 }

@@ -540,9 +540,16 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
     if !nearest.is_empty() {
         let _ = writeln!(md, "- **Nearest parent (not an assignment):** {nearest}");
     }
-    let _ = writeln!(md, "\n### Policy and execution\n");
-    let _ = writeln!(md, "**Policy:** {}\n", g("policy_id"));
-    let _ = writeln!(md, "- Policy mode: {}", or_dash(g("policy_mode")));
+    let _ = writeln!(md, "\n### Analysis settings and execution\n");
+    let _ = writeln!(
+        md,
+        "- ANI thresholds: {}",
+        if g("policy_mode") == "custom" {
+            "custom"
+        } else {
+            "standard"
+        }
+    );
     let _ = writeln!(
         md,
         "- Validation status: {}",
@@ -576,13 +583,9 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
             or_dash(g("trigger_lower_ani"))
         );
     }
-    let _ = writeln!(
-        md,
-        "- Whole-assembly skani method: {}",
-        or_dash(g("skani_method"))
-    );
+    let _ = writeln!(md, "- Whole-assembly ANI method: skani");
     if !g("anim_method").is_empty() {
-        let _ = writeln!(md, "- ANIm method: {}", g("anim_method"));
+        let _ = writeln!(md, "- Boundary ANI method: ANIm using MUMmer4");
     }
     let _ = writeln!(
         md,
@@ -594,18 +597,18 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
         let _ = writeln!(md, "- Execution error: {}", g("execution_error"));
     }
     if !is_v2(report) {
-        let _ = writeln!(md, "\n### Original v1 outcome and rescue\n");
+        let _ = writeln!(md, "\n### Initial skani result and ANIm\n");
         let _ = writeln!(
             md,
-            "- Original v1 outcome: this report is the v1 outcome; no rescue applies."
+            "- Initial skani result: this is the final result; ANIm is disabled."
         );
-        let _ = writeln!(md, "- ANIm: not applicable under this policy");
+        let _ = writeln!(md, "- ANIm: disabled");
     }
     if is_v2(report) {
-        let _ = writeln!(md, "\n### Original v1 outcome and rescue\n");
+        let _ = writeln!(md, "\n### Initial skani result and ANIm\n");
         let _ = writeln!(
             md,
-            "- Original v1 outcome: {} (species {}; reasons {})",
+            "- Initial skani result: {} (species {}; reasons {})",
             or_dash(g("original_v1_status")),
             or_dash(g("original_v1_species_id")),
             or_dash(&g("original_v1_reasons").replace(';', ", "))
@@ -730,7 +733,7 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
     if !is_v2(report) {
         let _ = writeln!(
             md,
-            "The v1 policy has no foreign-parent challenge test, so none is listed. Every other \
+            "With ANIm disabled, there is no alignment-based foreign-parent challenge test, so none is listed. Every other \
              parent's best skani ANI is in the whole-panel summary above; compare it with the call.\n"
         );
     } else {
@@ -751,7 +754,7 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
             ),
             _ => Some(
                 "Not assessed: the run stopped before the competitor panel was measured, or the \
-                 policy did not need it. The absence of a listed challenge is not a negative result.",
+                 analysis did not need it. The absence of a listed challenge is not a negative result.",
             ),
         };
         if let Some(note) = note {
@@ -807,13 +810,8 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
     );
     let _ = writeln!(
         md,
-        "- Versions: implementation {}; report schema {}; policy {} ({}); skani method {}; ANIm method {}",
+        "- Software version: {}. Exact schema, method and analysis identities are retained in report.json.",
         or_dash(g("implementation_version")),
-        or_dash(g("report_schema")),
-        or_dash(g("policy_id")),
-        or_dash(g("contract_revision")),
-        or_dash(g("skani_method")),
-        or_dash(g("anim_method"))
     );
     let _ = writeln!(md, "\n### What to do next\n");
     let next = match g("call_status") {

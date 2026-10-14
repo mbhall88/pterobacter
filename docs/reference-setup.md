@@ -28,7 +28,7 @@ Reuse the same package for another assembly or batch. Do not move output files i
 
 ## Alignment references and MLST
 
-The default analysis starts with skani and adds MUMmer4 alignments for eligible borderline queries. Supply the matching whole-assembly reference FASTA directory and its trusted `anim.json` digest so those comparisons can run. [The command reference](assembly.md#candidate-v2-anim-rescue) gives the complete invocation. A query that needs alignments fails with an incomplete report if this component is absent; it never silently switches to skani-only classification. To choose skani only, add `--no-anim` and omit `--anim-reference-package`, `--expected-anim-sha256` and `--anim-output`.
+The default analysis starts with skani and adds MUMmer4 alignments for eligible borderline queries. Supply the matching whole-assembly reference FASTA directory and its trusted `anim.json` digest so those comparisons can run. [The command reference](assembly.md#boundary-anim) gives the complete invocation. A query that needs alignments fails with an incomplete report if this component is absent; it never silently switches to skani-only classification. To choose skani only, add `--no-anim` and omit `--anim-reference-package`, `--expected-anim-sha256` and `--anim-output`.
 
 Historical MLST uses its own directory and trusted `manifest.json` digest. Follow [historical MLST setup](historical-mlst.md). It adds typing information without changing classification.
 

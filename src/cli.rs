@@ -23,11 +23,11 @@ use crate::rescue::{Thresholds, V2_POLICY_ID};
 /// Shared threshold flags for native and saved-evidence front ends.
 #[derive(Debug, Default, clap::Args)]
 pub(crate) struct ThresholdArgs {
-    /// Custom species ANI percentage for rescue mode; marks results custom_unvalidated
-    #[arg(short = 's', long, value_name = "T")]
+    /// Minimum species ANI (%): skani >= this value; ANIm must be strictly greater [default: 96]
+    #[arg(short = 's', long, value_name = "PERCENT")]
     species_ani: Option<String>,
-    /// Custom subspecies ANI percentage for rescue mode; requires 80 <= T <= S <= 100
-    #[arg(short = 'S', long, value_name = "S")]
+    /// Minimum subspecies ANI (%): skani >= this value [default: 98]
+    #[arg(short = 'S', long, value_name = "PERCENT")]
     subspecies_ani: Option<String>,
 }
 
@@ -52,7 +52,10 @@ impl ThresholdArgs {
     name = "terobacter",
     version,
     about,
-    after_help = "Uses skani plus MUMmer4 rescue by default. Use -n/--no-anim for skani only.
+    after_help = "Uses skani first, then ANIm for eligible samples near the species boundary.
+ANIm can be slower; use -n/--no-anim to skip it.
+ANI thresholds are percentages, e.g. --species-ani 96.5. Require 80 <= species <= subspecies <= 100.
+Custom thresholds cannot be combined with --no-anim and mark results custom_unvalidated.
 Guide: https://github.com/mbhall88/terobacter/blob/main/docs/assembly.md"
 )]
 struct Public {
@@ -67,15 +70,9 @@ struct Public {
     /// Expected SHA-256 of portable.json, obtained from a trusted source
     #[arg(short = 'R', long, value_parser = parse_sha256)]
     expected_sha256: String,
-    /// Explicit calling rules (compatibility option); use --no-anim for skani only
-    #[arg(short = 'p', long, visible_alias = "assignment-policy", default_value = V2_POLICY_ID)]
-    policy: String,
-    /// Use skani only, without MUMmer4 alignment rescue
-    #[arg(short = 'n', long, conflicts_with = "policy")]
+    /// Skip ANIm near the species boundary; use skani only
+    #[arg(short = 'n', long)]
     no_anim: bool,
-    /// Kind of input; assembly FASTA is the supported kind
-    #[arg(short = 'i', long, default_value = "assembly")]
-    input_kind: String,
     /// Worker threads for each assembly
     #[arg(short = 't', long, default_value_t = 1, value_parser = clap::value_parser!(u16).range(1..))]
     threads: u16,
@@ -97,6 +94,15 @@ struct Public {
     #[command(flatten)]
     anim: v2::V2Settings,
 }
+impl Public {
+    fn policy_id(&self) -> &'static str {
+        if self.no_anim {
+            V1_POLICY_ID
+        } else {
+            V2_POLICY_ID
+        }
+    }
+}
 fn parse_sha256(text: &str) -> Result<String, String> {
     if crate::reference::is_sha256(text) {
         Ok(text.into())
@@ -110,11 +116,14 @@ pub fn run_public() -> ExitCode {
     if let Some(status) = crate::anim::run_worker_if_requested() {
         return status;
     }
-    let mut args = Public::parse();
-    if args.no_anim {
-        args.policy = V1_POLICY_ID.into();
+    let args = Public::parse();
+    if args.no_anim
+        && (args.thresholds.species_ani.is_some() || args.thresholds.subspecies_ani.is_some())
+    {
+        eprintln!("error: --no-anim cannot be combined with --species-ani or --subspecies-ani");
+        return ExitCode::FAILURE;
     }
-    let thresholds = match args.thresholds.for_policy(&args.policy) {
+    let thresholds = match args.thresholds.for_policy(args.policy_id()) {
         Ok(thresholds) => thresholds,
         Err(error) => {
             eprintln!("error: {error}");
@@ -146,7 +155,7 @@ pub fn run_public() -> ExitCode {
         }
     }
     install_cancel_handlers();
-    let output_error = if args.policy == crate::rescue::V2_POLICY_ID {
+    let output_error = if !args.no_anim {
         args.anim
             .anim_output
             .as_ref()
@@ -310,14 +319,14 @@ impl Batch<'_> {
         let path = &args.assemblies[index];
         let mut report = json!({"schema": "terobacter.assembly-call/1",
             "implementation": {"name": env!("CARGO_PKG_NAME"), "version": env!("CARGO_PKG_VERSION")},
-            "policy": {"id": args.policy},
-            "input": {"kind": args.input_kind, "file": path.to_string_lossy(), "ordinal": index + 1,
+            "policy": {"id": args.policy_id()},
+            "input": {"kind": "assembly", "file": path.to_string_lossy(), "ordinal": index + 1,
                 "sequence_scope": "whole_assembly_as_supplied"},
             "assignment": {"status": "not_evaluated", "species_id": null, "species_name": null,
                 "subspecies_id": null, "subspecies_name": null, "lineage_id": null, "genomovar_id": null},
             "execution": {"status": "incomplete", "stage": "input"},
             "mlst": mlst::not_requested()});
-        if args.policy == crate::rescue::V2_POLICY_ID {
+        if !args.no_anim {
             report["schema"] = crate::rescue::REPORT_SCHEMA.into();
             for (key, value) in self
                 .thresholds
@@ -337,23 +346,12 @@ impl Batch<'_> {
             report["counts"] = json!({"unit": "reciprocal_pair", "required": 0, "attempted": 0,
                 "completed": 0, "no_alignment": 0, "failed": 0, "not_run": 0});
         }
-        if args.policy != V1_POLICY_ID && args.policy != crate::rescue::V2_POLICY_ID {
-            report["execution"]["stage"] = "policy".into();
-            report["execution"]["error"] = "requested native policy is unavailable; supported policies are conservative-assembly-v1 and conservative-assembly-anim-v2".into();
-            if let Some(mlst) = self.mlst {
-                report["mlst"] = mlst.not_run("policy");
-            }
-            return (report, 5);
-        }
         let mut exit = 0;
         let mut validated = None;
         let result = (|| -> Result<(), (u8, String)> {
-            if args.policy == V1_POLICY_ID && args.anim.supplied() {
-                report["execution"]["stage"] = "policy".into();
-                return Err((
-                    5,
-                    "ANIm options require conservative-assembly-anim-v2".into(),
-                ));
+            if args.no_anim && args.anim.supplied() {
+                report["execution"]["stage"] = "options".into();
+                return Err((5, "ANIm options cannot be combined with --no-anim".into()));
             }
             if let Some(error) = self.output_error {
                 report["execution"]["stage"] = "anim_output".into();
@@ -361,9 +359,6 @@ impl Batch<'_> {
             }
             if CANCELLED.load(Ordering::SeqCst) {
                 return Err((1, "run interrupted".into()));
-            }
-            if args.input_kind != "assembly" {
-                return Err((3, "only assembly FASTA input is supported".into()));
             }
             let bytes: &[u8] = validated.insert(read_input(path, &mut report).map_err(|e| (3, e))?);
             report["execution"]["stage"] = "package".into();
@@ -375,7 +370,7 @@ impl Batch<'_> {
                 .as_ref()
                 .map_err(|e| (4, e.clone()))?;
             let query_label = path.to_str().ok_or((3, "query path is not UTF-8".into()))?;
-            if args.policy == crate::rescue::V2_POLICY_ID {
+            if !args.no_anim {
                 workflow.analyse_v2(
                     query_label,
                     bytes,
@@ -682,8 +677,6 @@ mod public_option_tests {
             ("--subspecies-ani", "-S", "97.5"),
             ("--reference-package", "-r", "refs"),
             ("--expected-sha256", "-R", pin.as_str()),
-            ("--policy", "-p", V2_POLICY_ID),
-            ("--input-kind", "-i", "assembly"),
             ("--threads", "-t", "2"),
             ("--jobs", "-j", "3"),
             ("--output", "-o", "calls.json"),
@@ -707,7 +700,7 @@ mod public_option_tests {
         let long = Public::try_parse_from(long).unwrap();
         let short = Public::try_parse_from(short).unwrap();
         assert_eq!(format!("{long:?}"), format!("{short:?}"));
-        assert_eq!(short.policy, V2_POLICY_ID);
+        assert!(!short.no_anim);
         assert_eq!(short.anim.anim_pair_seconds.unwrap().as_secs_f64(), 12.5);
         assert_eq!(short.anim.anim_query_seconds.unwrap().as_secs_f64(), 120.5);
     }

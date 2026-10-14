@@ -40,7 +40,7 @@ All output files and report directories must be new, distinct, outside reference
 | `-n`, `--no-anim` | Use skani only, without alignment rescue. Omit the alignment package/evidence options with this flag. |
 | `-h`, `--help` | Show the complete current option list. |
 
-[Historical MLST](historical-mlst.md) is optional. The [command reference](assembly.md) covers explicit policy selection, ANIm components, resource limits and verified alignment caching. The default uses skani plus MUMmer4 rescue. For skani only, use:
+[Historical MLST](historical-mlst.md) is optional. The [command reference](assembly.md) covers boundary ANIm, its reference components, resource limits and verified alignment caching. The default uses skani plus MUMmer4 rescue. For skani only, use:
 
 ```sh
 tero -n -r "$REFERENCE_PACKAGE" -R "$REFERENCE_SHA256" -t 2 -o isolate.json -d isolate-report isolate.fa

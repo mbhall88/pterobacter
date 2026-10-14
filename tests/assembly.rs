@@ -40,27 +40,6 @@ fn invalid_input_retains_a_partial_report_and_never_assigns() {
     );
 }
 
-#[test]
-fn unknown_policy_is_an_explicit_unavailable_policy_failure() {
-    let output = cargo_bin_cmd!("tero")
-        .args([
-            "--reference-package",
-            FIXTURE_DIR,
-            "--expected-sha256",
-            PINNED_MANIFEST_SHA256,
-            "--policy",
-            "unavailable-policy",
-            "missing.fa",
-        ])
-        .output()
-        .unwrap();
-    assert_eq!(output.status.code(), Some(5));
-    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(report["execution"]["stage"], "policy");
-    assert_eq!(report["policy"]["id"], "unavailable-policy");
-    assert_eq!(report["assignment"]["species_id"], Value::Null);
-}
-
 use common::assembly::native_package;
 
 #[test]
@@ -341,7 +320,12 @@ fn optional_mlst_success_and_overflow_failure_preserve_v1_and_native_v2_calls() 
             let output = cargo_bin_cmd!("tero")
                 .arg("--reference-package")
                 .arg(dir.path().join("package"))
-                .args(["--expected-sha256", &pin, "--policy", policy])
+                .args(["--expected-sha256", &pin])
+                .args(if policy == "conservative-assembly-v1" {
+                    vec!["--no-anim"]
+                } else {
+                    vec![]
+                })
                 .arg("--mlst-package")
                 .arg(dir.path().join("mlst"))
                 .args(["--mlst-expected-sha256", &scheme.manifest_sha256()])

@@ -360,7 +360,12 @@ fn public_command_combines_mlst_and_genomovar_for_both_parent_policies() {
             command
                 .arg("--reference-package")
                 .arg(dir.path().join("package"))
-                .args(["--expected-sha256", &pin, "--policy", policy]);
+                .args(["--expected-sha256", &pin])
+                .args(if policy == "conservative-assembly-v1" {
+                    vec!["--no-anim"]
+                } else {
+                    vec![]
+                });
             if mode != "not_requested" {
                 let id = if mode == "failed" {
                     "18446744073709551616"

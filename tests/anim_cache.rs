@@ -42,7 +42,6 @@ impl Prepared {
             .arg("--reference-package")
             .arg(self.dir.path().join("package"))
             .args(["--expected-sha256", &self.pin])
-            .args(["--policy", "conservative-assembly-anim-v2"])
             .args(["--expected-anim-sha256", &self.anim_pin])
             .arg("--anim-reference-package")
             .arg(self.dir.path().join("fastas"))

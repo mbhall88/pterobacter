@@ -4,7 +4,7 @@ Keep the automatic report and record any expert interpretation separately. A nea
 
 Start with the reported reason. Inspect both aligned fractions, the closest type and diversity references, competing groups, and the sequence scopes. Percent values remain percentages: an AF of 0.8 is 0.8%, not 80%. A missing estimate is not zero ANI. An unresolved species/subspecies field stays null even if the nearest-reference name is present.
 
-The default uses skani plus MUMmer4 rescue, adding genome alignments for eligible queries just below the species threshold. `--no-anim` selects skani-only classification. These are called `v1` and `v2` in the report and command options. [Classification modes](assembly.md#classification-modes) compares them and states the default; the [rescue command](assembly.md#candidate-v2-anim-rescue) shows the reference FASTAs and evidence directory needed for alignments.
+The default adds ANIm for eligible samples just below the species boundary. `--no-anim` skips those alignments and uses skani only. The [ANIm guide](assembly.md#boundary-anim) shows the reference FASTAs and evidence directory needed for alignments.
 
 A successful rescue requires ANIm strictly above 96% in both directions, the AF and competitor safeguards, and a complete required panel. It assigns species only. Preserve method disagreement rather than selecting an estimator because it produces a preferred label. The [worked manual review](report-reference.md#a-worked-manual-review-example) shows an invented unresolved case with a competing species match.
 
@@ -35,4 +35,4 @@ The wildcard is over your explicitly staged comparison set, not an existing arch
 
 Terobacter has no placement subcommand, public BAC120 placement database or browser feature. A Newick tree alone is not a placement package: the matching alignment, mask, model and reference identities are also required. Keep the report unresolved when follow-up evidence cannot distinguish the alternatives.
 
-Record the original report hash, software/policy/data identities, reason for review, competing references, ANI and both AFs, tree inputs/settings/support, alternative interpretations, reviewer/date and rationale. A manual label stays separate from the automatic result and does not create a validly published name.
+Record the original report hash, software, settings and data identities, reason for review, competing references, ANI and both AFs, tree inputs/settings/support, alternative interpretations, reviewer/date and rationale. A manual label stays separate from the automatic result and does not create a validly published name.

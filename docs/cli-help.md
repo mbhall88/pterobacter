@@ -2,15 +2,17 @@
 
 For a first run, follow [classify an assembly](running.md). This page explains the less familiar options, followed by the exact help printed by the current executable.
 
-## Classification mode and ANI thresholds
+## ANIm and ANI thresholds
 
-The default uses **skani plus MUMmer4 rescue**, adding whole-genome alignments for eligible uncertain species calls. Use `-n` or `--no-anim` for skani-only classification. The internal names `conservative-assembly-v1` and `conservative-assembly-anim-v2` identify these calling rules; they are not software release numbers. See [the comparison and selection command](assembly.md#classification-modes).
+Terobacter first estimates ANI with skani. For eligible samples just below the species boundary, it also runs ANIm using whole-genome alignments to refine the estimate. ANIm can take longer, especially in large batches with many borderline samples; samples outside that band do not incur alignment work. Use `-n` or `--no-anim` to skip ANIm and use skani only.
 
-`--species-ani` and `--subspecies-ani` change the minimum average nucleotide identity (ANI) percentages for species and subspecies calls. They are advanced options for the default rescue mode, with defaults of 96 and 98 respectively. Supplying either option marks the result `custom_unvalidated`, even if you supply the default number. Leave them out to use the standard rules. [Threshold details](v2-decisions.md#custom-ani-thresholds) explain which comparisons and safeguards apply.
+`-s` / `--species-ani PERCENT` sets the minimum species ANI, **96% by default**. Enter a percentage such as `96.5`, not a fraction such as `0.965`. A skani species call requires ANI greater than or equal to that value; an ANIm-supported call requires ANI strictly greater than it in both alignment directions. Coverage and competitor checks must also pass.
 
-Assemblies are already the only supported input. Omit `--input-kind`; it defaults to `assembly` and does not enable read classification. The explicit input-kind option remains available for compatibility.
+`-S` / `--subspecies-ani PERCENT` sets the minimum skani ANI for a subspecies call, **98% by default**. ANI must be greater than or equal to this value, with the other subspecies checks satisfied. ANIm never assigns subspecies.
 
-`--policy` (`-p`) and `--assignment-policy` accept the existing policy IDs. Combining either with `--no-anim` is an error. Custom ANI thresholds and alignment options are also incompatible with skani-only mode. Every public option has a short form, shown in the terminal output below.
+Require `80 <= species threshold <= subspecies threshold <= 100`. A custom species threshold also moves the ANIm trigger band to the interval from 1.5 percentage points below that threshold, inclusive, up to the threshold, exclusive, with a lower bound of 80%. Supplying either threshold marks the result `custom_unvalidated`, even when you supply its default number. Leave both out to use the standard settings. Custom thresholds cannot be combined with `--no-anim`.
+
+The input is always an isolate assembly FASTA. Every public option has a short form, shown below.
 
 ## MLST
 
@@ -30,7 +32,7 @@ The `--anim-` options apply to the MUMmer4 rescue mode. ANIm means average nucle
 | `--anim-query-seconds` | Total alignment time budget for one input assembly. Default: 600 seconds. |
 | `--anim-memory-mib` | Memory ceiling for each native alignment worker. Default: 1024 MiB. |
 
-`--report-dir` holds the classification reports; `--anim-output` holds the underlying alignment evidence. Use separate new directories. The [rescue command](assembly.md#candidate-v2-anim-rescue) shows both the required inputs and evidence output; [cache reuse](assembly.md#reusing-reciprocal-pairs) describes the optional cache.
+`--report-dir` holds the classification reports; `--anim-output` holds the underlying alignment evidence. Use separate new directories. The [rescue command](assembly.md#boundary-anim) shows both the required inputs and evidence output; [cache reuse](assembly.md#reusing-reciprocal-pairs) describes the optional cache.
 
 The current limits bound native alignment work. Reaching a limit leaves the required comparison incomplete and withholds the call; it is not evidence that the assembly belongs to a different species. You can raise the limits up to 1800 seconds per pair, 7200 seconds per query and 6144 MiB per worker, but this build has no unlimited setting. Ctrl-C requests a stop and retains partial evidence. [Issue43](https://github.com/mbhall88/terobacter/issues/43) tracks the request to make these limits optional; the current values are listed here so the guide matches the executable.
 
@@ -47,20 +49,16 @@ Arguments:
   <ASSEMBLY>...  Isolate assembly FASTA files, analysed whole and as supplied
 
 Options:
-  -s, --species-ani <T>
-          Custom species ANI percentage for rescue mode; marks results custom_unvalidated
-  -S, --subspecies-ani <S>
-          Custom subspecies ANI percentage for rescue mode; requires 80 <= T <= S <= 100
+  -s, --species-ani <PERCENT>
+          Minimum species ANI (%): skani >= this value; ANIm must be strictly greater [default: 96]
+  -S, --subspecies-ani <PERCENT>
+          Minimum subspecies ANI (%): skani >= this value [default: 98]
   -r, --reference-package <REFERENCE_PACKAGE>
           Authenticated reference package directory
   -R, --expected-sha256 <EXPECTED_SHA256>
           Expected SHA-256 of portable.json, obtained from a trusted source
-  -p, --policy <POLICY>
-          Explicit calling rules (compatibility option); use --no-anim for skani only [default: conservative-assembly-anim-v2] [alias: --assignment-policy]
   -n, --no-anim
-          Use skani only, without MUMmer4 alignment rescue
-  -i, --input-kind <INPUT_KIND>
-          Kind of input; assembly FASTA is the supported kind [default: assembly]
+          Skip ANIm near the species boundary; use skani only
   -t, --threads <THREADS>
           Worker threads for each assembly [default: 1]
   -j, --jobs <JOBS>
@@ -92,6 +90,9 @@ Options:
   -V, --version
           Print version
 
-Uses skani plus MUMmer4 rescue by default. Use -n/--no-anim for skani only.
+Uses skani first, then ANIm for eligible samples near the species boundary.
+ANIm can be slower; use -n/--no-anim to skip it.
+ANI thresholds are percentages, e.g. --species-ani 96.5. Require 80 <= species <= subspecies <= 100.
+Custom thresholds cannot be combined with --no-anim and mark results custom_unvalidated.
 Guide: https://github.com/mbhall88/terobacter/blob/main/docs/assembly.md
 ```
