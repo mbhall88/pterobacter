@@ -55,7 +55,8 @@ fn main() {
     for key in compiler::override_keys(&host, &target) {
         println!("cargo:rerun-if-env-changed={key}");
     }
-    let explicit = compiler::explicit_override(&host, &target, |key| env::var_os(key));
+    let explicit = compiler::explicit_override(&host, &target, |key| env::var_os(key))
+        .unwrap_or_else(|error| panic!("{error}"));
     let discover = compiler::needs_discovery(&host, &target, explicit.is_some())
         .unwrap_or_else(|error| panic!("{error}"));
     let mut build = cc::Build::new();

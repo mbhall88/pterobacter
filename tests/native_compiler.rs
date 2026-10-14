@@ -33,14 +33,14 @@ fn cc_override_precedence_matches_native_and_cross_builds() {
         );
         for key in keys {
             assert_eq!(
-                compiler::explicit_override(host, target, |k| values.get(k).cloned()),
+                compiler::explicit_override(host, target, |k| values.get(k).cloned()).unwrap(),
                 Some(key.clone())
             );
             assert!(!compiler::needs_discovery(host, target, true).unwrap());
             values.remove(&key);
         }
         assert_eq!(
-            compiler::explicit_override(host, target, |k| values.get(k).cloned()),
+            compiler::explicit_override(host, target, |k| values.get(k).cloned()).unwrap(),
             None
         );
     }
@@ -112,4 +112,44 @@ fn compiler_family_probe_rejects_missing_and_non_compilers() {
     assert!(!compiler::is_gnu(std::path::Path::new("/bin/false")));
     // Exercise prefix querying as well as its pure candidate selection.
     let _ = compiler::homebrew_prefixes();
+}
+
+#[test]
+fn blank_selected_overrides_fail_at_every_applicable_level_without_fallback() {
+    for (host, target) in [
+        ("x86_64-unknown-linux-gnu", "x86_64-unknown-linux-gnu"),
+        ("aarch64-apple-darwin", "aarch64-apple-darwin"),
+        ("x86_64-apple-darwin", "aarch64-apple-darwin"),
+    ] {
+        let keys = compiler::override_keys(host, target);
+        for (index, key) in keys.iter().enumerate() {
+            for blank in ["", "   ", "\t\n\r", "\u{2003}"] {
+                let mut values: HashMap<String, OsString> = keys[index + 1..]
+                    .iter()
+                    .map(|k| (k.clone(), "g++".into()))
+                    .collect();
+                values.insert(key.clone(), blank.into());
+                let error = compiler::explicit_override(host, target, |k| values.get(k).cloned())
+                    .unwrap_err();
+                assert!(error.contains(&format!("override {key}:")), "{error}");
+                assert!(error.contains("empty or whitespace"), "{error}");
+            }
+        }
+    }
+}
+
+#[test]
+fn nonblank_overrides_keep_wrapper_arguments_and_ignore_lower_blank_values() {
+    let host = "x86_64-unknown-linux-gnu";
+    let keys = compiler::override_keys(host, host);
+    for value in ["g++", " g++ -pthread ", " sccache g++ -pthread "] {
+        let mut values: HashMap<String, OsString> =
+            keys.iter().map(|key| (key.clone(), "   ".into())).collect();
+        values.insert(keys[0].clone(), value.into());
+        assert_eq!(
+            compiler::explicit_override(host, host, |k| values.get(k).cloned()).unwrap(),
+            Some(keys[0].clone())
+        );
+        assert_eq!(values[&keys[0]], OsString::from(value));
+    }
 }

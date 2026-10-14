@@ -107,6 +107,15 @@ jobs:
           else
             just install-check
           fi
+      - name: Reject blank compiler overrides through Cargo
+        run: |
+          if [ "${{ runner.os }}" = macOS ]; then
+            export CARGO_TARGET_DIR="$RUNNER_TEMP/terobacter-fresh-native"
+            compiler=$(find "$(brew --prefix gcc)/bin" -name 'g++-[0-9]*' | head -n 1)
+          else
+            compiler=$(command -v g++)
+          fi
+          python3 scripts/check_blank_compilers.py --compiler "$compiler"
       - name: Check explicit GNU C++ overrides on macOS
         if: runner.os == 'macOS'
         run: |

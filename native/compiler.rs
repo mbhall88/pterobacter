@@ -20,10 +20,20 @@ pub fn explicit_override(
     host: &str,
     target: &str,
     mut get: impl FnMut(&str) -> Option<OsString>,
-) -> Option<String> {
-    override_keys(host, target)
-        .into_iter()
-        .find(|key| get(key).is_some())
+) -> Result<Option<String>, String> {
+    for key in override_keys(host, target) {
+        if let Some(value) = get(&key) {
+            // cc-rs trims its selected value and otherwise falls back to a default.
+            // Reject that fallback while leaving nonblank wrapper/argument parsing to cc-rs.
+            if value.to_string_lossy().trim().is_empty() {
+                return Err(format!(
+                    "Invalid GNU C++ compiler override {key}: value is empty or whitespace; set it to a GNU C++ compiler or unset the variable"
+                ));
+            }
+            return Ok(Some(key));
+        }
+    }
+    Ok(None)
 }
 
 pub fn needs_discovery(host: &str, target: &str, explicit: bool) -> Result<bool, String> {
