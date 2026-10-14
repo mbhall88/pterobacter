@@ -16,7 +16,7 @@ REFERENCE_SHA256=THE_TRUSTED_PORTABLE_JSON_SHA256
 Replace both placeholders. In the current interface these variables are just shell conveniences; every command still receives the directory and digest explicitly:
 
 ```sh
-tero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256"   --output isolate.json --report-dir isolate-report isolate.fa
+ptero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256"   --output isolate.json --report-dir isolate-report isolate.fa
 ```
 
 Reuse the same package for another assembly or batch. Do not move output files into the reference directory. The [coverage guide](supported-taxa.md) describes which names and groups it represents.

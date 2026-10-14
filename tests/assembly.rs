@@ -9,7 +9,7 @@ fn invalid_input_retains_a_partial_report_and_never_assigns() {
     let dir = tempfile::tempdir().unwrap();
     let query = dir.path().join("bad.fa");
     std::fs::write(&query, b"@reads\nACGT\n+\n!!!!\n").unwrap();
-    let output = cargo_bin_cmd!("tero")
+    let output = cargo_bin_cmd!("ptero")
         .args([
             "--reference-package",
             FIXTURE_DIR,
@@ -32,7 +32,7 @@ fn invalid_input_retains_a_partial_report_and_never_assigns() {
 
 #[test]
 fn unknown_policy_is_an_explicit_unavailable_policy_failure() {
-    let output = cargo_bin_cmd!("tero")
+    let output = cargo_bin_cmd!("ptero")
         .args([
             "--reference-package",
             FIXTURE_DIR,
@@ -64,7 +64,7 @@ fn native_whole_assembly_retains_plasmids_and_short_records_and_assigns_v1() {
     ]
     .concat();
     std::fs::write(&query, &bytes).unwrap();
-    let output = cargo_bin_cmd!("tero")
+    let output = cargo_bin_cmd!("ptero")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args(["--expected-sha256", &pin])
@@ -112,7 +112,7 @@ fn empty_malformed_and_non_fasta_inputs_fail_with_null_calls() {
     ] {
         let query = dir.path().join(name);
         std::fs::write(&query, bytes).unwrap();
-        let output = cargo_bin_cmd!("tero")
+        let output = cargo_bin_cmd!("ptero")
             .args([
                 "--reference-package",
                 FIXTURE_DIR,
@@ -144,7 +144,7 @@ fn changed_package_is_rejected_before_any_assignment() {
         b"corrupt",
     )
     .unwrap();
-    let output = cargo_bin_cmd!("tero")
+    let output = cargo_bin_cmd!("ptero")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args(["--expected-sha256", &pin])
@@ -167,10 +167,10 @@ fn complete_no_estimate_is_withheld_and_batch_failure_does_not_change_other_quer
     std::fs::write(&short, b">short\nACGT\n").unwrap();
     std::fs::write(&bad, b">bad\n!\n").unwrap();
     let mut observed = Vec::new();
-    for name in ["tero", "terobacter"] {
+    for name in ["ptero", "pterobacter"] {
         let mut cmd = match name {
-            "tero" => cargo_bin_cmd!("tero"),
-            _ => cargo_bin_cmd!("terobacter"),
+            "ptero" => cargo_bin_cmd!("ptero"),
+            _ => cargo_bin_cmd!("pterobacter"),
         };
         let output = cmd
             .arg("--reference-package")
@@ -226,7 +226,7 @@ fn run_with_mlst(
     mlst_sha256: &str,
     queries: &[&std::path::Path],
 ) -> (Option<i32>, Value) {
-    let output = cargo_bin_cmd!("tero")
+    let output = cargo_bin_cmd!("ptero")
         .arg("--reference-package")
         .arg(dir.join("package"))
         .args(["--expected-sha256", pin])
@@ -298,7 +298,7 @@ fn requested_mlst_that_fails_is_explicit_and_keeps_the_classification() {
 
 #[test]
 fn an_mlst_package_needs_its_expected_sha256() {
-    let output = cargo_bin_cmd!("tero")
+    let output = cargo_bin_cmd!("ptero")
         .args([
             "--reference-package",
             FIXTURE_DIR,
@@ -328,7 +328,7 @@ fn optional_mlst_success_and_overflow_failure_preserve_v1_and_native_v2_calls() 
         for id in ["1", "18446744073709551616"] {
             let scheme = common::mlst::SyntheticScheme::new().with_dnaa_id(id);
             scheme.write_to(&dir.path().join("mlst"));
-            let output = cargo_bin_cmd!("tero")
+            let output = cargo_bin_cmd!("ptero")
                 .arg("--reference-package")
                 .arg(dir.path().join("package"))
                 .args(["--expected-sha256", &pin, "--policy", policy])

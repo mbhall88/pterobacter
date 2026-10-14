@@ -20,4 +20,5 @@
 - [Assembly command](assembly.md)
 - [Report fields](report-reference.md)
 - [Reference registry](reference-registry.md)
+- [Naming migration](migration.md)
 - [Development](development.md)

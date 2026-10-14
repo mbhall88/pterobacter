@@ -1,6 +1,6 @@
-# Terobacter
+# Pterobacter
 
-Vocabulary for the Terobacter tool, which classifies Enterobacter isolate assemblies. Terms from the research project (type reference, nearest-reference evidence, unresolved assignment) keep their research meaning here.
+Vocabulary for the Pterobacter tool, which classifies Enterobacter isolate assemblies. Terms from the research project (type reference, nearest-reference evidence, unresolved assignment) keep their research meaning here.
 
 ## Language
 
@@ -48,7 +48,7 @@ Vocabulary for the Terobacter tool, which classifies Enterobacter isolate assemb
 
 **Front end**: Code that turns user input into evidence and a decision into output: the command line today, possibly a browser or GUI later. Front ends call the decision logic and never contain it.
 
-**Development binary**: `terobacter-dev`, built only with the `dev` feature, hosting evaluation-only operations. It shares the implementation with `tero` and `terobacter` but is not part of the user-facing tool.
+**Development binary**: `pterobacter-dev`, built only with the `dev` feature, hosting evaluation-only operations. It shares the implementation with `ptero` and `pterobacter` but is not part of the user-facing tool.
 
 **Method diagnostic**: A bound reciprocal ANIm comparison supplied alongside saved skani evidence. Under v1, a disagreement at the species ANI/AF gate withholds the assignment. It cannot rescue one. Under v2 the same veto applies, except to a witness candidate that fails skani only on ANI and passes the strict ANIm gate.
 

@@ -1,11 +1,11 @@
 # Command-line help
 
-Captured from `tero --help` at source commit `63bd432`. The `terobacter` alias accepts the same options.
+Captured with `ptero --help` from this source revision. The `pterobacter` alias accepts the same options.
 
 ```text
 Standalone, self-contained Enterobacter isolate classification
 
-Usage: tero [OPTIONS] --reference-package <REFERENCE_PACKAGE> --expected-sha256 <EXPECTED_SHA256> <ASSEMBLY>...
+Usage: ptero [OPTIONS] --reference-package <REFERENCE_PACKAGE> --expected-sha256 <EXPECTED_SHA256> <ASSEMBLY>...
 
 Arguments:
   <ASSEMBLY>...  Isolate assembly FASTA files, analysed whole and as supplied

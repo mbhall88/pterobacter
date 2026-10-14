@@ -1,14 +1,14 @@
-//! Command-line seam: `tero` and `terobacter` are two names for one implementation.
+//! Command-line seam: `ptero` and `pterobacter` are two names for one implementation.
 
 use assert_cmd::cargo::cargo_bin_cmd;
 use assert_cmd::Command;
 
-const COMMANDS: [&str; 2] = ["tero", "terobacter"];
+const COMMANDS: [&str; 2] = ["ptero", "pterobacter"];
 
 fn command(name: &str) -> Command {
     match name {
-        "tero" => cargo_bin_cmd!("tero"),
-        "terobacter" => cargo_bin_cmd!("terobacter"),
+        "ptero" => cargo_bin_cmd!("ptero"),
+        "pterobacter" => cargo_bin_cmd!("pterobacter"),
         other => panic!("unknown command {other}"),
     }
 }
@@ -43,8 +43,8 @@ fn version_names_terobacter_and_its_implementation_version() {
         assert!(output.status.success(), "{name} --version failed");
         assert_eq!(
             String::from_utf8(output.stdout).unwrap(),
-            format!("terobacter {}\n", env!("CARGO_PKG_VERSION")),
-            "{name} should name Terobacter, not the command alias"
+            format!("pterobacter {}\n", env!("CARGO_PKG_VERSION")),
+            "{name} should name Pterobacter, not the command alias"
         );
     }
 }
@@ -53,8 +53,8 @@ fn version_names_terobacter_and_its_implementation_version() {
 fn both_commands_give_the_same_output_and_exit_status() {
     let cases: [&[&str]; 4] = [&["--version"], &["--help"], &[], &["no-such-assembly.fa"]];
     for args in cases {
-        let tero = observe("tero", args);
-        let terobacter = observe("terobacter", args);
+        let tero = observe("ptero", args);
+        let terobacter = observe("pterobacter", args);
 
         assert_eq!(
             tero.code, terobacter.code,
@@ -73,10 +73,10 @@ fn both_commands_give_the_same_output_and_exit_status() {
 
 #[test]
 fn help_shows_the_approved_interface_without_subcommands() {
-    let output = command("tero").arg("--help").output().unwrap();
+    let output = command("ptero").arg("--help").output().unwrap();
     let help = String::from_utf8(output.stdout).unwrap();
 
-    assert!(help.contains("Usage: tero [OPTIONS] --reference-package <REFERENCE_PACKAGE> --expected-sha256 <EXPECTED_SHA256> <ASSEMBLY>..."), "{help}");
+    assert!(help.contains("Usage: ptero [OPTIONS] --reference-package <REFERENCE_PACKAGE> --expected-sha256 <EXPECTED_SHA256> <ASSEMBLY>..."), "{help}");
     assert!(
         !help.contains("Commands:"),
         "the public command has no subcommands:\n{help}"
@@ -93,4 +93,9 @@ fn an_assembly_run_requires_an_explicit_reference_package_and_digest() {
         assert!(stderr.contains("--reference-package"), "{stderr}");
         assert!(stderr.contains("--expected-sha256"), "{stderr}");
     }
+}
+
+#[test]
+fn package_name_matches_the_public_identity() {
+    assert_eq!(env!("CARGO_PKG_NAME"), "pterobacter");
 }

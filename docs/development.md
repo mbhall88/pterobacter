@@ -1,20 +1,20 @@
 # Development commands and source layout
 
-Use this guide when working on the implementation or replaying saved evidence. The public `tero` command takes assembly paths directly; the operations below belong to the optional development binary. For repository checks, see [Contributing](../CONTRIBUTING.md).
+Use this guide when working on the implementation or replaying saved evidence. The public `ptero` command takes assembly paths directly; the operations below belong to the optional development binary. For repository checks, see [Contributing](../CONTRIBUTING.md).
 
 
-Evaluation-only operations live in `terobacter-dev`. It is built only on request and is never part of a default build or install.
+Evaluation-only operations live in `pterobacter-dev`. It is built only on request and is never part of a default build or install.
 
 ```sh
-cargo run --features dev --bin terobacter-dev -- saved-evidence tests/fixtures/v1-species-assigned/evidence.json
-cargo run --features dev --bin terobacter-dev -- reference-package <DIR> --expected-sha256 <SHA256> [--named-registry-sha256 <SHA256>] [--lineage-registry-sha256 <SHA256>]
-cargo run --features dev --bin terobacter-dev -- saved-evidence <EVIDENCE> --reference-package <DIR> --expected-sha256 <SHA256> [--named-registry-sha256 <SHA256>] [--lineage-registry-sha256 <SHA256>]
-cargo run --features dev --bin terobacter-dev -- saved-evidence <EVIDENCE> --reference-package <DIR> --expected-sha256 <SHA256> --exclude-references <MASK.txt> [--report-dir <NEW_DIRECTORY>]
-cargo run --features dev --bin terobacter-dev -- saved-evidence <EVIDENCE> --policy conservative-assembly-anim-v2 --reference-package <DIR> --expected-sha256 <SHA256> [--anim-records <RECORDS> --anim-method-profile <PROFILE>] [--exclude-references <MASK.txt>]
-cargo run --features dev --bin terobacter-dev -- rescue-plan <EVIDENCE> --reference-package <DIR> --expected-sha256 <SHA256> [--anim-records <RECORDS> --anim-method-profile <PROFILE>]
-cargo run --features dev --bin terobacter-dev -- skani-search --database <DIR>/databases/primary_whole --query <QUERY.fa> [--genomovar]
-cargo run --features dev --bin terobacter-dev -- genomovar-diagnostic --report <REPORT.json> --expected-report-sha256 <SHA256> --reference-package <DIR> --expected-sha256 <SHA256> [--exclude-evidence-row <REFERENCE_ID>]... [--remove-group <GENOMOVAR_ID>]...
-cargo run --features dev --bin terobacter-dev -- genomovar-diagnostic --report <REPORT.json> --expected-report-sha256 <SHA256> --reference-package <DIR> --expected-sha256 <SHA256> --setting self_alias --exclude-references <PRIMARY_MASK.txt> --exclude-references-sha256 <SHA256> --mask-member <REFERENCE_ID>
+cargo run --features dev --bin pterobacter-dev -- saved-evidence tests/fixtures/v1-species-assigned/evidence.json
+cargo run --features dev --bin pterobacter-dev -- reference-package <DIR> --expected-sha256 <SHA256> [--named-registry-sha256 <SHA256>] [--lineage-registry-sha256 <SHA256>]
+cargo run --features dev --bin pterobacter-dev -- saved-evidence <EVIDENCE> --reference-package <DIR> --expected-sha256 <SHA256> [--named-registry-sha256 <SHA256>] [--lineage-registry-sha256 <SHA256>]
+cargo run --features dev --bin pterobacter-dev -- saved-evidence <EVIDENCE> --reference-package <DIR> --expected-sha256 <SHA256> --exclude-references <MASK.txt> [--report-dir <NEW_DIRECTORY>]
+cargo run --features dev --bin pterobacter-dev -- saved-evidence <EVIDENCE> --policy conservative-assembly-anim-v2 --reference-package <DIR> --expected-sha256 <SHA256> [--anim-records <RECORDS> --anim-method-profile <PROFILE>] [--exclude-references <MASK.txt>]
+cargo run --features dev --bin pterobacter-dev -- rescue-plan <EVIDENCE> --reference-package <DIR> --expected-sha256 <SHA256> [--anim-records <RECORDS> --anim-method-profile <PROFILE>]
+cargo run --features dev --bin pterobacter-dev -- skani-search --database <DIR>/databases/primary_whole --query <QUERY.fa> [--genomovar]
+cargo run --features dev --bin pterobacter-dev -- genomovar-diagnostic --report <REPORT.json> --expected-report-sha256 <SHA256> --reference-package <DIR> --expected-sha256 <SHA256> [--exclude-evidence-row <REFERENCE_ID>]... [--remove-group <GENOMOVAR_ID>]...
+cargo run --features dev --bin pterobacter-dev -- genomovar-diagnostic --report <REPORT.json> --expected-report-sha256 <SHA256> --reference-package <DIR> --expected-sha256 <SHA256> --setting self_alias --exclude-references <PRIMARY_MASK.txt> --exclude-references-sha256 <SHA256> --mask-member <REFERENCE_ID>
 ```
 
 `saved-evidence` reads frozen 0.2.0 saved evidence and prints the v1 species/subspecies decision as JSON, including raw nearest evidence, competitors, scope assessments and all withholding reasons. It runs no new comparisons. See [the v1 contract](v1-decisions.md) for optional bound method/problem envelopes and the supported API boundary.
@@ -52,10 +52,10 @@ Every rejection prints `error:` followed by the kind of rejection and a message 
 The reciprocal ANIm development operation measures one pair with the approved maintained MUMmer4 profile. It writes input snapshots, native artifacts and exact integer evidence to a fresh directory:
 
 ```sh
-cargo run --features dev --bin terobacter-dev -- anim-pair --query QUERY.fa --reference REFERENCE.fa --output NEW_DIRECTORY
+cargo run --features dev --bin pterobacter-dev -- anim-pair --query QUERY.fa --reference REFERENCE.fa --output NEW_DIRECTORY
 ```
 
-See [the method amendment](contracts/P1-ANIM-MUMMER4-r1.md) and [P4a-r3 command binding](contracts/P4a-r3.md) for provenance, parser replay, resource limits and remaining acceptance gates. [The evaluation handoff](contracts/evaluation-handoff.md) binds each evaluation step to a command and maps terobacter's reasons and fields to the reference scorer.
+See [the method amendment](contracts/P1-ANIM-MUMMER4-r1.md) and [P4a-r3 command binding](contracts/P4a-r3.md) for provenance, parser replay, resource limits and remaining acceptance gates. [The evaluation handoff](contracts/evaluation-handoff.md) binds each evaluation step to a command and maps pterobacter's reasons and fields to the reference scorer.
 
 ## Layout
 
@@ -63,7 +63,7 @@ See [the method amendment](contracts/P1-ANIM-MUMMER4-r1.md) and [P4a-r3 command 
 |---|---|
 | `src/evidence.rs`, `src/annotations.rs`, `src/reference/`, `src/decision.rs`, `src/report.rs`, `src/mlst/` | Pure decision and typing logic. Package bytes arrive through a port, so there is no file, terminal or process code. |
 | `src/cli.rs`, `src/cli/assembly.rs`, `src/cli/mlst.rs`, `src/dev.rs` | Argument parsing, files and exit codes for the public and development commands. |
-| `src/bin/` | Thin entry points for `tero`, `terobacter` and `terobacter-dev`. |
+| `src/bin/` | Thin entry points for `ptero`, `pterobacter` and `pterobacter-dev`. |
 | `tests/` | Tests at the decision, command-line and packaging seams, with fixtures. |
 | `docs/adr/` | Decisions and their reasons. |
 | `CONTEXT.md` | Vocabulary. |

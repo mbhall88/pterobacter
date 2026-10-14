@@ -1,10 +1,10 @@
 # Whole-assembly classification
 
-`tero` and `terobacter` accept one or more isolate assembly FASTAs, without a subcommand:
+`ptero` and `pterobacter` accept one or more isolate assembly FASTAs, without a subcommand:
 
 ```sh
-tero --reference-package reference --expected-sha256 MANIFEST_SHA256 isolate.fa > isolate.json
-terobacter --reference-package reference --expected-sha256 MANIFEST_SHA256 --jobs 2 --threads 4 --output batch.json first.fa second.fa
+ptero --reference-package reference --expected-sha256 MANIFEST_SHA256 isolate.fa > isolate.json
+pterobacter --reference-package reference --expected-sha256 MANIFEST_SHA256 --jobs 2 --threads 4 --output batch.json first.fa second.fa
 ```
 
 Use the SHA-256 of `portable.json` supplied through a trusted package handoff. Computing a digest from an untrusted package does not establish its origin. The command verifies every listed asset, package metadata and component membership before opening the embedded skani database, and checks the package again before writing results. A provisioned run needs no network or external executable: no dependency is a network client, the source opens no socket, and where unprivileged namespaces are available, the test suite runs v1 with MLST and a v2 rescue inside a network namespace that has no interface but loopback. Archived search labels are provenance labels; no archived FASTA is opened.
@@ -22,7 +22,7 @@ All supplied records are passed to skani without plasmid filtering or trimming. 
 MLST runs only on request: pass a historical scheme package directory and the SHA-256 of its `manifest.json`, from a trusted source, together.
 
 ```sh
-tero --reference-package reference --expected-sha256 MANIFEST_SHA256 \
+ptero --reference-package reference --expected-sha256 MANIFEST_SHA256 \
   --mlst-package mlst --mlst-expected-sha256 MLST_MANIFEST_SHA256 isolate.fa > isolate.json
 ```
 
@@ -67,7 +67,7 @@ These are implementation and development-parity checks. Independent biological v
 ## Candidate v2 ANIm rescue
 
 ```sh
-tero --reference-package reference --expected-sha256 PRIMARY_MANIFEST_SHA256 \
+ptero --reference-package reference --expected-sha256 PRIMARY_MANIFEST_SHA256 \
   --policy conservative-assembly-anim-v2 \
   --anim-reference-package reference-fastas --expected-anim-sha256 ANIM_MANIFEST_SHA256 \
   --anim-output new-evidence isolate.fa > isolate.json
@@ -85,7 +85,7 @@ Within each query, ANIm runs one worker at a time with one native query thread. 
 
 - the query's exact file bytes, its component and its whole-assembly scope;
 - the reference ID, exact FASTA bytes, component, concept IDs, scope and the primary package the component is bound to;
-- the method profile, amendment, native build and source hashes, compiler, target and Terobacter version;
+- the method profile, amendment, native build and source hashes, compiler, target and Pterobacter version;
 - the pair time limit and worker memory limit, since a pair that finished under a looser limit could fail under a tighter one.
 
 A reused pair also counts the native time recorded in its receipts against the query's `--anim-query-seconds` budget, and is measured again instead when that time exceeds what remains for the pair. The cache therefore never lets a query complete that could not complete without it.

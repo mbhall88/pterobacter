@@ -1,4 +1,4 @@
-//! Development binary seam: saved evidence and reference packages, through `terobacter-dev`.
+//! Development binary seam: saved evidence and reference packages, through `pterobacter-dev`.
 //!
 //! The binary exists only with the `dev` feature, so these tests do too.
 #![cfg(feature = "dev")]
@@ -21,7 +21,7 @@ const PRIMARY_INDEX: &str = "databases/primary_whole/index.db";
 
 #[test]
 fn genomovar_diagnostic_is_exposed_only_by_the_development_binary() {
-    let development_help = cargo_bin_cmd!("terobacter-dev")
+    let development_help = cargo_bin_cmd!("pterobacter-dev")
         .args(["genomovar-diagnostic", "--help"])
         .output()
         .unwrap();
@@ -46,11 +46,14 @@ fn genomovar_diagnostic_is_exposed_only_by_the_development_binary() {
         assert!(help.contains(option), "missing {option} from:\n{help}");
     }
 
-    for binary in ["tero", "terobacter"] {
-        let output = if binary == "tero" {
-            cargo_bin_cmd!("tero").arg("--help").output().unwrap()
+    for binary in ["ptero", "pterobacter"] {
+        let output = if binary == "ptero" {
+            cargo_bin_cmd!("ptero").arg("--help").output().unwrap()
         } else {
-            cargo_bin_cmd!("terobacter").arg("--help").output().unwrap()
+            cargo_bin_cmd!("pterobacter")
+                .arg("--help")
+                .output()
+                .unwrap()
         };
         assert!(output.status.success());
         let help = String::from_utf8_lossy(&output.stdout);
@@ -58,13 +61,13 @@ fn genomovar_diagnostic_is_exposed_only_by_the_development_binary() {
         assert!(!help.contains("--mask-member"), "{binary}: {help}");
         assert!(!help.contains("--remove-group"), "{binary}: {help}");
         assert!(!help.contains("--exclude-evidence-row"), "{binary}: {help}");
-        let output = if binary == "tero" {
-            cargo_bin_cmd!("tero")
+        let output = if binary == "ptero" {
+            cargo_bin_cmd!("ptero")
                 .args(["--exclude-evidence-row", "member"])
                 .output()
                 .unwrap()
         } else {
-            cargo_bin_cmd!("terobacter")
+            cargo_bin_cmd!("pterobacter")
                 .args(["--exclude-evidence-row", "member"])
                 .output()
                 .unwrap()
@@ -79,7 +82,7 @@ fn genomovar_diagnostic_rejects_report_bytes_that_do_not_match_the_pin() {
     let report_dir = tempfile::tempdir().unwrap();
     let report = report_dir.path().join("report.json");
     fs::write(&report, "{}\n").unwrap();
-    let output = cargo_bin_cmd!("terobacter-dev")
+    let output = cargo_bin_cmd!("pterobacter-dev")
         .args([
             "genomovar-diagnostic",
             "--report",
@@ -110,7 +113,7 @@ fn package_on_disk(synthetic: &Synthetic) -> TempDir {
 // The operator vouches for the manifest digest the package has now, so a damaged package
 // reaches its own rejection rather than the expected-digest check.
 fn reference_package_run(directory: &Path, expected: &str) -> Output {
-    cargo_bin_cmd!("terobacter-dev")
+    cargo_bin_cmd!("pterobacter-dev")
         .arg("reference-package")
         .arg(directory)
         .arg("--expected-sha256")
@@ -127,7 +130,7 @@ fn packaged_evidence_in(dir: &Path, package_sha256: &str) -> PathBuf {
 
 #[test]
 fn saved_evidence_fixture_reproduces_its_frozen_v1_species_call_as_json() {
-    let output = cargo_bin_cmd!("terobacter-dev")
+    let output = cargo_bin_cmd!("pterobacter-dev")
         .args(["saved-evidence", common::FIXTURE_PATH])
         .output()
         .unwrap();
@@ -159,7 +162,7 @@ fn unreadable_or_invalid_evidence_is_an_error_with_no_decision() {
         (&wrong_schema, "expected schema"),
         (&missing, "No such file"),
     ] {
-        let output = cargo_bin_cmd!("terobacter-dev")
+        let output = cargo_bin_cmd!("pterobacter-dev")
             .arg("saved-evidence")
             .arg(path)
             .output()
@@ -293,7 +296,7 @@ fn registry_pins_must_match_the_listed_tables() {
     let digest = synthetic.manifest_sha256();
     let listed = sha256_hex(synthetic.file(NAMED_REGISTRY));
 
-    let matching = cargo_bin_cmd!("terobacter-dev")
+    let matching = cargo_bin_cmd!("pterobacter-dev")
         .arg("reference-package")
         .arg(dir.path())
         .arg("--expected-sha256")
@@ -308,7 +311,7 @@ fn registry_pins_must_match_the_listed_tables() {
         String::from_utf8_lossy(&matching.stderr)
     );
 
-    let mismatching = cargo_bin_cmd!("terobacter-dev")
+    let mismatching = cargo_bin_cmd!("pterobacter-dev")
         .arg("reference-package")
         .arg(dir.path())
         .arg("--expected-sha256")
@@ -360,7 +363,7 @@ fn the_expected_digest_is_required_and_must_be_lowercase_hex() {
         ],
     ];
     for args in cases {
-        let output = cargo_bin_cmd!("terobacter-dev")
+        let output = cargo_bin_cmd!("pterobacter-dev")
             .args(&args)
             .output()
             .unwrap();
@@ -415,7 +418,7 @@ fn evidence_bound_to_the_verified_package_is_decided_and_reports_it() {
     let evidence_dir = tempfile::tempdir().unwrap();
     let evidence_path = packaged_evidence_in(evidence_dir.path(), &synthetic.manifest_sha256());
 
-    let output = cargo_bin_cmd!("terobacter-dev")
+    let output = cargo_bin_cmd!("pterobacter-dev")
         .arg("saved-evidence")
         .arg(&evidence_path)
         .arg("--reference-package")
@@ -448,7 +451,7 @@ fn v2_decision_and_dry_plan_take_the_panel_from_a_verified_package() {
     let evidence_path = packaged_evidence_in(evidence_dir.path(), &synthetic.manifest_sha256());
     let mask = evidence_dir.path().join("mask.txt");
     let run = |command: &str, extra: &[&std::ffi::OsStr]| {
-        let mut cmd = cargo_bin_cmd!("terobacter-dev");
+        let mut cmd = cargo_bin_cmd!("pterobacter-dev");
         cmd.arg(command).arg(&evidence_path);
         if command == "saved-evidence" {
             cmd.args(["--policy", "conservative-assembly-anim-v2"]);
@@ -535,7 +538,7 @@ fn a_v1_mask_takes_the_panel_from_a_verified_package() {
     let mask = evidence_dir.path().join("mask.txt");
     fs::write(&mask, format!("{reference}\n")).unwrap();
     let run = |policy: &str| {
-        let output = cargo_bin_cmd!("terobacter-dev")
+        let output = cargo_bin_cmd!("pterobacter-dev")
             .arg("saved-evidence")
             .arg(&evidence_path)
             .args(["--policy", policy])
@@ -588,7 +591,7 @@ fn a_report_directory_inside_the_reference_package_is_refused() {
     #[cfg(unix)]
     std::os::unix::fs::symlink(package, &link).unwrap();
     let verify = || {
-        cargo_bin_cmd!("terobacter-dev")
+        cargo_bin_cmd!("pterobacter-dev")
             .arg("reference-package")
             .arg(package)
             .arg("--expected-sha256")
@@ -615,7 +618,7 @@ fn a_report_directory_inside_the_reference_package_is_refused() {
     }
     for policy in ["conservative-assembly-v1", "conservative-assembly-anim-v2"] {
         for destination in &destinations {
-            let output = cargo_bin_cmd!("terobacter-dev")
+            let output = cargo_bin_cmd!("pterobacter-dev")
                 .arg("saved-evidence")
                 .arg(&evidence_path)
                 .args(["--policy", policy])
@@ -642,7 +645,7 @@ fn a_report_directory_inside_the_reference_package_is_refused() {
 
     // A destination outside the package still works.
     let reports = evidence_dir.path().join("reports");
-    let output = cargo_bin_cmd!("terobacter-dev")
+    let output = cargo_bin_cmd!("pterobacter-dev")
         .arg("saved-evidence")
         .arg(&evidence_path)
         .arg("--reference-package")
@@ -676,7 +679,7 @@ fn saved_evidence_bound_to_another_package_is_unresolved() {
         ("saved-evidence", "conservative-assembly-anim-v2"),
         ("rescue-plan", ""),
     ] {
-        let mut cmd = cargo_bin_cmd!("terobacter-dev");
+        let mut cmd = cargo_bin_cmd!("pterobacter-dev");
         cmd.arg(command).arg(&evidence_path);
         if !policy.is_empty() {
             cmd.args(["--policy", policy]);
@@ -738,7 +741,7 @@ fn saved_evidence_contradicting_the_package_metadata_is_unresolved() {
         let evidence_path = evidence_dir.path().join("evidence.json");
         fs::write(&evidence_path, evidence.to_string()).unwrap();
 
-        let output = cargo_bin_cmd!("terobacter-dev")
+        let output = cargo_bin_cmd!("pterobacter-dev")
             .arg("saved-evidence")
             .arg(&evidence_path)
             .arg("--reference-package")
@@ -774,7 +777,7 @@ fn bound_problem_warnings_are_verified_and_changed_artifacts_produce_no_decision
     let warnings = dir.path().join("warnings.json");
     let text = envelope.to_string();
     std::fs::write(&warnings, &text).unwrap();
-    let mut command = cargo_bin_cmd!("terobacter-dev");
+    let mut command = cargo_bin_cmd!("pterobacter-dev");
     command
         .arg("saved-evidence")
         .arg(&evidence)
@@ -837,7 +840,7 @@ mod v2 {
     }
 
     fn run(args: &[&str], paths: &[&Path]) -> (Option<i32>, Value, String) {
-        let mut command = cargo_bin_cmd!("terobacter-dev");
+        let mut command = cargo_bin_cmd!("pterobacter-dev");
         command.args(args);
         let output = command.args(paths).output().unwrap();
         let stdout = serde_json::from_slice(&output.stdout).unwrap_or(Value::Null);
@@ -857,9 +860,9 @@ mod v2 {
         }
     }
 
-    /// Run `terobacter-dev <command>` with options naming files from `f`.
+    /// Run `pterobacter-dev <command>` with options naming files from `f`.
     fn dev(command: &str, f: &Files, options: &[(&str, &str)]) -> (Option<i32>, Value, String) {
-        let mut c = cargo_bin_cmd!("terobacter-dev");
+        let mut c = cargo_bin_cmd!("pterobacter-dev");
         c.arg(command).arg(&f.evidence);
         for (flag, value) in options {
             c.arg(flag);
@@ -1146,7 +1149,7 @@ mod v2 {
         // working directory untouched.
         let f = files(&input());
         let work = tempfile::tempdir().unwrap();
-        let output = cargo_bin_cmd!("terobacter-dev")
+        let output = cargo_bin_cmd!("pterobacter-dev")
             .env_clear()
             .current_dir(work.path())
             .arg("rescue-plan")

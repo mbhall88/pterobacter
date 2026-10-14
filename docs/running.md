@@ -7,7 +7,7 @@ First [install the program](installation.md) and [set up the reference variables
 ## One assembly
 
 ```sh
-tero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256"   --threads 2 --output isolate.json --report-dir isolate-report isolate.fa
+ptero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256"   --threads 2 --output isolate.json --report-dir isolate-report isolate.fa
 ```
 
 Open `isolate-report/report.md` for the answer and warnings. The full JSON is in `isolate.json` and `isolate-report/report.json`; [reading results](results.md) explains the fields. Without `--output`, the full JSON goes to standard output. `--report-dir` adds the report files without changing that destination.
@@ -15,7 +15,7 @@ Open `isolate-report/report.md` for the answer and warnings. The full JSON is in
 ## A batch
 
 ```sh
-tero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256"   --jobs 2 --threads 2 --output batch.json --report-dir batch-report   isolate_1.fa isolate_2.fa
+ptero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256"   --jobs 2 --threads 2 --output batch.json --report-dir batch-report   isolate_1.fa isolate_2.fa
 ```
 
 The main JSON is an array in input order. `calls.tsv` has one row per assembly, and `report.md` has a section for each. Inspect every input's execution status; a failure in one input does not erase a completed result from another. `--jobs` controls concurrent assemblies; `--threads` controls the embedded search threads within each assembly. Two jobs with two threads each allow up to four search threads. See the [complete synthetic batch outputs](examples/README.md#batch-outputs).

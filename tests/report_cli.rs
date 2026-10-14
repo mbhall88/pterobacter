@@ -10,7 +10,7 @@ fn tero(
     extra: &[&std::ffi::OsStr],
     query: &[&std::path::Path],
 ) -> std::process::Output {
-    let mut cmd = cargo_bin_cmd!("tero");
+    let mut cmd = cargo_bin_cmd!("ptero");
     cmd.arg("--reference-package")
         .arg(dir.join("package"))
         .args(["--expected-sha256", pin]);
@@ -336,7 +336,7 @@ fn a_report_write_failure_still_prints_the_json_and_exits_nonzero() {
     let name = std::ffi::CString::new(query.as_os_str().as_bytes()).unwrap();
     assert_eq!(unsafe { libc::mkfifo(name.as_ptr(), 0o600) }, 0);
     let reports = dir.path().join("reports");
-    let mut cmd = cargo_bin_cmd!("tero");
+    let mut cmd = cargo_bin_cmd!("ptero");
     cmd.arg("--reference-package")
         .arg(dir.path().join("package"))
         .args(["--expected-sha256", &pin, "--report-dir"])
@@ -398,7 +398,7 @@ fn unmeasured_challenges_are_not_reported_as_negative_evidence() {
     let (dir, pin, _) = native_package();
     let missing = dir.path().join("missing.fa");
     let reports = dir.path().join("reports");
-    let output = std::process::Command::new(cargo_bin_cmd!("tero").get_program())
+    let output = std::process::Command::new(cargo_bin_cmd!("ptero").get_program())
         .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args([

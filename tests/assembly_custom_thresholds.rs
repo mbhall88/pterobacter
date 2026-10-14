@@ -9,8 +9,8 @@ use terobacter::rescue::Thresholds;
 const V2: &str = "conservative-assembly-anim-v2";
 fn command(name: &str) -> assert_cmd::Command {
     match name {
-        "tero" => cargo_bin_cmd!("tero"),
-        "terobacter" => cargo_bin_cmd!("terobacter"),
+        "ptero" => cargo_bin_cmd!("ptero"),
+        "pterobacter" => cargo_bin_cmd!("pterobacter"),
         _ => unreachable!(),
     }
 }
@@ -44,10 +44,10 @@ fn explicit_defaults_keep_native_calls_but_mark_custom_and_preserve_literals() {
     let (dir, pin, seq) = common::assembly::native_package();
     let query = dir.path().join("query.fa");
     std::fs::write(&query, [b">query\n".as_slice(), &seq, b"\n"].concat()).unwrap();
-    let (code, default) = run("tero", dir.path(), &pin, &query, &["--policy", V2]);
+    let (code, default) = run("ptero", dir.path(), &pin, &query, &["--policy", V2]);
     assert_eq!(code, Some(0));
     assert_policy(&default, Thresholds::standard());
-    for name in ["tero", "terobacter"] {
+    for name in ["ptero", "pterobacter"] {
         for flags in [
             vec!["--species-ani", "96"],
             vec!["--subspecies-ani", "98"],
@@ -88,11 +88,11 @@ fn native_skani_equality_and_long_decimal_boundary_change_species_and_subspecies
     let (dir, pin, seq) = common::assembly::rescue_package();
     let query = dir.path().join("query.fa");
     std::fs::write(&query, [b">query\n".as_slice(), &seq, b"\n"].concat()).unwrap();
-    let (_, baseline) = run("tero", dir.path(), &pin, &query, &["--policy", V2]);
+    let (_, baseline) = run("ptero", dir.path(), &pin, &query, &["--policy", V2]);
     let measured = baseline["max_skani_ani_percent"].to_string();
     // A threshold equal to the emitted hundredths takes the ordinary skani route.
     let (code, equal) = run(
-        "tero",
+        "ptero",
         dir.path(),
         &pin,
         &query,
@@ -121,7 +121,7 @@ fn native_skani_equality_and_long_decimal_boundary_change_species_and_subspecies
     );
     // Raising S alone withholds subspecies without changing the species call.
     let (code, child) = run(
-        "tero",
+        "ptero",
         dir.path(),
         &pin,
         &query,
@@ -139,7 +139,7 @@ fn native_skani_equality_and_long_decimal_boundary_change_species_and_subspecies
     assert_eq!(child["subspecies_id"], Value::Null);
     // Raising T by a decimal smaller than f64 precision enters the rescue band.
     let (code, raised) = run(
-        "tero",
+        "ptero",
         dir.path(),
         &pin,
         &query,
@@ -163,7 +163,7 @@ fn premeasurement_failures_retain_custom_provenance_and_unknown_policy_runs_noth
         (dir.path().join("missing.fa"), pin.clone(), 3, "input"),
         (query.clone(), "0".repeat(64), 4, "package"),
     ] {
-        let (actual, report) = run("tero", dir.path(), &hash, &query, &options);
+        let (actual, report) = run("ptero", dir.path(), &hash, &query, &options);
         assert_eq!(actual, Some(code));
         assert_eq!(report["execution"]["stage"], stage);
         assert_policy(&report, Thresholds::custom(Some("96.000"), None).unwrap());
@@ -171,7 +171,7 @@ fn premeasurement_failures_retain_custom_provenance_and_unknown_policy_runs_noth
     let existing = dir.path().join("existing");
     std::fs::create_dir(&existing).unwrap();
     let (code, report) = run(
-        "tero",
+        "ptero",
         dir.path(),
         &pin,
         &query,
@@ -188,7 +188,7 @@ fn premeasurement_failures_retain_custom_provenance_and_unknown_policy_runs_noth
     assert_eq!(report["execution"]["stage"], "anim_output");
     assert_policy(&report, Thresholds::custom(Some("96.000"), None).unwrap());
     let (code, report) = run(
-        "tero",
+        "ptero",
         dir.path(),
         &pin,
         &dir.path().join("missing.fa"),
@@ -204,7 +204,7 @@ fn premeasurement_failures_retain_custom_provenance_and_unknown_policy_runs_noth
 
 #[test]
 fn v1_and_invalid_custom_flags_are_rejected_before_inputs_are_read() {
-    for name in ["tero", "terobacter"] {
+    for name in ["ptero", "pterobacter"] {
         for flags in [
             vec!["--species-ani", "96"],
             vec!["--subspecies-ani", "98"],
@@ -245,7 +245,7 @@ fn custom_native_anim_rescue_uses_selected_threshold_and_keeps_species_only() {
         common::package::sha256_hex(&std::fs::read(dir.path().join("fastas/anim.json")).unwrap());
     for (threshold, expected) in [("95.9", "rescued"), ("97.1", "not_triggered")] {
         let receipts = dir.path().join(format!("receipts-{threshold}"));
-        let output = command("tero")
+        let output = command("ptero")
             .arg("--reference-package")
             .arg(dir.path().join("package"))
             .args([

@@ -23,7 +23,7 @@ All reason codes map directly to the frozen vocabulary in the `conservative-asse
 ## Optional annotations
 
 ```sh
-terobacter-dev saved-evidence evidence.json --evidence-sha256 HASH \
+pterobacter-dev saved-evidence evidence.json --evidence-sha256 HASH \
   --diagnostics diagnostics.json --diagnostics-sha256 HASH \
   --reference-inventory inventory.json --reference-inventory-sha256 HASH \
   --problem-warnings warnings.json --problem-warnings-sha256 HASH
@@ -38,7 +38,7 @@ The pure interface validates bindings and metadata. Its output explicitly says t
 ## Reference masks
 
 ```sh
-terobacter-dev saved-evidence evidence.json \
+pterobacter-dev saved-evidence evidence.json \
   (--reference-inventory inventory.json [--reference-inventory-sha256 HASH] \
    | --reference-package DIR --expected-sha256 HASH) --exclude-references mask.txt
 ```

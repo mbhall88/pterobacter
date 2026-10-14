@@ -62,12 +62,12 @@ Reason codes map to the contract vocabulary in the `conservative-assembly-anim-v
 ## Development binary
 
 ```sh
-terobacter-dev rescue-plan evidence.json \
+pterobacter-dev rescue-plan evidence.json \
   (--reference-inventory inventory.json | --reference-package DIR --expected-sha256 HASH) \
   [--anim-records records.jsonl|records/ --anim-method-profile PROFILE] \
   [--exclude-references mask.txt] [--problem-warnings warnings.json --problem-warnings-sha256 HASH]
 
-terobacter-dev saved-evidence evidence.json --policy conservative-assembly-anim-v2 \
+pterobacter-dev saved-evidence evidence.json --policy conservative-assembly-anim-v2 \
   (--reference-inventory inventory.json [--reference-inventory-sha256 HASH] \
    | --reference-package DIR --expected-sha256 HASH) \
   [--anim-records records.jsonl|records/ --anim-method-profile PROFILE] \
@@ -88,16 +88,16 @@ The trigger becomes max(80, T − 1.5) ≤ maximum skani ANI < T. Both reciproca
 For example:
 
 ```sh
-terobacter-dev saved-evidence evidence.json --policy conservative-assembly-anim-v2 \
+pterobacter-dev saved-evidence evidence.json --policy conservative-assembly-anim-v2 \
   --reference-inventory inventory.json --species-ani 95.5 --subspecies-ani 97
-terobacter-dev rescue-plan evidence.json --reference-inventory inventory.json \
+pterobacter-dev rescue-plan evidence.json --reference-inventory inventory.json \
   --species-ani 97
 ```
 
 The public aliases accept the same flags with `--policy conservative-assembly-anim-v2` and the equivalent `--assignment-policy` alias; their default policy is v1. They measure whole assemblies against an authenticated reference package and execute required ANIm pairs. Incomplete required work exits nonzero with a report that retains its selected settings and validation status. Custom results cannot establish a genomovar parent. See [native assembly classification](assembly.md).
 
 ```sh
-tero --reference-package package --expected-sha256 HASH \
+ptero --reference-package package --expected-sha256 HASH \
   --policy conservative-assembly-anim-v2 --species-ani 95.5 --subspecies-ani 97 \
   query.fa
 ```

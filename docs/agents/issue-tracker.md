@@ -13,7 +13,7 @@ Issues and specs for this repo live as GitHub issues on `mbhall88/terobacter`. U
 
 Infer the repo from `git remote -v` — `gh` does this automatically when run inside a clone.
 
-## Terobacter specifics
+## Pterobacter specifics
 
 Tickets here are sub-issues of the integration parent `mbhall88/Enterobacter#24`. Check native blocked-by links and the assignee before starting one: `ready-for-agent` does not override an unfinished prerequisite. Research provenance for a ticket lives in the research workspace, not in this repository.
 

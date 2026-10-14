@@ -60,7 +60,7 @@ fn a_default_install_exposes_only_tero_and_terobacter() {
         .collect();
     installed.sort();
 
-    assert_eq!(installed, ["tero", "terobacter"]);
+    assert_eq!(installed, ["ptero", "pterobacter"]);
 }
 
 #[test]
@@ -77,8 +77,11 @@ fn the_development_feature_is_not_enabled_by_default() {
 fn the_development_binary_is_built_only_with_its_feature() {
     let dev: Vec<_> = binary_targets()
         .into_iter()
-        .filter(|(name, _)| name == "terobacter-dev")
+        .filter(|(name, _)| name == "pterobacter-dev")
         .collect();
 
-    assert_eq!(dev, [("terobacter-dev".to_owned(), vec!["dev".to_owned()])]);
+    assert_eq!(
+        dev,
+        [("pterobacter-dev".to_owned(), vec!["dev".to_owned()])]
+    );
 }
