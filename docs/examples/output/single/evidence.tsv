@@ -1,0 +1,5 @@
+assembly	section	rank	tie_group	reference_id	parent_kind	parent_id	reference_species_id	reference_subspecies_id	lineage_id	reference_role	skani_ani	skani_af_query	skani_af_reference	anim_finished	anim_identity_qr	anim_identity_rq	anim_orientations	panel_references	returned_references	best_skani_reference_ids	in_top	challenging_reference_ids	anim_unmeasured
+1	top_reference	1	0	primary_whole:A	species	SYN-SP01	SYN-SP01			type_anchor	100.0	99.0	99.0										
+1	top_reference	2	1	primary_whole:B	species	SYN-SP02	SYN-SP02			type_anchor	91.38	99.0	99.0										
+1	panel_parent				species	SYN-SP01					100.0							3	3	primary_whole:A	true		
+1	panel_parent				species	SYN-SP02					91.38							2	2	primary_whole:B	true		

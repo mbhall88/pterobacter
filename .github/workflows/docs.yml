@@ -1,0 +1,51 @@
+name: Documentation
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the reviewed documentation to GitHub Pages
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install pinned mdBook
+        run: |
+          curl --fail --location --retry 3 https://github.com/rust-lang/mdBook/releases/download/v0.5.4/mdbook-v0.5.4-x86_64-unknown-linux-musl.tar.gz -o /tmp/mdbook.tar.gz
+          echo "5222beabd3e37dc5be0d18ff99b79058469354db5c220153a1b92db5ba12be89  /tmp/mdbook.tar.gz" | sha256sum --check
+          tar -xzf /tmp/mdbook.tar.gz -C /tmp mdbook
+      - run: python3 scripts/build_docs.py --mdbook /tmp/mdbook
+      - uses: actions/upload-artifact@v6
+        with:
+          name: documentation-preview
+          path: target/docs
+      - uses: actions/upload-pages-artifact@v4
+        if: github.event_name == 'workflow_dispatch' && inputs.publish
+        with:
+          path: target/docs
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

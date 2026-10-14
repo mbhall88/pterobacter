@@ -23,7 +23,7 @@ A nearest-reference name can still appear beside an unresolved result. Read it a
 
 ## Read the warnings
 
-A genomovar match means compatibility with the supplied definition. It cannot prove that the query's source group is represented: an unrepresented group can match a neighbour. Overlapping compatible groups are withheld; one-member groups carry a sparse-reference warning. [Genomovar matches](genomovar-guide.md) explains these limits.
+A genomovar match means compatibility with the supplied definition. It cannot prove that the query's source group is represented: an unrepresented group can match a neighbour. Overlapping compatible groups are withheld; one-member groups carry a sparse-reference warning. [Genomovar matches](genomovar.md) explains these limits.
 
 ANI and aligned fraction are percentages. An aligned fraction of `0.8` means 0.8%, while `80` means 80%. Missing comparisons are not zero ANI or evidence against an unmeasured rival. A clean report does not certify assembly purity.
 

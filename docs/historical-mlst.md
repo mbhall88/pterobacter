@@ -1,4 +1,6 @@
-# Add historical MLST
+# Add multilocus sequence typing (MLST)
+
+MLST reports the sequence type (ST) from the scheme's allele profile. Here, "historical" describes the bundled data cutoff, not a different typing method: the scheme retains submissions through 31 December 2024, retrieved in 2026. It is not a live copy of PubMLST.
 
 Request sequence typing only if you need it alongside classification. Obtain the historical scheme directory and its trusted manifest digest through the private handoff.
 

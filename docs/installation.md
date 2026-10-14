@@ -20,14 +20,16 @@ The measured Linux build used Rust 1.95.0 and GCC 11.5.0 on x86_64 Red Hat Enter
 
 ## macOS source build
 
-Install the Xcode command-line tools and Homebrew GNU GCC. Select the GNU C++ compiler you installed before running Cargo; Apple clang is refused by the pinned native build. For example, on an Apple Silicon machine with GCC 15:
+Install the Xcode command-line tools and Homebrew GNU GCC. Select the installed GNU C++ compiler before running Cargo; Apple clang is refused by the pinned native build:
 
 ```sh
-export CXX=/opt/homebrew/bin/g++-15
+xcode-select --install  # skip if already installed
+brew install gcc
+export CXX="$(find "$(brew --prefix gcc)/bin" -name 'g++-[0-9]*' | head -n 1)"
 cargo install --path . --locked
 ```
 
-Use the path and GCC version on your machine. Keep the compiler's GNU C++ runtime available. macOS CI build/test smoke passes; scientific parity on the final arm64 panel is still pending. Linux ARM and Windows are untested. The native build currently targets Linux and macOS.
+This finds the version installed by Homebrew on Apple Silicon or Intel Macs. Automatic discovery is implemented in [PR #38](https://github.com/mbhall88/terobacter/pull/38), awaiting review; this checkout still needs `CXX`. Keep the compiler's GNU C++ runtime available. macOS CI build/test smoke passes; scientific parity on the final arm64 panel is still pending. Linux ARM and Windows are untested. The native build currently targets Linux and macOS.
 
 ## Build offline
 
