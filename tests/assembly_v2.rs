@@ -705,7 +705,7 @@ fn query_deadline_in_either_orientation_retains_incomplete_evidence() {
             .path()
             .join("receipts/query-000001/pair-000001")
             .join(orientation)
-            .join("request.json");
+            .join("limits.json");
         common::hold_at_artifact(&mut child, &stage);
         let output = child.wait_with_output().unwrap();
         assert_eq!(output.status.code(), Some(1));
@@ -720,6 +720,20 @@ fn query_deadline_in_either_orientation_retains_incomplete_evidence() {
         assert_eq!(
             report["anim_execution"]["pairs"][0]["record"]["status"],
             "incomplete"
+        );
+        let receipt =
+            &report["anim_execution"]["pairs"][0]["record"]["orientations"][orientation]["receipt"];
+        let pid = receipt["worker_pid"]
+            .as_u64()
+            .expect("orientation worker must have started");
+        assert_eq!(
+            unsafe { libc::kill(pid as i32, 0) },
+            -1,
+            "worker must be reaped"
+        );
+        assert!(
+            receipt["wall_seconds"].as_f64().unwrap() >= 5.0,
+            "{receipt}"
         );
         assert!(stage
             .parent()
