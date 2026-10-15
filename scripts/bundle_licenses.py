@@ -133,7 +133,7 @@ def main():
     original_lock = lock.read_bytes()
     metadata = json.loads(run("cargo", "metadata", "--locked", "--offline", "--format-version", "1"))
     packages = collect_packages(metadata)
-    with tempfile.TemporaryDirectory(prefix="terobacter-licenses-") as directory:
+    with tempfile.TemporaryDirectory(prefix="pterobacter-licenses-") as directory:
         output = Path(directory) / "bundle.json"
         subprocess.run([
             args.bundler, "--format", "json", "--features", "dev",

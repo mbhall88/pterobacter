@@ -7,8 +7,8 @@ Build from the private source if you have repository access. Distribution is on 
 Install Rust and GNU C++ with C++17 support, then obtain the source:
 
 ```sh
-git clone git@github.com:mbhall88/terobacter.git
-cd terobacter
+git clone git@github.com:mbhall88/pterobacter.git
+cd pterobacter
 cargo install --path . --locked
 ptero --version
 pterobacter --version

@@ -40,7 +40,7 @@ def main():
                 raise SystemExit(f"Missing link: {name}: {target}")
             if not dest.is_relative_to(DOCS):
                 relative = dest.relative_to(ROOT).as_posix()
-                url = "https://github.com/mbhall88/terobacter/blob/main/" + relative
+                url = "https://github.com/mbhall88/pterobacter/blob/main/" + relative
                 return match[1] + url + (marker + fragment if marker else "") + match[3]
             relative = dest.relative_to(DOCS).as_posix()
             if dest.suffix == ".md":

@@ -5,11 +5,11 @@ language = "en"
 src = "src"
 
 [output.html]
-site-url = "/terobacter/"
+site-url = "/pterobacter/"
 default-theme = "light"
 preferred-dark-theme = "navy"
 additional-css = ["theme/style.css"]
-git-repository-url = "https://github.com/mbhall88/terobacter"
+git-repository-url = "https://github.com/mbhall88/pterobacter"
 
 [output.html.search]
 enable = true

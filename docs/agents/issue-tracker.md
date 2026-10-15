@@ -1,6 +1,6 @@
 # Issue tracker: GitHub
 
-Issues and specs for this repo live as GitHub issues on `mbhall88/terobacter`. Use the `gh` CLI for all operations.
+Issues and specs for this repo live as GitHub issues on `mbhall88/pterobacter`. Use the `gh` CLI for all operations.
 
 ## Conventions
 

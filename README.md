@@ -4,7 +4,7 @@
 
 Pronounced with a silent P, like pterodactyl.
 
-[![CI](https://github.com/mbhall88/terobacter/actions/workflows/ci.yml/badge.svg)](https://github.com/mbhall88/terobacter/actions/workflows/ci.yml) [![User guide](https://img.shields.io/badge/docs-user_guide-236b73)](docs/usage.md)
+[![CI](https://github.com/mbhall88/pterobacter/actions/workflows/ci.yml/badge.svg)](https://github.com/mbhall88/pterobacter/actions/workflows/ci.yml) [![User guide](https://img.shields.io/badge/docs-user_guide-236b73)](docs/usage.md)
 
 Classify *Enterobacter* isolate assemblies and report supported species and subspecies calls, the closest references, and reasons for uncertainty. Give Pterobacter a whole assembly in FASTA format, including its plasmids and draft contigs.
 
@@ -20,8 +20,8 @@ brew install gcc
 ```
 
 ```sh
-git clone git@github.com:mbhall88/terobacter.git
-cd terobacter
+git clone git@github.com:mbhall88/pterobacter.git
+cd pterobacter
 cargo install --path . --locked
 ptero --version
 ```

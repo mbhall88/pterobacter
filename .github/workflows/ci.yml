@@ -87,7 +87,7 @@ jobs:
       - name: Run the tests
         run: |
           if [ "${{ runner.os }}" = macOS ]; then
-            export CARGO_TARGET_DIR="$RUNNER_TEMP/terobacter-fresh-native"
+            export CARGO_TARGET_DIR="$RUNNER_TEMP/pterobacter-fresh-native"
           fi
           if [ "${{ runner.os }}" = macOS ]; then
             python3 scripts/without_cxx_overrides.py just test
@@ -100,7 +100,7 @@ jobs:
       - name: Check what a default install exposes
         run: |
           if [ "${{ runner.os }}" = macOS ]; then
-            export CARGO_TARGET_DIR="$RUNNER_TEMP/terobacter-fresh-native"
+            export CARGO_TARGET_DIR="$RUNNER_TEMP/pterobacter-fresh-native"
           fi
           if [ "${{ runner.os }}" = macOS ]; then
             python3 scripts/without_cxx_overrides.py just install-check
@@ -110,7 +110,7 @@ jobs:
       - name: Reject blank compiler overrides through Cargo
         run: |
           if [ "${{ runner.os }}" = macOS ]; then
-            export CARGO_TARGET_DIR="$RUNNER_TEMP/terobacter-fresh-native"
+            export CARGO_TARGET_DIR="$RUNNER_TEMP/pterobacter-fresh-native"
             compiler=$(find "$(brew --prefix gcc)/bin" -name 'g++-[0-9]*' | head -n 1)
           else
             compiler=$(command -v g++)
@@ -119,7 +119,7 @@ jobs:
       - name: Check explicit GNU C++ overrides on macOS
         if: runner.os == 'macOS'
         run: |
-          export CARGO_TARGET_DIR="$RUNNER_TEMP/terobacter-fresh-native"
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/pterobacter-fresh-native"
           compiler=$(find "$(brew --prefix gcc)/bin" -name 'g++-[0-9]*' | head -n 1)
           test -n "$compiler"
           target=$(rustc -vV | sed -n 's/^host: //p')

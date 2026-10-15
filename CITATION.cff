@@ -9,7 +9,7 @@ authors:
     name-particle: B
     family-names: Hall
     orcid: 'https://orcid.org/0000-0003-3683-6208'
-repository-code: 'https://github.com/mbhall88/terobacter'
+repository-code: 'https://github.com/mbhall88/pterobacter'
 abstract: >-
   Pterobacter classifies Enterobacter isolate assemblies in a single
   self-contained executable. It reports a species and subspecies call

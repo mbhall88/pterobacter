@@ -56,7 +56,7 @@ impl ThresholdArgs {
 ANIm can be slower; use -n/--no-anim to skip it.
 ANI thresholds are percentages, e.g. --species-ani 96.5. Require 80 <= species <= subspecies <= 100.
 Custom thresholds cannot be combined with --no-anim and mark results custom_unvalidated.
-Guide: https://github.com/mbhall88/terobacter/blob/main/docs/assembly.md"
+Guide: https://github.com/mbhall88/pterobacter/blob/main/docs/assembly.md"
 )]
 struct Public {
     #[command(flatten)]
