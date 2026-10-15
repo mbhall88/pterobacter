@@ -46,6 +46,10 @@ Vocabulary for the Pterobacter tool, which classifies Enterobacter isolate assem
 
 **Rejection witness**: A measured member below 99.50% that excludes its group, listed in the group's `below_threshold`. Only a rejection witness excludes a rival; missing evidence never does.
 
+**Query label**: The assembly path as supplied, or as resolved from a list, that is read and passed to skani as the query's name. skani's tie ordering depends on it, so it is reported as `input.file` and never replaced.
+
+**Sample name**: A user-supplied reporting name for one input, from `--sample-name` or a sample sheet. It labels reports only; it is never a query label, an output path or part of a decision.
+
 **Front end**: Code that turns user input into evidence and a decision into output: the command line today, possibly a browser or GUI later. Front ends call the decision logic and never contain it.
 
 **Development binary**: `pterobacter-dev`, built only with the `dev` feature, hosting evaluation-only operations. It shares the implementation with `ptero` and `pterobacter` but is not part of the user-facing tool.

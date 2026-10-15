@@ -27,6 +27,7 @@ pub struct Rendered {
 
 const CALL_COLUMNS: &[&str] = &[
     "assembly",
+    "sample_name",
     "input_file",
     "input_kind",
     "query_sha256",
@@ -85,6 +86,7 @@ const CALL_COLUMNS: &[&str] = &[
 
 const EVIDENCE_COLUMNS: &[&str] = &[
     "assembly",
+    "sample_name",
     "section",
     "rank",
     "tie_group",
@@ -276,6 +278,7 @@ fn summary(index: usize, report: &Value) -> BTreeMap<&'static str, String> {
         row.insert(key, cleaned(&value));
     };
     put("assembly", (index + 1).to_string());
+    put("sample_name", text(&report["input"]["sample_name"]));
     put("input_file", text(&report["input"]["file"]));
     put("input_kind", text(&report["input"]["kind"]));
     put("query_sha256", text(&report["input"]["query_sha256"]));
@@ -383,6 +386,7 @@ fn evidence_rows(index: usize, report: &Value) -> Vec<BTreeMap<&'static str, Str
     let base = |section: &str| {
         let mut row: BTreeMap<&'static str, String> = BTreeMap::new();
         row.insert("assembly", (index + 1).to_string());
+        row.insert("sample_name", text(&report["input"]["sample_name"]));
         row.insert("section", section.to_owned());
         row
     };
@@ -481,12 +485,23 @@ fn or_dash(value: &str) -> &str {
 fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, String>) -> String {
     let g = |key: &str| s.get(key).map_or("", String::as_str);
     let mut md = String::new();
-    let _ = writeln!(
-        md,
-        "## Assembly {}: {}\n",
-        index + 1,
-        or_dash(g("input_file"))
-    );
+    // A sample name heads the section; the file it names is always shown with it.
+    if g("sample_name").is_empty() {
+        let _ = writeln!(
+            md,
+            "## Assembly {}: {}\n",
+            index + 1,
+            or_dash(g("input_file"))
+        );
+    } else {
+        let _ = writeln!(
+            md,
+            "## Assembly {}: {}\n\n**Input file:** {}\n",
+            index + 1,
+            g("sample_name"),
+            or_dash(g("input_file"))
+        );
+    }
     let rank_line = |label: &str, id: &str, name: &str, status: &str| match status {
         "assigned" => format!("**{label}:** assigned — {} ({id})", or_dash(name)),
         "unresolved" => format!("**{label}:** unresolved (no assignment)"),

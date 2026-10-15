@@ -5,6 +5,8 @@ pub mod mlst;
 pub(crate) mod outputs;
 pub mod v2;
 
+pub(crate) mod inputs;
+
 use crate::decision::V1_POLICY_ID;
 use crate::evidence::sha256_hex;
 use crate::reference::PackageSource;
@@ -54,6 +56,8 @@ impl ThresholdArgs {
     about,
     after_help = "Uses skani first, then ANIm for eligible samples near the species boundary.
 ANIm can be slower; use -n/--no-anim to skip it.
+Give assemblies as arguments, or list them with -f/--input-list or -F/--sample-sheet.
+Sample names label reports only; analysis uses each file path.
 ANI thresholds are percentages, e.g. --species-ani 96.5. Require 80 <= species <= subspecies <= 100.
 Custom thresholds cannot be combined with --no-anim and mark results custom_unvalidated.
 Guide: https://github.com/mbhall88/pterobacter/blob/main/docs/assembly.md"
@@ -62,8 +66,17 @@ struct Public {
     #[command(flatten)]
     thresholds: ThresholdArgs,
     /// Isolate assembly FASTA files, analysed whole and as supplied
-    #[arg(value_name = "ASSEMBLY", required = true, num_args = 1..)]
+    #[arg(value_name = "ASSEMBLY", required_unless_present_any = ["input_list", "sample_sheet"], num_args = 1..)]
     assemblies: Vec<PathBuf>,
+    /// Read assembly paths from this file, one per line; relative paths are from its directory
+    #[arg(short = 'f', long, value_name = "FILE", conflicts_with_all = ["assemblies", "sample_sheet", "sample_name"])]
+    input_list: Option<PathBuf>,
+    /// Read sample names and assembly paths from this TSV with the header sample<TAB>path
+    #[arg(short = 'F', long, value_name = "FILE", conflicts_with_all = ["assemblies", "sample_name"])]
+    sample_sheet: Option<PathBuf>,
+    /// Name to report for the one assembly given; reporting only, never sent to skani
+    #[arg(short = 'N', long, value_name = "NAME")]
+    sample_name: Option<String>,
     /// Authenticated reference package directory
     #[arg(short = 'r', long)]
     reference_package: PathBuf,
@@ -130,6 +143,18 @@ pub fn run_public() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
+    let inputs = match inputs::collect(
+        &args.assemblies,
+        args.input_list.as_deref(),
+        args.sample_sheet.as_deref(),
+        args.sample_name.as_deref(),
+    ) {
+        Ok(inputs) => inputs,
+        Err(error) => {
+            eprintln!("error: {error}");
+            return ExitCode::from(2);
+        }
+    };
     if let Err(error) = outputs::check(&outputs::Paths {
         report: args.output.as_deref(),
         report_dir: args.report_dir.as_deref(),
@@ -143,7 +168,7 @@ pub fn run_public() -> ExitCode {
         .into_iter()
         .flatten()
         .collect(),
-        assemblies: args.assemblies.iter().map(PathBuf::as_path).collect(),
+        assemblies: inputs.iter().map(|input| input.path.as_path()).collect(),
     }) {
         eprintln!("error: {error}");
         return ExitCode::from(2);
@@ -171,6 +196,7 @@ pub fn run_public() -> ExitCode {
         .map(|(directory, sha256)| mlst::Mlst::new(directory, sha256));
     let batch = Batch {
         args: &args,
+        inputs: &inputs,
         thresholds: &thresholds,
         output_error: output_error.as_deref(),
         workflow: OnceLock::new(),
@@ -180,9 +206,8 @@ pub fn run_public() -> ExitCode {
     let mut exit = 0;
     // Reports keep argument order and the exit code follows the last failed input in that
     // order, whatever order the concurrent queries finish in.
-    for (report, code) in run_bounded(args.jobs.into(), args.assemblies.len(), |index| {
-        batch.analyse(index)
-    }) {
+    for (report, code) in run_bounded(args.jobs.into(), inputs.len(), |index| batch.analyse(index))
+    {
         if code != 0 {
             exit = code;
         }
@@ -304,6 +329,7 @@ pub(crate) fn write_reports(
 /// Shared, read-only state for the queries of one run.
 struct Batch<'a> {
     args: &'a Public,
+    inputs: &'a [inputs::Input],
     thresholds: &'a Thresholds,
     output_error: Option<&'a str>,
     /// Opened by the first input that needs it; a failure applies to every later input.
@@ -316,11 +342,13 @@ impl Batch<'_> {
     /// input's report.
     fn analyse(&self, index: usize) -> (Value, u8) {
         let args = self.args;
-        let path = &args.assemblies[index];
+        let input = &self.inputs[index];
+        let path = &input.path;
         let mut report = json!({"schema": "terobacter.assembly-call/1",
             "implementation": {"name": env!("CARGO_PKG_NAME"), "version": env!("CARGO_PKG_VERSION")},
             "policy": {"id": args.policy_id()},
             "input": {"kind": "assembly", "file": path.to_string_lossy(), "ordinal": index + 1,
+                "sample_name": input.sample_name, "source": input.source_value(),
                 "sequence_scope": "whole_assembly_as_supplied"},
             "assignment": {"status": "not_evaluated", "species_id": null, "species_name": null,
                 "subspecies_id": null, "subspecies_name": null, "lineage_id": null, "genomovar_id": null},
@@ -703,5 +731,36 @@ mod public_option_tests {
         assert!(!short.no_anim);
         assert_eq!(short.anim.anim_pair_seconds.unwrap().as_secs_f64(), 12.5);
         assert_eq!(short.anim.anim_query_seconds.unwrap().as_secs_f64(), 120.5);
+    }
+
+    #[test]
+    fn input_source_short_options_match_their_long_forms() {
+        let pin = "1".repeat(64);
+        let base = ["tero", "-r", "refs", "-R", pin.as_str()];
+        for (long, short) in [
+            (vec!["--input-list", "a b.txt"], vec!["-f", "a b.txt"]),
+            (vec!["--sample-sheet", "s.tsv"], vec!["-F", "s.tsv"]),
+            (
+                vec!["--sample-name", "S 1", "q.fa"],
+                vec!["-N", "S 1", "q.fa"],
+            ),
+        ] {
+            let long = Public::try_parse_from(base.iter().copied().chain(long)).unwrap();
+            let short = Public::try_parse_from(base.iter().copied().chain(short)).unwrap();
+            assert_eq!(format!("{long:?}"), format!("{short:?}"));
+        }
+        for conflicting in [
+            vec!["-f", "l.txt", "q.fa"],
+            vec!["-F", "s.tsv", "q.fa"],
+            vec!["-f", "l.txt", "-F", "s.tsv"],
+            vec!["-N", "S", "-f", "l.txt"],
+            vec!["-N", "S", "-F", "s.tsv"],
+            vec!["-N", "S"],
+            vec![],
+        ] {
+            let error = Public::try_parse_from(base.iter().copied().chain(conflicting.clone()))
+                .unwrap_err();
+            assert_eq!(error.exit_code(), 2, "{conflicting:?}");
+        }
     }
 }
