@@ -9,11 +9,11 @@ Use this reference to check exact output fields, evidence completeness and versi
 | File | What it holds |
 |---|---|
 | `report.json` | The authoritative report. One object for one input, an array for several. |
-| `calls.tsv` | One row per assembly: the final call, reasons, policy, minima, method, counts and versions. |
+| `calls.tsv` | One row per assembly: the final call, reasons, settings, minima, method, counts and versions. |
 | `evidence.tsv` | One row per evidence item: the strongest matches, each parent in the reference panel, and each challenge. |
 | `report.md` | A readable summary of the same facts, for manual review. |
 
-The TSV and Markdown files are produced from the JSON. They state the same final calls, reasons, policy, minima and method, and they cannot show a label the JSON does not assign. If you find a difference, the JSON is right, and the difference is a bug worth reporting.
+The TSV and Markdown files are produced from the JSON. They state the same final calls, reasons, settings, minima and method, and they cannot show a label the JSON does not assign. If you find a difference, the JSON is right, and the difference is a bug worth reporting.
 
 ### The final call
 
@@ -23,7 +23,7 @@ The TSV and Markdown files are produced from the JSON. They state the same final
 - `unresolved`: the run finished and the evidence does not support a call. The species, subspecies and genomovar columns are empty. `reasons` says why, using the terms in [`reason-vocabulary.tsv`](contracts/reason-vocabulary.tsv).
 - `not_evaluated`: the run did not reach a decision. Look at `execution_status`, `execution_stage` and `execution_error`. Do not read this as a biological negative.
 
-A label never appears as a call unless the decision assigned it. The nearest parent, the original v1 outcome and a rescue witness do appear, but each under a name that says it is not the call: "Nearest parent (not an assignment)", `original_v1_*` columns, and so on.
+A label never appears as a call unless the decision assigned it. The nearest parent, the initial skani result and a rescue witness do appear, but each under a name that says it is not the call: "Nearest parent (not an assignment)" and "Initial skani result".
 
 ### Evidence you can check
 
@@ -31,24 +31,24 @@ The report shows the five highest skani references and every exact tie at fifth 
 
 The top table does not cover the whole panel. The panel summary lists every parent in the reference panel, whether skani returned it or not, with its best ANI and any challenging references. A challenge outside the top table appears there and in the challenges list, marked as outside the strongest matches.
 
-The v1 policy has no foreign-parent challenge test, so its challenge list is always empty; compare each parent's best ANI in the panel summary instead.
+With `--no-anim`, there is no alignment-based foreign-parent challenge test, so its challenge list is always empty; compare each parent's best ANI in the panel summary instead.
 
-For the v2 policy, an empty challenge list is a result only when the check was carried out. `challenge_assessment` says how far it went:
+With ANIm enabled, an empty challenge list is a result only when the check was carried out. `challenge_assessment` says how far it went:
 
 | Value | Meaning |
 |---|---|
 | `completed` | Every required competitor pair was measured. An empty list means the retained measurements contain no challenge; this alone does not validate the call. |
 | `partial` | Some competitor pairs are missing. Known challenges are retained; an unlisted reference has not been cleared. |
 | `not_assessed` | The competitor panel was not assessed. An empty challenge list is not negative evidence. |
-| `not_applicable` | The policy did not require a competitor check; for example, the query was outside the rescue band or lacked a qualifying skani coverage witness. V1 has no such check. |
+| `not_applicable` | The analysis did not require a competitor check; for example, the query was outside the rescue band or lacked a qualifying skani coverage witness. The check is also skipped with `--no-anim`. |
 
 Assessment coverage is separate from `execution_status`. A failed execution or integrity check can retain measurements while withholding the call. Check both fields.
 
-ANI methods are not mixed in one ranking. skani orders the table; ANIm values, where the v2 policy measured them, sit beside it as separate columns.
+ANI methods are not mixed in one ranking. skani orders the table; ANIm values, where measured, sit beside it as separate columns.
 
 ### Counts and versions
 
-For the v2 policy, `anim_required`, `anim_attempted`, `anim_completed`, `anim_no_alignment`, `anim_failed` and `anim_not_run` say how many reciprocal ANIm pairs the decision needed and what happened to each. A pair that aligned nothing is a result and counts under `anim_no_alignment`. A pair that did not run, or failed, leaves the competitor panel incomplete, and an incomplete panel blocks a rescue. `competitor_evaluation` says which. The skani columns say how many references were in the panel, how many skani returned and how many it did not.
+With ANIm enabled, `anim_required`, `anim_attempted`, `anim_completed`, `anim_no_alignment`, `anim_failed` and `anim_not_run` say how many reciprocal ANIm pairs the decision needed and what happened to each. A pair that aligned nothing is a result and counts under `anim_no_alignment`. A pair that did not run, or failed, leaves the competitor panel incomplete, and an incomplete panel blocks a rescue. `competitor_evaluation` says which. The skani columns say how many references were in the panel, how many skani returned and how many it did not.
 
 Each report carries its versions separately, in the `versions` object and in the matching columns. They answer different questions, so do not merge them:
 
@@ -56,20 +56,18 @@ Each report carries its versions separately, in the `versions` object and in the
 |---|---|
 | `implementation` | The program build. |
 | `report_schema` | The shape of the report. |
-| `policy`, `policy_contract` | The calling rules and the contract revision behind them. |
-| `validation` | Whether the policy has passed its evaluation. Null for v1, `not_yet_validated` or `custom_unvalidated` for v2. |
+| `validation` | Evaluation status: unset with ANIm disabled; otherwise `not_yet_validated` or `custom_unvalidated`. |
 | `skani_method`, `anim_method` | The measurement method profiles. |
 | `reference_data` | The reference package version and manifest SHA-256. |
 
 ## A worked manual-review example
 
-This example uses invented numbers. It follows an isolate that the v2 policy leaves unresolved, and shows what to do next without inventing a label.
+This example uses invented numbers. It follows an isolate that remains unresolved after ANIm, and shows what to do next without inventing a label.
 
 You run:
 
 ```sh
 ptero --reference-package REFERENCE_DIR --expected-sha256 PORTABLE_JSON_SHA256 \
-  --policy conservative-assembly-anim-v2 \
   --anim-reference-package REFERENCE_FASTAS --expected-anim-sha256 ANIM_SHA256 \
   --anim-output ani-evidence --report-dir review isolate_17.fa
 ```
@@ -80,13 +78,11 @@ ptero --reference-package REFERENCE_DIR --expected-sha256 PORTABLE_JSON_SHA256 \
 |---|---|
 | `call_status` | `unresolved` |
 | `reasons` | `foreign_parent_challenge` |
-| `original_v1_status` | `unresolved` |
-| `original_v1_reasons` | `nearest_below_species_ANI` |
 | `trigger` | `true` |
 | `rescue_status` | `withheld` |
 | `anim_completed` / `anim_required` | `5` / `5` |
 
-The isolate sat just under the species threshold, so v1 left it unresolved and v2 tried to rescue it with ANIm. v2 withheld the rescue because another parent challenged it.
+The initial skani estimate was just below the species threshold, so the tool ran ANIm. The result stayed unresolved because another parent challenged the call.
 
 **Step 1: read the reasons.** `foreign_parent_challenge` means a reference from a different parent also reached the conflict threshold. The pair counts are complete, so this is a measured disagreement, not a missing measurement.
 

@@ -11,19 +11,24 @@ Set these shell variables to the path and digest in your trusted handoff:
 ```sh
 REFERENCE_PACKAGE=/path/to/reference
 REFERENCE_SHA256=THE_TRUSTED_PORTABLE_JSON_SHA256
+ANIM_REFERENCE_PACKAGE=/path/to/reference-fastas
+ANIM_SHA256=THE_TRUSTED_ANIM_JSON_SHA256
 ```
 
-Replace both placeholders. In the current interface these variables are just shell conveniences; every command still receives the directory and digest explicitly:
+Replace these placeholders with the two directories and their supplied digests. In the current interface these variables are just shell conveniences; every command still receives the directory and digest explicitly:
 
 ```sh
-ptero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256"   --output isolate.json --report-dir isolate-report isolate.fa
+ptero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256" \
+  --anim-reference-package "$ANIM_REFERENCE_PACKAGE" --expected-anim-sha256 "$ANIM_SHA256" \
+  --anim-output isolate-alignments \
+  --output isolate.json --report-dir isolate-report isolate.fa
 ```
 
 Reuse the same package for another assembly or batch. Do not move output files into the reference directory. The [coverage guide](supported-taxa.md) describes which names and groups it represents.
 
-## Optional components
+## Alignment references and MLST
 
-The default analysis uses skani and the main reference package. To request the candidate ANIm rescue workflow, you also need the supplied whole-assembly reference FASTA directory and its trusted `anim.json` digest when alignments are required. [The command reference](assembly.md#candidate-v2-anim-rescue) gives the complete invocation. It keeps the original calling rules and reports the candidate validation status; changing the policy is an explicit choice.
+The default analysis starts with skani and adds MUMmer4 alignments for eligible borderline queries. Supply the matching whole-assembly reference FASTA directory and its trusted `anim.json` digest so those comparisons can run. [The command reference](assembly.md#boundary-anim) gives the complete invocation. A query that needs alignments fails with an incomplete report if this component is absent; it never silently switches to skani-only classification. To choose skani only, add `--no-anim` and omit `--anim-reference-package`, `--expected-anim-sha256` and `--anim-output`.
 
 Historical MLST uses its own directory and trusted `manifest.json` digest. Follow [historical MLST setup](historical-mlst.md). It adds typing information without changing classification.
 

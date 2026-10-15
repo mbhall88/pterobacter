@@ -18,13 +18,13 @@ Rosselló and colleagues introduced the term for genomic groups within a named s
 
 A genomovar is an informal chromosome ANI group within *Enterobacter xiangfangensis* subsp. *hoffmannii* (`ECTX-SS007`, Group A), the project's proposed combination. The definition is frozen as `2026-10-02-v1`: 25 groups (GV01 to GV25) of 173 historical chromosome members. Each group was built by complete linkage at chromosome ANI ≥99.50%. A genomovar call matches a query to one frozen group under the accepted P3a contract, `p3a-genomovar-contract-r1`. It is an operational match, not a population boundary, a purity estimate or a new taxon.
 
-Every whole-assembly report has a `genomovar` section. `assignment.genomovar_id` in v1, or the top-level `genomovar_id` in v2, is set only when that section's status is `assigned`, and only after the final recheck described below.
+Every whole-assembly report has a `genomovar` section. `assignment.genomovar_id` with `--no-anim`, or the top-level `genomovar_id` with ANIm enabled, is set only when that section's status is `assigned`, and only after the final recheck described below.
 
 ## When a genomovar is assigned
 
 All of these must hold:
 
-1. **Parent:** The same query is actually assigned species `ECTX-SP025` and subspecies `ECTX-SS007` by an accepted parent call, with no blocking reason and a scope outcome of `not_assessed` or `explained_after_checks`. Either call counts only when it was decided against the authenticated package (`reference_package.status: verified`). A v2 call must also be the unchanged v1 skani call: default thresholds, a complete evaluation, `call_basis: skani`, and the same species and subspecies as its `legacy_v1_result`. An ANIm species rescue sets subspecies to null and never supports a genomovar. Custom thresholds do not either, even at the default values.
+1. **Parent:** The same query is actually assigned species `ECTX-SP025` and subspecies `ECTX-SS007` by an accepted parent call, with no blocking reason and a scope outcome of `not_assessed` or `explained_after_checks`. Either call counts only when it was decided against the authenticated package (`reference_package.status: verified`). With ANIm enabled, the call must still match the initial skani call: default thresholds, a complete evaluation, `call_basis: skani`, and the same species and subspecies as its `legacy_v1_result`. An ANIm species rescue sets subspecies to null and never supports a genomovar. Custom thresholds do not either, even at the default values.
 2. **Definition:** The package carries exactly the frozen definition: the 25 groups and 173 members under `ECTX-SS007`, members equal to the `genomovar_chromosome` component, and the pinned membership SHA-256 `1a2202dde4e0afcf78a89c1e6c084563169bd5cdea0f102da8113b1a87ebf0ab`. That digest covers `group<TAB>member<LF>` lines sorted by group, then member.
 3. **All members:** The reported skani ANI is ≥99.50% to every member of exactly one group. The threshold is inclusive. Values are compared exactly as the two-decimal estimates skani emits, with no rounding or epsilon.
 4. **Rival exclusion:** Every other group has at least one measured member below 99.50%. A member that skani did not return is not a negative measurement, so a group with a missing member and no measured failure stays a possible rival and blocks the call. Two or more compatible groups overlap; nothing breaks the tie, not the best ANI, a medoid, reference counts or ST.
@@ -34,7 +34,7 @@ If a gate fails, the genomovar is withheld and the parent call stays as it is. T
 
 ## The genomovar search
 
-The search compares the whole assembly as supplied (`query_scope: whole_assembly_as_supplied`) with the 173 historical chromosome members (`reference_scope: historical_chromosome_record_set`). It uses the embedded skani 0.3.2 with the genomovar settings `c125_m1000_learnedANI_s80_minAF0_uncapped`: compression 125, marker compression 1000, learned ANI, screen 80%, no AF reporting floor and no result cap. These are not the primary search's settings. Primary-search thresholds and custom v2 thresholds do not change the genomovar definition or its rule.
+The search compares the whole assembly as supplied (`query_scope: whole_assembly_as_supplied`) with the 173 historical chromosome members (`reference_scope: historical_chromosome_record_set`). It uses the embedded skani 0.3.2 with the genomovar settings `c125_m1000_learnedANI_s80_minAF0_uncapped`: compression 125, marker compression 1000, learned ANI, screen 80%, no AF reporting floor and no result cap. These are not the primary search's settings. Primary-search thresholds and custom ANI thresholds do not change the genomovar definition or its rule.
 
 The search runs only for an eligible parent on a package with the frozen definition. Otherwise `search.status` is `not_run`. The genomovar database is opened on first use, so a batch with no Group A parent never loads it. `search.member_evidence` lists every returned member comparison, and `search.not_returned_reference_ids` lists the members skani did not return.
 
@@ -48,14 +48,14 @@ The search runs only for an eligible parent on a package with the frozen definit
 | `compatible_groups`, `incomplete_groups` | Groups with every member ≥99.50%, and groups with no measured failure but a missing member. |
 | `groups` | Per group: `state` (`compatible`, `incompatible`, `incomplete` or `unassessable`), required and observed member counts, `missing`, `below_threshold`, `below_member_af` and the minima. |
 | `warnings` | Always the operational-match warning. A singleton group adds a sparse-reference warning. A minimum ANI of exactly 99.50% adds a cutoff warning. |
-| `parent` | The parent call, policy source digest and parent decision digest before attachment. |
+| `parent` | The parent call, calling-rule source digest and parent decision digest before attachment. |
 | `policy_sha256`, `approval` | Digest of the base and accepted addendum identities, with approval source and contract hashes. |
 | `search` | Engine, settings, scopes, query and package hashes, counts and member evidence. |
 | `definition`, `rule` | The definition identity and the gate values. |
 
 | Reason | Meaning |
 |---|---|
-| `absent_eligible_parent` | No actually assigned, verified Group A parent from an accepted policy. |
+| `absent_eligible_parent` | No actually assigned, verified Group A parent under the standard calling rules. |
 | `unresolved_scope` | The parent's scope outcome is `unexplained_after_checks`. |
 | `upstream_veto` | The parent call carries a blocking reason. |
 | `unsupported_scope` | Not a whole assembly, or not the historical chromosome references. |
@@ -68,7 +68,7 @@ The search runs only for an eligible parent on a package with the frozen definit
 | `insufficient_member_coverage` | The one compatible group has a member with an AF below 80%. |
 | `parent_withdrawn_before_publication` | The parent changed or was vetoed after assessment. |
 
-The reporting policy digest hashes the two contract SHA-256 strings in order, each followed by a newline. `approval` records those identities and Michael's dated decision source. The parent policy digest hashes the exact v1 decision source; v2 additionally includes rescue decision, threshold and pair-binding sources, separated by newlines. The parent result digest hashes compact JSON with sorted keys after removing `genomovar`, `mlst`, `genomovar_id`, `execution`, `measurement`, `evidence`, `anim_execution`, `anim_plan`, `implementation` and nested `assignment.genomovar_id`. MLST is an independent supplementary receipt: attaching a not-requested, successful or failed MLST result does not change the parent taxonomic decision or its digest. The retained decision contains the query/package/evidence identities, parent assignment and vetoes. Paths and timing are not part of either policy digest.
+The reporting-rule digest hashes the two contract SHA-256 strings in order, each followed by a newline. `approval` records those identities and Michael's dated decision source. The parent-rule digest hashes the exact skani decision source; with ANIm enabled it also includes alignment decision, threshold and pair-binding sources, separated by newlines. The parent result digest hashes compact JSON with sorted keys after removing `genomovar`, `mlst`, `genomovar_id`, `execution`, `measurement`, `evidence`, `anim_execution`, `anim_plan`, `implementation` and nested `assignment.genomovar_id`. MLST is an independent supplementary receipt: attaching a not-requested, successful or failed MLST result does not change the parent taxonomic decision or its digest. The retained decision contains the query/package/evidence identities, parent assignment and vetoes. Paths and timing are not part of either rule digest.
 
 ## Recheck before publication
 

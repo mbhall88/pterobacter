@@ -220,6 +220,7 @@ fn the_public_command_reports_a_withheld_genomovar_for_a_package_without_the_def
     let path = dir.path().join("query.fa");
     std::fs::write(&path, query()).unwrap();
     let output = cargo_bin_cmd!("ptero")
+        .arg("--no-anim")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args(["--expected-sha256", &pin])
@@ -359,7 +360,12 @@ fn public_command_combines_mlst_and_genomovar_for_both_parent_policies() {
             command
                 .arg("--reference-package")
                 .arg(dir.path().join("package"))
-                .args(["--expected-sha256", &pin, "--policy", policy]);
+                .args(["--expected-sha256", &pin])
+                .args(if policy == "conservative-assembly-v1" {
+                    vec!["--no-anim"]
+                } else {
+                    vec![]
+                });
             if mode != "not_requested" {
                 let id = if mode == "failed" {
                     "18446744073709551616"

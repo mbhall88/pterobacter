@@ -51,7 +51,14 @@ fn version_names_terobacter_and_its_implementation_version() {
 
 #[test]
 fn both_commands_give_the_same_output_and_exit_status() {
-    let cases: [&[&str]; 4] = [&["--version"], &["--help"], &[], &["no-such-assembly.fa"]];
+    let cases: [&[&str]; 6] = [
+        &["--version"],
+        &["-V"],
+        &["--help"],
+        &["-h"],
+        &[],
+        &["no-such-assembly.fa"],
+    ];
     for args in cases {
         let tero = observe("ptero", args);
         let terobacter = observe("pterobacter", args);

@@ -4,12 +4,22 @@ use serde_json::Value;
 mod common;
 use common::package::{FIXTURE_DIR, PINNED_MANIFEST_SHA256};
 
+fn skani_only(name: &str) -> assert_cmd::Command {
+    let mut command = match name {
+        "ptero" => cargo_bin_cmd!("ptero"),
+        "pterobacter" => cargo_bin_cmd!("pterobacter"),
+        _ => unreachable!(),
+    };
+    command.arg("--no-anim");
+    command
+}
+
 #[test]
 fn invalid_input_retains_a_partial_report_and_never_assigns() {
     let dir = tempfile::tempdir().unwrap();
     let query = dir.path().join("bad.fa");
     std::fs::write(&query, b"@reads\nACGT\n+\n!!!!\n").unwrap();
-    let output = cargo_bin_cmd!("ptero")
+    let output = skani_only("ptero")
         .args([
             "--reference-package",
             FIXTURE_DIR,
@@ -30,27 +40,6 @@ fn invalid_input_retains_a_partial_report_and_never_assigns() {
     );
 }
 
-#[test]
-fn unknown_policy_is_an_explicit_unavailable_policy_failure() {
-    let output = cargo_bin_cmd!("ptero")
-        .args([
-            "--reference-package",
-            FIXTURE_DIR,
-            "--expected-sha256",
-            PINNED_MANIFEST_SHA256,
-            "--policy",
-            "unavailable-policy",
-            "missing.fa",
-        ])
-        .output()
-        .unwrap();
-    assert_eq!(output.status.code(), Some(5));
-    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(report["execution"]["stage"], "policy");
-    assert_eq!(report["policy"]["id"], "unavailable-policy");
-    assert_eq!(report["assignment"]["species_id"], Value::Null);
-}
-
 use common::assembly::native_package;
 
 #[test]
@@ -64,7 +53,7 @@ fn native_whole_assembly_retains_plasmids_and_short_records_and_assigns_v1() {
     ]
     .concat();
     std::fs::write(&query, &bytes).unwrap();
-    let output = cargo_bin_cmd!("ptero")
+    let output = skani_only("ptero")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args(["--expected-sha256", &pin])
@@ -112,7 +101,7 @@ fn empty_malformed_and_non_fasta_inputs_fail_with_null_calls() {
     ] {
         let query = dir.path().join(name);
         std::fs::write(&query, bytes).unwrap();
-        let output = cargo_bin_cmd!("ptero")
+        let output = skani_only("ptero")
             .args([
                 "--reference-package",
                 FIXTURE_DIR,
@@ -144,7 +133,7 @@ fn changed_package_is_rejected_before_any_assignment() {
         b"corrupt",
     )
     .unwrap();
-    let output = cargo_bin_cmd!("ptero")
+    let output = skani_only("ptero")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args(["--expected-sha256", &pin])
@@ -169,8 +158,8 @@ fn complete_no_estimate_is_withheld_and_batch_failure_does_not_change_other_quer
     let mut observed = Vec::new();
     for name in ["ptero", "pterobacter"] {
         let mut cmd = match name {
-            "ptero" => cargo_bin_cmd!("ptero"),
-            _ => cargo_bin_cmd!("pterobacter"),
+            "ptero" => skani_only("ptero"),
+            _ => skani_only("pterobacter"),
         };
         let output = cmd
             .arg("--reference-package")
@@ -226,7 +215,7 @@ fn run_with_mlst(
     mlst_sha256: &str,
     queries: &[&std::path::Path],
 ) -> (Option<i32>, Value) {
-    let output = cargo_bin_cmd!("ptero")
+    let output = skani_only("ptero")
         .arg("--reference-package")
         .arg(dir.join("package"))
         .args(["--expected-sha256", pin])
@@ -298,7 +287,7 @@ fn requested_mlst_that_fails_is_explicit_and_keeps_the_classification() {
 
 #[test]
 fn an_mlst_package_needs_its_expected_sha256() {
-    let output = cargo_bin_cmd!("ptero")
+    let output = skani_only("ptero")
         .args([
             "--reference-package",
             FIXTURE_DIR,
@@ -331,7 +320,12 @@ fn optional_mlst_success_and_overflow_failure_preserve_v1_and_native_v2_calls() 
             let output = cargo_bin_cmd!("ptero")
                 .arg("--reference-package")
                 .arg(dir.path().join("package"))
-                .args(["--expected-sha256", &pin, "--policy", policy])
+                .args(["--expected-sha256", &pin])
+                .args(if policy == "conservative-assembly-v1" {
+                    vec!["--no-anim"]
+                } else {
+                    vec![]
+                })
                 .arg("--mlst-package")
                 .arg(dir.path().join("mlst"))
                 .args(["--mlst-expected-sha256", &scheme.manifest_sha256()])

@@ -1,5 +1,5 @@
 //! TSV and Markdown reports must agree with the authoritative JSON report. The reports under
-//! test are small synthetic documents in the shapes `tero` emits for each policy.
+//! test are small synthetic documents in the shapes `ptero` emits for each policy.
 mod common;
 
 use common::p1;
@@ -309,7 +309,15 @@ fn markdown_states_the_same_final_facts_as_json() {
             .as_str()
             .or(report["policy"]["id"].as_str())
             .unwrap();
-        assert!(md.contains(&format!("**Policy:** {policy}")), "{policy}");
+        assert!(md.contains("Analysis settings and execution"), "{policy}");
+        for forbidden in [
+            "**Policy:**",
+            "Policy mode",
+            "Original v1",
+            "conservative-assembly",
+        ] {
+            assert!(!md.contains(forbidden), "{md}");
+        }
         assert!(md.contains(&format!("`{QUERY_SHA}`")));
         assert!(md.contains(PACKAGE_SHA));
         let status = cell(&rendered.calls_tsv, 0, "call_status");
@@ -601,9 +609,9 @@ fn production_decisions_agree_across_formats_for_every_p1_case() {
 fn a_v1_report_says_which_sections_do_not_apply_instead_of_implying_a_clean_result() {
     let rendered = render(&[v1_assigned()]);
     let md = &rendered.markdown;
-    assert!(md.contains("Original v1 outcome: this report is the v1 outcome"));
-    assert!(md.contains("ANIm: not applicable under this policy"));
-    assert!(md.contains("no foreign-parent challenge test"));
+    assert!(md.contains("Initial skani result: this is the final result"));
+    assert!(md.contains("ANIm: disabled"));
+    assert!(md.contains("no alignment-based foreign-parent challenge test"));
     assert!(!md.contains("No reference challenged the call."));
 }
 

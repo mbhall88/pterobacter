@@ -14,6 +14,12 @@ fn tero(
     cmd.arg("--reference-package")
         .arg(dir.join("package"))
         .args(["--expected-sha256", pin]);
+    if !extra.iter().any(|a| {
+        *a == std::ffi::OsStr::new("--expected-anim-sha256")
+            || *a == std::ffi::OsStr::new("--species-ani")
+    }) {
+        cmd.arg("--no-anim");
+    }
     cmd.args(extra);
     cmd.args(query);
     cmd.output().unwrap()
@@ -193,8 +199,6 @@ fn v2_run(case: common::assembly::NativeCase) -> (tempfile::TempDir, Value) {
         dir.path(),
         &pin,
         &[
-            "--policy".as_ref(),
-            "conservative-assembly-anim-v2".as_ref(),
             "--expected-anim-sha256".as_ref(),
             anim_pin.as_ref(),
             "--anim-reference-package".as_ref(),
@@ -250,7 +254,7 @@ fn a_native_rescue_agrees_across_formats_including_anim_counts_and_methods() {
     );
     let markdown = std::fs::read_to_string(reports.join("report.md")).unwrap();
     assert!(markdown.contains("ANIm pairs: 5 required, 5 attempted, 5 completed, 1 no alignment"));
-    assert!(markdown.contains("Original v1 outcome: unresolved"));
+    assert!(markdown.contains("Initial skani result: unresolved"));
 }
 
 #[test]
@@ -290,8 +294,6 @@ fn custom_v2_thresholds_are_custom_unvalidated_in_the_json_and_every_rendering()
         dir.path(),
         &pin,
         &[
-            "--policy".as_ref(),
-            "conservative-assembly-anim-v2".as_ref(),
             "--species-ani".as_ref(),
             "96".as_ref(),
             "--subspecies-ani".as_ref(),
@@ -337,7 +339,8 @@ fn a_report_write_failure_still_prints_the_json_and_exits_nonzero() {
     assert_eq!(unsafe { libc::mkfifo(name.as_ptr(), 0o600) }, 0);
     let reports = dir.path().join("reports");
     let mut cmd = cargo_bin_cmd!("ptero");
-    cmd.arg("--reference-package")
+    cmd.arg("--no-anim")
+        .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args(["--expected-sha256", &pin, "--report-dir"])
         .arg(&reports)
@@ -401,12 +404,7 @@ fn unmeasured_challenges_are_not_reported_as_negative_evidence() {
     let output = std::process::Command::new(cargo_bin_cmd!("ptero").get_program())
         .arg("--reference-package")
         .arg(dir.path().join("package"))
-        .args([
-            "--expected-sha256",
-            &pin,
-            "--policy",
-            "conservative-assembly-anim-v2",
-        ])
+        .args(["--expected-sha256", &pin])
         .arg("--report-dir")
         .arg(&reports)
         .arg(&missing)
