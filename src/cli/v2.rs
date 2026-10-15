@@ -52,6 +52,22 @@ pub(crate) fn parse_seconds(text: &str) -> Result<Duration, String> {
     if !seconds.is_finite() || seconds < 0.0 || (seconds > 0.0 && seconds < 1e-9) {
         return Err("limit must be zero or finite seconds of at least one nanosecond".into());
     }
+    let mantissa = text.split(['e', 'E']).next().unwrap_or(text);
+    let digits: String = mantissa.chars().filter(char::is_ascii_digit).collect();
+    let significant = digits.trim_start_matches('0');
+    if !significant.is_empty() {
+        let exponent = text
+            .split(['e', 'E'])
+            .nth(1)
+            .unwrap_or("0")
+            .parse::<i64>()
+            .map_err(|_| "time exponent is not representable")?;
+        let fractional = mantissa.split('.').nth(1).map_or(0, str::len);
+        let order = i128::from(exponent) - fractional as i128 + significant.len() as i128 - 1;
+        if seconds == 0.0 || text.starts_with('-') || order < -9 {
+            return Err("nonzero time must be positive and at least one nanosecond".into());
+        }
+    }
     let duration = Duration::try_from_secs_f64(seconds).map_err(|e| e.to_string())?;
     if !duration.is_zero() {
         limits::validate_duration(duration)?;
@@ -245,7 +261,7 @@ fn execute_inner(
             run.execution["stop_reason"] = "plan_complete".into();
             break;
         };
-        let remaining =
+        let mut remaining =
             budget.map(|time| time.saturating_sub(start.elapsed().saturating_add(reused_time)));
         if remaining.is_some_and(|time| time.is_zero()) {
             run.execution["stop_reason"] = "query_deadline".into();
@@ -264,7 +280,7 @@ fn execute_inner(
             reference_component: "primary_whole".into(),
             reference_concept_ids: reference.concept_ids.clone(),
         };
-        let request = PairRequest {
+        let mut request = PairRequest {
             query: query.clone(),
             reference: directory.join(&reference.path),
             output: pair_output.clone(),
@@ -312,6 +328,24 @@ fn execute_inner(
             run.execution["pairs"][index]["cache"] =
                 json!({"status": "miss", "key_sha256": key.sha256()});
         }
+        // Lookup includes verification and may consume stage time. Derive admission again.
+        query_checkpoint(context, start, reused_time, run)?;
+        remaining =
+            budget.map(|time| time.saturating_sub(start.elapsed().saturating_add(reused_time)));
+        if remaining.is_some_and(|time| time.is_zero()) {
+            run.execution["stop_reason"] = "query_deadline".into();
+            return Err("ANIm query wall budget exhausted during cache verification".into());
+        }
+        request.execution = Some(
+            Execution::new(
+                settings.pair_timeout(),
+                remaining,
+                settings.memory(),
+                inherited.clone(),
+            )
+            .map_err(|e| e.to_string())?,
+        );
+        request.timeout = request.execution.as_ref().unwrap().effective_pair_timeout;
         // A saved pair stands only within the limit this pair runs under now.
         let saved = match lookup.take() {
             Some(Lookup::Hit(saved)) => match native_time(&saved) {
@@ -336,6 +370,7 @@ fn execute_inner(
         };
         query_checkpoint(context, start, reused_time, run)?;
         // A reused pair is copied into this query's evidence and verified there like a new one.
+        let mut copy_checkpoint_error = None;
         let pair = if let Some((saved, time)) = saved {
             run.execution["pairs"][index]["cache"]["status"] = "reused".into();
             run.execution["pairs"][index]["current_admission"] = json!({
@@ -349,6 +384,8 @@ fn execute_inner(
             };
             run.execution["charged_cache_duration"] = json!(reused_time);
             copy_tree(&saved, &pair_output).map_err(|e| e.to_string())?;
+            // Verify the copied evidence even after expiry, then return the checkpoint error.
+            copy_checkpoint_error = query_checkpoint(context, start, reused_time, run).err();
             serde_json::from_slice(
                 &fs::read(pair_output.join("result.json")).map_err(|e| e.to_string())?,
             )
@@ -395,6 +432,9 @@ fn execute_inner(
                     }
                 };
             }
+        }
+        if let Some(error) = copy_checkpoint_error {
+            return Err(error);
         }
         query_checkpoint(context, start, reused_time, run)?;
         // Failed and partially measured pairs still carry diagnostic evidence. Integrity-rejected

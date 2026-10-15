@@ -417,62 +417,83 @@ fn interrupted_v1_batch_withholds_every_call_and_keeps_evidence() {
 
 #[test]
 fn interrupted_concurrent_v2_batch_withholds_every_call_and_keeps_pair_evidence() {
-    let (dir, pin, seq) = common::assembly::rescue_package();
-    let first = write_query(dir.path(), "first.fa", &seq);
-    let second = dir.path().join("second.fa");
-    std::fs::write(
-        &second,
-        [b">synthetic\n".as_slice(), &seq, b"\n>short\nACGTN\n"].concat(),
-    )
-    .unwrap();
-    let anim_pin =
-        common::package::sha256_hex(&std::fs::read(dir.path().join("fastas/anim.json")).unwrap());
-    let target = dir.path().join("report.json");
-    let mut command = public_command(dir.path(), &pin);
-    command
-        .args(["--jobs", "2"])
-        .args(["--expected-anim-sha256", &anim_pin])
-        .arg("--anim-reference-package")
-        .arg(dir.path().join("fastas"))
-        .arg("--anim-output")
-        .arg(dir.path().join("evidence"))
-        .arg("--output")
-        .arg(&target)
-        .args([&first, &second]);
-    let mut child = spawn(command);
-    let started = dir
-        .path()
-        .join("evidence/query-000001/pair-000001/QR/request.json");
-    let start = Instant::now();
-    while !started.exists() && child.try_wait().unwrap().is_none() {
-        assert!(start.elapsed() < Duration::from_secs(60), "no pair started");
-        std::thread::sleep(Duration::from_millis(5));
+    for (signal, limited) in [(libc::SIGINT, false), (libc::SIGTERM, true)] {
+        let (dir, pin, seq) = common::assembly::rescue_package();
+        let first = write_query(dir.path(), "first.fa", &seq);
+        let second = dir.path().join("second.fa");
+        std::fs::write(
+            &second,
+            [b">synthetic\n".as_slice(), &seq, b"\n>short\nACGTN\n"].concat(),
+        )
+        .unwrap();
+        let anim_pin = common::package::sha256_hex(
+            &std::fs::read(dir.path().join("fastas/anim.json")).unwrap(),
+        );
+        let target = dir.path().join("report.json");
+        let mut command = public_command(dir.path(), &pin);
+        command
+            .args(["--jobs", "2"])
+            .args(["--expected-anim-sha256", &anim_pin])
+            .arg("--anim-reference-package")
+            .arg(dir.path().join("fastas"))
+            .arg("--anim-output")
+            .arg(dir.path().join("evidence"))
+            .arg("--output")
+            .arg(&target)
+            .args([&first, &second]);
+        if limited {
+            command.args(["-T", "10", "-Q", "60", "-L", "2048"]);
+        }
+        let mut child = spawn(command);
+        let started = dir
+            .path()
+            .join("evidence/query-000001/pair-000001/QR/request.json");
+        let start = Instant::now();
+        while !started.exists() && child.try_wait().unwrap().is_none() {
+            assert!(start.elapsed() < Duration::from_secs(60), "no pair started");
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        unsafe {
+            libc::kill(child.id() as i32, signal);
+        }
+        let output = child.wait_with_output().unwrap();
+        assert_eq!(output.status.code(), Some(1), "{output:?}");
+        let report: Value = serde_json::from_slice(&std::fs::read(&target).unwrap()).unwrap();
+        for (i, report) in report.as_array().unwrap().iter().enumerate() {
+            assert_eq!(report["input"]["ordinal"], i + 1);
+            assert_eq!(report["execution"]["status"], "incomplete", "{report}");
+            assert_eq!(report["species_id"], Value::Null);
+            assert_eq!(report["rescue_status"], "incomplete");
+            assert!(!report["measurement"]["rows"].as_array().unwrap().is_empty());
+        }
+        assert!(started.exists());
+        for report in report.as_array().unwrap() {
+            for pair in report["anim_execution"]["pairs"].as_array().unwrap() {
+                if let Some(orientations) = pair["record"]["orientations"].as_object() {
+                    for orientation in orientations.values() {
+                        if let Some(pid) = orientation["receipt"]["worker_pid"].as_u64() {
+                            assert_eq!(
+                                unsafe { libc::kill(pid as i32, 0) },
+                                -1,
+                                "worker was not reaped"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        let leftovers = std::fs::read_dir(dir.path())
+            .unwrap()
+            .filter(|e| {
+                e.as_ref()
+                    .unwrap()
+                    .file_name()
+                    .to_string_lossy()
+                    .contains("partial")
+            })
+            .count();
+        assert_eq!(leftovers, 0);
     }
-    unsafe {
-        libc::kill(child.id() as i32, libc::SIGINT);
-    }
-    let output = child.wait_with_output().unwrap();
-    assert_eq!(output.status.code(), Some(1), "{output:?}");
-    let report: Value = serde_json::from_slice(&std::fs::read(&target).unwrap()).unwrap();
-    for (i, report) in report.as_array().unwrap().iter().enumerate() {
-        assert_eq!(report["input"]["ordinal"], i + 1);
-        assert_eq!(report["execution"]["status"], "incomplete", "{report}");
-        assert_eq!(report["species_id"], Value::Null);
-        assert_eq!(report["rescue_status"], "incomplete");
-        assert!(!report["measurement"]["rows"].as_array().unwrap().is_empty());
-    }
-    assert!(started.exists());
-    let leftovers = std::fs::read_dir(dir.path())
-        .unwrap()
-        .filter(|e| {
-            e.as_ref()
-                .unwrap()
-                .file_name()
-                .to_string_lossy()
-                .contains("partial")
-        })
-        .count();
-    assert_eq!(leftovers, 0);
 }
 
 #[test]

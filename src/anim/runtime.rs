@@ -391,9 +391,10 @@ pub fn measure_pair(
                 receipt: None,
             };
             let work = (|| -> Result<(), AnimError> {
+                let pair_elapsed = start.elapsed();
                 let orientation_timeout = request
                     .timeout
-                    .map(|time| time.saturating_sub(start.elapsed()));
+                    .map(|time| time.saturating_sub(pair_elapsed));
                 let worker = WorkerRequest {
                     reference: if direction == "QR" {
                         "../inputs/reference.native.fa"
@@ -413,6 +414,7 @@ pub fn measure_pair(
                     wall_seconds: orientation_timeout.map(|time| time.as_secs_f64()),
                     execution: request.execution.as_ref().map(|pair| WorkerExecution {
                         pair: pair.clone(),
+                        pair_elapsed,
                         orientation_timeout,
                     }),
                 };
@@ -562,6 +564,7 @@ fn execute(
         (WORKER_ENV.into(), "1".into()),
         ("LC_ALL".into(), "C".into()),
     ]);
+    checkpoint(start, timeout, cancelled)?;
     let child = Command::new(executable)
         .current_dir(directory)
         .envs(&environment)

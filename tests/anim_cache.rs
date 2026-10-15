@@ -38,7 +38,16 @@ impl Prepared {
 
     /// A v2 run of `queries` into the new evidence directory `evidence`, sharing one cache.
     fn run(&self, evidence: &str, extra: &[&str], queries: &[&Path]) -> (Option<i32>, Value) {
-        let output = cargo_bin_cmd!("ptero")
+        let output = self.command(evidence, extra, queries).output().unwrap();
+        let report = serde_json::from_slice(&output.stdout).unwrap_or_else(|_| {
+            panic!("{}", String::from_utf8_lossy(&output.stderr));
+        });
+        (output.status.code(), report)
+    }
+
+    fn command(&self, evidence: &str, extra: &[&str], queries: &[&Path]) -> assert_cmd::Command {
+        let mut command = cargo_bin_cmd!("ptero");
+        command
             .arg("--reference-package")
             .arg(self.dir.path().join("package"))
             .args(["--expected-sha256", &self.pin])
@@ -50,13 +59,8 @@ impl Prepared {
             .arg("--anim-cache")
             .arg(self.cache())
             .args(extra)
-            .args(queries)
-            .output()
-            .unwrap();
-        let report = serde_json::from_slice(&output.stdout).unwrap_or_else(|_| {
-            panic!("{}", String::from_utf8_lossy(&output.stderr));
-        });
-        (output.status.code(), report)
+            .args(queries);
+        command
     }
 
     fn entries(&self) -> Vec<PathBuf> {
@@ -235,6 +239,44 @@ fn zero_controls_equal_omission_and_do_not_create_a_second_identity() {
         assert!(report["anim_execution"]["pair_seconds"].is_null());
         assert!(report["anim_execution"]["query_seconds"].is_null());
         assert!(report["anim_execution"]["memory_mib"].is_null());
+    }
+}
+
+#[test]
+fn expiry_after_the_last_cache_copy_withholds_query_but_preserves_verified_pairs() {
+    let prepared = Prepared::new(NativeCase::Rescue);
+    let (code, first) = prepared.run("producer", &[], &[&prepared.query]);
+    assert_eq!(code, Some(0), "{first}");
+    let command = prepared.command("deadline", &["-Q", "5"], &[&prepared.query]);
+    let mut child = std::process::Command::new(command.get_program())
+        .args(command.get_args())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+    common::hold_at_artifact(
+        &mut child,
+        &prepared
+            .dir
+            .path()
+            .join("deadline/query-000001/pair-000005"),
+    );
+    let output = child.wait_with_output().unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(
+        report["anim_execution"]["stop_reason"], "query_deadline",
+        "{report}"
+    );
+    assert_eq!(report["species_id"], Value::Null);
+    assert_eq!(report["execution"]["status"], "incomplete");
+    assert_eq!(statuses(&report), ["reused"; 5]);
+    assert_eq!(report["counts"]["completed"], 5);
+    let cache = AnimCache::open(&prepared.cache()).unwrap();
+    for entry in prepared.entries() {
+        let key: CacheKey =
+            serde_json::from_slice(&std::fs::read(entry.join("key.json")).unwrap()).unwrap();
+        assert!(matches!(cache.lookup(&key), Lookup::Hit(_)));
     }
 }
 

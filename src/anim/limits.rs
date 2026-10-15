@@ -147,7 +147,11 @@ pub fn memory_bytes(mib: u64) -> Result<u64, String> {
 }
 fn finite_rlim(n: u64) -> Result<libc::rlim_t, String> {
     let value = libc::rlim_t::try_from(n).map_err(|_| "limit does not fit platform rlim_t")?;
-    if value >= libc::RLIM_INFINITY {
+    #[cfg(target_os = "linux")]
+    let sentinel = value == libc::RLIM_INFINITY;
+    #[cfg(target_os = "macos")]
+    let sentinel = value >= libc::RLIM_INFINITY;
+    if sentinel {
         return Err("finite limit reaches RLIM_INFINITY".into());
     }
     Ok(value)
@@ -216,21 +220,21 @@ fn set(resource: Resource, value: &Restriction) -> Result<(), AnimError> {
 #[serde(deny_unknown_fields)]
 pub struct WorkerExecution {
     pub pair: Execution,
+    pub pair_elapsed: Duration,
     #[serde(deserialize_with = "required_option")]
     pub orientation_timeout: Option<Duration>,
 }
 impl WorkerExecution {
     pub fn validate(&self) -> Result<(), AnimError> {
         self.pair.validate()?;
-        if self.pair.effective_pair_timeout.is_some() != self.orientation_timeout.is_some()
-            || self
+        if self.orientation_timeout
+            != self
                 .pair
                 .effective_pair_timeout
-                .zip(self.orientation_timeout)
-                .is_some_and(|(p, w)| w > p)
+                .map(|time| time.saturating_sub(self.pair_elapsed))
         {
             return Err(invalid(
-                "orientation timeout is inconsistent with pair timeout",
+                "orientation timeout is inconsistent with elapsed pair time",
             ));
         }
         if let Some(time) = self.orientation_timeout {

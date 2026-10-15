@@ -687,3 +687,46 @@ fn invalid_time_and_memory_limits_are_usage_errors() {
         assert!(output.stdout.is_empty());
     }
 }
+
+#[test]
+fn query_deadline_in_either_orientation_retains_incomplete_evidence() {
+    for orientation in ["QR", "RQ"] {
+        let prepared = Prepared::new(common::assembly::NativeCase::Rescue);
+        let mut command = prepared.command();
+        command.args(["-Q", "5"]);
+        let mut child = std::process::Command::new(command.get_program())
+            .args(command.get_args())
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .unwrap();
+        let stage = prepared
+            .dir
+            .path()
+            .join("receipts/query-000001/pair-000001")
+            .join(orientation)
+            .join("request.json");
+        common::hold_at_artifact(&mut child, &stage);
+        let output = child.wait_with_output().unwrap();
+        assert_eq!(output.status.code(), Some(1));
+        let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(report["species_id"], Value::Null);
+        assert_eq!(report["execution"]["status"], "incomplete");
+        assert_eq!(
+            report["anim_execution"]["stop_reason"], "query_deadline",
+            "{report}"
+        );
+        assert_eq!(report["counts"]["no_alignment"], 0);
+        assert_eq!(
+            report["anim_execution"]["pairs"][0]["record"]["status"],
+            "incomplete"
+        );
+        assert!(stage
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join("result.json")
+            .exists());
+    }
+}

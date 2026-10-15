@@ -144,7 +144,7 @@ fn new_request(
     use terobacter::anim::limits::{Execution, WorkerExecution};
     json!({"reference":"blocked.fa", "query":"blocked.fa", "prefix":"native",
         "memory_mib": memory, "parent_pid":std::process::id(), "wall_seconds":time.map(|t|t.as_secs_f64()),
-        "execution":WorkerExecution { pair:Execution::new(time,None,memory,inherited).unwrap(), orientation_timeout:time }})
+        "execution":WorkerExecution { pair:Execution::new(time,None,memory,inherited).unwrap(), pair_elapsed:Duration::ZERO, orientation_timeout:time }})
 }
 
 fn wait_file(path: &Path, worker: &mut Worker) {
@@ -253,7 +253,7 @@ fn opt_in_limits_never_raise_inherited_soft_or_hard_limits() {
 
 #[test]
 fn malformed_new_profiles_are_not_unlimited_legacy_requests() {
-    for mutation in ["missing", "unknown", "inconsistent"] {
+    for mutation in ["missing", "unknown", "inconsistent", "wrong_elapsed"] {
         let directory = tempfile::tempdir().unwrap();
         let mut request = new_request(None, None, terobacter::anim::limits::inherited().unwrap());
         match mutation {
@@ -264,11 +264,66 @@ fn malformed_new_profiles_are_not_unlimited_legacy_requests() {
                     .remove("memory_mib");
             }
             "unknown" => request["execution"]["pair"]["profile"] = "unknown".into(),
+            "wrong_elapsed" => {
+                request = new_request(
+                    Some(Duration::from_secs(2)),
+                    None,
+                    terobacter::anim::limits::inherited().unwrap(),
+                );
+                request["execution"]["pair_elapsed"] = json!({"secs":1,"nanos":0});
+            }
             _ => request["execution"]["orientation_timeout"] = json!({"secs":1,"nanos":0}),
         }
         let mut worker = Worker::start(directory.path(), &serde_json::to_vec(&request).unwrap());
         assert_eq!(worker.finish().code(), Some(1), "{mutation}");
         assert!(!directory.path().join("limits.json").exists());
+    }
+}
+
+#[test]
+fn underflowed_nonzero_and_rounded_subnanosecond_limits_are_usage_errors() {
+    for value in [
+        "1e-9999",
+        "-1e-9999",
+        "0.999999999999999999999999999e-9",
+        "NaN",
+        "inf",
+    ] {
+        for name in ["ptero", "pterobacter"] {
+            let binary = if name == "ptero" {
+                assert_cmd::cargo::cargo_bin!("ptero")
+            } else {
+                assert_cmd::cargo::cargo_bin!("pterobacter")
+            };
+            let output = Command::new(binary)
+                .args([
+                    "--reference-package",
+                    "missing",
+                    "--expected-sha256",
+                    &"0".repeat(64),
+                    "--anim-pair-seconds",
+                    value,
+                    "missing.fa",
+                ])
+                .output()
+                .unwrap();
+            assert_eq!(output.status.code(), Some(2), "{name}: {value}");
+        }
+        let output = Command::new(assert_cmd::cargo::cargo_bin!("pterobacter-dev"))
+            .args([
+                "anim-pair",
+                "--query",
+                "missing.fa",
+                "--reference",
+                "missing.fa",
+                "--output",
+                "unused",
+                "--timeout-seconds",
+                value,
+            ])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2), "dev: {value}");
     }
 }
 
@@ -287,6 +342,27 @@ fn new_watchdog_keeps_a_specific_marker_instead_of_guessing_from_sigkill() {
         serde_json::from_slice(&std::fs::read(directory.path().join("stop.json")).unwrap())
             .unwrap();
     assert_eq!(reason, "worker wall deadline exceeded");
+}
+
+#[test]
+fn opted_in_small_memory_fails_without_a_completion_record() {
+    let directory = tempfile::tempdir().unwrap();
+    fifo(directory.path());
+    let request = new_request(
+        None,
+        Some(1),
+        terobacter::anim::limits::inherited().unwrap(),
+    );
+    let mut worker = Worker::start(directory.path(), &serde_json::to_vec(&request).unwrap());
+    assert!(!worker.finish().success());
+    assert!(!directory.path().join("native.filter").exists());
+    #[cfg(target_os = "macos")]
+    {
+        let reason: String =
+            serde_json::from_slice(&std::fs::read(directory.path().join("stop.json")).unwrap())
+                .unwrap();
+        assert_eq!(reason, "worker peak RSS ceiling exceeded");
+    }
 }
 
 #[test]
@@ -374,5 +450,100 @@ fn orphan_worker_exits_when_parent_is_killed() {
             panic!("orphan worker remains running: {state}");
         }
         std::thread::sleep(Duration::from_millis(10));
+    }
+}
+
+#[test]
+fn repeated_public_signals_do_not_publish_a_partial_report_file() {
+    for signal in [libc::SIGINT, libc::SIGTERM] {
+        let directory = tempfile::tempdir().unwrap();
+        fifo(directory.path());
+        let evidence = directory.path().join("evidence");
+        let report = directory.path().join("report.json");
+        let mut coordinator = Worker(
+            Command::new(assert_cmd::cargo::cargo_bin!("ptero"))
+                .args([
+                    "--reference-package",
+                    "missing",
+                    "--expected-sha256",
+                    &"0".repeat(64),
+                    "--jobs",
+                    "2",
+                ])
+                .arg("--anim-output")
+                .arg(&evidence)
+                .arg("--output")
+                .arg(&report)
+                .arg(directory.path().join("blocked.fa"))
+                .arg(directory.path().join("blocked.fa"))
+                .stdout(Stdio::null())
+                .stderr(Stdio::piped())
+                .spawn()
+                .unwrap(),
+        );
+        wait_file(&evidence, &mut coordinator);
+        unsafe {
+            libc::kill(coordinator.0.id() as i32, signal);
+        }
+        std::thread::sleep(Duration::from_millis(30));
+        assert!(coordinator.0.try_wait().unwrap().is_none());
+        unsafe {
+            libc::kill(coordinator.0.id() as i32, signal);
+        }
+        assert_eq!(coordinator.finish().signal(), Some(signal));
+        assert!(!report.exists());
+    }
+}
+
+#[test]
+fn fresh_development_pair_controls_are_optional_independent_and_reported() {
+    let directory = tempfile::tempdir().unwrap();
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/anim");
+    let mut original = None;
+    for (index, args) in [
+        vec![],
+        vec!["--timeout-seconds", "0", "--memory-mib", "0"],
+        vec!["--timeout-seconds", "1801"],
+        vec!["--memory-mib", "6145"],
+        vec!["--timeout-seconds", "1801", "--memory-mib", "6145"],
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let output = Command::new(assert_cmd::cargo::cargo_bin!("pterobacter-dev"))
+            .args(["anim-pair", "--query"])
+            .arg(fixture.join("identical.q.fa"))
+            .arg("--reference")
+            .arg(fixture.join("identical.r.fa"))
+            .arg("--output")
+            .arg(directory.path().join(index.to_string()))
+            .args(&args)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let record: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        let execution = &record["execution"];
+        assert_eq!(
+            execution["configured_pair_timeout"].is_null(),
+            !args.contains(&"1801")
+        );
+        assert_eq!(execution["memory_mib"].is_null(), !args.contains(&"6145"));
+        assert_eq!(
+            execution["effective_pair_timeout"],
+            execution["configured_pair_timeout"]
+        );
+        let metrics = json!([
+            record["orientations"]["QR"]["metrics"],
+            record["orientations"]["RQ"]["metrics"]
+        ]);
+        if let Some(original) = &original {
+            assert_eq!(original, &metrics);
+        } else {
+            original = Some(metrics);
+        }
     }
 }
