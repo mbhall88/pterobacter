@@ -474,6 +474,35 @@ fn cell(value: &str) -> String {
     cleaned(value).replace('|', "\\|")
 }
 
+/// Text shown exactly as written in Markdown: every ASCII punctuation character is
+/// backslash-escaped, which CommonMark defines as literal, so a name such as `<isolate>` or
+/// `*A*` is neither HTML nor emphasis. The report values themselves are unchanged.
+fn literal(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    for c in cleaned(value).chars() {
+        if c.is_ascii_punctuation() {
+            out.push('\\');
+        }
+        out.push(c);
+    }
+    out
+}
+
+/// A code span that holds `value` verbatim, whatever backticks it contains.
+fn code_span(value: &str) -> String {
+    let value = cleaned(value);
+    let longest = value.split(|c| c != '`').map(str::len).max().unwrap_or(0);
+    let fence = "`".repeat(longest + 1);
+    // CommonMark strips one space from each side when both are present, so a pad is only
+    // added, on both sides, where the content would otherwise touch the fence ambiguously.
+    let pad = if value.starts_with(['`', ' ']) || value.ends_with(['`', ' ']) {
+        " "
+    } else {
+        ""
+    };
+    format!("{fence}{pad}{value}{pad}{fence}")
+}
+
 fn or_dash(value: &str) -> &str {
     if value.is_empty() {
         "—"
@@ -498,8 +527,12 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
             md,
             "## Assembly {}: {}\n\n**Input file:** {}\n",
             index + 1,
-            g("sample_name"),
-            or_dash(g("input_file"))
+            literal(g("sample_name")),
+            if g("input_file").is_empty() {
+                "—".to_owned()
+            } else {
+                code_span(g("input_file"))
+            }
         );
     }
     let rank_line = |label: &str, id: &str, name: &str, status: &str| match status {
@@ -915,5 +948,46 @@ pub fn render(reports: &[Value]) -> Rendered {
         calls_tsv: calls,
         evidence_tsv: evidence,
         markdown,
+    }
+}
+
+#[cfg(test)]
+mod markdown_text_tests {
+    use super::*;
+
+    #[test]
+    fn literal_escapes_every_markdown_and_html_character() {
+        assert_eq!(
+            literal(r"<isolate> *A* `t` [x](y) a\b & #1 ü"),
+            r"\<isolate\> \*A\* \`t\` \[x\]\(y\) a\\b \& \#1 ü"
+        );
+        assert_eq!(literal("Isolate A"), "Isolate A");
+    }
+
+    #[test]
+    fn code_spans_hold_any_backticks_and_edge_spaces() {
+        assert_eq!(code_span("runs ü/q 1.fa"), "`runs ü/q 1.fa`");
+        assert_eq!(code_span("a`b.fa"), "``a`b.fa``");
+        assert_eq!(code_span("``x.fa"), "``` ``x.fa ```");
+        assert_eq!(code_span(" a.fa "), "`  a.fa  `");
+    }
+
+    #[test]
+    fn only_a_named_section_changes_its_heading() {
+        let report = |name: Value| json!({"input": {"file": "dir/a_1.fa", "sample_name": name}});
+        let unnamed = render(&[report(Value::Null)]).markdown;
+        assert!(unnamed.contains("## Assembly 1: dir/a_1.fa\n"), "{unnamed}");
+        let named = render(&[report("<S> *1*".into())]);
+        assert!(
+            named
+                .markdown
+                .contains("## Assembly 1: \\<S\\> \\*1\\*\n\n**Input file:** `dir/a_1.fa`\n"),
+            "{}",
+            named.markdown
+        );
+        assert_eq!(
+            named.calls_tsv.lines().nth(1).unwrap().split('\t').nth(1),
+            Some("<S> *1*")
+        );
     }
 }

@@ -8,7 +8,7 @@ use serde_json::{json, Value};
 use std::collections::BTreeMap;
 use std::fs;
 use std::os::unix::fs::MetadataExt;
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 
 /// One assembly to analyse, in the order it was supplied.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -220,16 +220,16 @@ fn check_name(name: &str) -> Result<(), String> {
 }
 
 /// Two entries that name one file, through a different spelling, a symbolic link or a hard
-/// link, would analyse the same assembly twice under two identities.
+/// link, would analyse the same assembly twice under two identities. Only the file system
+/// decides: an existing file is identified by device and inode, so entries that are textually
+/// alike but reach different files are both kept.
 fn reject_duplicate_paths(inputs: &[Input], what: &str) -> Result<(), String> {
-    let mut by_file: BTreeMap<(u64, u64), usize> = BTreeMap::new();
-    let mut by_path: BTreeMap<PathBuf, usize> = BTreeMap::new();
+    let mut seen: BTreeMap<Identity, usize> = BTreeMap::new();
     for (index, input) in inputs.iter().enumerate() {
-        let file = fs::metadata(&input.path)
-            .ok()
-            .and_then(|m| by_file.insert((m.dev(), m.ino()), index));
-        let path = lexical(&input.path).and_then(|p| by_path.insert(p, index));
-        if let Some(first) = file.or(path) {
+        let Some(identity) = identity(&input.path) else {
+            continue;
+        };
+        if let Some(first) = seen.insert(identity, index) {
             let line = |i: &Input| match i.source {
                 Source::Listed { line, .. } => line,
                 Source::Positional => 0,
@@ -245,19 +245,22 @@ fn reject_duplicate_paths(inputs: &[Input], what: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// An absolute path with `.` and `..` applied, for files that do not exist.
-fn lexical(path: &Path) -> Option<PathBuf> {
-    let mut resolved = PathBuf::new();
-    for component in std::env::current_dir().ok()?.join(path).components() {
-        match component {
-            Component::CurDir => {}
-            Component::ParentDir => {
-                resolved.pop();
-            }
-            other => resolved.push(other),
-        }
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+enum Identity {
+    /// Device and inode of an existing file, after following symbolic links.
+    File(u64, u64),
+    /// A path that cannot be opened, with every existing ancestor's symbolic links resolved
+    /// before `..` is applied, as the kernel would.
+    Missing(PathBuf),
+}
+
+/// `None` when not even the fallback can be computed; such an entry is never called a duplicate
+/// and fails on its own when it is read.
+fn identity(path: &Path) -> Option<Identity> {
+    match fs::metadata(path) {
+        Ok(metadata) => Some(Identity::File(metadata.dev(), metadata.ino())),
+        Err(_) => super::outputs::resolve(path).ok().map(Identity::Missing),
     }
-    Some(resolved)
 }
 
 #[cfg(test)]
@@ -350,6 +353,44 @@ mod tests {
             let error = parse_list(format!("a.fa\n{second}\n").as_bytes(), &list).unwrap_err();
             assert!(error.contains("same assembly as line 1"), "{error}");
         }
+    }
+
+    /// `base/link` points at `other/child`, so `base/link/../X` is `other/X`, not `base/X`.
+    fn linked_tree() -> (tempfile::TempDir, PathBuf) {
+        let dir = tempfile::tempdir().unwrap();
+        let base = dir.path().join("base");
+        let other = dir.path().join("other");
+        fs::create_dir_all(other.join("child")).unwrap();
+        fs::create_dir(&base).unwrap();
+        std::os::unix::fs::symlink(other.join("child"), base.join("link")).unwrap();
+        fs::write(base.join("a.fa"), ">base\nACGT\n").unwrap();
+        fs::write(other.join("a.fa"), ">other\nTTTT\n").unwrap();
+        (dir, base.join("l.txt"))
+    }
+
+    #[test]
+    fn textually_alike_entries_that_reach_different_files_are_both_kept() {
+        let (_dir, list) = linked_tree();
+        for text in ["a.fa\nlink/../a.fa\n", "missing.fa\nlink/../missing.fa\n"] {
+            let inputs = parse_list(text.as_bytes(), &list).unwrap();
+            let entries: Vec<_> = text.lines().collect();
+            for (input, entry) in inputs.iter().zip(entries) {
+                // The path is kept as written: it is still the query label.
+                assert_eq!(input.path, list.parent().unwrap().join(entry));
+            }
+        }
+        let sheet = list.with_file_name("s.tsv");
+        let inputs = parse_sheet(b"sample\tpath\nA\ta.fa\nB\tlink/../a.fa\n", &sheet).unwrap();
+        assert_eq!(inputs.len(), 2);
+    }
+
+    #[test]
+    fn a_missing_file_reached_through_a_linked_ancestor_is_still_a_duplicate() {
+        let (_dir, list) = linked_tree();
+        let error = parse_list(b"link/../m.fa\n../other/m.fa\n", &list).unwrap_err();
+        assert!(error.contains("same assembly as line 1"), "{error}");
+        let error = parse_list(b"link/../a.fa\n../other/a.fa\n", &list).unwrap_err();
+        assert!(error.contains("same assembly as line 1"), "{error}");
     }
 
     #[test]

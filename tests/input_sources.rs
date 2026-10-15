@@ -253,12 +253,46 @@ fn mixed_batch_keeps_order_names_and_status_in_every_output() {
     let markdown = std::fs::read_to_string(reports.join("report.md")).unwrap();
     for (index, (name, _, _)) in expected.iter().enumerate() {
         let heading = format!(
-            "## Assembly {}: {name}\n\n**Input file:** {}\n",
+            "## Assembly {}: {name}\n\n**Input file:** `{}`\n",
             index + 1,
             items[index]["input"]["file"].as_str().unwrap()
         );
         assert!(markdown.contains(&heading), "{heading}");
     }
+}
+
+#[test]
+fn markdown_shows_a_punctuated_name_literally_and_every_other_output_keeps_it_exactly() {
+    let (dir, pin, seq) = common::assembly::native_package();
+    let (_, plain, _) = queries(dir.path(), &seq);
+    let name = r"<isolate> *A* _b_ `tick` [x](y) back\slash & #";
+    let reports = dir.path().join("reports");
+    let run = ptero(
+        &dir.path().join("package"),
+        &pin,
+        &[
+            os("--no-anim"),
+            os("-N"),
+            os(name),
+            os("-d"),
+            reports.as_os_str(),
+            plain.as_os_str(),
+        ],
+    );
+    assert_eq!(run.code, Some(0), "{}", run.stderr);
+    assert_eq!(run.report["input"]["sample_name"], name);
+    assert_eq!(run.report["input"]["file"], plain.to_str().unwrap());
+    let calls = std::fs::read_to_string(reports.join("calls.tsv")).unwrap();
+    let row: Vec<&str> = calls.lines().nth(1).unwrap().split('\t').collect();
+    assert_eq!(row[1], name);
+    let markdown = std::fs::read_to_string(reports.join("report.md")).unwrap();
+    let heading = format!(
+        "## Assembly 1: {}\n\n**Input file:** `{}`\n",
+        r"\<isolate\> \*A\* \_b\_ \`tick\` \[x\]\(y\) back\\slash \& \#",
+        plain.to_str().unwrap()
+    );
+    assert!(markdown.contains(&heading), "{markdown}");
+    assert!(!markdown.contains("<isolate>"), "{markdown}");
 }
 
 #[test]
@@ -350,6 +384,70 @@ fn invalid_mappings_and_conflicting_sources_are_refused_before_any_output() {
             assert!(!path.exists(), "{args:?} created {}", path.display());
         }
     }
+}
+
+#[test]
+fn entries_alike_after_dot_dot_removal_but_reaching_different_files_both_run() {
+    let (dir, pin, seq) = common::assembly::native_package();
+    let base = dir.path().join("base");
+    let other = dir.path().join("other");
+    std::fs::create_dir_all(other.join("child")).unwrap();
+    std::fs::create_dir(&base).unwrap();
+    std::os::unix::fs::symlink(other.join("child"), base.join("link")).unwrap();
+    let fasta = [b">synthetic\n".as_slice(), &seq, b"\n"].concat();
+    std::fs::write(base.join("a.fa"), &fasta).unwrap();
+    std::fs::write(
+        other.join("a.fa"),
+        [fasta.as_slice(), b">short\nACGTN\n"].concat(),
+    )
+    .unwrap();
+    std::os::unix::fs::symlink(base.join("a.fa"), base.join("alias.fa")).unwrap();
+    std::fs::write(base.join("list.txt"), "a.fa\nlink/../a.fa\n").unwrap();
+    std::fs::write(
+        base.join("samples.tsv"),
+        "sample\tpath\nbase\ta.fa\nother\tlink/../a.fa\n",
+    )
+    .unwrap();
+    std::fs::write(base.join("aliases.txt"), "a.fa\nalias.fa\n").unwrap();
+    for (option, file) in [("-f", "list.txt"), ("-F", "samples.tsv")] {
+        let run = ptero(
+            &dir.path().join("package"),
+            &pin,
+            &[os("--no-anim"), os(option), base.join(file).as_os_str()],
+        );
+        assert_eq!(run.code, Some(0), "{option}: {}", run.stderr);
+        let items = run.report.as_array().unwrap();
+        assert_eq!(items.len(), 2);
+        // Each entry keeps its path as written; that path is the query label.
+        assert_eq!(
+            items[0]["input"]["file"],
+            base.join("a.fa").to_str().unwrap()
+        );
+        assert_eq!(
+            items[1]["input"]["file"],
+            base.join("link/../a.fa").to_str().unwrap()
+        );
+        assert_ne!(
+            items[0]["input"]["query_sha256"],
+            items[1]["input"]["query_sha256"]
+        );
+        assert_eq!(items[1]["input"]["total_bases"], 200_008);
+    }
+    let run = ptero(
+        &dir.path().join("package"),
+        &pin,
+        &[
+            os("--no-anim"),
+            os("-f"),
+            base.join("aliases.txt").as_os_str(),
+        ],
+    );
+    assert_eq!(run.code, Some(2), "{}", run.stderr);
+    assert!(
+        run.stderr.contains("same assembly as line 1"),
+        "{}",
+        run.stderr
+    );
 }
 
 #[test]
