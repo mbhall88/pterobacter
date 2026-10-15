@@ -13,6 +13,8 @@ struct Run {
 
 fn ptero(package: &Path, pin: &str, args: &[&std::ffi::OsStr]) -> Run {
     let output = cargo_bin_cmd!("ptero")
+        .env("XDG_STATE_HOME", package.parent().unwrap().join("state"))
+        .env("HOME", package.parent().unwrap().join("home"))
         .arg("--reference-package")
         .arg(package)
         .args(["--expected-sha256", pin])
@@ -63,11 +65,37 @@ fn differences(left: &Value, right: &Value, at: &str, found: &mut Vec<String>) {
     }
 }
 
-/// Every field of two reports agrees except the elapsed time, which is a measurement of the
-/// run and not of the assembly.
+/// Scientific fields agree. Elapsed time and the per-invocation evidence directory
+/// describe the execution, not the assembly. Both evidence directories must exist.
 fn assert_same(left: &Value, right: &Value) {
+    fn without_execution_directory(report: &Value) -> Value {
+        match report {
+            Value::Array(items) => {
+                Value::Array(items.iter().map(without_execution_directory).collect())
+            }
+            _ => {
+                let mut copy = report.clone();
+                if let Some(directory) =
+                    report["data_provenance"]["anim_evidence_directory"].as_str()
+                {
+                    assert!(
+                        Path::new(directory).is_dir(),
+                        "missing evidence directory: {directory}"
+                    );
+                    copy["data_provenance"]["anim_evidence_directory"] =
+                        "verified per-run directory".into();
+                }
+                copy
+            }
+        }
+    }
     let mut found = Vec::new();
-    differences(left, right, "", &mut found);
+    differences(
+        &without_execution_directory(left),
+        &without_execution_directory(right),
+        "",
+        &mut found,
+    );
     found.retain(|path| !path.ends_with(".anim_execution.wall_seconds"));
     assert!(found.is_empty(), "reports differ at {found:?}");
 }
