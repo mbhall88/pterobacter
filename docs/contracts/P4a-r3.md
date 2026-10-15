@@ -1,5 +1,7 @@
 # P4a-r3 command binding
 
+> Historical contract: command spellings and defaults below record the original evaluation interface. The current development executable is `pterobacter-dev`, built with `cargo build --locked --release --features dev --bin pterobacter-dev`. Use the [development guide](../development.md) and [current CLI help](../cli-help.md) for present commands and defaults; scientific profile identifiers retain their original names.
+
 This binding accompanies `P1-ANIM-MUMMER4-r1`. It leaves the frozen P4a command plan unchanged and maps its R3 placeholder to the development binary. `mbhall88/Enterobacter#25` must bind the actual source/build/executable digests and parser fixtures before launching validation.
 
 ```sh

@@ -1,5 +1,7 @@
 # Evaluation handoff
 
+> Historical contract: command spellings and defaults below record the original evaluation interface. The current development executable is `pterobacter-dev`, built with `cargo build --locked --release --features dev --bin pterobacter-dev`. Use the [development guide](../development.md) and [current CLI help](../cli-help.md) for present commands and defaults; scientific profile identifiers retain their original names.
+
 This page binds the frozen P4a-r3 evaluation design to this release candidate. It maps the design's interface R1–R7 and each `{…}` placeholder in the P4b command plan to a terobacter command, and gives the two hashed tables P4b binds with its argv. It changes nothing in the frozen design, its scorer or its fixtures. P4b binds the source, build and executable digests in its own run before Step 1, as [the P4a-r3 command binding](P4a-r3.md) requires.
 
 | Frozen input | SHA-256 |

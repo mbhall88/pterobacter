@@ -1,5 +1,7 @@
 # P1-ANIM-MUMMER4-r1
 
+> Historical contract: command spellings and defaults below record the original evaluation interface. The current development executable is `pterobacter-dev`, built with `cargo build --locked --release --features dev --bin pterobacter-dev`. Use the [development guide](../development.md) and [current CLI help](../cli-help.md) for present commands and defaults; scientific profile identifiers retain their original names.
+
 Issue #8 implements the method approved after issues #1 and #3. This amendment adds a maintained MUMmer4 profile beside the frozen MUMmer3 comparator. It does not replace P1, change the calling policy, or authorize biological validation or release.
 
 ## Method identity
