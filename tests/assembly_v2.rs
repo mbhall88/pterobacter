@@ -455,11 +455,8 @@ fn query_budget_retains_partial_receipts_and_returns_nonzero() {
         "{report}"
     );
     assert_eq!(report["counts"]["attempted"], 0);
-    assert!(prepared
-        .dir
-        .path()
-        .join("receipts/query-000001/query.fa")
-        .exists());
+    // Expiry after planning now stops before copying input or starting any worker.
+    assert_eq!(report["anim_execution"]["stop_reason"], "query_deadline");
     for pair in report["anim_execution"]["pairs"].as_array().unwrap() {
         assert!(std::path::Path::new(pair["directory"].as_str().unwrap())
             .join("result.json")
@@ -676,17 +673,74 @@ fn pair_deadline_before_worker_start_is_failed_and_retained() {
 fn invalid_time_and_memory_limits_are_usage_errors() {
     let prepared = Prepared::new(common::assembly::NativeCase::Rescue);
     for (flag, value) in [
-        ("--anim-pair-seconds", "1801"),
-        ("--anim-query-seconds", "7201"),
+        ("--anim-pair-seconds", "1e300"),
+        ("--anim-query-seconds", "18446744073709551616"),
         ("--anim-pair-seconds", "NaN"),
         ("--anim-query-seconds", "inf"),
-        ("--anim-pair-seconds", "0"),
+        ("--anim-pair-seconds", "-1"),
         ("--anim-query-seconds", "0.00000000001"),
-        ("--anim-memory-mib", "63"),
-        ("--anim-memory-mib", "6145"),
+        ("--anim-memory-mib", "-1"),
+        ("--anim-memory-mib", "18446744073709551615"),
     ] {
         let output = prepared.command().args([flag, value]).output().unwrap();
         assert_eq!(output.status.code(), Some(2), "{flag} {value}");
         assert!(output.stdout.is_empty());
+    }
+}
+
+#[test]
+fn query_deadline_in_either_orientation_retains_incomplete_evidence() {
+    for orientation in ["QR", "RQ"] {
+        let prepared = Prepared::new(common::assembly::NativeCase::Rescue);
+        let mut command = prepared.command();
+        command.args(["-Q", "5"]);
+        let mut child = std::process::Command::new(command.get_program())
+            .args(command.get_args())
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .unwrap();
+        let stage = prepared
+            .dir
+            .path()
+            .join("receipts/query-000001/pair-000001")
+            .join(orientation)
+            .join("limits.json");
+        common::hold_at_artifact(&mut child, &stage);
+        let output = child.wait_with_output().unwrap();
+        assert_eq!(output.status.code(), Some(1));
+        let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(report["species_id"], Value::Null);
+        assert_eq!(report["execution"]["status"], "incomplete");
+        assert_eq!(
+            report["anim_execution"]["stop_reason"], "query_deadline",
+            "{report}"
+        );
+        assert_eq!(report["counts"]["no_alignment"], 0);
+        assert_eq!(
+            report["anim_execution"]["pairs"][0]["record"]["status"],
+            "incomplete"
+        );
+        let receipt =
+            &report["anim_execution"]["pairs"][0]["record"]["orientations"][orientation]["receipt"];
+        let pid = receipt["worker_pid"]
+            .as_u64()
+            .expect("orientation worker must have started");
+        assert_eq!(
+            unsafe { libc::kill(pid as i32, 0) },
+            -1,
+            "worker must be reaped"
+        );
+        assert!(
+            receipt["wall_seconds"].as_f64().unwrap() >= 5.0,
+            "{receipt}"
+        );
+        assert!(stage
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join("result.json")
+            .exists());
     }
 }

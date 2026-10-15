@@ -13,6 +13,7 @@ pub enum AnimError {
     #[error(transparent)]
     Json(#[from] serde_json::Error),
 }
+pub mod limits;
 mod runtime;
 pub use runtime::{
     hash_bytes, hash_file, measure_pair, run_worker_if_requested, verify_pair, ExpectedPair,

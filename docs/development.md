@@ -68,3 +68,5 @@ Frozen evaluation contracts, command bindings and scorer mappings are retained u
 | `CONTEXT.md` | Vocabulary. |
 
 See [AGENTS.md](../AGENTS.md) for contribution rules and [CONTEXT.md](../CONTEXT.md) for the terms used here.
+
+Fresh `anim-pair` measurements impose no tool time/memory ceiling unless `--timeout-seconds` or `--memory-mib` is positive. Omitted or zero controls preserve inherited limits. Saved-evidence replay retains historical settings. See [execution and historical evidence](assembly.md#execution-and-historical-evidence) for profile/cache identities and platform enforcement.

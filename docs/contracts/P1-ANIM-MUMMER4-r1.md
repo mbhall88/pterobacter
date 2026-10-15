@@ -24,7 +24,9 @@ A fresh output directory is required. `request.json`, input snapshots, QR/RQ raw
 
 `verify_pair` takes an `ExpectedPair` from the caller's current context: query and reference IDs and byte hashes, reference component, and the full ordered list of reference concept IDs. The caller must obtain this context independently of the saved result. Both saved input bindings and the retained top-level request must match it; omitted operation IDs resolve to input byte hashes. Query component and concepts must retain their whole-assembly values. Verification also requires the current source/build profile, retained snapshots and artifact hashes, correct native axes, and recomputed exact metrics. Executable hashes remain producer provenance; the public aliases and development binary can share a source/build profile while their executable bytes differ. Package authentication belongs to the caller. This is a reuse validator, not a cache scheduler.
 
-## Containment and limits
+## Containment and historical limits
+
+The numeric defaults below describe the original bounded execution profile. Fresh measurements now use the separately versioned [opt-in execution contract](../assembly.md#execution-and-historical-evidence); historical receipts retain these original settings. The numerical method profile above is unchanged.
 
 Workers are processes of the same executable and require no external alignment or filtering command. Each worker has a separate libc RNG state. The coordinator handles SIGINT/SIGTERM, kills the worker process group and retains an incomplete record. Linux also installs a parent-death signal; a portable watchdog checks parent identity and the deadline. Parent SIGKILL cannot leave a native worker running indefinitely, although the coordinator cannot write a final receipt after SIGKILL.
 

@@ -32,13 +32,13 @@ The `--anim-` options apply to the MUMmer4 rescue mode. ANIm means average nucle
 | `--expected-anim-sha256` | The trusted hash of that FASTA package's `anim.json` manifest. |
 | `--anim-output` | A new directory for alignments and execution records, including input snapshots, errors and hashes. It preserves evidence used in the call. |
 | `--anim-cache` | A reusable store of verified query/reference comparisons to avoid repeating matching work. |
-| `--anim-pair-seconds` | Maximum elapsed time for one query/reference pair, including both alignment directions. Default: 120 seconds. |
-| `--anim-query-seconds` | Total alignment time budget for one input assembly. Default: 600 seconds. |
-| `--anim-memory-mib` | Memory ceiling for each native alignment worker. Default: 1024 MiB. |
+| `--anim-pair-seconds` | Opt-in wall limit for one reciprocal pair, including both directions; omitted or zero means unlimited. |
+| `--anim-query-seconds` | Opt-in ANIm-stage budget for one assembly; omitted or zero means unlimited. |
+| `--anim-memory-mib` | Opt-in worker ceiling in MiB; omitted or zero means unlimited. |
 
 `--report-dir` holds the classification reports; `--anim-output` holds the underlying alignment evidence. Use separate new directories. The [rescue command](assembly.md#boundary-anim) shows both the required inputs and evidence output; [cache reuse](assembly.md#reusing-reciprocal-pairs) describes the optional cache.
 
-The current limits bound native alignment work. Reaching a limit leaves the required comparison incomplete and withholds the call; it is not evidence that the assembly belongs to a different species. You can raise the limits up to 1800 seconds per pair, 7200 seconds per query and 6144 MiB per worker, but this build has no unlimited setting. Ctrl-C requests a stop and retains partial evidence. [Issue43](https://github.com/mbhall88/pterobacter/issues/43) tracks the request to make these limits optional; the current values are listed here so the guide matches the executable.
+Execution has no tool time or memory ceiling unless you supply a positive limit. Each control is independent; omission or zero disables it. The query control covers the ANIm stage for one assembly, with cooperative checks after synchronous operations. It does not time skani, genomovar, MLST or the whole batch. OS/scheduler restrictions and jobs/thread bounds still apply. A limit failure leaves required evidence incomplete and withholds the call. Ctrl-C requests a stop and retains partial evidence when possible; repeating the signal terminates immediately. [Execution details](assembly.md#execution-and-historical-evidence) describe Linux/macOS enforcement, inherited limits and historical cache compatibility.
 
 ## Exact terminal output
 
@@ -90,11 +90,11 @@ Options:
   -c, --anim-cache <ANIM_CACHE>
           Directory of verified reciprocal pairs to reuse and extend; created when absent
   -T, --anim-pair-seconds <ANIM_PAIR_SECONDS>
-          Reciprocal pair wall timeout, default 120 seconds, maximum 1800
+          Opt-in reciprocal pair wall limit in seconds; omitted or 0 means unlimited
   -Q, --anim-query-seconds <ANIM_QUERY_SECONDS>
-          Total ANIm wall budget per query, default 600 seconds, maximum 7200
+          Opt-in ANIm-stage budget per assembly in seconds; omitted or 0 means unlimited
   -L, --anim-memory-mib <ANIM_MEMORY_MIB>
-          Native worker memory ceiling, default 1024 MiB, maximum 6144 MiB
+          Opt-in native worker ceiling in MiB; omitted or 0 means unlimited
   -h, --help
           Print help
   -V, --version

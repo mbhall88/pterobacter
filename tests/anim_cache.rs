@@ -38,7 +38,16 @@ impl Prepared {
 
     /// A v2 run of `queries` into the new evidence directory `evidence`, sharing one cache.
     fn run(&self, evidence: &str, extra: &[&str], queries: &[&Path]) -> (Option<i32>, Value) {
-        let output = cargo_bin_cmd!("ptero")
+        let output = self.command(evidence, extra, queries).output().unwrap();
+        let report = serde_json::from_slice(&output.stdout).unwrap_or_else(|_| {
+            panic!("{}", String::from_utf8_lossy(&output.stderr));
+        });
+        (output.status.code(), report)
+    }
+
+    fn command(&self, evidence: &str, extra: &[&str], queries: &[&Path]) -> assert_cmd::Command {
+        let mut command = cargo_bin_cmd!("ptero");
+        command
             .arg("--reference-package")
             .arg(self.dir.path().join("package"))
             .args(["--expected-sha256", &self.pin])
@@ -50,17 +59,12 @@ impl Prepared {
             .arg("--anim-cache")
             .arg(self.cache())
             .args(extra)
-            .args(queries)
-            .output()
-            .unwrap();
-        let report = serde_json::from_slice(&output.stdout).unwrap_or_else(|_| {
-            panic!("{}", String::from_utf8_lossy(&output.stderr));
-        });
-        (output.status.code(), report)
+            .args(queries);
+        command
     }
 
     fn entries(&self) -> Vec<PathBuf> {
-        let mut entries: Vec<_> = std::fs::read_dir(self.cache().join("anim-pairs-1"))
+        let mut entries: Vec<_> = std::fs::read_dir(self.cache().join("anim-pairs-2"))
             .unwrap()
             .map(|e| e.unwrap().path())
             .collect();
@@ -158,6 +162,124 @@ fn verified_pairs_are_reused_only_for_the_same_query_bytes_and_settings() {
     assert_eq!(prepared.entries().len(), 20);
 }
 
+#[test]
+fn unlimited_pair_cache_preserves_producer_limits_across_query_budgets() {
+    let prepared = Prepared::new(NativeCase::Rescue);
+    let (code, first) = prepared.run(
+        "bounded-query",
+        &["--anim-query-seconds", "60"],
+        &[&prepared.query],
+    );
+    assert_eq!(code, Some(0), "{first}");
+    assert_rescued(&first);
+    for pair in first["anim_execution"]["pairs"].as_array().unwrap() {
+        let execution = &pair["record"]["execution"];
+        assert!(execution["configured_pair_timeout"].is_null());
+        assert_eq!(
+            execution["effective_pair_timeout"],
+            execution["remaining_query_budget"]
+        );
+        assert!(execution["effective_pair_timeout"].is_object());
+    }
+    for (name, extra) in [
+        ("larger-query", vec!["--anim-query-seconds", "120"]),
+        ("unlimited-query", vec![]),
+    ] {
+        let (code, again) = prepared.run(name, &extra, &[&prepared.query]);
+        assert_eq!(code, Some(0), "{again}");
+        assert_rescued(&again);
+        assert_eq!(statuses(&again), ["reused"; 5]);
+        for (producer, reused) in first["anim_execution"]["pairs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .zip(again["anim_execution"]["pairs"].as_array().unwrap())
+        {
+            assert_eq!(producer["record"], reused["record"]);
+            assert_eq!(
+                producer["cache"]["key_sha256"],
+                reused["cache"]["key_sha256"]
+            );
+            let admission = &reused["current_admission"];
+            assert!(admission["charged_duration"].is_object());
+            assert_eq!(
+                admission["effective_pair_timeout"].is_null(),
+                extra.is_empty()
+            );
+        }
+    }
+    // A former namespace remains untouched and cannot satisfy current lookups.
+    let old = prepared.cache().join("anim-pairs-1");
+    std::fs::create_dir(&old).unwrap();
+    std::fs::write(old.join("historical"), b"preserve").unwrap();
+    let (code, report) = prepared.run(
+        "limited-pair",
+        &["--anim-pair-seconds", "1801", "--anim-memory-mib", "6145"],
+        &[&prepared.query],
+    );
+    assert_eq!(code, Some(0), "{report}");
+    assert_eq!(statuses(&report), ["stored"; 5]);
+    assert_eq!(std::fs::read(old.join("historical")).unwrap(), b"preserve");
+}
+
+#[test]
+fn zero_controls_equal_omission_and_do_not_create_a_second_identity() {
+    let prepared = Prepared::new(NativeCase::Rescue);
+    let (code, first) = prepared.run("omitted", &[], &[&prepared.query]);
+    assert_eq!(code, Some(0), "{first}");
+    let (code, zero) = prepared.run(
+        "zero",
+        &["-T", "0", "-Q", "0", "-L", "0"],
+        &[&prepared.query],
+    );
+    assert_eq!(code, Some(0), "{zero}");
+    assert_rescued(&zero);
+    assert_eq!(statuses(&zero), ["reused"; 5]);
+    for report in [&first, &zero] {
+        assert!(report["anim_execution"]["pair_seconds"].is_null());
+        assert!(report["anim_execution"]["query_seconds"].is_null());
+        assert!(report["anim_execution"]["memory_mib"].is_null());
+    }
+}
+
+#[test]
+fn expiry_after_the_last_cache_copy_withholds_query_but_preserves_verified_pairs() {
+    let prepared = Prepared::new(NativeCase::Rescue);
+    let (code, first) = prepared.run("producer", &[], &[&prepared.query]);
+    assert_eq!(code, Some(0), "{first}");
+    let command = prepared.command("deadline", &["-Q", "5"], &[&prepared.query]);
+    let mut child = std::process::Command::new(command.get_program())
+        .args(command.get_args())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+    common::hold_at_artifact(
+        &mut child,
+        &prepared
+            .dir
+            .path()
+            .join("deadline/query-000001/pair-000005"),
+    );
+    let output = child.wait_with_output().unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(
+        report["anim_execution"]["stop_reason"], "query_deadline",
+        "{report}"
+    );
+    assert_eq!(report["species_id"], Value::Null);
+    assert_eq!(report["execution"]["status"], "incomplete");
+    assert_eq!(statuses(&report), ["reused"; 5]);
+    assert_eq!(report["counts"]["completed"], 5);
+    let cache = AnimCache::open(&prepared.cache()).unwrap();
+    for entry in prepared.entries() {
+        let key: CacheKey =
+            serde_json::from_slice(&std::fs::read(entry.join("key.json")).unwrap()).unwrap();
+        assert!(matches!(cache.lookup(&key), Lookup::Hit(_)));
+    }
+}
+
 type Mutation<'a> = Box<dyn Fn(&mut CacheKey) + 'a>;
 
 #[test]
@@ -214,9 +336,17 @@ fn every_key_field_must_match_even_for_an_entry_planted_at_its_address() {
         ),
         (
             "pair timeout",
-            Box::new(|k| k.settings.pair_timeout_nanoseconds += 1),
+            Box::new(|k| k.settings.pair_timeout = Some(std::time::Duration::from_secs(1))),
         ),
-        ("memory", Box::new(|k| k.settings.memory_mib += 1)),
+        ("memory", Box::new(|k| k.settings.memory_mib = Some(4096))),
+        (
+            "execution profile",
+            Box::new(|k| k.settings.execution_profile = "unknown".into()),
+        ),
+        (
+            "inherited cpu",
+            Box::new(|k| k.settings.inherited.get_mut("cpu").unwrap().soft = Some(42)),
+        ),
     ];
     for (label, mutate) in mutations {
         let mut changed = key.clone();
@@ -247,6 +377,9 @@ fn every_key_field_must_match_even_for_an_entry_planted_at_its_address() {
             "native build",
             "implementation version",
             "memory",
+            "pair timeout",
+            "execution profile",
+            "inherited cpu",
         ];
         if bound_by_record.contains(&label) {
             assert!(
@@ -269,7 +402,7 @@ fn a_tampered_entry_is_rejected_measured_again_and_left_in_place() {
         .to_owned();
     let filter = prepared
         .cache()
-        .join("anim-pairs-1")
+        .join("anim-pairs-2")
         .join(&target)
         .join("pair/QR/native.filter");
     let mut bytes = std::fs::read(&filter).unwrap();
@@ -335,7 +468,7 @@ fn failed_pairs_never_enter_the_cache() {
     for pair in &failed {
         assert_eq!(pair["cache"]["status"], "not_stored");
         let key = pair["cache"]["key_sha256"].as_str().unwrap();
-        assert!(!prepared.cache().join("anim-pairs-1").join(key).exists());
+        assert!(!prepared.cache().join("anim-pairs-2").join(key).exists());
     }
     let stored = statuses(&report).iter().filter(|s| *s == "stored").count();
     assert_eq!(prepared.entries().len(), stored);
