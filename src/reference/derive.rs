@@ -46,8 +46,12 @@ pub(super) fn check(
     tables: &Tables,
     assets: &[Asset],
     held: &BTreeMap<&str, Vec<u8>>,
+    flavour: super::flavour::Flavour,
 ) -> Result<(), PackageError> {
-    let expected = Derivation::new(source, tables, assets, held)?.manifest()?;
+    let mut expected = Derivation::new(source, tables, assets, held)?.manifest()?;
+    expected["schema_version"] = flavour.source_schema().into();
+    expected["release_state"] = flavour.release_state().into();
+    expected["path_semantics"] = flavour.path_semantics().into();
     match first_difference(&expected, source, "source manifest") {
         None => Ok(()),
         Some(place) => Err(inconsistent(format!(

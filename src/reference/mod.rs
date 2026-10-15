@@ -13,6 +13,7 @@
 
 pub mod anim;
 mod derive;
+mod flavour;
 mod index;
 mod manifest;
 mod model;
@@ -198,7 +199,10 @@ pub fn verify_package(
     if let Some(record) = &manifest.converted_from {
         manifest.check_conversion(&held[record.path.as_str()], &raw)?;
     }
-    let source_manifest = SourceManifest::parse(&held[manifest.source_manifest.path.as_str()])?;
+    let source_manifest = SourceManifest::parse(
+        &held[manifest.source_manifest.path.as_str()],
+        manifest.flavour(),
+    )?;
     source_manifest.check_identity(&manifest)?;
     source_manifest
         .check_attestation(&held[manifest.export_validation.path.as_str()], &manifest)?;
@@ -215,14 +219,20 @@ pub fn verify_package(
     let licence = manifest::licence(&held[manifest.licence.path.as_str()], &manifest)?;
     check_pins(&manifest.assets, pins)?;
     let tables = tables::Tables::load(&manifest.assets, &held)?;
-    derive::check(&source_manifest.value, &tables, &manifest.assets, &held)?;
+    derive::check(
+        &source_manifest.value,
+        &tables,
+        &manifest.assets,
+        &held,
+        manifest.flavour(),
+    )?;
     let metadata = model::Metadata::from_checked(&source_manifest.value, &manifest.assets)?;
 
     Ok(VerifiedPackage {
         package: PackageIdentity {
             id: manifest.package_id.clone(),
             version: manifest.package_version.clone(),
-            schema_version: manifest::PACKAGE_SCHEMA.to_string(),
+            schema_version: manifest.schema_version.clone(),
             release_state: manifest.release_state.clone(),
             trust_basis: manifest.trust_basis.clone(),
             manifest_sha256,

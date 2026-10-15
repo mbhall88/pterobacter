@@ -38,6 +38,14 @@ fn default_never_falls_back_when_fastas_are_missing() {
                 .as_object_mut()
                 .unwrap()
                 .remove("wall_seconds");
+            let path = value["data_provenance"]["anim_evidence_directory"]
+                .as_str()
+                .unwrap();
+            assert!(std::path::Path::new(path).is_dir());
+            value["data_provenance"]
+                .as_object_mut()
+                .unwrap()
+                .remove("anim_evidence_directory");
             results.push(value);
         }
         assert_eq!(results[0], results[1]);

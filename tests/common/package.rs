@@ -208,6 +208,7 @@ impl Synthetic {
 
     /// The same package as a native version 2 export, without a conversion record.
     pub fn without_conversion(&mut self) {
+        self.conversion_follows = false;
         self.files.remove(CONVERTED_FROM_PATH);
         self.manifest
             .as_object_mut()
@@ -238,7 +239,9 @@ impl Synthetic {
             "licence",
             "converted_from",
         ] {
-            update(&mut self.manifest[key]);
+            if let Some(record) = self.manifest.get_mut(key) {
+                update(record);
+            }
         }
         for asset in self.manifest["assets"]
             .as_array_mut()

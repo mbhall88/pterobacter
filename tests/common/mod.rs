@@ -2,6 +2,7 @@
 #![allow(dead_code)] // each test crate uses a different subset
 
 pub mod assembly;
+pub mod database;
 pub mod mlst;
 pub mod native;
 pub mod p1;

@@ -50,6 +50,14 @@ impl Mlst {
         }
     }
 
+    pub fn unavailable(error: String) -> Self {
+        Self {
+            directory: PathBuf::new(),
+            expected_sha256: String::new(),
+            scheme: OnceLock::from(Err(error)),
+        }
+    }
+
     /// The `mlst` report field when an earlier stage stopped the input before MLST could run.
     pub fn not_run(&self, stage: &str) -> Value {
         failed(

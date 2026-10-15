@@ -26,7 +26,9 @@ fn observe(name: &str, args: &[&str]) -> Observed {
         .output()
         .expect("command should run");
     let hide_name = |bytes: &[u8]| {
-        String::from_utf8_lossy(bytes).replace(&format!("Usage: {name}"), "Usage: <command>")
+        String::from_utf8_lossy(bytes)
+            .replace(&format!("Usage: {name}"), "Usage: <command>")
+            .replace(&format!("       {name} "), "       <command> ")
     };
     Observed {
         code: output.status.code(),
@@ -79,12 +81,10 @@ fn both_commands_give_the_same_output_and_exit_status() {
 }
 
 #[test]
-fn help_shows_the_approved_interface_without_subcommands() {
+fn help_shows_the_approved_classification_and_database_interfaces() {
     let output = command("ptero").arg("--help").output().unwrap();
     let help = String::from_utf8(output.stdout).unwrap();
 
-    // Assemblies are optional on the command line only because a list or sheet can supply them.
-    assert!(help.contains("Usage: ptero [OPTIONS] --reference-package <REFERENCE_PACKAGE> --expected-sha256 <EXPECTED_SHA256> [ASSEMBLY]..."), "{help}");
     assert!(
         help.contains(
             "Give assemblies as arguments, or list them with -f/--input-list or -F/--sample-sheet."
@@ -92,13 +92,17 @@ fn help_shows_the_approved_interface_without_subcommands() {
         "{help}"
     );
     assert!(
-        !help.contains("Commands:"),
-        "the public command has no subcommands:\n{help}"
+        help.contains("Usage: ptero [OPTIONS] [ASSEMBLY]..."),
+        "{help}"
+    );
+    assert!(
+        help.contains("Commands:") && help.contains("database"),
+        "the public command exposes managed database operations:\n{help}"
     );
 }
 
 #[test]
-fn an_assembly_run_requires_an_explicit_reference_package_and_digest() {
+fn an_assembly_run_without_a_pinned_default_requires_an_explicit_package_or_version() {
     for name in COMMANDS {
         let output = command(name).arg("query.fa").output().unwrap();
         assert_eq!(output.status.code(), Some(2));

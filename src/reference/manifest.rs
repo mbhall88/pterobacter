@@ -9,12 +9,8 @@ use serde_json::Value;
 
 use super::{inconsistent, json_record, Asset, Licence, PackageError, MANIFEST_PATH};
 
-pub(super) const PACKAGE_SCHEMA: &str = "2.0.0-dev-portable-reference-package";
 pub(super) const V1_PACKAGE_SCHEMA: &str = "1.0.0-dev-portable-reference-package";
 pub(super) const LICENCE_SCHEMA: &str = "2.0.0-reference-licence-manifest";
-pub(super) const RELEASE_STATE: &str = "development_proposal_not_distributable";
-pub(super) const TRUST_BASIS: &str =
-    "expected_package_digest_and_export_attestation_not_authenticated_release";
 
 /// A file the manifest attests by its own entry rather than in `assets`.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
@@ -41,7 +37,7 @@ impl Record {
 #[serde(deny_unknown_fields)]
 pub(super) struct Portable {
     #[allow(dead_code)] // checked by json_record before the rest is read
-    schema_version: String,
+    pub(super) schema_version: String,
     pub(super) package_id: String,
     pub(super) package_version: String,
     pub(super) release_state: String,
@@ -57,11 +53,18 @@ pub(super) struct Portable {
 
 impl Portable {
     pub(super) fn parse(bytes: &[u8]) -> Result<Self, PackageError> {
-        let portable: Self = json_record(bytes, MANIFEST_PATH, PACKAGE_SCHEMA)?;
-        if portable.release_state != RELEASE_STATE || portable.trust_basis != TRUST_BASIS {
-            return Err(inconsistent(format!(
-                "{MANIFEST_PATH} names another release state or trust basis"
-            )));
+        let value: Value = serde_json::from_slice(bytes)
+            .map_err(|e| inconsistent(format!("{MANIFEST_PATH}: {e}")))?;
+        let schema = value["schema_version"]
+            .as_str()
+            .ok_or_else(|| inconsistent("portable schema_version is not text"))?;
+        let flavour = super::flavour::Flavour::from_schema(schema)?;
+        let portable: Self = json_record(bytes, MANIFEST_PATH, schema)?;
+        flavour.check(&portable.release_state, &portable.trust_basis)?;
+        if flavour == super::flavour::Flavour::Public && portable.converted_from.is_some() {
+            return Err(inconsistent(
+                "public flavour cannot carry a development v1 conversion record",
+            ));
         }
         if portable.positive_calling_policy_enabled {
             return Err(inconsistent(format!(
@@ -69,6 +72,10 @@ impl Portable {
             )));
         }
         Ok(portable)
+    }
+
+    pub(super) fn flavour(&self) -> super::flavour::Flavour {
+        super::flavour::Flavour::from_schema(&self.schema_version).expect("verified schema")
     }
 
     /// The records attested outside `assets`, in the order they are verified.

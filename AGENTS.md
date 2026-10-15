@@ -20,7 +20,7 @@ Run a single test file with `cargo test --test <name>`. Add `--all-features` for
 - One crate. Do not add a second crate or publish the library separately.
 - Decision logic (`src/evidence.rs`, `src/annotations.rs`, `src/panel.rs`, `src/reference/`, `src/decision.rs`, `src/rescue/`, `src/genomovar.rs`, `src/mlst/`, `src/report.rs`) is pure. No terminal parsing, filesystem or process code goes in it, so a browser or GUI front end can reuse it. Files, flags and exit codes live in `src/cli.rs`, and in `src/dev.rs` for the development binary.
 - Evaluation-only operations belong in the `pterobacter-dev` binary behind the `dev` feature. Never expose them from `ptero` or `pterobacter`, and keep the feature out of default builds and installs.
-- The public command is `ptero [OPTIONS] <ASSEMBLY>...` with no subcommands.
+- Classification uses `ptero [OPTIONS] <ASSEMBLY>...`. Public database install/list/verify subcommands are authorized by issue #39; their I/O stays in `src/cli/database/`. See `docs/databases.md` for catalogue and activation rules.
 
 ## What must not enter this repository
 

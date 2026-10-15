@@ -46,7 +46,7 @@ Vocabulary for the Pterobacter tool, which classifies Enterobacter isolate assem
 
 **Rejection witness**: A measured member below 99.50% that excludes its group, listed in the group's `below_threshold`. Only a rejection witness excludes a rival; missing evidence never does.
 
-**Query label**: The assembly path as supplied, or as resolved from a list, that is read and passed to skani as the query's name. skani's tie ordering depends on it, so it is reported as `input.file` and never replaced.
+**Query label**: The assembly path as supplied, or as resolved from a list, that is read and passed to skani as the query's name. It is reported as `input.file` and never replaced by a sample name. Exact orientation-score ties use sketch content, so changing a filename does not select the measurement orientation.
 
 **Sample name**: A user-supplied reporting name for one input, from `--sample-name` or a sample sheet. It labels reports only; it is never a query label, an output path or part of a decision.
 

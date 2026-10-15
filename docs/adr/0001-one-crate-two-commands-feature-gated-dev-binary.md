@@ -19,3 +19,15 @@ Terobacter needs a user command, plus evaluation-only operations that must never
 - `tests/layout.rs` fails if the development binary loses its feature gate or a third default binary appears.
 - Adding an evaluation operation means adding a subcommand to `terobacter-dev`, not to `tero`.
 - All development code lives in `src/dev.rs`, which `lib.rs` declares behind `#[cfg(feature = "dev")]`.
+
+
+## Amendment, 15 October 2026
+
+Issue #39 and its reviewed distribution contract authorize public
+`ptero database install VERSION`, `database list` and `database verify VERSION`.
+Assembly classification remains `ptero [OPTIONS] <ASSEMBLY>...`; evaluation
+operations remain confined to the development binary. The public executable
+names are now `ptero` and `pterobacter`, with the internal library still named
+`terobacter`. Managed database transport, files and CLI parsing live in
+`src/cli/database/`; scientific loaders remain pure. See
+[database management](../databases.md) for trust, lifecycle and filesystem rules.

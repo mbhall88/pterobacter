@@ -1,5 +1,8 @@
 # Whole-assembly classification
 
+For managed provisioning and automatic FASTA/evidence resolution, see
+[database management](databases.md). Explicit package paths below remain supported.
+
 `ptero` and `pterobacter` accept one or more isolate assembly FASTAs, without a subcommand:
 
 ```sh
@@ -10,7 +13,7 @@ pterobacter --no-anim --reference-package reference --expected-sha256 MANIFEST_S
   --jobs 2 --threads 4 --output batch.json first.fa second.fa
 ```
 
-Use the SHA-256 of `portable.json` supplied through a trusted package handoff. Computing a digest from an untrusted package does not establish its origin. The command verifies every listed asset, package metadata and component membership before opening the embedded skani database, and checks the package again before writing results. A provisioned run needs no network or external executable: no dependency is a network client, the source opens no socket, and where unprivileged namespaces are available, the test suite runs skani with MLST and a boundary ANIm analysis inside a network namespace that has no interface but loopback. Archived search labels are provenance labels; no archived FASTA is opened.
+Use the SHA-256 of `portable.json` supplied through a trusted package handoff. Computing a digest from an untrusted package does not establish its origin. The command verifies every listed asset, package metadata and component membership before opening the embedded skani database, and checks the package again before writing results. Classification from installed or explicit packages makes no network requests and needs no external executable. The HTTPS client is confined to database installation; where unprivileged namespaces are available, tests run skani with MLST and boundary ANIm inside a network namespace with only an unconfigured loopback interface. Archived search labels are provenance labels; no archived FASTA is opened.
 
 ## ANIm near the species boundary
 
@@ -18,7 +21,7 @@ Pterobacter first estimates ANI with skani. For eligible samples just below the 
 
 The standard thresholds are skani ANI ≥96% for species and ≥98% for subspecies, both aligned fractions ≥80%, and a subspecies margin ≥1 percentage point. ANIm is considered when 94.5% ≤ maximum skani ANI <96%, subject to coverage and other safeguards. An ANIm-supported assignment requires ANI strictly greater than 96% in both directions and completed required competitor comparisons. It assigns species only; subspecies and genomovar stay unset.
 
-Supply the [matching reference FASTAs and evidence directory](#boundary-anim). Database-managed setup is planned in [issue39](https://github.com/mbhall88/pterobacter/issues/39); these explicit paths and digests are still required by the current build. MLST remains optional. [Genomovar reporting](genomovar.md) depends on an eligible parent call. No query CheckM2 is run.
+A [managed database](databases.md) supplies matching reference FASTAs and creates an evidence directory automatically. Alternatively, provide the [explicit package paths and evidence directory](#boundary-anim). MLST remains optional. [Genomovar reporting](genomovar.md) depends on an eligible parent call. No query CheckM2 is run.
 
 `--no-anim` cannot be combined with custom ANI thresholds or alignment-specific options. It avoids MUMmer4 at runtime; building still requires the embedded aligner's C++ dependencies. See [all options](cli-help.md).
 
@@ -26,11 +29,11 @@ Supply the [matching reference FASTAs and evidence directory](#boundary-anim). D
 
 Supply isolate assembly FASTAs. FASTQ, empty input, empty records, missing identifiers, malformed FASTA and non-IUPAC nucleotide sequences fail. Needletail's supported compressed FASTA formats are accepted. Record headers must be UTF-8; duplicate headers remain separate records identified by ordinal.
 
-All supplied records are passed to skani without plasmid filtering or trimming. Its pinned profile ignores records shorter than 500 bases when constructing sketches. `input.total_bases` and `input.records` include those records; `measurement.sketched_bases` shows the engine denominator. Eligibility by length does not guarantee informative sketch anchors. Sequence hashes cover each parser-emitted sequence as supplied, with case preserved and line breaks removed. `input.query_sha256` covers the exact file bytes, including compression when present. The engine measures the byte snapshot that was hashed and validated. The original query path string, recorded in `input.file`, also reaches skani: its upstream orientation tie rule uses that label. Preserve query and reference labels when replaying native evidence.
+All supplied records are passed to skani without plasmid filtering or trimming. Its pinned profile ignores records shorter than 500 bases when constructing sketches. `input.total_bases` and `input.records` include those records; `measurement.sketched_bases` shows the engine denominator. Eligibility by length does not guarantee informative sketch anchors. Sequence hashes cover each parser-emitted sequence as supplied, with case preserved and line breaks removed. `input.query_sha256` covers the exact file bytes, including compression when present. The engine measures the byte snapshot that was hashed and validated. The resolved query path, recorded in `input.file`, also reaches skani as a provenance label. Exact orientation-score ties use sketch content, so filenames do not select the measurement orientation. Preserve the original labels when replaying historical evidence from an older engine profile.
 
 ## Optional historical MLST
 
-MLST runs only on request: pass a historical scheme package directory and the SHA-256 of its `manifest.json`, from a trusted source, together.
+MLST runs only on request. Use `--mlst` with a managed database that includes the optional typing component. For explicit setup, pass a scheme package directory and the trusted SHA-256 of its `manifest.json` together:
 
 ```sh
 ptero --reference-package reference --expected-sha256 MANIFEST_SHA256 \

@@ -2,8 +2,8 @@
 //! sheet. Every mapping is checked before any output is created.
 //!
 //! A sample name is report metadata only. The path an input resolves to is what is read and
-//! what skani receives as the query label, exactly as a positional path would be, because
-//! skani's tie ordering depends on that label.
+//! what skani receives as the query label for provenance, exactly as a positional path would
+//! be. Measurement orientation ties are resolved by sketch content, not by that label.
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
 use std::fs;

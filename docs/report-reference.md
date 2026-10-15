@@ -15,9 +15,19 @@ Use this reference to check exact output fields, evidence completeness and versi
 
 The TSV and Markdown files are produced from the JSON. They state the same final calls, reasons, settings, minima and method, and they cannot show a label the JSON does not assign. If you find a difference, the JSON is right, and the difference is a bug worth reporting.
 
+### Data selection
+
+Native reports add `data_provenance`: the actual reference trust source, selected
+catalogue/release/citation when managed, explicit or catalogue-derived component
+pins, typing request status and the retained ANIm evidence directory. Each
+rescue-mode run uses a unique directory unless an explicit new output path is
+supplied. This path and catalogue metadata are transport provenance, separate
+from scientific measurements and package identities. Markdown includes the same
+selection metadata. See [database management](databases.md).
+
 ### Input identity and sample names
 
-`input.file` is the assembly path that was read. It is also the query label given to skani, whose tie ordering depends on it. `input.query_sha256` and the per-record hashes under `input.records` identify the bytes and sequences, and `input.ordinal` gives the position in the run.
+`input.file` is the assembly path that was read. It is also retained as the skani query label for provenance. Exact orientation-score ties use sketch content, so filenames do not select the measurement orientation. `input.query_sha256` and the per-record hashes under `input.records` identify the bytes and sequences, and `input.ordinal` gives the position in the run.
 
 `input.sample_name` holds the name given with `--sample-name` or in a sample sheet, and is null otherwise. It is reporting metadata only and takes no part in the analysis. `input.source` records where the path came from: `{"kind": "positional"}` for a command-line argument, or the kind `input_list` or `sample_sheet` with the list's `file`, the 1-based `line` and the `entry` exactly as written there. A relative entry is resolved against the list's directory to give `input.file`.
 

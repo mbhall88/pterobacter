@@ -7,6 +7,7 @@ use std::{
     io::{Read, Write},
     os::unix::{
         ffi::OsStrExt,
+        fs::OpenOptionsExt,
         process::{CommandExt, ExitStatusExt},
     },
     path::Path,
@@ -160,6 +161,31 @@ fn wait_file(path: &Path, worker: &mut Worker) {
             panic!("worker exited {status}: {}", worker.stderr());
         }
         assert!(start.elapsed() < Duration::from_secs(10));
+        std::thread::sleep(Duration::from_millis(5));
+    }
+}
+
+/// Keep a writer open only after the child has entered its FIFO read. Directory
+/// creation precedes worker startup, so it is not a readiness handshake.
+fn hold_fifo_reader(path: &Path, worker: &mut Worker) -> std::fs::File {
+    let start = Instant::now();
+    loop {
+        match std::fs::OpenOptions::new()
+            .write(true)
+            .custom_flags(libc::O_NONBLOCK)
+            .open(path)
+        {
+            Ok(writer) => return writer,
+            Err(error) if error.raw_os_error() == Some(libc::ENXIO) => {}
+            Err(error) => panic!("FIFO handshake failed: {error}"),
+        }
+        if let Some(status) = worker.0.try_wait().unwrap() {
+            panic!(
+                "coordinator exited before reading {status}: {}",
+                worker.stderr()
+            );
+        }
+        assert!(start.elapsed() < Duration::from_secs(10), "no FIFO reader");
         std::thread::sleep(Duration::from_millis(5));
     }
 }
@@ -385,6 +411,7 @@ fn repeated_interrupt_or_termination_stops_a_coordinator_blocked_in_io() {
                 .unwrap(),
         );
         wait_file(&output, &mut coordinator);
+        let _writer = hold_fifo_reader(&directory.path().join("blocked.fa"), &mut coordinator);
         unsafe {
             libc::kill(coordinator.0.id() as i32, signal);
         }
@@ -482,6 +509,7 @@ fn repeated_public_signals_do_not_publish_a_partial_report_file() {
                 .unwrap(),
         );
         wait_file(&evidence, &mut coordinator);
+        let _writer = hold_fifo_reader(&directory.path().join("blocked.fa"), &mut coordinator);
         unsafe {
             libc::kill(coordinator.0.id() as i32, signal);
         }
