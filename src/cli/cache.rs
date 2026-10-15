@@ -5,7 +5,11 @@
 //! and the settings that can change whether a pair completes. The saved pair is then verified
 //! again as [`verify_pair`] verifies any saved record. Entries are written once by renaming a
 //! complete staging directory into place; an existing entry, valid or not, is never replaced.
-use crate::anim::{hash_bytes, verify_pair, ExpectedPair, Method, PairRecord, PairRequest};
+use crate::anim::{
+    hash_bytes,
+    limits::{Execution, Restrictions, EXECUTION_PROFILE},
+    verify_pair, ExpectedPair, Method, PairRecord, PairRequest,
+};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io;
@@ -13,9 +17,9 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
-pub const KEY_SCHEMA: &str = "terobacter.anim-cache-key/1";
+pub const KEY_SCHEMA: &str = "terobacter.anim-cache-key/2";
 /// Entries live under this directory of the cache root, so a later key schema can sit beside it.
-const ENTRIES: &str = "anim-pairs-1";
+const ENTRIES: &str = "anim-pairs-2";
 
 /// Everything that must match for a saved pair to stand for a new measurement.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -55,17 +59,16 @@ pub struct ReferenceKey {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SettingsKey {
-    pub pair_timeout_nanoseconds: u64,
-    pub memory_mib: u64,
+    pub execution_profile: String,
+    #[serde(deserialize_with = "crate::anim::limits::required_option")]
+    pub pair_timeout: Option<Duration>,
+    #[serde(deserialize_with = "crate::anim::limits::required_option")]
+    pub memory_mib: Option<u64>,
+    pub inherited: Restrictions,
 }
 
 impl CacheKey {
-    pub fn new(
-        query_sha256: &str,
-        reference: ReferenceKey,
-        pair_timeout: Duration,
-        memory_mib: u64,
-    ) -> Self {
+    pub fn new(query_sha256: &str, reference: ReferenceKey, execution: &Execution) -> Self {
         Self {
             schema: KEY_SCHEMA.into(),
             query: QueryKey {
@@ -76,9 +79,10 @@ impl CacheKey {
             reference,
             method: Method::identity(),
             settings: SettingsKey {
-                pair_timeout_nanoseconds: u64::try_from(pair_timeout.as_nanos())
-                    .unwrap_or(u64::MAX),
-                memory_mib,
+                execution_profile: execution.profile.clone(),
+                pair_timeout: execution.configured_pair_timeout,
+                memory_mib: execution.memory_mib,
+                inherited: execution.inherited.clone(),
             },
         }
     }
@@ -183,7 +187,9 @@ impl AnimCache {
         let result = (|| -> Result<Stored, String> {
             fs::create_dir(&staging).map_err(|e| e.to_string())?;
             copy_tree(pair, &staging.join("pair")).map_err(|e| e.to_string())?;
-            verify_pair(&staging.join("pair"), &key.expected_pair()).map_err(|e| e.to_string())?;
+            let record = verify_pair(&staging.join("pair"), &key.expected_pair())
+                .map_err(|e| e.to_string())?;
+            record_matches(&staging.join("pair"), &record, key)?;
             let mut text = serde_json::to_vec_pretty(key).map_err(|e| e.to_string())?;
             text.push(b'\n');
             fs::write(staging.join("key.json"), text).map_err(|e| e.to_string())?;
@@ -217,10 +223,17 @@ fn record_matches(pair: &Path, record: &PairRecord, key: &CacheKey) -> Result<()
     let request: PairRequest = fs::read(pair.join("request.json"))
         .map_err(|e| e.to_string())
         .and_then(|bytes| serde_json::from_slice(&bytes).map_err(|e| e.to_string()))?;
-    // A pair may run with less than the configured limit when the query budget is nearly
-    // spent, never with more.
-    if request.memory_mib != key.settings.memory_mib
-        || request.timeout > Duration::from_nanos(key.settings.pair_timeout_nanoseconds)
+    let execution = request
+        .execution
+        .as_ref()
+        .ok_or("historical execution cannot enter the new cache")?;
+    execution.validate().map_err(|e| e.to_string())?;
+    if key.schema != KEY_SCHEMA
+        || key.settings.execution_profile != EXECUTION_PROFILE
+        || execution.profile != key.settings.execution_profile
+        || execution.configured_pair_timeout != key.settings.pair_timeout
+        || execution.memory_mib != key.settings.memory_mib
+        || execution.inherited != key.settings.inherited
     {
         return Err("saved limits differ from the entry key".into());
     }

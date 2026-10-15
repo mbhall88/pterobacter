@@ -265,10 +265,12 @@ struct AnimPairArgs {
     expect_query_sha256: Option<String>,
     #[arg(long)]
     expect_reference_sha256: Option<String>,
-    #[arg(long, default_value_t = 1800)]
-    timeout_seconds: u64,
-    #[arg(long, default_value_t = 6144)]
-    memory_mib: u64,
+    /// Opt-in reciprocal pair seconds; omitted or 0 means unlimited
+    #[arg(long, value_parser = crate::cli::v2::parse_seconds)]
+    timeout_seconds: Option<std::time::Duration>,
+    /// Opt-in worker MiB; omitted or 0 means unlimited
+    #[arg(long, value_parser = crate::cli::v2::parse_memory)]
+    memory_mib: Option<u64>,
 }
 
 const EXIT_FAILURE: u8 = 1;
@@ -378,6 +380,18 @@ pub fn run() -> ExitCode {
                 timeout_seconds,
                 memory_mib,
             } = *args;
+            let timeout = timeout_seconds.filter(|time| !time.is_zero());
+            let memory_mib = memory_mib.filter(|mib| *mib != 0);
+            let execution = crate::anim::limits::inherited().and_then(|inherited| {
+                crate::anim::limits::Execution::new(timeout, None, memory_mib, inherited)
+            });
+            let execution = match execution {
+                Ok(value) => value,
+                Err(error) => {
+                    eprintln!("error: {error}");
+                    return ExitCode::FAILURE;
+                }
+            };
             let request = crate::anim::PairRequest {
                 query,
                 reference,
@@ -388,8 +402,9 @@ pub fn run() -> ExitCode {
                 reference_concept_ids: reference_concept_id,
                 expect_query_sha256,
                 expect_reference_sha256,
-                timeout: std::time::Duration::from_secs(timeout_seconds),
+                timeout,
                 memory_mib,
+                execution: Some(execution),
             };
             unsafe {
                 libc::signal(
@@ -419,8 +434,11 @@ pub fn run() -> ExitCode {
     }
 }
 static CANCELLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
-extern "C" fn cancel_signal(_: libc::c_int) {
+extern "C" fn cancel_signal(signal: libc::c_int) {
     CANCELLED.store(true, std::sync::atomic::Ordering::SeqCst);
+    unsafe {
+        libc::signal(signal, libc::SIG_DFL);
+    }
 }
 
 type Pins = Vec<(PathBuf, String)>;

@@ -455,11 +455,8 @@ fn query_budget_retains_partial_receipts_and_returns_nonzero() {
         "{report}"
     );
     assert_eq!(report["counts"]["attempted"], 0);
-    assert!(prepared
-        .dir
-        .path()
-        .join("receipts/query-000001/query.fa")
-        .exists());
+    // Expiry after planning now stops before copying input or starting any worker.
+    assert_eq!(report["anim_execution"]["stop_reason"], "query_deadline");
     for pair in report["anim_execution"]["pairs"].as_array().unwrap() {
         assert!(std::path::Path::new(pair["directory"].as_str().unwrap())
             .join("result.json")
@@ -676,14 +673,14 @@ fn pair_deadline_before_worker_start_is_failed_and_retained() {
 fn invalid_time_and_memory_limits_are_usage_errors() {
     let prepared = Prepared::new(common::assembly::NativeCase::Rescue);
     for (flag, value) in [
-        ("--anim-pair-seconds", "1801"),
-        ("--anim-query-seconds", "7201"),
+        ("--anim-pair-seconds", "1e300"),
+        ("--anim-query-seconds", "18446744073709551616"),
         ("--anim-pair-seconds", "NaN"),
         ("--anim-query-seconds", "inf"),
-        ("--anim-pair-seconds", "0"),
+        ("--anim-pair-seconds", "-1"),
         ("--anim-query-seconds", "0.00000000001"),
-        ("--anim-memory-mib", "63"),
-        ("--anim-memory-mib", "6145"),
+        ("--anim-memory-mib", "-1"),
+        ("--anim-memory-mib", "18446744073709551615"),
     ] {
         let output = prepared.command().args([flag, value]).output().unwrap();
         assert_eq!(output.status.code(), Some(2), "{flag} {value}");

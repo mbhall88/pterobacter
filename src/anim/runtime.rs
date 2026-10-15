@@ -1,3 +1,4 @@
+use super::limits::{self, Execution, WorkerExecution, WorkerLimits};
 use super::{parse_delta, AnimError, Metrics};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -103,6 +104,8 @@ pub struct Receipt {
     pub cpu_seconds: Option<f64>,
     pub peak_rss_bytes: Option<u64>,
     pub artifacts: BTreeMap<String, String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub execution: Option<WorkerLimits>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -123,6 +126,8 @@ pub struct PairRecord {
     pub query: Option<InputBinding>,
     pub reference: Option<InputBinding>,
     pub method: Method,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub execution: Option<Execution>,
     pub orientations: BTreeMap<String, Orientation>,
     pub error: Option<String>,
 }
@@ -139,8 +144,10 @@ pub struct PairRequest {
     pub reference_concept_ids: Vec<String>,
     pub expect_query_sha256: Option<String>,
     pub expect_reference_sha256: Option<String>,
-    pub timeout: Duration,
-    pub memory_mib: u64,
+    pub timeout: Option<Duration>,
+    pub memory_mib: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub execution: Option<Execution>,
 }
 
 /// Input identities from the caller's current query and reference context.
@@ -325,14 +332,7 @@ pub fn measure_pair(
     request: &PairRequest,
     cancelled: &AtomicBool,
 ) -> Result<PairRecord, AnimError> {
-    if request.timeout.is_zero()
-        || request.timeout > Duration::from_secs(1800)
-        || !(64..=6144).contains(&request.memory_mib)
-    {
-        return Err(invalid(
-            "timeout must be within 0..1800 seconds; worker memory within 64..6144 MiB",
-        ));
-    }
+    validate_request(request)?;
     fs::create_dir(&request.output)?;
     let root = fs::canonicalize(&request.output)?;
     let executable = std::env::current_exe()?;
@@ -342,6 +342,7 @@ pub fn measure_pair(
         query: None,
         reference: None,
         method: Method::current(&executable)?,
+        execution: request.execution.clone(),
         orientations: BTreeMap::new(),
         error: None,
     };
@@ -358,6 +359,7 @@ pub fn measure_pair(
             "query-whole-assembly",
             vec![],
         )?);
+        checkpoint(start, request.timeout, cancelled)?;
         report.reference = Some(snapshot(
             &request.reference,
             &root.join("inputs/reference.fa"),
@@ -367,15 +369,11 @@ pub fn measure_pair(
             &request.reference_component,
             request.reference_concept_ids.clone(),
         )?);
+        checkpoint(start, request.timeout, cancelled)?;
         let query = report.query.as_ref().unwrap();
         let reference = report.reference.as_ref().unwrap();
         for direction in ["QR", "RQ"] {
-            if cancelled.load(Ordering::SeqCst) {
-                return Err(invalid("cancelled"));
-            }
-            if start.elapsed() >= request.timeout {
-                return Err(invalid("reciprocal pair deadline exceeded"));
-            }
+            checkpoint(start, request.timeout, cancelled)?;
             let (native_ref, native_query) = if direction == "QR" {
                 (reference, query)
             } else {
@@ -393,6 +391,9 @@ pub fn measure_pair(
                 receipt: None,
             };
             let work = (|| -> Result<(), AnimError> {
+                let orientation_timeout = request
+                    .timeout
+                    .map(|time| time.saturating_sub(start.elapsed()));
                 let worker = WorkerRequest {
                     reference: if direction == "QR" {
                         "../inputs/reference.native.fa"
@@ -409,10 +410,11 @@ pub fn measure_pair(
                     prefix: "native".into(),
                     memory_mib: request.memory_mib,
                     parent_pid: std::process::id(),
-                    wall_seconds: request
-                        .timeout
-                        .saturating_sub(start.elapsed())
-                        .as_secs_f64(),
+                    wall_seconds: orientation_timeout.map(|time| time.as_secs_f64()),
+                    execution: request.execution.as_ref().map(|pair| WorkerExecution {
+                        pair: pair.clone(),
+                        orientation_timeout,
+                    }),
                 };
                 let receipt = execute(
                     &executable,
@@ -451,6 +453,7 @@ pub fn measure_pair(
                 }
                 .into();
                 orientation.metrics = Some(metrics);
+                checkpoint(start, request.timeout, cancelled)?;
                 Ok(())
             })();
             if let Err(error) = work {
@@ -467,6 +470,7 @@ pub fn measure_pair(
         {
             return Err(invalid("snapshot changed during native execution"));
         }
+        checkpoint(start, request.timeout, cancelled)?;
         Ok(())
     })();
     match result {
@@ -508,9 +512,11 @@ struct WorkerRequest {
     reference: PathBuf,
     query: PathBuf,
     prefix: PathBuf,
-    memory_mib: u64,
+    memory_mib: Option<u64>,
     parent_pid: u32,
-    wall_seconds: f64,
+    wall_seconds: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    execution: Option<WorkerExecution>,
 }
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -539,7 +545,7 @@ fn execute(
     directory: &Path,
     request: &WorkerRequest,
     start: Instant,
-    timeout: Duration,
+    timeout: Option<Duration>,
     cancelled: &AtomicBool,
     implementation_sha256: &str,
 ) -> Result<Receipt, AnimError> {
@@ -577,7 +583,7 @@ fn execute(
         }
         let reason = if cancelled.load(Ordering::SeqCst) {
             Some("cancelled")
-        } else if start.elapsed() >= timeout {
+        } else if timeout.is_some_and(|time| start.elapsed() >= time) {
             Some("reciprocal pair deadline exceeded")
         } else {
             None
@@ -593,6 +599,10 @@ fn execute(
         }
         std::thread::sleep(Duration::from_millis(10));
     };
+    stop_reason = observed_stop(directory, status.signal(), stop_reason);
+    let execution = fs::read(directory.join("limits.json"))
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<WorkerLimits>(&bytes).ok());
     let result = fs::read(directory.join("worker.stdout"))
         .ok()
         .and_then(|bytes| serde_json::from_slice::<WorkerResult>(&bytes).ok());
@@ -603,6 +613,14 @@ fn execute(
     {
         stop_reason = Some("missing or invalid native completion receipt".into());
     }
+    if status.success()
+        && request
+            .execution
+            .as_ref()
+            .is_some_and(|expected| expected.limits().ok().as_ref() != execution.as_ref())
+    {
+        stop_reason = Some("missing or invalid worker limit receipt".into());
+    }
     let mut artifacts = BTreeMap::new();
     for file in [
         "request.json",
@@ -610,6 +628,8 @@ fn execute(
         "worker.stderr",
         "native.delta",
         "native.filter",
+        "limits.json",
+        "stop.json",
     ] {
         let path = directory.join(file);
         if path.is_file() {
@@ -630,6 +650,7 @@ fn execute(
         cpu_seconds: result.as_ref().map(|r| r.cpu_seconds),
         peak_rss_bytes: result.as_ref().map(|r| r.peak_rss_bytes),
         artifacts,
+        execution,
     };
     write_json(&directory.join("receipt.json"), &receipt)?;
     Ok(receipt)
@@ -667,57 +688,45 @@ pub fn run_worker_if_requested() -> Option<ExitCode> {
 }
 fn worker() -> Result<WorkerResult, AnimError> {
     let request: WorkerRequest = serde_json::from_reader(std::io::stdin().lock().take(65536))?;
-    if !(64..=6144).contains(&request.memory_mib)
-        || !request.wall_seconds.is_finite()
-        || request.wall_seconds <= 0.0
-        || request.wall_seconds > 1800.0
-        || request.parent_pid <= 1
-    {
-        return Err(invalid("invalid worker resource limits or parent"));
-    }
-    // Check the parent before and after installing the Linux death signal to
-    // close the race where the coordinator exits before prctl is called.
-    if unsafe { libc::getppid() } as u32 != request.parent_pid {
+    let (deadline, memory_ceiling) = if let Some(execution) = &request.execution {
+        execution.validate()?;
+        if request.memory_mib != execution.pair.memory_mib
+            || request.wall_seconds != execution.orientation_timeout.map(|time| time.as_secs_f64())
+        {
+            return Err(invalid("worker transport differs from execution profile"));
+        }
+        (
+            execution.orientation_timeout,
+            request
+                .memory_mib
+                .map(limits::memory_bytes)
+                .transpose()
+                .map_err(invalid)?,
+        )
+    } else {
+        let time = request
+            .wall_seconds
+            .ok_or_else(|| invalid("missing legacy worker time limit"))?;
+        let memory = request
+            .memory_mib
+            .ok_or_else(|| invalid("missing legacy worker memory limit"))?;
+        if !(64..=6144).contains(&memory) || !time.is_finite() || time <= 0.0 || time > 1800.0 {
+            return Err(invalid("invalid legacy worker resource limits"));
+        }
+        (
+            Some(Duration::from_secs_f64(time)),
+            Some(memory * 1024 * 1024),
+        )
+    };
+    if request.parent_pid <= 1 || unsafe { libc::getppid() } as u32 != request.parent_pid {
         return Err(invalid("worker parent disappeared"));
     }
     #[cfg(target_os = "linux")]
     if unsafe { libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) } != 0 {
         return Err(std::io::Error::last_os_error().into());
     }
-    let parent = request.parent_pid;
-    let deadline = Duration::from_secs_f64(request.wall_seconds);
-    let memory_ceiling = request.memory_mib * 1024 * 1024;
-    std::thread::spawn(move || {
-        let start = Instant::now();
-        loop {
-            if unsafe { libc::getppid() } as u32 != parent
-                || start.elapsed() >= deadline
-                || memory_exceeded(memory_ceiling)
-            {
-                unsafe {
-                    libc::kill(libc::getpid(), libc::SIGKILL);
-                }
-                break;
-            }
-            std::thread::sleep(Duration::from_millis(10));
-        }
-    });
-    let cpu = libc::rlimit {
-        rlim_cur: request.wall_seconds.ceil() as libc::rlim_t,
-        rlim_max: request.wall_seconds.ceil() as libc::rlim_t,
-    };
-    if unsafe { libc::setrlimit(libc::RLIMIT_CPU, &cpu) } != 0 {
-        return Err(std::io::Error::last_os_error().into());
-    }
-    #[cfg(target_os = "linux")]
-    {
-        let limit = libc::rlimit {
-            rlim_cur: memory_ceiling,
-            rlim_max: memory_ceiling,
-        };
-        if unsafe { libc::setrlimit(libc::RLIMIT_AS, &limit) } != 0 {
-            return Err(std::io::Error::last_os_error().into());
-        }
+    if unsafe { libc::getppid() } as u32 != request.parent_pid {
+        return Err(invalid("worker parent disappeared"));
     }
     // Do not allow native crashes to leave large core files.
     let core = libc::rlimit {
@@ -727,6 +736,50 @@ fn worker() -> Result<WorkerResult, AnimError> {
     if unsafe { libc::setrlimit(libc::RLIMIT_CORE, &core) } != 0 {
         return Err(std::io::Error::last_os_error().into());
     }
+    if let Some(execution) = &request.execution {
+        write_json(Path::new("limits.json"), &execution.install()?)?;
+    } else {
+        // Historical transport keeps its recorded bounded execution semantics.
+        let cpu = limits::cpu_seconds(deadline.unwrap()).map_err(invalid)?;
+        let value = libc::rlimit {
+            rlim_cur: cpu,
+            rlim_max: cpu,
+        };
+        if unsafe { libc::setrlimit(libc::RLIMIT_CPU, &value) } != 0 {
+            return Err(std::io::Error::last_os_error().into());
+        }
+        #[cfg(target_os = "linux")]
+        {
+            let value = libc::rlimit {
+                rlim_cur: memory_ceiling.unwrap(),
+                rlim_max: memory_ceiling.unwrap(),
+            };
+            if unsafe { libc::setrlimit(libc::RLIMIT_AS, &value) } != 0 {
+                return Err(std::io::Error::last_os_error().into());
+            }
+        }
+    }
+    let parent = request.parent_pid;
+    std::thread::spawn(move || {
+        let start = Instant::now();
+        loop {
+            let reason = if unsafe { libc::getppid() } as u32 != parent {
+                Some("worker parent disappeared")
+            } else if deadline.is_some_and(|time| start.elapsed() >= time) {
+                Some("worker wall deadline exceeded")
+            } else {
+                memory_ceiling.and_then(memory_exceeded)
+            };
+            if let Some(reason) = reason {
+                let _ = write_json(Path::new("stop.json"), &reason);
+                unsafe {
+                    libc::kill(libc::getpid(), libc::SIGKILL);
+                }
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        }
+    });
     let strings = [&request.reference, &request.query, &request.prefix]
         .map(|p| CString::new(p.as_os_str().as_bytes()).map_err(|_| invalid("NUL in native path")));
     let [reference, query, prefix] = strings;
@@ -763,7 +816,7 @@ fn worker() -> Result<WorkerResult, AnimError> {
     } else {
         peak.checked_mul(1024).ok_or(AnimError::Overflow)?
     };
-    if peak_rss_bytes > memory_ceiling {
+    if memory_ceiling.is_some_and(|limit| peak_rss_bytes > limit) {
         return Err(invalid("native worker exceeded memory ceiling"));
     }
     Ok(WorkerResult {
@@ -775,13 +828,13 @@ fn worker() -> Result<WorkerResult, AnimError> {
 }
 
 #[cfg(target_os = "linux")]
-fn memory_exceeded(_: u64) -> bool {
-    false
+fn memory_exceeded(_: u64) -> Option<&'static str> {
+    None
 }
 
 #[cfg(target_os = "macos")]
 #[allow(deprecated)] // libc supplies this small Mach ABI; no additional native crate.
-fn memory_exceeded(ceiling: u64) -> bool {
+fn memory_exceeded(ceiling: u64) -> Option<&'static str> {
     // macOS maps a large virtual address range before alignment. RLIMIT_AS
     // below that existing mapping returns EINVAL. Bound peak resident bytes
     // instead, including transient peaks between samples, and fail closed.
@@ -797,13 +850,13 @@ fn memory_exceeded(ceiling: u64) -> bool {
     };
     if code != libc::KERN_SUCCESS {
         eprintln!("error: cannot sample native worker memory");
-        return true;
+        return Some("worker memory sampling failed");
     }
     let exceeded = unsafe { info.assume_init() }.resident_size_max > ceiling;
     if exceeded {
         eprintln!("error: native worker exceeded memory ceiling");
     }
-    exceeded
+    exceeded.then_some("worker peak RSS ceiling exceeded")
 }
 
 /// Validate a saved complete pair before reuse. The caller supplies expected
@@ -849,6 +902,10 @@ pub fn verify_pair(directory: &Path, expected: &ExpectedPair) -> Result<PairReco
         return Err(invalid("input identity/component/concept mismatch"));
     }
     let request: PairRequest = serde_json::from_slice(&fs::read(directory.join("request.json"))?)?;
+    validate_request(&request)?;
+    if report.execution != request.execution {
+        return Err(invalid("pair execution differs from request"));
+    }
     if request.query_id.as_deref().unwrap_or(&query.sha256) != expected.query_id
         || request.reference_id.as_deref().unwrap_or(&reference.sha256) != expected.reference_id
         || request.reference_component != expected.reference_component
@@ -914,12 +971,38 @@ pub fn verify_pair(directory: &Path, expected: &ExpectedPair) -> Result<PairReco
             || receipt.stop_reason.is_some()
             || receipt.native_exit_code != Some(0)
             || receipt.native_error.is_some()
+            || !receipt.wall_seconds.is_finite()
+            || receipt.wall_seconds < 0.0
             || receipt.implementation_sha256 != report.method.implementation_sha256
         {
             return Err(invalid("failed native receipt"));
         }
         let worker: WorkerRequest =
             serde_json::from_slice(&fs::read(directory.join(direction).join("request.json"))?)?;
+        if let Some(execution) = &request.execution {
+            let native = worker
+                .execution
+                .as_ref()
+                .ok_or_else(|| invalid("missing new worker execution profile"))?;
+            native.validate()?;
+            if &native.pair != execution
+                || worker.memory_mib != execution.memory_mib
+                || worker.wall_seconds != native.orientation_timeout.map(|time| time.as_secs_f64())
+                || receipt.execution.as_ref() != Some(&native.limits()?)
+            {
+                return Err(invalid("worker resource bindings differ"));
+            }
+            let saved: WorkerLimits =
+                serde_json::from_slice(&fs::read(directory.join(direction).join("limits.json"))?)?;
+            if receipt.execution.as_ref() != Some(&saved)
+                || receipt.artifacts.get("limits.json")
+                    != Some(&hash_file(&directory.join(direction).join("limits.json"))?)
+            {
+                return Err(invalid("worker limit receipt differs"));
+            }
+        } else if worker.execution.is_some() || receipt.execution.is_some() {
+            return Err(invalid("legacy/new execution metadata mismatch"));
+        }
         let expected_paths = if direction == "QR" {
             ("../inputs/reference.native.fa", "../inputs/query.native.fa")
         } else {
@@ -979,4 +1062,84 @@ pub fn verify_pair(directory: &Path, expected: &ExpectedPair) -> Result<PairReco
         }
     }
     Ok(report)
+}
+
+fn checkpoint(
+    start: Instant,
+    timeout: Option<Duration>,
+    cancelled: &AtomicBool,
+) -> Result<(), AnimError> {
+    if cancelled.load(Ordering::SeqCst) {
+        return Err(invalid("cancelled"));
+    }
+    if timeout.is_some_and(|time| start.elapsed() >= time) {
+        return Err(invalid("reciprocal pair deadline exceeded"));
+    }
+    Ok(())
+}
+fn validate_request(request: &PairRequest) -> Result<(), AnimError> {
+    if let Some(execution) = &request.execution {
+        execution.validate()?;
+        if request.timeout != execution.effective_pair_timeout
+            || request.memory_mib != execution.memory_mib
+        {
+            return Err(invalid("pair request differs from execution profile"));
+        }
+    } else if request
+        .timeout
+        .is_none_or(|time| time.is_zero() || time > Duration::from_secs(1800))
+        || request
+            .memory_mib
+            .is_none_or(|mib| !(64..=6144).contains(&mib))
+    {
+        return Err(invalid("invalid or missing legacy resource limits"));
+    }
+    Ok(())
+}
+
+fn observed_stop(
+    directory: &Path,
+    signal: Option<i32>,
+    observed: Option<String>,
+) -> Option<String> {
+    observed
+        .or_else(|| {
+            fs::read(directory.join("stop.json"))
+                .ok()
+                .and_then(|bytes| serde_json::from_slice::<String>(&bytes).ok())
+        })
+        .or_else(|| signal.map(|_| "unknown/external termination".into()))
+}
+
+#[cfg(test)]
+mod execution_tests {
+    use super::*;
+    #[test]
+    fn signal_alone_never_claims_timeout_or_memory_exhaustion() {
+        let dir = tempfile::tempdir().unwrap();
+        assert_eq!(
+            observed_stop(dir.path(), Some(libc::SIGKILL), None).as_deref(),
+            Some("unknown/external termination")
+        );
+        write_json(
+            &dir.path().join("stop.json"),
+            &"worker wall deadline exceeded",
+        )
+        .unwrap();
+        assert_eq!(
+            observed_stop(dir.path(), Some(libc::SIGKILL), None).as_deref(),
+            Some("worker wall deadline exceeded")
+        );
+        assert_eq!(
+            observed_stop(dir.path(), Some(libc::SIGKILL), Some("cancelled".into())).as_deref(),
+            Some("cancelled")
+        );
+    }
+    #[test]
+    fn post_operation_checkpoint_rejects_expiry_and_cancellation() {
+        let past = Instant::now() - Duration::from_secs(2);
+        assert!(checkpoint(past, Some(Duration::from_secs(1)), &AtomicBool::new(false)).is_err());
+        assert!(checkpoint(past, None, &AtomicBool::new(true)).is_err());
+        assert!(checkpoint(past, None, &AtomicBool::new(false)).is_ok());
+    }
 }

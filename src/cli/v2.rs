@@ -1,7 +1,11 @@
 //! Bounded native execution of the pure rescue plan. No taxonomic rules live here.
 use super::cache::{copy_tree, AnimCache, CacheKey, Lookup, ReferenceKey, Stored};
 use crate::{
-    anim::{self, ExpectedPair, PairRequest},
+    anim::{
+        self,
+        limits::{self, Execution, Restrictions},
+        ExpectedPair, PairRequest,
+    },
     reference::{
         anim::{verify_anim_reference, AnimReference},
         VerifiedPackage,
@@ -31,43 +35,53 @@ pub struct V2Settings {
     /// Directory of verified reciprocal pairs to reuse and extend; created when absent
     #[arg(short = 'c', long)]
     pub anim_cache: Option<PathBuf>,
-    /// Reciprocal pair wall timeout, default 120 seconds, maximum 1800
+    /// Opt-in reciprocal pair wall limit in seconds; omitted or 0 means unlimited
     #[arg(short = 'T', long, value_parser = parse_pair_seconds)]
     pub anim_pair_seconds: Option<Duration>,
-    /// Total ANIm wall budget per query, default 600 seconds, maximum 7200
+    /// Opt-in ANIm-stage budget per assembly in seconds; omitted or 0 means unlimited
     #[arg(short = 'Q', long, value_parser = parse_query_seconds)]
     pub anim_query_seconds: Option<Duration>,
-    /// Native worker memory ceiling, default 1024 MiB, maximum 6144 MiB
-    #[arg(short = 'L', long, value_parser = clap::value_parser!(u64).range(64..=6144))]
+    /// Opt-in native worker ceiling in MiB; omitted or 0 means unlimited
+    #[arg(short = 'L', long, value_parser = parse_memory)]
     pub anim_memory_mib: Option<u64>,
 }
-fn parse_seconds(text: &str, ceiling: f64) -> Result<Duration, String> {
+pub(crate) fn parse_seconds(text: &str) -> Result<Duration, String> {
     let seconds: f64 = text
         .parse()
-        .map_err(|_| "timeout must be a positive finite number of seconds")?;
-    if !seconds.is_finite() || seconds <= 0.0 || seconds > ceiling {
-        return Err(format!(
-            "timeout must be positive and at most {ceiling} seconds"
-        ));
+        .map_err(|_| "limit must be finite nonnegative seconds")?;
+    if !seconds.is_finite() || seconds < 0.0 || (seconds > 0.0 && seconds < 1e-9) {
+        return Err("limit must be zero or finite seconds of at least one nanosecond".into());
     }
     let duration = Duration::try_from_secs_f64(seconds).map_err(|e| e.to_string())?;
-    if duration.is_zero() {
-        return Err("timeout must be at least one nanosecond".into());
+    if !duration.is_zero() {
+        limits::validate_duration(duration)?;
     }
     Ok(duration)
 }
 fn parse_pair_seconds(text: &str) -> Result<Duration, String> {
-    parse_seconds(text, 1800.0)
+    parse_seconds(text)
 }
 fn parse_query_seconds(text: &str) -> Result<Duration, String> {
-    parse_seconds(text, 7200.0)
+    parse_seconds(text)
+}
+pub(crate) fn parse_memory(text: &str) -> Result<u64, String> {
+    let mib = text
+        .parse::<u64>()
+        .map_err(|_| "memory must be nonnegative integer MiB")?;
+    if mib != 0 {
+        limits::memory_bytes(mib)?;
+    }
+    Ok(mib)
 }
 impl V2Settings {
-    fn pair_timeout(&self) -> Duration {
-        self.anim_pair_seconds.unwrap_or(Duration::from_secs(120))
+    fn pair_timeout(&self) -> Option<Duration> {
+        self.anim_pair_seconds.filter(|time| !time.is_zero())
     }
-    fn query_timeout(&self) -> Duration {
-        self.anim_query_seconds.unwrap_or(Duration::from_secs(600))
+    fn query_timeout(&self) -> Option<Duration> {
+        self.anim_query_seconds.filter(|time| !time.is_zero())
+    }
+    fn memory(&self) -> Option<u64> {
+        self.anim_memory_mib.filter(|mib| *mib != 0)
     }
     pub fn supplied(&self) -> bool {
         self.anim_reference_package.is_some()
@@ -102,18 +116,23 @@ pub fn execute(
         bound: BoundAnim::none(),
         plan: Value::Null,
         execution: json!({"method_profile": anim::METHOD_PROFILE, "amendment": anim::AMENDMENT,
-            "diagnostic_origin": "generated", "pair_workers": 1, "query_threads": 1,
-            "pair_seconds": context.settings.pair_timeout().as_secs_f64(),
-            "query_seconds": context.settings.query_timeout().as_secs_f64(),
-            "memory_mib": context.settings.anim_memory_mib.unwrap_or(1024),
+            "diagnostic_origin": "generated", "execution_profile": limits::EXECUTION_PROFILE,
+            "configured_pair_timeout": context.settings.pair_timeout(), "configured_query_budget": context.settings.query_timeout(), "pair_workers": 1, "query_threads": 1,
+            "pair_seconds": context.settings.pair_timeout().map(|time| time.as_secs_f64()),
+            "query_seconds": context.settings.query_timeout().map(|time| time.as_secs_f64()),
+            "memory_mib": context.settings.memory(),
             "pairs": [], "stop_reason": "not_required"}),
         error: None,
     };
     let started = Instant::now();
-    let result = execute_inner(input, package, bytes, context, &mut run);
-    if let Err(error) = result {
-        run.error = Some(error);
-    }
+    let inherited = limits::inherited();
+    let mut result = match inherited {
+        Ok(inherited) => {
+            run.execution["inherited_restrictions"] = json!(inherited);
+            execute_inner(input, package, bytes, context, &mut run, inherited)
+        }
+        Err(error) => Err(error.to_string()),
+    };
     run.execution["wall_seconds"] = json!(started.elapsed().as_secs_f64());
     let omitted = run.plan["requested_pairs"]
         .as_array()
@@ -126,6 +145,15 @@ pub fn execute(
         })
         .unwrap_or_default();
     run.execution["not_run_reference_ids"] = json!(omitted);
+    if result.is_ok() {
+        // Include final reporting work, but not later skani/genomovar/MLST stages.
+        let charged = run.execution["charged_cache_duration"].clone();
+        let charged: Duration = serde_json::from_value(charged).unwrap_or_default();
+        result = query_checkpoint(context, started, charged, &mut run);
+    }
+    if let Err(error) = result {
+        run.error = Some(error);
+    }
     run
 }
 fn execute_inner(
@@ -134,6 +162,7 @@ fn execute_inner(
     bytes: &[u8],
     context: &V2Context<'_>,
     run: &mut NativeRun,
+    inherited: Restrictions,
 ) -> Result<(), String> {
     let start = Instant::now();
     run.plan = input
@@ -145,6 +174,7 @@ fn execute_inner(
         run.execution["stop_reason"] = "cancelled".into();
         return Err("ANIm run interrupted".into());
     }
+    query_checkpoint(context, start, Duration::ZERO, run)?;
     if run.plan["requested_pairs"]
         .as_array()
         .expect("plan pairs")
@@ -164,6 +194,7 @@ fn execute_inner(
         .ok_or("required trusted ANIm manifest digest is missing")?;
     run.execution["stop_reason"] = "component_integrity".into();
     let component = verify_component(directory, expected, package)?;
+    query_checkpoint(context, start, Duration::ZERO, run)?;
     run.execution["reference_component"] = json!({"directory": directory, "manifest_sha256": component.manifest_sha256,
         "reference_package_sha256": component.reference_package_sha256, "licence_sha256": component.licence_sha256});
     run.execution["stop_reason"] = "cache_unavailable".into();
@@ -183,11 +214,12 @@ fn execute_inner(
     let output = fs::canonicalize(output).map_err(|e| e.to_string())?;
     let query = output.join("query.fa");
     fs::write(&query, bytes).map_err(|e| e.to_string())?;
+    query_checkpoint(context, start, Duration::ZERO, run)?;
     let query_sha = anim::hash_bytes(bytes);
     let mut records = AnimRecords::default();
     let budget = settings.query_timeout();
-    // Native time a reused pair took when it was measured. It counts against the budget as
-    // if measured now, so the cache never lets a query finish that could not finish fresh.
+    // Charge recorded native time as a defined admission rule. This is not a prediction
+    // of how long fresh execution would take on this machine.
     let mut reused_time = Duration::ZERO;
     loop {
         run.plan = input
@@ -195,10 +227,7 @@ fn execute_inner(
             .map_err(|e| e.to_string())?
             .to_value()
             .clone();
-        if context.cancelled.load(Ordering::SeqCst) {
-            run.execution["stop_reason"] = "cancelled".into();
-            return Err("ANIm run interrupted".into());
-        }
+        query_checkpoint(context, start, reused_time, run)?;
         if !run.plan["decisive_vetoes"]
             .as_array()
             .expect("veto list")
@@ -216,8 +245,9 @@ fn execute_inner(
             run.execution["stop_reason"] = "plan_complete".into();
             break;
         };
-        let remaining = budget.saturating_sub(start.elapsed() + reused_time);
-        if remaining.is_zero() {
+        let remaining =
+            budget.map(|time| time.saturating_sub(start.elapsed().saturating_add(reused_time)));
+        if remaining.is_some_and(|time| time.is_zero()) {
             run.execution["stop_reason"] = "query_deadline".into();
             return Err("ANIm query wall budget exhausted".into());
         }
@@ -244,8 +274,17 @@ fn execute_inner(
             reference_concept_ids: reference.concept_ids.clone(),
             expect_query_sha256: Some(query_sha.clone()),
             expect_reference_sha256: Some(reference.sha256.clone()),
-            timeout: remaining.min(settings.pair_timeout()),
-            memory_mib: settings.anim_memory_mib.unwrap_or(1024),
+            timeout: limits::minimum(settings.pair_timeout(), remaining),
+            memory_mib: settings.memory(),
+            execution: Some(
+                Execution::new(
+                    settings.pair_timeout(),
+                    remaining,
+                    settings.memory(),
+                    inherited.clone(),
+                )
+                .map_err(|e| e.to_string())?,
+            ),
         };
         run.execution["stop_reason"] = "pair_failure".into();
         let entry = json!({"reference_id": id, "stage": next["stage"], "directory": pair_output, "status": "failed", "record": null});
@@ -265,8 +304,7 @@ fn execute_inner(
                     scope: "whole_assembly_as_deposited".into(),
                     package_sha256: component.reference_package_sha256.clone(),
                 },
-                settings.pair_timeout(),
-                request.memory_mib,
+                request.execution.as_ref().expect("new execution profile"),
             )
         });
         let mut lookup = cache.as_ref().zip(key.as_ref()).map(|(c, k)| c.lookup(k));
@@ -277,7 +315,9 @@ fn execute_inner(
         // A saved pair stands only within the limit this pair runs under now.
         let saved = match lookup.take() {
             Some(Lookup::Hit(saved)) => match native_time(&saved) {
-                Ok(time) if time <= request.timeout => Some((saved, time)),
+                Ok(time) if request.timeout.is_none_or(|limit| time <= limit) => {
+                    Some((saved, time))
+                }
                 Ok(_) => {
                     lookup = Some(Lookup::Rejected(
                         "saved native time exceeds the time now remaining for this pair".into(),
@@ -294,10 +334,20 @@ fn execute_inner(
                 None
             }
         };
+        query_checkpoint(context, start, reused_time, run)?;
         // A reused pair is copied into this query's evidence and verified there like a new one.
         let pair = if let Some((saved, time)) = saved {
             run.execution["pairs"][index]["cache"]["status"] = "reused".into();
-            reused_time += time;
+            run.execution["pairs"][index]["current_admission"] = json!({
+                "remaining_query_budget": remaining, "effective_pair_timeout": request.timeout, "charged_duration": time});
+            reused_time = if budget.is_some() {
+                reused_time
+                    .checked_add(time)
+                    .ok_or("cached time accounting overflow")?
+            } else {
+                Duration::ZERO
+            };
+            run.execution["charged_cache_duration"] = json!(reused_time);
             copy_tree(&saved, &pair_output).map_err(|e| e.to_string())?;
             serde_json::from_slice(
                 &fs::read(pair_output.join("result.json")).map_err(|e| e.to_string())?,
@@ -346,6 +396,7 @@ fn execute_inner(
                 };
             }
         }
+        query_checkpoint(context, start, reused_time, run)?;
         // Failed and partially measured pairs still carry diagnostic evidence. Integrity-rejected
         // complete records are withheld from the decision; actual attempts remain in the receipts.
         if pair.status != "complete" || verified.is_some() {
@@ -374,6 +425,7 @@ fn execute_inner(
     let stop_reason = run.execution["stop_reason"].clone();
     run.execution["stop_reason"] = "component_recheck".into();
     verify_component(directory, expected, package)?;
+    query_checkpoint(context, start, reused_time, run)?;
     run.execution["stop_reason"] = stop_reason;
     run.execution["wall_seconds"] = json!(start.elapsed().as_secs_f64());
     Ok(())
@@ -423,4 +475,25 @@ pub fn cancel_before_publication(reports: &mut [Value], cancelled: &AtomicBool) 
         super::withhold(report);
     }
     true
+}
+
+fn query_checkpoint(
+    context: &V2Context<'_>,
+    start: Instant,
+    reused: Duration,
+    run: &mut NativeRun,
+) -> Result<(), String> {
+    if context.cancelled.load(Ordering::SeqCst) {
+        run.execution["stop_reason"] = "cancelled".into();
+        return Err("ANIm run interrupted".into());
+    }
+    if context
+        .settings
+        .query_timeout()
+        .is_some_and(|budget| start.elapsed().saturating_add(reused) >= budget)
+    {
+        run.execution["stop_reason"] = "query_deadline".into();
+        return Err("ANIm query wall budget exhausted after cooperative checkpoint".into());
+    }
+    Ok(())
 }
