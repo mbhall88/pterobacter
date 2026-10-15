@@ -1912,6 +1912,14 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
+=== filetime 0.2.29 ===
+
+filetime 0.2.29
+Declared licence: MIT/Apache-2.0
+Authors: Alex Crichton <alex@alexcrichton.com>
+Repository: https://github.com/alexcrichton/filetime
+
+
 === find-msvc-tools 0.1.14 ===
 
 find-msvc-tools 0.1.14
@@ -7062,6 +7070,14 @@ syn 3.0.6
 Declared licence: MIT OR Apache-2.0
 Authors: David Tolnay <dtolnay@gmail.com>
 Repository: https://github.com/dtolnay/syn
+
+
+=== tar 0.4.46 ===
+
+tar 0.4.46
+Declared licence: MIT OR Apache-2.0
+Authors: Alex Crichton <alex@alexcrichton.com>
+Repository: https://github.com/composefs/tar-rs
 
 
 === tempfile 3.27.0 ===

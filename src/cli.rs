@@ -1,6 +1,8 @@
 //! Public command parsing, output and exit codes.
 pub mod assembly;
 pub mod cache;
+#[doc(hidden)]
+pub mod database;
 pub mod mlst;
 pub(crate) mod outputs;
 pub mod v2;
