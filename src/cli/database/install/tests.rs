@@ -175,9 +175,7 @@ fn rejects_absolute_traversal_alias_and_windows_paths() {
 
 #[test]
 fn rejects_links_devices_fifos_sparse_and_extension_headers() {
-    for kind in [
-        b'1', b'2', b'3', b'4', b'6', b'7', b'S', b'L', b'K', b'x', b'g',
-    ] {
+    for kind in *b"123467SLKxg" {
         let (mut plan, _) = fixture();
         let bytes = gzip(&raw_tar(&[(
             "sub/data.bin",
@@ -581,4 +579,14 @@ fn exact_archive_root_is_stripped_and_sibling_or_similar_roots_are_refused() {
             clean(root.path());
         }
     }
+}
+
+#[test]
+fn filesystem_capacity_widens_platform_counters_before_multiplication() {
+    assert_eq!(
+        filesystem_bytes(u32::MAX, 4096_u64).unwrap(),
+        u64::from(u32::MAX) * 4096
+    );
+    assert_eq!(filesystem_bytes(u64::MAX, 1_u32).unwrap(), u64::MAX);
+    assert!(filesystem_bytes(u64::MAX, 2_u32).is_err());
 }

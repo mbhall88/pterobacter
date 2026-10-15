@@ -561,11 +561,16 @@ fn available_space(root: &Path) -> io::Result<u64> {
         return Err(io::Error::last_os_error());
     }
     let status = unsafe { status.assume_init() };
-    status
-        .f_bavail
-        .checked_mul(status.f_frsize)
+    filesystem_bytes(status.f_bavail, status.f_frsize)
+}
+// libc uses different unsigned widths across Linux and macOS. Widen both before multiplying.
+fn filesystem_bytes(blocks: impl Into<u64>, block_size: impl Into<u64>) -> io::Result<u64> {
+    blocks
+        .into()
+        .checked_mul(block_size.into())
         .ok_or_else(|| invalid("filesystem size overflow"))
 }
+
 fn rename_no_replace(from: &Path, to: &Path) -> io::Result<()> {
     use std::ffi::CString;
     use std::os::unix::ffi::OsStrExt;
