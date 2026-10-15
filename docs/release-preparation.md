@@ -1,5 +1,7 @@
 # Private release preparation
 
+**Current distribution policy:** the combined executable will be distributed under GPL-3.0-or-later conditions, while Pterobacter-authored source retains MIT. Complete corresponding source and component notices accompany executable distribution; see [licensing and source availability](licensing.md). Publication, final archive verification and platform acceptance remain separate. The measurements below describe the earlier evaluated baseline and are not current release sizes or dependency counts.
+
 The evaluated baseline is `834f4c288e9c163f316f3668f0219004d0adc6da`. Implementation and its frozen evaluation are coordinator-accepted. The software still reports `0.0.0`; the reference data has its separate `2026-10-06.proposal1` identity. The source commit, binary and data-manifest digests, analysis settings and method profile identify a candidate more precisely than the placeholder software version.
 
 ## Measured installation and platform scope
@@ -31,7 +33,7 @@ The current data package retains development-only, not-distributable metadata an
 
 ## Licences and attribution
 
-Pterobacter's own code is MIT. Preserve the [Cargo and native component notices](../THIRD-PARTY-LICENSES.md) in every prepared binary package. The locked Cargo bundle contains 201 crates; supplemental attribution covers 212 source packages and was independently reproduced. The embedded MUMmer4 subset also includes Artistic-2.0 and GPL-3.0-or-later notices. The combined distribution's licensing review remains open; the root MIT licence is not a blanket replacement for component terms.
+Pterobacter's own code is MIT. Preserve the [Cargo and native component notices](../THIRD-PARTY-LICENSES.md) in every prepared binary package. The locked Cargo bundle contains 201 crates; supplemental attribution covers 212 source packages and was independently reproduced. The embedded MUMmer4 subset also includes Artistic-2.0 and GPL-3.0-or-later notices. The root MIT licence is not a blanket replacement for component terms. The approved combined-distribution route and remaining archive checks are described above.
 
 The historical MLST data is a 2026 retrieval of submissions through 31 December 2024, not a 2024 byte snapshot. Pre-2025 data may be redistributed with scientific citation and acknowledgement under [PubMLST's terms](https://pubmlst.org/terms-conditions). The package makes no claim of complete historical coverage or post-2024 currency. Cite the PubMLST resource and the relevant scheme when using it.
 

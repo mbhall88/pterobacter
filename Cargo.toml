@@ -9,7 +9,7 @@ homepage = "https://github.com/mbhall88/pterobacter"
 readme = "README.md"
 keywords = ["bioinformatics", "enterobacter", "classification", "ani", "taxonomy"]
 categories = ["science", "command-line-utilities"]
-license-file = "LICENSE"
+license = "GPL-3.0-or-later"
 # Public release is a later author decision, so accidental publication is blocked.
 publish = false
 
