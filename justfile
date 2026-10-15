@@ -12,10 +12,11 @@ licenses-check:
 lint:
     cargo clippy --all-features --all-targets -- -D warnings
 
-# run all tests, first as a default build and then with the development feature
+# run tests serially so subprocess deadline fixtures do not compete for CPU
+# test bodies that exercise concurrency still spawn their own workers
 test:
-    cargo test -v --all-targets --no-fail-fast
-    cargo test -v --all-targets --all-features --no-fail-fast
+    cargo test -v --all-targets --no-fail-fast -- --test-threads=1
+    cargo test -v --all-targets --all-features --no-fail-fast -- --test-threads=1
 
 # check that a default install exposes only the public commands, then smoke-test them
 install-check:
