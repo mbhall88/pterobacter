@@ -42,7 +42,6 @@ impl Prepared {
             .arg("--reference-package")
             .arg(self.dir.path().join("package"))
             .args(["--expected-sha256", &self.pin])
-            .args(["--policy", "conservative-assembly-anim-v2"])
             .args(["--expected-anim-sha256", &self.anim_pin])
             .arg("--anim-reference-package")
             .arg(self.dir.path().join("fastas"))
@@ -388,6 +387,7 @@ fn concurrent_v2_queries_keep_their_own_evidence_and_share_the_cache_safely() {
 fn v1_refuses_the_anim_cache_option() {
     let prepared = Prepared::new(NativeCase::Rescue);
     let output = cargo_bin_cmd!("tero")
+        .arg("--no-anim")
         .arg("--reference-package")
         .arg(prepared.dir.path().join("package"))
         .args(["--expected-sha256", &prepared.pin])

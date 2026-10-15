@@ -5,8 +5,14 @@ MLST reports the sequence type (ST) from the scheme's allele profile. Here, "his
 MLST is off by default in the current build. To include a sequence type alongside classification, obtain the historical scheme directory and its trusted manifest digest through the private handoff, then pass both options:
 
 ```sh
-tero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256"   --mlst-package mlst --mlst-expected-sha256 "$MLST_SHA256"   --output typed-isolate.json --report-dir typed-isolate-report isolate.fa
+tero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256" \
+  --anim-reference-package "$ANIM_REFERENCE_PACKAGE" --expected-anim-sha256 "$ANIM_SHA256" \
+  --anim-output typed-alignments \
+  --mlst-package mlst --mlst-expected-sha256 "$MLST_SHA256" \
+  --output typed-isolate.json --report-dir typed-isolate-report isolate.fa
 ```
+
+The command uses the default rescue mode and the alignment variables from [reference setup](reference-setup.md). To run skani only, use `--no-anim` and omit the three alignment options.
 
 Set `MLST_SHA256` to the supplied SHA-256 of `mlst/manifest.json`, and use your actual scheme path. MLST runs on the same whole input as classification and never changes the species, subspecies or genomovar result. No separate MLST or BLAST executable is required.
 

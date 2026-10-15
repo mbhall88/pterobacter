@@ -13,12 +13,18 @@ fn write_query(dir: &Path, name: &str, seq: &[u8]) -> PathBuf {
     path
 }
 
-fn v1(dir: &Path, pin: &str) -> assert_cmd::Command {
+fn public_command(dir: &Path, pin: &str) -> assert_cmd::Command {
     let mut command = cargo_bin_cmd!("tero");
     command
         .arg("--reference-package")
         .arg(dir.join("package"))
         .args(["--expected-sha256", pin]);
+    command
+}
+
+fn v1(dir: &Path, pin: &str) -> assert_cmd::Command {
+    let mut command = public_command(dir, pin);
+    command.arg("--no-anim");
     command
 }
 
@@ -153,7 +159,6 @@ fn output_collisions_are_refused_before_any_work() {
     let (dir, pin, seq) = native_package();
     let root = dir.path();
     let query = write_query(root, "query.fa", &seq);
-    let v2 = ["--policy", "conservative-assembly-anim-v2"];
     let mut cases: Vec<(&str, Vec<std::ffi::OsString>)> = vec![
         (
             "report inside the ANIm evidence directory",
@@ -219,8 +224,7 @@ fn output_collisions_are_refused_before_any_work() {
     ));
     let before = inventory(root);
     for (label, args) in cases {
-        let output = v1(root, &pin)
-            .args(v2)
+        let output = public_command(root, &pin)
             .args(&args)
             .arg(&query)
             .output()
@@ -424,9 +428,9 @@ fn interrupted_concurrent_v2_batch_withholds_every_call_and_keeps_pair_evidence(
     let anim_pin =
         common::package::sha256_hex(&std::fs::read(dir.path().join("fastas/anim.json")).unwrap());
     let target = dir.path().join("report.json");
-    let mut command = v1(dir.path(), &pin);
+    let mut command = public_command(dir.path(), &pin);
     command
-        .args(["--policy", "conservative-assembly-anim-v2", "--jobs", "2"])
+        .args(["--jobs", "2"])
         .args(["--expected-anim-sha256", &anim_pin])
         .arg("--anim-reference-package")
         .arg(dir.path().join("fastas"))
@@ -581,9 +585,8 @@ fn provisioned_v2_rescue_completes_without_a_network() {
     std::fs::write(&query, [b">synthetic\n".as_slice(), &seq, b"\n"].concat()).unwrap();
     let anim_pin =
         common::package::sha256_hex(&std::fs::read(dir.path().join("fastas/anim.json")).unwrap());
-    let mut command = v1(dir.path(), &pin);
+    let mut command = public_command(dir.path(), &pin);
     command
-        .args(["--policy", "conservative-assembly-anim-v2"])
         .args(["--expected-anim-sha256", &anim_pin])
         .arg("--anim-reference-package")
         .arg(dir.path().join("fastas"))

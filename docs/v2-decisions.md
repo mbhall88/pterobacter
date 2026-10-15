@@ -94,11 +94,11 @@ terobacter-dev rescue-plan evidence.json --reference-inventory inventory.json \
   --species-ani 97
 ```
 
-The public aliases accept the same flags with `--policy conservative-assembly-anim-v2` and the equivalent `--assignment-policy` alias; their default policy is v1. They measure whole assemblies against an authenticated reference package and execute required ANIm pairs. Incomplete required work exits nonzero with a report that retains its selected settings and validation status. Custom results cannot establish a genomovar parent. See [native assembly classification](assembly.md).
+The public aliases accept the same threshold flags; ANIm runs for eligible samples by default, with `--no-anim` selecting skani-only operation. Development saved-evidence defaults remain unchanged. They measure whole assemblies against an authenticated reference package and execute required ANIm pairs. Incomplete required work exits nonzero with a report that retains its selected settings and validation status. Custom results cannot establish a genomovar parent. See [native assembly classification](assembly.md).
 
 ```sh
 tero --reference-package package --expected-sha256 HASH \
-  --policy conservative-assembly-anim-v2 --species-ani 95.5 --subspecies-ani 97 \
+  --species-ani 95.5 --subspecies-ani 97 \
   query.fa
 ```
 

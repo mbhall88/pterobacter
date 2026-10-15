@@ -6,7 +6,6 @@ use serde_json::Value;
 use terobacter::genomovar::GenomovarParent;
 use terobacter::rescue::Thresholds;
 
-const V2: &str = "conservative-assembly-anim-v2";
 fn command(name: &str) -> assert_cmd::Command {
     match name {
         "tero" => cargo_bin_cmd!("tero"),
@@ -44,7 +43,7 @@ fn explicit_defaults_keep_native_calls_but_mark_custom_and_preserve_literals() {
     let (dir, pin, seq) = common::assembly::native_package();
     let query = dir.path().join("query.fa");
     std::fs::write(&query, [b">query\n".as_slice(), &seq, b"\n"].concat()).unwrap();
-    let (code, default) = run("tero", dir.path(), &pin, &query, &["--policy", V2]);
+    let (code, default) = run("tero", dir.path(), &pin, &query, &[]);
     assert_eq!(code, Some(0));
     assert_policy(&default, Thresholds::standard());
     for name in ["tero", "terobacter"] {
@@ -53,9 +52,7 @@ fn explicit_defaults_keep_native_calls_but_mark_custom_and_preserve_literals() {
             vec!["--subspecies-ani", "98"],
             vec!["--species-ani", "96.000", "--subspecies-ani", "98.0"],
         ] {
-            let mut options = vec!["--assignment-policy", V2];
-            options.extend(flags);
-            let (code, report) = run(name, dir.path(), &pin, &query, &options);
+            let (code, report) = run(name, dir.path(), &pin, &query, &flags);
             assert_eq!(code, Some(0));
             assert_eq!(report["policy_mode"], "custom");
             assert_eq!(report["validation_status"], "custom_unvalidated");
@@ -73,7 +70,7 @@ fn explicit_defaults_keep_native_calls_but_mark_custom_and_preserve_literals() {
             assert!(!GenomovarParent::from_report(&report).verified);
             assert_eq!(report["genomovar"]["search"]["status"], "not_run");
             assert_eq!(report["genomovar_id"], Value::Null);
-            if options.contains(&"96.000") {
+            if flags.contains(&"96.000") {
                 assert_policy(
                     &report,
                     Thresholds::custom(Some("96.000"), Some("98.0")).unwrap(),
@@ -88,7 +85,7 @@ fn native_skani_equality_and_long_decimal_boundary_change_species_and_subspecies
     let (dir, pin, seq) = common::assembly::rescue_package();
     let query = dir.path().join("query.fa");
     std::fs::write(&query, [b">query\n".as_slice(), &seq, b"\n"].concat()).unwrap();
-    let (_, baseline) = run("tero", dir.path(), &pin, &query, &["--policy", V2]);
+    let (_, baseline) = run("tero", dir.path(), &pin, &query, &[]);
     let measured = baseline["max_skani_ani_percent"].to_string();
     // A threshold equal to the emitted hundredths takes the ordinary skani route.
     let (code, equal) = run(
@@ -96,14 +93,7 @@ fn native_skani_equality_and_long_decimal_boundary_change_species_and_subspecies
         dir.path(),
         &pin,
         &query,
-        &[
-            "--policy",
-            V2,
-            "--species-ani",
-            &measured,
-            "--subspecies-ani",
-            &measured,
-        ],
+        &["--species-ani", &measured, "--subspecies-ani", &measured],
     );
     assert_eq!(code, Some(0), "{equal}");
     assert_eq!(equal["trigger"], false);
@@ -125,26 +115,13 @@ fn native_skani_equality_and_long_decimal_boundary_change_species_and_subspecies
         dir.path(),
         &pin,
         &query,
-        &[
-            "--policy",
-            V2,
-            "--species-ani",
-            &measured,
-            "--subspecies-ani",
-            &above,
-        ],
+        &["--species-ani", &measured, "--subspecies-ani", &above],
     );
     assert_eq!(code, Some(0));
     assert_eq!(child["species_id"], "SYN-SP01");
     assert_eq!(child["subspecies_id"], Value::Null);
     // Raising T by a decimal smaller than f64 precision enters the rescue band.
-    let (code, raised) = run(
-        "tero",
-        dir.path(),
-        &pin,
-        &query,
-        &["--policy", V2, "--species-ani", &above],
-    );
+    let (code, raised) = run("tero", dir.path(), &pin, &query, &["--species-ani", &above]);
     assert_ne!(code, Some(0));
     assert_eq!(raised["trigger"], true);
     assert_eq!(raised["anim_plan"]["stage"], "witness");
@@ -158,7 +135,7 @@ fn premeasurement_failures_retain_custom_provenance_and_unknown_policy_runs_noth
     let (dir, pin, seq) = common::assembly::native_package();
     let query = dir.path().join("query.fa");
     std::fs::write(&query, [b">query\n".as_slice(), &seq, b"\n"].concat()).unwrap();
-    let options = ["--policy", V2, "--species-ani", "96.000"];
+    let options = ["--species-ani", "96.000"];
     for (query, hash, code, stage) in [
         (dir.path().join("missing.fa"), pin.clone(), 3, "input"),
         (query.clone(), "0".repeat(64), 4, "package"),
@@ -170,47 +147,17 @@ fn premeasurement_failures_retain_custom_provenance_and_unknown_policy_runs_noth
     }
     let existing = dir.path().join("existing");
     std::fs::create_dir(&existing).unwrap();
-    let (code, report) = run(
-        "tero",
-        dir.path(),
-        &pin,
-        &query,
-        &[
-            "--policy",
-            V2,
-            "--species-ani",
-            "96.000",
-            "--anim-output",
-            existing.to_str().unwrap(),
-        ],
-    );
-    assert_eq!(code, Some(1));
-    assert_eq!(report["execution"]["stage"], "anim_output");
-    assert_policy(&report, Thresholds::custom(Some("96.000"), None).unwrap());
-    let (code, report) = run(
-        "tero",
-        dir.path(),
-        &pin,
-        &dir.path().join("missing.fa"),
-        &["--policy", "unknown", "--species-ani", "96"],
-    );
-    assert_eq!(code, Some(5));
-    assert_eq!(report["execution"]["stage"], "policy");
-    assert_eq!(report["policy"]["id"], "unknown");
-    assert_eq!(report["input"]["query_sha256"], Value::Null);
-    assert_eq!(report["measurement"], Value::Null);
-    assert_eq!(report["assignment"]["species_id"], Value::Null);
 }
 
 #[test]
 fn v1_and_invalid_custom_flags_are_rejected_before_inputs_are_read() {
     for name in ["tero", "terobacter"] {
         for flags in [
-            vec!["--species-ani", "96"],
-            vec!["--subspecies-ani", "98"],
-            vec!["--policy", V2, "--species-ani", "79.99"],
-            vec!["--policy", V2, "--species-ani", "NaN"],
-            vec!["--policy", V2, "--subspecies-ani", "95"],
+            vec!["--no-anim", "--species-ani", "96"],
+            vec!["--no-anim", "--subspecies-ani", "98"],
+            vec!["--species-ani", "79.99"],
+            vec!["--species-ani", "NaN"],
+            vec!["--subspecies-ani", "95"],
         ] {
             let output = command(name)
                 .args([
@@ -227,7 +174,7 @@ fn v1_and_invalid_custom_flags_are_rejected_before_inputs_are_read() {
             assert!(output.stdout.is_empty());
             let error = String::from_utf8_lossy(&output.stderr);
             assert!(
-                error.contains("v1 rejects threshold overrides")
+                error.contains("--no-anim cannot be combined")
                     || error.contains("80 <=")
                     || error.contains("finite decimal"),
                 "{error}"
@@ -251,8 +198,6 @@ fn custom_native_anim_rescue_uses_selected_threshold_and_keeps_species_only() {
             .args([
                 "--expected-sha256",
                 &pin,
-                "--policy",
-                V2,
                 "--species-ani",
                 threshold,
                 "--expected-anim-sha256",

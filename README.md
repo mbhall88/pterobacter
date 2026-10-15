@@ -43,15 +43,20 @@ Release downloads are planned; they are not available yet.
 
 ## Classify an assembly
 
-Obtain the reference directory and its trusted manifest SHA-256 through the private handoff. In this example the directory is named `reference`, and `REFERENCE_SHA256` contains that supplied digest. [Reference setup](docs/reference-setup.md) explains verification and the optional data components.
+Obtain the reference directory and its trusted manifest SHA-256 through the private handoff. In this example the directory is named `reference`, and `REFERENCE_SHA256` contains that supplied digest. [Reference setup](docs/reference-setup.md) explains verification and sets `ANIM_REFERENCE_PACKAGE` and `ANIM_SHA256` for the matching genome FASTAs used by the default alignment rescue.
 
 ```sh
-tero --reference-package reference --expected-sha256 "$REFERENCE_SHA256"   --output isolate.json --report-dir isolate-report isolate.fa
+tero --reference-package reference --expected-sha256 "$REFERENCE_SHA256" \
+  --anim-reference-package "$ANIM_REFERENCE_PACKAGE" --expected-anim-sha256 "$ANIM_SHA256" \
+  --anim-output isolate-alignments \
+  --output isolate.json --report-dir isolate-report isolate.fa
 ```
+
+Terobacter first estimates ANI with skani. For eligible samples just below the species boundary, it also runs ANIm using whole-genome alignments to refine the estimate. ANIm can take longer, especially in large batches with many borderline samples; samples outside that band do not incur alignment work. Use `-n` or `--no-anim` to skip ANIm and use skani only. When using `--no-anim`, omit the alignment package and evidence options. This opt-out changes runtime analysis; building the executable still requires the C++ compiler. [All short options](docs/cli-help.md) are listed in the command help.
 
 `tero` and `terobacter` are equivalent commands. Open `isolate-report/report.md` for the readable result, or `isolate-report/calls.tsv` for one row per assembly. `isolate.json` and `isolate-report/report.json` retain the detailed report; `evidence.tsv` contains the comparisons. Choose their names with `--output FILE` and `--report-dir DIR`; both paths must be new. The four filenames inside the report directory are fixed.
 
-Here are selected fields from an example report fixture:
+Here are selected fields from a saved skani-only report fixture, corresponding to `--no-anim`:
 
 ```json
 {
@@ -69,7 +74,7 @@ Here are selected fields from an example report fixture:
 }
 ```
 
-This synthetic fixture assigns species and subspecies while withholding the genomovar. An assigned genomovar looks like this in the synthetic policy fixture:
+This synthetic fixture assigns species and subspecies while withholding the genomovar. The default rescue-mode JSON uses top-level `species_id` and `subspecies_id` fields; the [report guide](docs/report-reference.md) describes both formats. An assigned genomovar looks like this in the synthetic fixture:
 
 ```json
 {
@@ -88,10 +93,14 @@ For an observed public-assembly example, the reviewed case `VAL-L3-1B0C8D325620`
 ## Run a batch
 
 ```sh
-tero --reference-package reference --expected-sha256 "$REFERENCE_SHA256"   --jobs 2 --threads 2 --output batch.json --report-dir batch-report   isolate_1.fa isolate_2.fa
+tero --reference-package reference --expected-sha256 "$REFERENCE_SHA256" \
+  --anim-reference-package "$ANIM_REFERENCE_PACKAGE" --expected-anim-sha256 "$ANIM_SHA256" \
+  --anim-output batch-alignments \
+  --jobs 2 --threads 2 --output batch.json --report-dir batch-report \
+  isolate_1.fa isolate_2.fa
 ```
 
-`--jobs 2` processes two assemblies concurrently. `--threads 2` gives each assembly two threads for the embedded search, for up to four search threads in total. Each input has its own result and execution status. See the [batch JSON](docs/examples/output/batch/report.json), [calls table](docs/examples/output/batch/calls.tsv) and [readable report](docs/examples/output/batch/report.md) for a synthetic batch with both completed and failed inputs.
+`--jobs 2` processes two assemblies concurrently. `--threads 2` gives each assembly two threads for the embedded search, for up to four search threads in total. Each input has its own result and execution status. See the [batch JSON](docs/examples/output/batch/report.json), [calls table](docs/examples/output/batch/calls.tsv) and [readable report](docs/examples/readable/batch.md) for a synthetic batch with both completed and failed inputs.
 
 ## Guides
 

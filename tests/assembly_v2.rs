@@ -12,12 +12,7 @@ fn outside_band_v2_uses_the_same_skani_call_without_requiring_fastas() {
     let output = cargo_bin_cmd!("tero")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
-        .args([
-            "--expected-sha256",
-            &pin,
-            "--policy",
-            "conservative-assembly-anim-v2",
-        ])
+        .args(["--expected-sha256", &pin])
         .arg(query)
         .output()
         .unwrap();
@@ -54,12 +49,7 @@ fn triggered_query_missing_fastas_preserves_the_v2_plan_and_exits_incomplete() {
     let output = cargo_bin_cmd!("tero")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
-        .args([
-            "--expected-sha256",
-            &pin,
-            "--policy",
-            "conservative-assembly-anim-v2",
-        ])
+        .args(["--expected-sha256", &pin])
         .arg(query)
         .output()
         .unwrap();
@@ -91,8 +81,6 @@ fn native_rescue_measures_every_primary_competitor_including_unreturned() {
         .args([
             "--expected-sha256",
             &pin,
-            "--policy",
-            "conservative-assembly-anim-v2",
             "--expected-anim-sha256",
             &anim_pin,
         ])
@@ -314,8 +302,6 @@ impl Prepared {
             .args([
                 "--expected-sha256",
                 &self.pin,
-                "--policy",
-                "conservative-assembly-anim-v2",
                 "--expected-anim-sha256",
                 &self.anim_pin,
             ])
@@ -542,6 +528,7 @@ fn existing_output_is_preserved_and_v1_rejects_anim_options() {
         "preserve"
     );
     let output = cargo_bin_cmd!("terobacter")
+        .arg("--no-anim")
         .arg("--reference-package")
         .arg(prepared.dir.path().join("package"))
         .args([
@@ -555,7 +542,7 @@ fn existing_output_is_preserved_and_v1_rejects_anim_options() {
         .unwrap();
     assert_eq!(output.status.code(), Some(5));
     let report: Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(report["execution"]["stage"], "policy");
+    assert_eq!(report["execution"]["stage"], "options");
     assert_eq!(report["assignment"]["species_id"], Value::Null);
 }
 
@@ -572,12 +559,7 @@ fn v2_aliases_preserve_sequential_batch_status_without_fallback() {
         let output = std::process::Command::new(program)
             .arg("--reference-package")
             .arg(prepared.dir.path().join("package"))
-            .args([
-                "--expected-sha256",
-                &prepared.pin,
-                "--policy",
-                "conservative-assembly-anim-v2",
-            ])
+            .args(["--expected-sha256", &prepared.pin])
             .args([&prepared.query, &bad])
             .output()
             .unwrap();
