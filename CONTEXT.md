@@ -12,11 +12,11 @@ Vocabulary for the Pterobacter tool, which classifies Enterobacter isolate assem
 
 **Reference component**: One of the two components a reference package carries, `primary_whole` or `genomovar_chromosome`. Each has its own databases and build records. Species evidence comes from `primary_whole`.
 
-**Calling policy**: The numerical gates and rules that turn evidence into a call. v1 is `conservative-assembly-v1`, frozen from the 0.2.0 release. v2 is `conservative-assembly-anim-v2`, the P1-r1 contract: v1 plus a species-only ANIm rescue, not yet validated.
+**Classification rules**: The numerical gates that turn evidence into a call. Classification starts with skani and uses ANIm for eligible assemblies near the species boundary. `--no-anim` disables that alignment step.
 
 **Trigger band**: 94.5 ≤ maximum returned skani ANI < 96.0 (with custom T, max(80, T − 1.5) ≤ ANI < T). Only queries in the band can be rescued.
 
-**Rescue**: A v2 species call from ANIm for a query in the trigger band. It needs a witness in the raw-nearest named species, a complete competitor panel and no challenge or veto. It never sets a subspecies.
+**Rescue**: A species call supported by ANIm for a query in the trigger band. It needs a witness in the raw-nearest named species, a complete competitor panel and no challenge or veto. It never sets a subspecies.
 
 **Witness candidate**: A reference in the raw-nearest named species with skani ANI in the trigger band and both skani AFs ≥80%. It becomes a rescue witness only if both ANIm identities exceed T and all four ANIm AFs are ≥80%.
 
@@ -30,7 +30,7 @@ Vocabulary for the Pterobacter tool, which classifies Enterobacter isolate assem
 
 **Dry rescue plan**: The trigger state, nearest parent, witness candidates and the ANIm pairs still required, computed from saved evidence. It runs no alignment.
 
-**Decision**: The result of applying a calling policy to saved evidence. Species and subspecies are decided and reported separately.
+**Decision**: The result of applying the classification rules to saved evidence. Species and subspecies are decided and reported separately.
 
 **Species call**: Either assigned, with the species and its witness, or withheld with a reason. A withheld call is reported with status `unresolved`, the same thing the research project calls an unresolved assignment.
 
@@ -40,7 +40,7 @@ Vocabulary for the Pterobacter tool, which classifies Enterobacter isolate assem
 
 **Genomovar**: An informal chromosome ANI group within subspecies `ECTX-SS007`, from the frozen definition `2026-10-02-v1` (25 groups, 173 historical chromosome members). A genomovar call is a conditional operational match to one group, not a population boundary or a new taxon.
 
-**Genomovar parent**: The final species and subspecies call a genomovar depends on: actually assigned `ECTX-SP025` and `ECTX-SS007`, unvetoed, on the same query and package. A v2 call qualifies only when it is the unchanged v1 skani call. Distinct from the competitor **Parent** above.
+**Genomovar parent**: The final species and subspecies call a genomovar depends on: actually assigned `ECTX-SP025` and `ECTX-SS007`, unvetoed, on the same query and package. The parent call must come from skani; an ANIm-supported species call does not establish the subspecies. Distinct from the competitor **Parent** above.
 
 **Compatible group**: A genomovar group whose every member has reported skani ANI ≥99.50% to the query. A group with a missing member and no measured failure is incomplete, never excluded.
 
@@ -50,7 +50,7 @@ Vocabulary for the Pterobacter tool, which classifies Enterobacter isolate assem
 
 **Development binary**: `pterobacter-dev`, built only with the `dev` feature, hosting evaluation-only operations. It shares the implementation with `ptero` and `pterobacter` but is not part of the user-facing tool.
 
-**Method diagnostic**: A bound reciprocal ANIm comparison supplied alongside saved skani evidence. Under v1, a disagreement at the species ANI/AF gate withholds the assignment. It cannot rescue one. Under v2 the same veto applies, except to a witness candidate that fails skani only on ANI and passes the strict ANIm gate.
+**Method diagnostic**: A bound reciprocal ANIm comparison supplied alongside saved skani evidence. A disagreement at the species ANI/AF gate withholds the assignment. With boundary ANIm enabled, a witness candidate that fails skani only on ANI and passes the strict ANIm gate is an expected method crossing.
 
 **Problem warning**: A bound external concern that withholds the assignment. An explained scope assessment cannot clear it.
 

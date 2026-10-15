@@ -55,4 +55,4 @@ The five canonical triage roles, using the default label strings (`needs-triage`
 
 Single-context: one `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
 
-The project was renamed to Pterobacter before release. Keep historical schema, policy, reference and engine identifiers unchanged; see [the migration note](docs/migration.md).
+The project was renamed to Pterobacter before release. Keep historical schema, classification, reference and engine identifiers unchanged.

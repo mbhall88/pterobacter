@@ -112,8 +112,6 @@ The [user guide](docs/usage.md) covers reference setup, running assemblies, resu
 
 A genomovar result is a conditional match to a reference definition. An unrepresented group can match a neighbouring group; overlapping matches are withheld, and one-member groups carry a sparse-reference warning. See [genomovar matches](docs/genomovar.md). Quality control remains your responsibility.
 
-Upgrading from a development checkout? See the [naming migration](docs/migration.md).
-
 ## Cite and contribute
 
 Use the software metadata in [CITATION.cff](CITATION.cff) when citing Pterobacter.
