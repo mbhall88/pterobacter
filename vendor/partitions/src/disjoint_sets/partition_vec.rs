@@ -1182,7 +1182,7 @@ impl<T> PartitionVec<T> {
     /// # }
     /// ```
     #[inline]
-    pub fn set(&self, index: usize) -> Set<T> {
+    pub fn set(&self, index: usize) -> Set<'_, T> {
         let root = self.find_final(index);
 
         self.meta[root].set_rank(1);
@@ -1228,7 +1228,7 @@ impl<T> PartitionVec<T> {
     /// # }
     /// ```
     #[inline]
-    pub fn set_mut(&mut self, index: usize) -> SetMut<T> {
+    pub fn set_mut(&mut self, index: usize) -> SetMut<'_, T> {
         let root = self.find_final(index);
 
         self.meta[root].set_rank(1);
@@ -1276,7 +1276,7 @@ impl<T> PartitionVec<T> {
     /// # }
     /// ```
     #[inline]
-    pub fn all_sets(&self) -> AllSets<T> {
+    pub fn all_sets(&self) -> AllSets<'_, T> {
         let len = self.len();
 
         AllSets {
@@ -1324,7 +1324,7 @@ impl<T> PartitionVec<T> {
     /// # }
     /// ```
     #[inline]
-    pub fn all_sets_mut(&mut self) -> AllSetsMut<T> {
+    pub fn all_sets_mut(&mut self) -> AllSetsMut<'_, T> {
         let len = self.len();
 
         AllSetsMut {
@@ -1727,7 +1727,7 @@ where
                 // We map a `set_number` to an `index` of that set.
                 let mut map = hash_map::HashMap::with_capacity(vec.len());
 
-                for (index, (value, mut set_number)) in vec.into_iter().enumerate() {
+                for (index, (value, set_number)) in vec.into_iter().enumerate() {
                     partition_vec.push(value);
 
                     let set_number = set_number.trailing_zeros();

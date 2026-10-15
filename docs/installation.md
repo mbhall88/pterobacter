@@ -7,8 +7,8 @@ Build from the private source if you have repository access. Distribution is on 
 Install Rust and GNU C++ with C++17 support, then obtain the source:
 
 ```sh
-git clone git@github.com:mbhall88/terobacter.git
-cd terobacter
+git clone git@github.com:mbhall88/pterobacter.git
+cd pterobacter
 cargo install --path . --locked
 ptero --version
 pterobacter --version
@@ -20,16 +20,15 @@ The measured Linux build used Rust 1.95.0 and GCC 11.5.0 on x86_64 Red Hat Enter
 
 ## macOS source build
 
-Install the Xcode command-line tools and Homebrew GNU GCC. Select the installed GNU C++ compiler before running Cargo; Apple clang is refused by the pinned native build:
+Install the Xcode command-line tools and Homebrew GNU GCC. Native builds discover installed Homebrew GNU C++ automatically; an explicit Apple clang override is refused by the pinned native build:
 
 ```sh
 xcode-select --install  # skip if already installed
 brew install gcc
-export CXX="$(find "$(brew --prefix gcc)/bin" -name 'g++-[0-9]*' | head -n 1)"
 cargo install --path . --locked
 ```
 
-This finds the version installed by Homebrew on Apple Silicon or Intel Macs. Automatic discovery is implemented in [PR #38](https://github.com/mbhall88/terobacter/pull/38), awaiting review; this checkout still needs `CXX`. Keep the compiler's GNU C++ runtime available. macOS CI build/test smoke passes; scientific parity on the final arm64 panel is still pending. Linux ARM and Windows are untested. The native build currently targets Linux and macOS.
+Discovery checks the installed gcc prefix and supports Apple Silicon and Intel Homebrew locations. Explicit compiler overrides retain cc-rs precedence; empty or whitespace-only values fail with a variable-specific error. Unset the variable to request discovery. Keep the compiler's GNU C++ runtime available. macOS CI build/test smoke passes; scientific parity on the final arm64 panel is still pending. Linux ARM and Windows are untested. The native build currently targets Linux and macOS.
 
 ## Build offline
 

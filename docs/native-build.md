@@ -1,0 +1,7 @@
+# Native source builds
+
+ANIm requires GNU C++ with C++17 support. On macOS, install Homebrew GCC before running Cargo. Native builds query `brew --prefix gcc`, then check `/opt/homebrew/opt/gcc` and `/usr/local/opt/gcc`. The newest numeric `g++-VERSION` in each prefix is checked for GNU compiler macros. Cargo does not install compilers.
+
+Explicit compiler overrides follow cc-rs precedence: `CXX_<target>`, `CXX_<target_with_underscores>`, `HOST_CXX` for native builds or `TARGET_CXX` for cross builds, then `CXX`. An explicit missing or Clang compiler fails; discovery never replaces it. An empty or whitespace-only value at the first present override key fails before compiler selection, even when a lower-priority variable names a valid compiler. Unset an override to request default selection. macOS cross builds require an explicit target compiler. Linux selection continues through cc-rs.
+
+The native identity hashes the compiler helper, build script, native sources, compiler path/version, host, target and compiler arguments. GNU runtime search and rpath remain bound to the selected compiler. Source changes invalidate saved ANIm build identities; old records remain preserved and fail current-build verification. Numerical compatibility is checked separately from binary and provenance hashes. A successful source build and installed synthetic smoke do not establish scientific macOS panel acceptance.

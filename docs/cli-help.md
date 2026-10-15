@@ -16,7 +16,7 @@ The input is always an isolate assembly FASTA. Every public option has a short f
 
 ## MLST
 
-MLST is off by default in this build. To request it, provide the scheme directory with `--mlst-package` and its trusted manifest hash with `--mlst-expected-sha256`. [The MLST guide](historical-mlst.md) has the working command and explains the scheme's date limit. Selecting an installed scheme without these paths, and accepting newer scheme versions, are planned in [issue39](https://github.com/mbhall88/terobacter/issues/39).
+MLST is off by default in this build. To request it, provide the scheme directory with `--mlst-package` and its trusted manifest hash with `--mlst-expected-sha256`. [The MLST guide](historical-mlst.md) has the working command and explains the scheme's date limit. Selecting an installed scheme without these paths, and accepting newer scheme versions, are planned in [issue39](https://github.com/mbhall88/pterobacter/issues/39).
 
 ## Alignment files and resource limits
 
@@ -34,7 +34,7 @@ The `--anim-` options apply to the MUMmer4 rescue mode. ANIm means average nucle
 
 `--report-dir` holds the classification reports; `--anim-output` holds the underlying alignment evidence. Use separate new directories. The [rescue command](assembly.md#boundary-anim) shows both the required inputs and evidence output; [cache reuse](assembly.md#reusing-reciprocal-pairs) describes the optional cache.
 
-The current limits bound native alignment work. Reaching a limit leaves the required comparison incomplete and withholds the call; it is not evidence that the assembly belongs to a different species. You can raise the limits up to 1800 seconds per pair, 7200 seconds per query and 6144 MiB per worker, but this build has no unlimited setting. Ctrl-C requests a stop and retains partial evidence. [Issue43](https://github.com/mbhall88/terobacter/issues/43) tracks the request to make these limits optional; the current values are listed here so the guide matches the executable.
+The current limits bound native alignment work. Reaching a limit leaves the required comparison incomplete and withholds the call; it is not evidence that the assembly belongs to a different species. You can raise the limits up to 1800 seconds per pair, 7200 seconds per query and 6144 MiB per worker, but this build has no unlimited setting. Ctrl-C requests a stop and retains partial evidence. [Issue43](https://github.com/mbhall88/pterobacter/issues/43) tracks the request to make these limits optional; the current values are listed here so the guide matches the executable.
 
 ## Exact terminal output
 
@@ -94,5 +94,5 @@ Uses skani first, then ANIm for eligible samples near the species boundary.
 ANIm can be slower; use -n/--no-anim to skip it.
 ANI thresholds are percentages, e.g. --species-ani 96.5. Require 80 <= species <= subspecies <= 100.
 Custom thresholds cannot be combined with --no-anim and mark results custom_unvalidated.
-Guide: https://github.com/mbhall88/terobacter/blob/main/docs/assembly.md
+Guide: https://github.com/mbhall88/pterobacter/blob/main/docs/assembly.md
 ```

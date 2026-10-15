@@ -4,7 +4,7 @@
 
 Pronounced with a silent P, like pterodactyl.
 
-[![CI](https://github.com/mbhall88/terobacter/actions/workflows/ci.yml/badge.svg)](https://github.com/mbhall88/terobacter/actions/workflows/ci.yml) [![User guide](https://img.shields.io/badge/docs-user_guide-236b73)](docs/usage.md)
+[![CI](https://github.com/mbhall88/pterobacter/actions/workflows/ci.yml/badge.svg)](https://github.com/mbhall88/pterobacter/actions/workflows/ci.yml) [![User guide](https://img.shields.io/badge/docs-user_guide-236b73)](docs/usage.md)
 
 Classify *Enterobacter* isolate assemblies and report supported species and subspecies calls, the closest references, and reasons for uncertainty. Give Pterobacter a whole assembly in FASTA format, including its plasmids and draft contigs.
 
@@ -17,17 +17,16 @@ You need Rust and GNU C++ with C++17 support. On macOS, first install the Xcode 
 ```sh
 xcode-select --install  # skip if already installed
 brew install gcc
-export CXX="$(find "$(brew --prefix gcc)/bin" -name 'g++-[0-9]*' | head -n 1)"
 ```
 
 ```sh
-git clone git@github.com:mbhall88/terobacter.git
-cd terobacter
+git clone git@github.com:mbhall88/pterobacter.git
+cd pterobacter
 cargo install --path . --locked
 ptero --version
 ```
 
-See [installation](docs/installation.md) for compiler setup, offline builds and platform limits. Automatic Homebrew GCC discovery is awaiting review in [PR #38](https://github.com/mbhall88/terobacter/pull/38).
+See [installation](docs/installation.md) for compiler setup, offline builds and platform limits. Native macOS builds automatically discover installed Homebrew GNU C++ when no compiler override is supplied.
 
 ### Cargo
 

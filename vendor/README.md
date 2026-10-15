@@ -4,7 +4,7 @@ skani 0.3.2 is vendored from upstream revision `22da4ae9e44b2e3e686c8e5c71fcd16c
 
 The measurement profile is `skani-0.3.2-avx2-compatible-dna-v1`. This name and the engine revision are included in every adapter report. The profile reproduces the upstream x86 AVX2 DNA seeding semantics on other CPUs. It preserves the four overlapping lanes, the omitted tail k-mers, the uppercase-N pause after 21 bases, the lowercase-n encoding and lane insertion order. These details can affect fragmented assemblies near an AF threshold. They are compatibility behavior, not changes to the biological calling rules.
 
-Local semantic changes to skani are confined to three files:
+Local compatibility and corruption-handling changes to skani are confined to three files:
 
 - `seeding.rs`: replace the original scalar DNA seeder with portable AVX2 semantics, including marker-only operation.
 - `avx2_seeding.rs`: check short inputs before slicing and use explicit wrapping arithmetic for two unused signed thresholds. Release-mode arithmetic and seed output are preserved.
@@ -19,3 +19,11 @@ Direct seeding tests compare full seed maps, positions, insertion order and mark
 Actual macOS execution, full primary/genomovar evaluation and release claims remain separate gates. Forced portable execution on Linux establishes implementation parity on these development inputs.
 
 Third-party redistribution notices are in [THIRDPARTY.json](../THIRDPARTY.json) and [THIRD-PARTY-NOTICES.txt](../THIRD-PARTY-NOTICES.txt). [THIRD-PARTY-LICENSES.md](../THIRD-PARTY-LICENSES.md) describes regeneration and redistribution.
+
+## Warning maintenance
+
+Local partitions maintenance removes the obsolete `cargo-clippy` feature check, uses the upstream rank-bit formula instead of unsupported pointer-width cfg values, removes one unused `mut`, and spells elided iterator lifetimes consistently. The compact formula preserves the upstream rank widths on 16-, 32- and 64-bit targets. Default and compact union/find and set-iteration tests check behavior.
+
+Local skani maintenance spells the `Cow` lifetime and removes a discarded interval copy. Chaining continues to push the original interval, including its original overlap value. A small-overlap regression guards this behavior. The measurement profile, algorithms and dependency versions are unchanged. Original file hashes in both `UPSTREAM.json` files remain unchanged; they identify upstream bytes rather than the patched sources.
+
+Vendored source bytes are included in the Rust source identity. This maintenance produces a new source/native build candidate; frozen evidence and platform bundles must retain their original identities. Numerical compatibility and binary/provenance equality are separate checks.

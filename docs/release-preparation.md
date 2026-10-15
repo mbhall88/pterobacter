@@ -31,7 +31,7 @@ The current data package retains development-only, not-distributable metadata an
 
 ## Licences and attribution
 
-Terobacter's own code is MIT. Preserve the [Cargo and native component notices](../THIRD-PARTY-LICENSES.md) in every prepared binary package. The locked Cargo bundle contains 201 crates; supplemental attribution covers 212 source packages and was independently reproduced. The embedded MUMmer4 subset also includes Artistic-2.0 and GPL-3.0-or-later notices. The combined distribution's licensing review remains open; the root MIT licence is not a blanket replacement for component terms.
+Pterobacter's own code is MIT. Preserve the [Cargo and native component notices](../THIRD-PARTY-LICENSES.md) in every prepared binary package. The locked Cargo bundle contains 201 crates; supplemental attribution covers 212 source packages and was independently reproduced. The embedded MUMmer4 subset also includes Artistic-2.0 and GPL-3.0-or-later notices. The combined distribution's licensing review remains open; the root MIT licence is not a blanket replacement for component terms.
 
 The historical MLST data is a 2026 retrieval of submissions through 31 December 2024, not a 2024 byte snapshot. Pre-2025 data may be redistributed with scientific citation and acknowledgement under [PubMLST's terms](https://pubmlst.org/terms-conditions). The package makes no claim of complete historical coverage or post-2024 currency. Cite the PubMLST resource and the relevant scheme when using it.
 

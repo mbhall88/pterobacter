@@ -74,20 +74,9 @@ const USIZE_BITS: usize = 8 * ::std::mem::size_of::<usize>();
 // To store this rank we need a maximum of B + 3 bits.
 // Because we devide these bits over the parent and link we need a maximum of (B + 3) / 2 bits
 // rounded up which is B / 2 + 2 bits rounded down.
-#[cfg(all(feature = "compact", target_pointer_width = "8"))]
-const RANK_BITS: usize = 2;
-#[cfg(all(feature = "compact", target_pointer_width = "16"))]
-const RANK_BITS: usize = 2;
-#[cfg(all(feature = "compact", target_pointer_width = "32"))]
-const RANK_BITS: usize = 3;
-#[cfg(all(feature = "compact", target_pointer_width = "64"))]
-const RANK_BITS: usize = 3;
-#[cfg(all(feature = "compact", target_pointer_width = "128"))]
-const RANK_BITS: usize = 4;
-#[cfg(all(feature = "compact", target_pointer_width = "256"))]
-const RANK_BITS: usize = 4;
-// TODO: When possible replace with:
-// const RANK_BITS: usize = std::mem::size_of::<usize>().trailing_zeros() as usize / 2 + 2;
+// Equivalent to the upstream width table, including 16/32/64-bit targets.
+#[cfg(feature = "compact")]
+const RANK_BITS: usize = std::mem::size_of::<usize>().trailing_zeros() as usize / 2 + 2;
 #[cfg(feature = "compact")]
 const MASK: usize = (1 << RANK_BITS) - 1;
 #[cfg(feature = "compact")]
@@ -176,5 +165,19 @@ impl Metadata {
 
     pub(crate) unsafe fn marked_value(&self) -> usize {
         self.link.get()
+    }
+}
+
+#[cfg(all(test, feature = "compact"))]
+mod maintenance_tests {
+    #[test]
+    fn compact_rank_bits_match_supported_upstream_widths() {
+        for (bytes, expected) in [(2usize, 2usize), (4, 3), (8, 3)] {
+            assert_eq!(bytes.trailing_zeros() as usize / 2 + 2, expected);
+        }
+        assert_eq!(
+            super::RANK_BITS,
+            std::mem::size_of::<usize>().trailing_zeros() as usize / 2 + 2
+        );
     }
 }
