@@ -14,6 +14,10 @@ Require `80 <= species threshold <= subspecies threshold <= 100`. A custom speci
 
 The input is always an isolate assembly FASTA. Every public option has a short form, shown below.
 
+## Assembly lists and sample names
+
+Assemblies can come from the command line, from `-f` / `--input-list FILE` with one path per line, or from `-F` / `--sample-sheet FILE`, a TSV with the header `sample` and `path`. Use one source per run. `-N` / `--sample-name NAME` names a single command-line assembly. Relative paths in a list or sheet are read from the file's own directory. Names label the reports only; the analysis uses the file path as it would for a command-line argument. [Running Pterobacter](running.md#a-list-of-assemblies-or-named-samples) has the exact file rules and examples.
+
 ## MLST
 
 MLST is off by default in this build. To request it, provide the scheme directory with `--mlst-package` and its trusted manifest hash with `--mlst-expected-sha256`. [The MLST guide](historical-mlst.md) has the working command and explains the scheme's date limit. Selecting an installed scheme without these paths, and accepting newer scheme versions, are planned in [issue39](https://github.com/mbhall88/pterobacter/issues/39).
@@ -43,16 +47,22 @@ Captured from the current `ptero --help`. The `pterobacter` alias accepts the sa
 ```text
 Standalone, self-contained Enterobacter isolate classification
 
-Usage: ptero [OPTIONS] --reference-package <REFERENCE_PACKAGE> --expected-sha256 <EXPECTED_SHA256> <ASSEMBLY>...
+Usage: ptero [OPTIONS] --reference-package <REFERENCE_PACKAGE> --expected-sha256 <EXPECTED_SHA256> [ASSEMBLY]...
 
 Arguments:
-  <ASSEMBLY>...  Isolate assembly FASTA files, analysed whole and as supplied
+  [ASSEMBLY]...  Isolate assembly FASTA files, analysed whole and as supplied
 
 Options:
   -s, --species-ani <PERCENT>
           Minimum species ANI (%): skani >= this value; ANIm must be strictly greater [default: 96]
   -S, --subspecies-ani <PERCENT>
           Minimum subspecies ANI (%): skani >= this value [default: 98]
+  -f, --input-list <FILE>
+          Read assembly paths from this file, one per line; relative paths are from its directory
+  -F, --sample-sheet <FILE>
+          Read sample names and assembly paths from this TSV with the header sample<TAB>path
+  -N, --sample-name <NAME>
+          Name to report for the one assembly given; reporting only, never sent to skani
   -r, --reference-package <REFERENCE_PACKAGE>
           Authenticated reference package directory
   -R, --expected-sha256 <EXPECTED_SHA256>
@@ -92,6 +102,8 @@ Options:
 
 Uses skani first, then ANIm for eligible samples near the species boundary.
 ANIm can be slower; use -n/--no-anim to skip it.
+Give assemblies as arguments, or list them with -f/--input-list or -F/--sample-sheet.
+Sample names label reports only; analysis uses each file path.
 ANI thresholds are percentages, e.g. --species-ani 96.5. Require 80 <= species <= subspecies <= 100.
 Custom thresholds cannot be combined with --no-anim and mark results custom_unvalidated.
 Guide: https://github.com/mbhall88/pterobacter/blob/main/docs/assembly.md

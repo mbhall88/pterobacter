@@ -83,7 +83,14 @@ fn help_shows_the_approved_interface_without_subcommands() {
     let output = command("ptero").arg("--help").output().unwrap();
     let help = String::from_utf8(output.stdout).unwrap();
 
-    assert!(help.contains("Usage: ptero [OPTIONS] --reference-package <REFERENCE_PACKAGE> --expected-sha256 <EXPECTED_SHA256> <ASSEMBLY>..."), "{help}");
+    // Assemblies are optional on the command line only because a list or sheet can supply them.
+    assert!(help.contains("Usage: ptero [OPTIONS] --reference-package <REFERENCE_PACKAGE> --expected-sha256 <EXPECTED_SHA256> [ASSEMBLY]..."), "{help}");
+    assert!(
+        help.contains(
+            "Give assemblies as arguments, or list them with -f/--input-list or -F/--sample-sheet."
+        ),
+        "{help}"
+    );
     assert!(
         !help.contains("Commands:"),
         "the public command has no subcommands:\n{help}"

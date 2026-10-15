@@ -80,7 +80,7 @@ pub(crate) fn check(paths: &Paths<'_>) -> Result<(), String> {
 
 /// An absolute path with symbolic links resolved for every existing ancestor, and `.` and
 /// `..` applied to the rest, so two spellings of one location compare equal.
-fn resolve(path: &Path) -> io::Result<PathBuf> {
+pub(crate) fn resolve(path: &Path) -> io::Result<PathBuf> {
     let absolute = std::env::current_dir()?.join(path);
     let mut resolved = PathBuf::new();
     for component in absolute.components() {
