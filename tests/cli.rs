@@ -86,7 +86,13 @@ fn help_shows_the_approved_classification_and_database_interfaces() {
     let help = String::from_utf8(output.stdout).unwrap();
 
     assert!(
-        help.contains("Usage: ptero [OPTIONS] <ASSEMBLY>..."),
+        help.contains(
+            "Give assemblies as arguments, or list them with -f/--input-list or -F/--sample-sheet."
+        ),
+        "{help}"
+    );
+    assert!(
+        help.contains("Usage: ptero [OPTIONS] [ASSEMBLY]..."),
         "{help}"
     );
     assert!(

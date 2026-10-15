@@ -279,3 +279,22 @@ pub fn dna(length: usize, mut state: u64) -> Vec<u8> {
         })
         .collect()
 }
+/// Stop a synthetic CLI at an observable stage so a wall deadline expires deterministically.
+pub fn hold_at_artifact(child: &mut std::process::Child, artifact: &std::path::Path) {
+    use std::time::{Duration, Instant};
+    let start = Instant::now();
+    while !artifact.exists() {
+        if let Some(status) = child.try_wait().unwrap() {
+            panic!("process exited before stage {artifact:?}: {status}");
+        }
+        if start.elapsed() > Duration::from_secs(20) {
+            let _ = child.kill();
+            let _ = child.wait();
+            panic!("stage not reached: {artifact:?}");
+        }
+        std::thread::sleep(Duration::from_micros(100));
+    }
+    assert_eq!(unsafe { libc::kill(child.id() as i32, libc::SIGSTOP) }, 0);
+    std::thread::sleep(Duration::from_secs(6));
+    assert_eq!(unsafe { libc::kill(child.id() as i32, libc::SIGCONT) }, 0);
+}

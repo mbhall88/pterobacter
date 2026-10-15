@@ -75,7 +75,7 @@ fn native_whole_assembly_retains_plasmids_and_short_records_and_assigns_v1() {
     assert_eq!(report["measurement"]["sketched_bases"], 200_003);
     assert_eq!(
         report["measurement"]["engine_profile"],
-        "skani-0.3.2-avx2-compatible-dna-v1"
+        "skani-0.3.2-avx2-content-order-dna-v2"
     );
     assert_eq!(
         report["input"]["query_sha256"],

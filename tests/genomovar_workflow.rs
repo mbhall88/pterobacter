@@ -319,6 +319,27 @@ fn emitted_provenance_binds_contract_parent_policy_and_decision() {
 }
 
 #[test]
+fn sample_names_and_input_sources_never_change_the_parent_digest() {
+    use terobacter::genomovar::parent_result_sha256;
+
+    let original = analyse(&[], |_| {});
+    let hash = parent_result_sha256(&original);
+    let mut named = original.clone();
+    named["input"]["sample_name"] = "isolate 7".into();
+    named["input"]["source"] =
+        json!({"kind": "sample_sheet", "file": "samples.tsv", "line": 2, "entry": "a.fa"});
+    assert_eq!(parent_result_sha256(&named), hash);
+    recheck(&mut named);
+    assert_eq!(named["genomovar"]["status"], "assigned");
+    assert_eq!(named["assignment"]["genomovar_id"], GV01);
+    for field in ["file", "query_sha256"] {
+        let mut changed = named.clone();
+        changed["input"][field] = "other".into();
+        assert_ne!(parent_result_sha256(&changed), hash, "{field}");
+    }
+}
+
+#[test]
 fn independent_mlst_receipts_preserve_genomovar_but_parent_changes_still_veto() {
     use terobacter::genomovar::parent_result_sha256;
 

@@ -930,9 +930,14 @@ pub fn parent_policy_sha256(id: &str) -> String {
 }
 /// Digest the parent decision before attachment. Runtime receipts, supplementary fields
 /// and presentation-only report blocks (`versions`, and v1 `thresholds`) are excluded; decision
-/// evidence identities, assignments, reasons and input binding remain.
+/// evidence identities, assignments, reasons and input binding remain. A sample name and the
+/// list it came from are reporting metadata, so naming an input never changes the digest.
 pub fn parent_result_sha256(report: &Value) -> String {
     let mut decision = report.clone();
+    if let Some(input) = decision.get_mut("input").and_then(Value::as_object_mut) {
+        input.remove("sample_name");
+        input.remove("source");
+    }
     if let Some(object) = decision.as_object_mut() {
         for key in [
             "genomovar",

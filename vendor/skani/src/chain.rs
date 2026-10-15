@@ -17,13 +17,12 @@ fn switch_qr(
     med_ctg_len_q: f64,
     q_sk_len: f64,
     r_sk_len: f64,
-    query_file_name: &str,
-    ref_file_name: &str,
+    break_tie: impl FnOnce() -> bool,
 ) -> bool {
     let score_query = q_sk_len * (f64::min(med_ctg_len_q, 300000.));
     let score_ref = r_sk_len * (f64::min(med_ctg_len_r, 300000.));
     if score_query == score_ref {
-        query_file_name > ref_file_name
+        break_tie()
     } else {
         score_query > score_ref
     }
@@ -170,7 +169,27 @@ pub fn chain_seeds(
     query_sketch: &Sketch,
     map_params: MapParams,
 ) -> AniEstResult {
-    let (anchor_chunks, switched) = get_anchors(ref_sketch, query_sketch, &map_params);
+    chain_seeds_with_order(ref_sketch, query_sketch, map_params, false)
+}
+
+/// Pterobacter's filename-independent measurement profile. Only an exact orientation-score
+/// tie uses canonical sketch content; the upstream entry point above retains its original rule.
+pub fn chain_seeds_content_order(
+    ref_sketch: &Sketch,
+    query_sketch: &Sketch,
+    map_params: MapParams,
+) -> AniEstResult {
+    chain_seeds_with_order(ref_sketch, query_sketch, map_params, true)
+}
+
+fn chain_seeds_with_order(
+    ref_sketch: &Sketch,
+    query_sketch: &Sketch,
+    map_params: MapParams,
+    content_order: bool,
+) -> AniEstResult {
+    let (anchor_chunks, switched) =
+        get_anchors(ref_sketch, query_sketch, &map_params, content_order);
     let chain_results = chain_anchors_ani(&anchor_chunks, &map_params);
     let mut good_intervals = vec![];
     for i in 0..anchor_chunks.chunks.len() {
@@ -639,10 +658,51 @@ pub fn score_anchors(anchor_curr: &Anchor, anchor_past: &Anchor, map_params: &Ma
     map_params.anchor_score - gap
 }
 
+/// Canonical measurement content, excluding file names, contig headers and hash-table order.
+/// Evaluate this only on score ties. Most distinct assemblies differ in length, avoiding the
+/// sorted seed fallback. Equal keys mean identical relevant sketch content and keep input roles.
+fn content_ordering(query: &Sketch, reference: &Sketch) -> std::cmp::Ordering {
+    let order = query
+        .total_sequence_length
+        .cmp(&reference.total_sequence_length)
+        .then_with(|| query.contig_lengths.cmp(&reference.contig_lengths))
+        .then_with(|| query.k.cmp(&reference.k))
+        .then_with(|| query.c.cmp(&reference.c))
+        .then_with(|| query.marker_c.cmp(&reference.marker_c));
+    if !order.is_eq() {
+        return order;
+    }
+    fn markers(sketch: &Sketch) -> Vec<MarkerBits> {
+        let mut values: Vec<_> = sketch.marker_seeds.iter().copied().collect();
+        values.sort_unstable();
+        values
+    }
+    let order = markers(query).cmp(&markers(reference));
+    if !order.is_eq() {
+        return order;
+    }
+    fn seeds(sketch: &Sketch) -> Vec<(SeedBits, Vec<SeedPosition>)> {
+        let mut values: Vec<_> = sketch
+            .kmer_seeds_k
+            .iter()
+            .flat_map(|map| map.keys())
+            .map(|seed| {
+                let mut positions = sketch.get_seed_positions(*seed).into_owned();
+                positions.sort_unstable();
+                (*seed, positions)
+            })
+            .collect();
+        values.sort_unstable_by_key(|(seed, _)| *seed);
+        values
+    }
+    seeds(query).cmp(&seeds(reference))
+}
+
 fn get_anchors(
     ref_sketch: &Sketch,
     query_sketch: &Sketch,
     map_params: &MapParams,
+    content_order: bool,
 ) -> (AnchorChunks, bool) {
     let k = map_params.k;
     let kmer_seeds_ref;
@@ -695,8 +755,13 @@ fn get_anchors(
         mean_ctg_len_q,
         query_length_markers_proxy,
         ref_length_markers_proxy,
-        &query_sketch.file_name,
-        &ref_sketch.file_name,
+        || {
+            if content_order {
+                content_ordering(query_sketch, ref_sketch).is_gt()
+            } else {
+                query_sketch.file_name > ref_sketch.file_name
+            }
+        },
     ) {
         switched = true;
 
@@ -1178,5 +1243,93 @@ mod maintenance_tests {
         // The overlap is 10 bases, but upstream pushes the original overlap of 3.
         assert_eq!(accepted[0][1].overlap, 3);
         assert_eq!(accepted[0][1].interval_on_query, (90, 190));
+    }
+}
+
+#[cfg(test)]
+mod orientation_tests {
+    use super::*;
+    use std::cmp::Ordering;
+
+    fn sketch() -> Sketch {
+        let mut s = Sketch::new(1000, 125, 15, "label".into(), false);
+        s.contigs = vec!["header".into()];
+        s.contig_lengths = vec![200_003];
+        s.total_sequence_length = 200_003;
+        s.marker_seeds.extend([7, 2, 9]);
+        s.kmer_seeds_k = Some(Default::default());
+        s.add_seed_position(5, SeedPosition::new(10, 0, true));
+        s.add_seed_position(5, SeedPosition::new(30, 0, false));
+        s.add_seed_position(2, SeedPosition::new(20, 0, false));
+        s
+    }
+
+    #[test]
+    fn non_tied_scores_never_invoke_the_new_rule() {
+        assert!(switch_qr(200_000., 300_000., 10., 10., || panic!(
+            "not a tie"
+        )));
+        assert!(!switch_qr(300_000., 200_000., 10., 10., || panic!(
+            "not a tie"
+        )));
+    }
+
+    #[test]
+    fn names_headers_and_storage_order_are_not_content_order() {
+        let a = sketch();
+        let mut b = a.clone();
+        b.file_name = "/a/different-name".into();
+        b.contigs[0] = "different header".into();
+        b.marker_seeds.clear();
+        b.marker_seeds.extend([9, 7, 2]);
+        b.kmer_seeds_k.as_mut().unwrap().clear();
+        b.multi_position_storage.clear();
+        b.add_seed_position(2, SeedPosition::new(20, 0, false));
+        b.add_seed_position(5, SeedPosition::new(30, 0, false));
+        b.add_seed_position(5, SeedPosition::new(10, 0, true));
+        assert_eq!(content_ordering(&a, &b), Ordering::Equal);
+        assert_eq!(content_ordering(&b, &a), Ordering::Equal);
+    }
+
+    #[test]
+    fn legacy_entry_keeps_filename_order_while_equal_content_keeps_input_roles() {
+        let mut a = sketch();
+        let mut b = a.clone();
+        a.file_name = "/a/reference".into();
+        b.file_name = "/z/query".into();
+        let params = MapParams {
+            fragment_length: 200_000,
+            index_chain_band: 50,
+            k: 15,
+            ..Default::default()
+        };
+        assert!(get_anchors(&a, &b, &params, false).1);
+        assert!(!get_anchors(&b, &a, &params, false).1);
+        assert!(!get_anchors(&a, &b, &params, true).1);
+        assert!(!get_anchors(&b, &a, &params, true).1);
+        b.add_seed_position(7, SeedPosition::new(32, 0, false));
+        assert_ne!(
+            get_anchors(&a, &b, &params, true).1,
+            get_anchors(&b, &a, &params, true).1,
+        );
+    }
+
+    #[test]
+    fn unequal_content_order_reverses_when_roles_reverse() {
+        let a = sketch();
+        for which in 0..4 {
+            let mut b = a.clone();
+            match which {
+                0 => b.total_sequence_length += 1,
+                1 => b.contig_lengths[0] += 1,
+                2 => {
+                    b.marker_seeds.insert(11);
+                }
+                _ => b.add_seed_position(5, SeedPosition::new(31, 0, false)),
+            }
+            let order = content_ordering(&a, &b);
+            assert_ne!(order, Ordering::Equal);
+            assert_eq!(content_ordering(&b, &a), order.reverse());
+        }
     }
 }

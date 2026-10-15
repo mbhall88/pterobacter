@@ -1,6 +1,6 @@
 # Example outputs
 
-These synthetic examples preserve the original JSON and TSV files. The readable summaries are rendered with the current labels; their calls and evidence tables match the originals exactly. They are not biological measurements. Fixture software/data versions and names belong to the tests and do not identify the current release.
+These synthetic examples preserve the original JSON and TSV files. They predate sample names, so they lack the `input.sample_name` and `input.source` fields and the `sample_name` TSV column that current reports carry; see [input identity and sample names](../report-reference.md#input-identity-and-sample-names). The readable summaries are rendered with the current labels; their calls and evidence tables match the originals exactly. They are not biological measurements. Fixture software/data versions and names belong to the tests and do not identify the current release.
 
 ## One assembly
 

@@ -25,6 +25,14 @@ supplied. This path and catalogue metadata are transport provenance, separate
 from scientific measurements and package identities. Markdown includes the same
 selection metadata. See [database management](databases.md).
 
+### Input identity and sample names
+
+`input.file` is the assembly path that was read. It is also retained as the skani query label for provenance. Exact orientation-score ties use sketch content, so filenames do not select the measurement orientation. `input.query_sha256` and the per-record hashes under `input.records` identify the bytes and sequences, and `input.ordinal` gives the position in the run.
+
+`input.sample_name` holds the name given with `--sample-name` or in a sample sheet, and is null otherwise. It is reporting metadata only and takes no part in the analysis. `input.source` records where the path came from: `{"kind": "positional"}` for a command-line argument, or the kind `input_list` or `sample_sheet` with the list's `file`, the 1-based `line` and the `entry` exactly as written there. A relative entry is resolved against the list's directory to give `input.file`.
+
+`calls.tsv` and `evidence.tsv` carry the name in their second column, `sample_name`, and leave it empty for unnamed inputs. `report.md` heads each section with the sample name and shows the input file below it. Markdown and HTML characters in a name are escaped there so it displays exactly as written; the JSON and TSV files keep the name unchanged. Join the two TSV files on `assembly`, the input's position, which is always filled.
+
 ### The final call
 
 `call_status` is `assigned`, `unresolved` or `not_evaluated`.

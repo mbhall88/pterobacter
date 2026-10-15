@@ -447,3 +447,66 @@ fn managed_custom_scheme_and_explicit_typing_override_preserve_the_taxonomy() {
     assert_eq!(typed["data_provenance"]["mlst_trust"], "operator_pin");
     assert_eq!(plain["assignment"], typed["assignment"]);
 }
+
+#[test]
+fn managed_database_accepts_lists_and_sample_sheets_without_changing_measurements() {
+    let f = Fixture::new();
+    let store = f.source.path().join("store");
+    install(&f, &store, &["--no-anim"]);
+    let positional = value(
+        f.command(&store)
+            .args(["--database", "fixture-1", "--no-anim"])
+            .arg(&f.query)
+            .output()
+            .unwrap(),
+    );
+    let list = f.source.path().join("queries.txt");
+    fs::write(&list, format!("{}\n", f.query.display())).unwrap();
+    let sheet = f.source.path().join("samples.tsv");
+    fs::write(
+        &sheet,
+        format!("sample\tpath\nIsolate A\t{}\n", f.query.display()),
+    )
+    .unwrap();
+    for (flag, path, kind, name) in [
+        ("-f", &list, "input_list", Value::Null),
+        (
+            "-F",
+            &sheet,
+            "sample_sheet",
+            Value::String("Isolate A".into()),
+        ),
+    ] {
+        let mut observed = value(
+            f.command(&store)
+                .args(["--database", "fixture-1", "--no-anim", flag])
+                .arg(path)
+                .output()
+                .unwrap(),
+        );
+        assert_eq!(observed["input"]["source"]["kind"], kind);
+        assert_eq!(observed["input"]["sample_name"], name);
+        // Only input-source metadata differs from the positional invocation.
+        observed["input"]["source"] = positional["input"]["source"].clone();
+        observed["input"]["sample_name"] = positional["input"]["sample_name"].clone();
+        assert_eq!(observed, positional);
+    }
+}
+
+#[test]
+fn malformed_sample_sheet_fails_before_managed_database_state_is_created() {
+    let f = Fixture::new();
+    let store = f.source.path().join("store");
+    let sheet = f.source.path().join("bad.tsv");
+    fs::write(&sheet, "sample\tpath\nmissing-path\n").unwrap();
+    let out = f
+        .command(&store)
+        .args(["--database", "fixture-1", "--sample-sheet"])
+        .arg(&sheet)
+        .output()
+        .unwrap();
+    assert!(!out.status.success());
+    assert!(String::from_utf8_lossy(&out.stderr).contains("sample sheet"));
+    assert!(!store.exists());
+    assert!(!f.source.path().join("state").exists());
+}
