@@ -21,3 +21,4 @@
 - [Report fields](report-reference.md)
 - [Reference registry](reference-registry.md)
 - [Development](development.md)
+- [Licensing and source](licensing.md)

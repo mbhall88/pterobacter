@@ -122,4 +122,4 @@ Use the software metadata in [CITATION.cff](CITATION.cff) when citing Pterobacte
 
 <!-- Maintainer TODO: add the accompanying paper citation and DOI here and in CITATION.cff when available. --> [Contributing](CONTRIBUTING.md) covers repository checks and development commands.
 
-Application code is [MIT licensed](LICENSE); bundled components have their own [licences and notices](THIRD-PARTY-LICENSES.md).
+The combined executable is distributed under [GPL-3.0-or-later](LICENSE-GPL-3.0.txt). Pterobacter-authored source retains its [MIT licence](LICENSE). See [licensing and source availability](docs/licensing.md) for component terms and corresponding source.
