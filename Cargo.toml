@@ -1,5 +1,5 @@
 [package]
-name = "terobacter"
+name = "pterobacter"
 description = "Standalone, self-contained Enterobacter isolate classification"
 version = "0.0.0"
 authors = ["Michael Hall <michael@mbh.sh>"]
@@ -22,16 +22,16 @@ name = "terobacter"
 path = "src/lib.rs"
 
 [[bin]]
-name = "tero"
-path = "src/bin/tero.rs"
+name = "ptero"
+path = "src/bin/ptero.rs"
 
 [[bin]]
-name = "terobacter"
-path = "src/bin/terobacter.rs"
+name = "pterobacter"
+path = "src/bin/pterobacter.rs"
 
 [[bin]]
-name = "terobacter-dev"
-path = "src/bin/terobacter-dev.rs"
+name = "pterobacter-dev"
+path = "src/bin/pterobacter-dev.rs"
 required-features = ["dev"]
 
 [dependencies]

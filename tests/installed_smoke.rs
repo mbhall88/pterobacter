@@ -45,10 +45,10 @@ fn installed_commands_classify_identically_under_v1_and_v2() {
         .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
         .collect();
     installed.sort();
-    assert_eq!(installed, ["tero", "terobacter"]);
+    assert_eq!(installed, ["ptero", "pterobacter"]);
 
-    let version = format!("terobacter {}\n", env!("CARGO_PKG_VERSION"));
-    for name in ["tero", "terobacter"] {
+    let version = format!("pterobacter {}\n", env!("CARGO_PKG_VERSION"));
+    for name in ["ptero", "pterobacter"] {
         let output = run(&bin, name, &["--version".as_ref()]);
         assert!(output.status.success(), "{name} --version");
         assert_eq!(String::from_utf8_lossy(&output.stdout), version, "{name}");
@@ -60,12 +60,13 @@ fn installed_commands_classify_identically_under_v1_and_v2() {
     std::fs::write(&query, [b">synthetic\n".as_slice(), &seq, b"\n"].concat()).unwrap();
     let package = dir.path().join("package");
     let mut v1 = Vec::new();
-    for name in ["tero", "terobacter"] {
+    for name in ["ptero", "pterobacter"] {
         let reports = dir.path().join(format!("{name}-v1"));
         let output = run(
             &bin,
             name,
             &[
+                "--no-anim".as_ref(),
                 "--reference-package".as_ref(),
                 package.as_os_str(),
                 "--expected-sha256".as_ref(),
@@ -98,7 +99,7 @@ fn installed_commands_classify_identically_under_v1_and_v2() {
     let anim_pin =
         common::package::sha256_hex(&std::fs::read(dir.path().join("fastas/anim.json")).unwrap());
     let mut v2 = Vec::new();
-    for name in ["tero", "terobacter"] {
+    for name in ["ptero", "pterobacter"] {
         let receipts = dir.path().join(format!("{name}-anim"));
         let output = run(
             &bin,
@@ -108,8 +109,6 @@ fn installed_commands_classify_identically_under_v1_and_v2() {
                 dir.path().join("package").as_os_str(),
                 "--expected-sha256".as_ref(),
                 pin.as_ref(),
-                "--policy".as_ref(),
-                "conservative-assembly-anim-v2".as_ref(),
                 "--anim-reference-package".as_ref(),
                 dir.path().join("fastas").as_os_str(),
                 "--expected-anim-sha256".as_ref(),

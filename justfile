@@ -1,4 +1,4 @@
-PROJECT := "terobacter"
+PROJECT := "pterobacter"
 
 # regenerate redistribution notices with cargo-bundle-licenses 4.2.0
 licenses:
@@ -25,12 +25,12 @@ install-check:
     trap 'rm -rf "$root"' EXIT
     cargo install --path . --locked --quiet --root "$root"
     installed="$(ls "$root/bin" | sort | tr '\n' ' ')"
-    if [ "$installed" != "tero terobacter " ]; then
-        echo "a default install should expose only tero and terobacter, found: $installed" >&2
+    if [ "$installed" != "ptero pterobacter " ]; then
+        echo "a default install should expose only ptero and pterobacter, found: $installed" >&2
         exit 1
     fi
-    "$root/bin/tero" --version
-    "$root/bin/terobacter" --version
+    "$root/bin/ptero" --version
+    "$root/bin/pterobacter" --version
     TEROBACTER_INSTALLED_BIN="$root/bin" cargo test --locked --test installed_smoke -- --ignored
 
 # get coverage with tarpaulin

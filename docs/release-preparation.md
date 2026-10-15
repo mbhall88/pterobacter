@@ -1,10 +1,10 @@
 # Private release preparation
 
-The evaluated baseline is `834f4c288e9c163f316f3668f0219004d0adc6da`. Implementation and its frozen evaluation are coordinator-accepted. The software still reports `0.0.0`; the reference data has its separate `2026-10-06.proposal1` identity. A source commit, binary digest, data-manifest digest and policy/profile identify a candidate more precisely than the placeholder software version.
+The evaluated baseline is `834f4c288e9c163f316f3668f0219004d0adc6da`. Implementation and its frozen evaluation are coordinator-accepted. The software still reports `0.0.0`; the reference data has its separate `2026-10-06.proposal1` identity. The source commit, binary and data-manifest digests, analysis settings and method profile identify a candidate more precisely than the placeholder software version.
 
 ## Measured installation and platform scope
 
-An independent reviewer installed the exact baseline from a source export into a fresh Linux target/install directory using the locked dependency cache. It exposed only `tero` and `terobacter`; both passed installed synthetic v1/v2 smoke tests without an external analysis executable on PATH. The source export contained 353 files, 7,822,152 file bytes, with no symlinks or matched private/research-workspace paths. The baseline source archive SHA-256 was `7f7ea1bb9453f6af71be4c6936a471052b3fde39e3d61888b8abaee6992a875c`.
+An independent reviewer installed the exact baseline from a source export into a fresh Linux target/install directory using the locked dependency cache. It exposed only `tero` and `terobacter`; both passed installed synthetic skani-only and ANIm smoke tests without an external analysis executable on PATH. The source export contained 353 files, 7,822,152 file bytes, with no symlinks or matched private/research-workspace paths. The baseline source archive SHA-256 was `7f7ea1bb9453f6af71be4c6936a471052b3fde39e3d61888b8abaee6992a875c`.
 
 | Item | Measured result |
 |---|---|
@@ -39,6 +39,6 @@ NCBI-derived assemblies and sketches retain the [NCBI molecular-data disclaimer]
 
 ## Review before publication
 
-Private archives, manifests, platform instructions and evidence are prepared for review. Public repository visibility, uploads/releases, reference replacements, final software/data versions and author approval remain separate. The frozen v2 report keeps `not_yet_validated`; acceptance of the evaluation does not silently rewrite that compiled status or imply independent accuracy. Changes to that status need a reviewed candidate and affected validation.
+Private archives, manifests, platform instructions and evidence are prepared for review. Public repository visibility, uploads/releases, reference replacements, final software/data versions and author approval remain separate. The frozen ANIm report keeps `not_yet_validated`; acceptance of the evaluation does not silently rewrite that compiled status or imply independent accuracy. Changes to that status need a reviewed candidate and affected validation.
 
-README wording, installation channels, examples, help and option naming can now receive Michael's repository presentation review. Cosmetic feedback does not authorize changes to thresholds, measurement engines, references or taxonomic policy. Each request will receive a checked change or an agreed disposition.
+README wording, installation channels, examples, help and option naming can now receive Michael's repository presentation review. Cosmetic feedback does not authorize changes to thresholds, measurement engines, references or classification rules. Each request will receive a checked change or an agreed disposition.

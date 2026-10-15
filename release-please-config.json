@@ -3,7 +3,7 @@
   "packages": {
     ".": {
       "release-type": "rust",
-      "package-name": "terobacter",
+      "package-name": "pterobacter",
       "include-v-in-tag": false,
       "include-component-in-tag": false,
       "bump-minor-pre-major": true

@@ -9,15 +9,10 @@ fn outside_band_v2_uses_the_same_skani_call_without_requiring_fastas() {
     let (dir, pin, seq) = native_package();
     let query = dir.path().join("query.fa");
     std::fs::write(&query, [b">synthetic\n".as_slice(), &seq, b"\n"].concat()).unwrap();
-    let output = cargo_bin_cmd!("tero")
+    let output = cargo_bin_cmd!("ptero")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
-        .args([
-            "--expected-sha256",
-            &pin,
-            "--policy",
-            "conservative-assembly-anim-v2",
-        ])
+        .args(["--expected-sha256", &pin])
         .arg(query)
         .output()
         .unwrap();
@@ -51,15 +46,10 @@ fn triggered_query_missing_fastas_preserves_the_v2_plan_and_exits_incomplete() {
         [b">synthetic\n".as_slice(), &seq, b"\n>short\nACGTN\n"].concat(),
     )
     .unwrap();
-    let output = cargo_bin_cmd!("tero")
+    let output = cargo_bin_cmd!("ptero")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
-        .args([
-            "--expected-sha256",
-            &pin,
-            "--policy",
-            "conservative-assembly-anim-v2",
-        ])
+        .args(["--expected-sha256", &pin])
         .arg(query)
         .output()
         .unwrap();
@@ -85,14 +75,12 @@ fn native_rescue_measures_every_primary_competitor_including_unreturned() {
     .unwrap();
     let anim_pin =
         common::package::sha256_hex(&std::fs::read(dir.path().join("fastas/anim.json")).unwrap());
-    let output = cargo_bin_cmd!("tero")
+    let output = cargo_bin_cmd!("ptero")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args([
             "--expected-sha256",
             &pin,
-            "--policy",
-            "conservative-assembly-anim-v2",
             "--expected-anim-sha256",
             &anim_pin,
         ])
@@ -307,15 +295,13 @@ impl Prepared {
         self.command_to(&self.query, "receipts")
     }
     fn command_to(&self, query: &std::path::Path, output: &str) -> assert_cmd::Command {
-        let mut command = cargo_bin_cmd!("tero");
+        let mut command = cargo_bin_cmd!("ptero");
         command
             .arg("--reference-package")
             .arg(self.dir.path().join("package"))
             .args([
                 "--expected-sha256",
                 &self.pin,
-                "--policy",
-                "conservative-assembly-anim-v2",
                 "--expected-anim-sha256",
                 &self.anim_pin,
             ])
@@ -541,7 +527,8 @@ fn existing_output_is_preserved_and_v1_rejects_anim_options() {
         std::fs::read_to_string(output_dir.join("old")).unwrap(),
         "preserve"
     );
-    let output = cargo_bin_cmd!("terobacter")
+    let output = cargo_bin_cmd!("pterobacter")
+        .arg("--no-anim")
         .arg("--reference-package")
         .arg(prepared.dir.path().join("package"))
         .args([
@@ -555,7 +542,7 @@ fn existing_output_is_preserved_and_v1_rejects_anim_options() {
         .unwrap();
     assert_eq!(output.status.code(), Some(5));
     let report: Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(report["execution"]["stage"], "policy");
+    assert_eq!(report["execution"]["stage"], "options");
     assert_eq!(report["assignment"]["species_id"], Value::Null);
 }
 
@@ -566,18 +553,13 @@ fn v2_aliases_preserve_sequential_batch_status_without_fallback() {
     std::fs::write(&bad, "not FASTA").unwrap();
     let mut reports = Vec::new();
     for program in [
-        assert_cmd::cargo::cargo_bin!("tero"),
-        assert_cmd::cargo::cargo_bin!("terobacter"),
+        assert_cmd::cargo::cargo_bin!("ptero"),
+        assert_cmd::cargo::cargo_bin!("pterobacter"),
     ] {
         let output = std::process::Command::new(program)
             .arg("--reference-package")
             .arg(prepared.dir.path().join("package"))
-            .args([
-                "--expected-sha256",
-                &prepared.pin,
-                "--policy",
-                "conservative-assembly-anim-v2",
-            ])
+            .args(["--expected-sha256", &prepared.pin])
             .args([&prepared.query, &bad])
             .output()
             .unwrap();

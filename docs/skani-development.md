@@ -3,8 +3,8 @@
 Build the feature-gated development binary:
 
 ```sh
-cargo build --release --locked --features dev --bin terobacter-dev
-terobacter-dev skani-search --database DB --query assembly.fa --threads 2
+cargo build --release --locked --features dev --bin pterobacter-dev
+pterobacter-dev skani-search --database DB --query assembly.fa --threads 2
 ```
 
 `DB` is an authenticated consolidated skani 0.3.2 DNA database component containing `markers.bin`, `index.db` and `sketches.db`. Keep these files immutable while the database is open. Reference-package authentication is provided by the package loader; this measurement entry point checks the database format and internal bindings.

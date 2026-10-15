@@ -1,5 +1,7 @@
 # Read your results
 
+The default rescue-mode JSON records `species_id` and `subspecies_id` at the top level. With `--no-anim`, the skani-only format records them under `assignment`. Saved examples retain the mode that produced them; the Markdown and TSV reports provide a common reading format.
+
 Open `report.md` in the directory you supplied with `--report-dir`. Start with the final call, reasons and warnings, then examine the supporting comparisons. Use `calls.tsv` for a batch overview and JSON for a pipeline.
 
 ## Find the answer

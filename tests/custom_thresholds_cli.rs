@@ -12,7 +12,7 @@ fn run(operation: &str, input: &Value, options: &[&str]) -> std::process::Output
     let inventory = dir.path().join("inventory.json");
     std::fs::write(&evidence, p1::evidence_text("custom", input)).unwrap();
     std::fs::write(&inventory, p1::inventory_text(input)).unwrap();
-    let mut cmd = cargo_bin_cmd!("terobacter-dev");
+    let mut cmd = cargo_bin_cmd!("pterobacter-dev");
     cmd.arg(operation)
         .arg(evidence)
         .arg("--reference-inventory")
@@ -67,7 +67,7 @@ fn invalid_thresholds_fail_before_reading_inputs_or_printing_a_result() {
         vec!["--species-ani", "96", "--subspecies-ani", "95"],
     ] {
         for operation in ["saved-evidence", "rescue-plan"] {
-            let mut cmd = cargo_bin_cmd!("terobacter-dev");
+            let mut cmd = cargo_bin_cmd!("pterobacter-dev");
             cmd.args([operation, "missing.json"]);
             if operation == "saved-evidence" {
                 cmd.args(["--policy", "conservative-assembly-anim-v2"]);
@@ -87,7 +87,7 @@ fn invalid_thresholds_fail_before_reading_inputs_or_printing_a_result() {
 #[test]
 fn v1_refuses_each_override_even_when_equal_to_the_default() {
     for flag in ["--species-ani=96", "--subspecies-ani=98"] {
-        let out = cargo_bin_cmd!("terobacter-dev")
+        let out = cargo_bin_cmd!("pterobacter-dev")
             .args(["saved-evidence", "missing.json", flag])
             .output()
             .unwrap();

@@ -1,4 +1,4 @@
-//! Terobacter: standalone Enterobacter isolate classification.
+//! Pterobacter: standalone Enterobacter isolate classification.
 //!
 //! One crate, one internal library. The decision logic in [`evidence`], [`reference`],
 //! [`panel`], [`decision`] (v1), [`rescue`] (v2), [`report`] (TSV and Markdown) and [`mlst`] is pure, so command-line, browser and GUI
