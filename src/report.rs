@@ -878,7 +878,7 @@ pub fn render(reports: &[Value]) -> Rendered {
     calls.push('\n');
     let mut evidence = EVIDENCE_COLUMNS.join("\t");
     evidence.push('\n');
-    let mut markdown = String::from("# Terobacter report\n\n");
+    let mut markdown = String::from("# Pterobacter report\n\n");
     let _ = writeln!(
         markdown,
         "This summary is derived from the JSON report, which is authoritative. Assemblies: {}.\n",

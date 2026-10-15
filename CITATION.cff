@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: Terobacter
+title: Pterobacter
 message: >-
   If you use this software, please cite it using the
   metadata from this file.
@@ -11,7 +11,7 @@ authors:
     orcid: 'https://orcid.org/0000-0003-3683-6208'
 repository-code: 'https://github.com/mbhall88/terobacter'
 abstract: >-
-  Terobacter classifies Enterobacter isolate assemblies in a single
+  Pterobacter classifies Enterobacter isolate assemblies in a single
   self-contained executable. It reports a species and subspecies call
   only when the approved rules support one, and shows the nearest-reference
   evidence either way.

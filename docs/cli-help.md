@@ -4,7 +4,7 @@ For a first run, follow [classify an assembly](running.md). This page explains t
 
 ## ANIm and ANI thresholds
 
-Terobacter first estimates ANI with skani. For eligible samples just below the species boundary, it also runs ANIm using whole-genome alignments to refine the estimate. ANIm can take longer, especially in large batches with many borderline samples; samples outside that band do not incur alignment work. Use `-n` or `--no-anim` to skip ANIm and use skani only.
+Pterobacter first estimates ANI with skani. For eligible samples just below the species boundary, it also runs ANIm using whole-genome alignments to refine the estimate. ANIm can take longer, especially in large batches with many borderline samples; samples outside that band do not incur alignment work. Use `-n` or `--no-anim` to skip ANIm and use skani only.
 
 `-s` / `--species-ani PERCENT` sets the minimum species ANI, **96% by default**. Enter a percentage such as `96.5`, not a fraction such as `0.965`. A skani species call requires ANI greater than or equal to that value; an ANIm-supported call requires ANI strictly greater than it in both alignment directions. Coverage and competitor checks must also pass.
 
@@ -38,12 +38,12 @@ The current limits bound native alignment work. Reaching a limit leaves the requ
 
 ## Exact terminal output
 
-Captured from the current `tero --help`. The `terobacter` alias accepts the same options.
+Captured from the current `ptero --help`. The `pterobacter` alias accepts the same options.
 
 ```text
 Standalone, self-contained Enterobacter isolate classification
 
-Usage: tero [OPTIONS] --reference-package <REFERENCE_PACKAGE> --expected-sha256 <EXPECTED_SHA256> <ASSEMBLY>...
+Usage: ptero [OPTIONS] --reference-package <REFERENCE_PACKAGE> --expected-sha256 <EXPECTED_SHA256> <ASSEMBLY>...
 
 Arguments:
   <ASSEMBLY>...  Isolate assembly FASTA files, analysed whole and as supplied

@@ -7,7 +7,7 @@ First [install the program](installation.md) and [set up the reference variables
 ## One assembly
 
 ```sh
-tero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256" \
+ptero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256" \
   --anim-reference-package "$ANIM_REFERENCE_PACKAGE" --expected-anim-sha256 "$ANIM_SHA256" \
   --anim-output isolate-alignments \
   --threads 2 --output isolate.json --report-dir isolate-report isolate.fa
@@ -18,7 +18,7 @@ Open `isolate-report/report.md` for the answer and warnings. The full JSON is in
 ## A batch
 
 ```sh
-tero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256" \
+ptero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256" \
   --anim-reference-package "$ANIM_REFERENCE_PACKAGE" --expected-anim-sha256 "$ANIM_SHA256" \
   --anim-output batch-alignments \
   --jobs 2 --threads 2 --output batch.json --report-dir batch-report \
@@ -43,7 +43,7 @@ All output files and report directories must be new, distinct, outside reference
 [Historical MLST](historical-mlst.md) is optional. The [command reference](assembly.md) covers boundary ANIm, its reference components, resource limits and verified alignment caching. The default uses skani plus MUMmer4 rescue. For skani only, use:
 
 ```sh
-tero -n -r "$REFERENCE_PACKAGE" -R "$REFERENCE_SHA256" -t 2 -o isolate.json -d isolate-report isolate.fa
+ptero -n -r "$REFERENCE_PACKAGE" -R "$REFERENCE_SHA256" -t 2 -o isolate.json -d isolate-report isolate.fa
 ```
 
 [Command-line help](cli-help.md) lists every short and long option.

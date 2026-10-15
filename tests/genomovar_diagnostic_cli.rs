@@ -175,7 +175,7 @@ fn run(report: &Value, temp: &Path, package: &str, pin: &str, extra: &[(&str, &s
     let bytes = serde_json::to_vec_pretty(report).unwrap();
     fs::write(&path, &bytes).unwrap();
     let hash = sha256_hex(&bytes);
-    let mut command = cargo_bin_cmd!("terobacter-dev");
+    let mut command = cargo_bin_cmd!("pterobacter-dev");
     command.args([
         "genomovar-diagnostic",
         "--report",

@@ -1,5 +1,5 @@
 //! TSV and Markdown reports must agree with the authoritative JSON report. The reports under
-//! test are small synthetic documents in the shapes `tero` emits for each policy.
+//! test are small synthetic documents in the shapes `ptero` emits for each policy.
 mod common;
 
 use common::p1;

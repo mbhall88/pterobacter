@@ -219,7 +219,7 @@ fn the_public_command_reports_a_withheld_genomovar_for_a_package_without_the_def
     let (dir, pin) = package(&[]);
     let path = dir.path().join("query.fa");
     std::fs::write(&path, query()).unwrap();
-    let output = cargo_bin_cmd!("tero")
+    let output = cargo_bin_cmd!("ptero")
         .arg("--no-anim")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
@@ -356,7 +356,7 @@ fn public_command_combines_mlst_and_genomovar_for_both_parent_policies() {
     std::fs::write(&path, query()).unwrap();
     for policy in ["conservative-assembly-v1", "conservative-assembly-anim-v2"] {
         for mode in ["not_requested", "complete", "failed"] {
-            let mut command = cargo_bin_cmd!("tero");
+            let mut command = cargo_bin_cmd!("ptero");
             command
                 .arg("--reference-package")
                 .arg(dir.path().join("package"))

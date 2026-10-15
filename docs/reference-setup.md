@@ -18,7 +18,7 @@ ANIM_SHA256=THE_TRUSTED_ANIM_JSON_SHA256
 Replace these placeholders with the two directories and their supplied digests. In the current interface these variables are just shell conveniences; every command still receives the directory and digest explicitly:
 
 ```sh
-tero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256" \
+ptero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256" \
   --anim-reference-package "$ANIM_REFERENCE_PACKAGE" --expected-anim-sha256 "$ANIM_SHA256" \
   --anim-output isolate-alignments \
   --output isolate.json --report-dir isolate-report isolate.fa

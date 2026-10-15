@@ -1,4 +1,4 @@
-# Install Terobacter
+# Install Pterobacter
 
 Build from the private source if you have repository access. Distribution is on hold during repository review; no public binary, crates.io package, Bioconda package or Homebrew formula is currently offered.
 
@@ -10,11 +10,11 @@ Install Rust and GNU C++ with C++17 support, then obtain the source:
 git clone git@github.com:mbhall88/terobacter.git
 cd terobacter
 cargo install --path . --locked
-tero --version
-terobacter --version
+ptero --version
+pterobacter --version
 ```
 
-Both installed names run the same program. Use `terobacter` if another installed tool already uses `tero`. Cargo's installation directory must be on your `PATH`.
+Both installed names run the same program. Use `pterobacter` if another installed tool already uses `ptero`. Cargo's installation directory must be on your `PATH`.
 
 The measured Linux build used Rust 1.95.0 and GCC 11.5.0 on x86_64 Red Hat Enterprise Linux 9.8. The binary links system C/C++ libraries; the inspected build requires glibc symbols through 2.34. These describe the tested build, not a minimum Rust version or compatibility guarantee for every Linux system. The source includes Rust and embedded C/C++.
 

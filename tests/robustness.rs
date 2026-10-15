@@ -14,7 +14,7 @@ fn write_query(dir: &Path, name: &str, seq: &[u8]) -> PathBuf {
 }
 
 fn public_command(dir: &Path, pin: &str) -> assert_cmd::Command {
-    let mut command = cargo_bin_cmd!("tero");
+    let mut command = cargo_bin_cmd!("ptero");
     command
         .arg("--reference-package")
         .arg(dir.join("package"))

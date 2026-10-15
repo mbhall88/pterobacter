@@ -1,4 +1,4 @@
-# Terobacter report
+# Pterobacter report
 
 This summary is derived from the JSON report, which is authoritative. Assemblies: 3.
 

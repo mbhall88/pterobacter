@@ -44,12 +44,12 @@ impl ThresholdArgs {
     }
 }
 
-// The public command, shared by the `tero` and `terobacter` executables. The command name is
-// fixed so `--version` always names Terobacter; usage lines still show whichever name the user
+// The public command, shared by the `ptero` and `pterobacter` executables. The command name is
+// fixed so `--version` always names Pterobacter; usage lines still show whichever name the user
 // typed, because clap takes that from the executable.
 #[derive(Debug, Parser)]
 #[command(
-    name = "terobacter",
+    name = "pterobacter",
     version,
     about,
     after_help = "Uses skani first, then ANIm for eligible samples near the species boundary.

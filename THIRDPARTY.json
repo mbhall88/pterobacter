@@ -1,5 +1,5 @@
 {
-  "root_name": "terobacter",
+  "root_name": "pterobacter",
   "third_party_libraries": [
     {
       "package_name": "adler2",

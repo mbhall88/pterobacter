@@ -5,8 +5,8 @@ mod common;
 
 fn command(name: &str) -> assert_cmd::Command {
     match name {
-        "tero" => cargo_bin_cmd!("tero"),
-        "terobacter" => cargo_bin_cmd!("terobacter"),
+        "ptero" => cargo_bin_cmd!("ptero"),
+        "pterobacter" => cargo_bin_cmd!("pterobacter"),
         _ => unreachable!(),
     }
 }
@@ -16,7 +16,7 @@ fn default_never_falls_back_when_fastas_are_missing() {
     let (dir, pin, seq) = common::assembly::rescue_package();
     let query = dir.path().join("query.fa");
     std::fs::write(&query, [b">query\n".as_slice(), &seq, b"\n"].concat()).unwrap();
-    for name in ["tero", "terobacter"] {
+    for name in ["ptero", "pterobacter"] {
         let mut results = Vec::new();
         for mode in [vec![], vec!["--threads", "1"]] {
             let output = command(name)
@@ -50,7 +50,7 @@ fn no_anim_and_its_short_form_agree_for_both_aliases() {
     let query = dir.path().join("query.fa");
     std::fs::write(&query, [b">query\n".as_slice(), &seq, b"\n"].concat()).unwrap();
     let mut results = Vec::new();
-    for name in ["tero", "terobacter"] {
+    for name in ["ptero", "pterobacter"] {
         for mode in [vec!["--no-anim"], vec!["-n"]] {
             let output = command(name)
                 .args(mode)
@@ -77,7 +77,7 @@ fn no_anim_and_its_short_form_agree_for_both_aliases() {
 #[test]
 fn removed_options_and_incompatible_thresholds_are_rejected() {
     let pin = "0".repeat(64);
-    for name in ["tero", "terobacter"] {
+    for name in ["ptero", "pterobacter"] {
         for flags in [
             vec!["--policy", "conservative-assembly-anim-v2"],
             vec!["-p", "conservative-assembly-v1"],
@@ -113,7 +113,7 @@ fn removed_options_and_incompatible_thresholds_are_rejected() {
 
 #[test]
 fn help_explains_boundary_anim_without_internal_selectors() {
-    for name in ["tero", "terobacter"] {
+    for name in ["ptero", "pterobacter"] {
         for flag in ["--help", "-h"] {
             let output = command(name).arg(flag).output().unwrap();
             assert!(output.status.success());

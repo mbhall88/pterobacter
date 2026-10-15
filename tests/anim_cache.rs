@@ -38,7 +38,7 @@ impl Prepared {
 
     /// A v2 run of `queries` into the new evidence directory `evidence`, sharing one cache.
     fn run(&self, evidence: &str, extra: &[&str], queries: &[&Path]) -> (Option<i32>, Value) {
-        let output = cargo_bin_cmd!("tero")
+        let output = cargo_bin_cmd!("ptero")
             .arg("--reference-package")
             .arg(self.dir.path().join("package"))
             .args(["--expected-sha256", &self.pin])
@@ -386,7 +386,7 @@ fn concurrent_v2_queries_keep_their_own_evidence_and_share_the_cache_safely() {
 #[test]
 fn v1_refuses_the_anim_cache_option() {
     let prepared = Prepared::new(NativeCase::Rescue);
-    let output = cargo_bin_cmd!("tero")
+    let output = cargo_bin_cmd!("ptero")
         .arg("--no-anim")
         .arg("--reference-package")
         .arg(prepared.dir.path().join("package"))

@@ -1,12 +1,12 @@
 # Whole-assembly classification
 
-`tero` and `terobacter` accept one or more isolate assembly FASTAs, without a subcommand:
+`ptero` and `pterobacter` accept one or more isolate assembly FASTAs, without a subcommand:
 
 ```sh
-tero --reference-package reference --expected-sha256 MANIFEST_SHA256 \
+ptero --reference-package reference --expected-sha256 MANIFEST_SHA256 \
   --anim-reference-package reference-fastas --expected-anim-sha256 ANIM_MANIFEST_SHA256 \
   --anim-output isolate-alignments isolate.fa > isolate.json
-terobacter --no-anim --reference-package reference --expected-sha256 MANIFEST_SHA256 \
+pterobacter --no-anim --reference-package reference --expected-sha256 MANIFEST_SHA256 \
   --jobs 2 --threads 4 --output batch.json first.fa second.fa
 ```
 
@@ -14,7 +14,7 @@ Use the SHA-256 of `portable.json` supplied through a trusted package handoff. C
 
 ## ANIm near the species boundary
 
-Terobacter first estimates ANI with skani. For eligible samples just below the species boundary, it also runs ANIm using whole-genome alignments to refine the estimate. ANIm can take longer, especially in large batches with many borderline samples; samples outside that band do not incur alignment work. Use `-n` or `--no-anim` to skip ANIm and use skani only.
+Pterobacter first estimates ANI with skani. For eligible samples just below the species boundary, it also runs ANIm using whole-genome alignments to refine the estimate. ANIm can take longer, especially in large batches with many borderline samples; samples outside that band do not incur alignment work. Use `-n` or `--no-anim` to skip ANIm and use skani only.
 
 The standard thresholds are skani ANI ≥96% for species and ≥98% for subspecies, both aligned fractions ≥80%, and a subspecies margin ≥1 percentage point. ANIm is considered when 94.5% ≤ maximum skani ANI <96%, subject to coverage and other safeguards. An ANIm-supported assignment requires ANI strictly greater than 96% in both directions and completed required competitor comparisons. It assigns species only; subspecies and genomovar stay unset.
 
@@ -33,13 +33,13 @@ All supplied records are passed to skani without plasmid filtering or trimming. 
 MLST runs only on request: pass a historical scheme package directory and the SHA-256 of its `manifest.json`, from a trusted source, together.
 
 ```sh
-tero --reference-package reference --expected-sha256 MANIFEST_SHA256 \
+ptero --reference-package reference --expected-sha256 MANIFEST_SHA256 \
   --anim-reference-package reference-fastas --expected-anim-sha256 ANIM_MANIFEST_SHA256 \
   --anim-output typed-alignments \
   --mlst-package mlst --mlst-expected-sha256 MLST_MANIFEST_SHA256 isolate.fa > isolate.json
 ```
 
-The engine is `terobacter-ungapped-mlst`, an in-binary ungapped seed-and-extend matcher that reproduces the calls of `mlst` 2.32.2 with BLAST+ 2.16.0 on the development fixtures. It is not that tool, and the report names the engine that ran. [MLST-UNGAPPED-r1](contracts/MLST-UNGAPPED-r1.md) describes the engine, the package checks and the record.
+The engine is `terobacter-ungapped-mlst`, an in-binary ungapped seed-and-extend matcher that reproduces the calls of `mlst` 2.32.2 with BLAST+ 2.16.0 on the development fixtures. It is not that tool, and the report names the engine that ran. The implementation contract is retained at `docs/contracts/MLST-UNGAPPED-r1.md`.
 
 The scheme covers PubMLST submissions through 31 December 2024. It is a later retrieval, not a byte snapshot of that date, and it makes no claim to post-2024 currency. Every record carries the cutoff, retrieval time, package and data SHA-256s, data terms URL and limitation text. States are `exact_profile_match`, `unmatched_profile`, `incomplete_profile`, `inexact_alleles` and `ambiguous_alleles`. An exact profile the scheme lacks is unmatched; no new ST is claimed. A profile-compatible candidate ST for a repeated identical allele is never the reported ST.
 
@@ -80,7 +80,7 @@ These are implementation and development-parity checks. Independent biological v
 ## Boundary ANIm
 
 ```sh
-tero --reference-package reference --expected-sha256 PRIMARY_MANIFEST_SHA256 \
+ptero --reference-package reference --expected-sha256 PRIMARY_MANIFEST_SHA256 \
   --anim-reference-package reference-fastas --expected-anim-sha256 ANIM_MANIFEST_SHA256 \
   --anim-output new-evidence isolate.fa > isolate.json
 ```
@@ -97,7 +97,7 @@ Within each query, ANIm runs one worker at a time with one native query thread. 
 
 - the query's exact file bytes, its component and its whole-assembly scope;
 - the reference ID, exact FASTA bytes, component, concept IDs, scope and the primary package the component is bound to;
-- the method profile, amendment, native build and source hashes, compiler, target and Terobacter version;
+- the method profile, amendment, native build and source hashes, compiler, target and Pterobacter version;
 - the pair time limit and worker memory limit, since a pair that finished under a looser limit could fail under a tighter one.
 
 A reused pair also counts the native time recorded in its receipts against the query's `--anim-query-seconds` budget, and is measured again instead when that time exceeds what remains for the pair. The cache therefore never lets a query complete that could not complete without it.
@@ -133,4 +133,4 @@ Concept IDs are ordered species then subspecies, omitting the latter when absent
 
 Native pair snapshots retain the exact supplied bytes, including compression, in `inputs/query.fa`. Each pair's `query.sha256` and the report's `input.query_sha256` identify those original bytes. The adapter uses the same compressed-format decoder as the assembly reader, then validates and normalizes FASTA formatting for `inputs/query.native.fa`; `query.native_sha256` identifies the bytes read by both native orientations. Verification decodes the retained original snapshot again and checks the native bytes, record lengths and hashes. All records, sequence case and ambiguous bases are preserved. The 256 MiB native-input limit also applies to decoded FASTA.
 
-The maintained MUMmer4 profile preserves literal N identity and inclusive whole-input coverage, matching the accepted MUMmer3 comparator semantics. Long runs of N remain a known limitation. See the [method amendment](contracts/P1-ANIM-MUMMER4-r1.md). Duplicate FASTA identifiers accepted by skani cannot be passed to the native ANIm adapter; if rescue requires such an input, the report records an explicit failed pair.
+The maintained MUMmer4 profile preserves literal N identity and inclusive whole-input coverage, matching the accepted MUMmer3 comparator semantics. Long runs of N remain a known limitation. The implementation contract is retained at `docs/contracts/P1-ANIM-MUMMER4-r1.md`. Duplicate FASTA identifiers accepted by skani cannot be passed to the native ANIm adapter; if rescue requires such an input, the report records an explicit failed pair.

@@ -19,7 +19,7 @@ use std::process::ExitCode;
 
 #[derive(Debug, Parser)]
 #[command(
-    name = "terobacter-dev",
+    name = "pterobacter-dev",
     version,
     about = "Evaluation-only operations. Not part of the public command"
 )]
@@ -105,7 +105,7 @@ enum DevCommand {
 
 #[derive(Debug, Args)]
 struct GenomovarDiagnosticArgs {
-    /// Completed assembly report produced by terobacter
+    /// Completed assembly report produced by pterobacter
     #[arg(long)]
     report: PathBuf,
     /// SHA-256 of the exact report bytes

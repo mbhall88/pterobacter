@@ -10,7 +10,7 @@ fn fixture(name: &str) -> PathBuf {
         .join(name)
 }
 fn pair(query: &Path, reference: &Path, output: &Path) -> std::process::Output {
-    let result = cargo_bin_cmd!("terobacter-dev")
+    let result = cargo_bin_cmd!("pterobacter-dev")
         .args(["anim-pair", "--query-id", "Q", "--reference-id", "R"])
         .arg("--query")
         .arg(query)
@@ -108,7 +108,7 @@ fn saved_pair_requires_expected_identities_component_and_concepts() {
     let out = dir.path().join("result");
     let query = fixture("identical.q.fa");
     let reference = fixture("identical.r.fa");
-    let result = cargo_bin_cmd!("terobacter-dev")
+    let result = cargo_bin_cmd!("pterobacter-dev")
         .args([
             "anim-pair",
             "--query-id",
@@ -241,7 +241,7 @@ fn saved_pair_resolves_default_identities_from_input_bytes() {
     let out = dir.path().join("result");
     let query = fixture("identical.q.fa");
     let reference = fixture("identical.r.fa");
-    cargo_bin_cmd!("terobacter-dev")
+    cargo_bin_cmd!("pterobacter-dev")
         .arg("anim-pair")
         .arg("--query")
         .arg(&query)
@@ -264,7 +264,7 @@ fn saved_pair_resolves_default_identities_from_input_bytes() {
 fn stale_input_hash_returns_incomplete_evidence_without_native_measurement() {
     let dir = tempfile::tempdir().unwrap();
     let output_dir = dir.path().join("result");
-    let output = cargo_bin_cmd!("terobacter-dev")
+    let output = cargo_bin_cmd!("pterobacter-dev")
         .arg("anim-pair")
         .arg("--query")
         .arg(fixture("identical.q.fa"))
@@ -367,7 +367,7 @@ fn upstream_missing_file_cannot_terminate_the_coordinator() {
     use std::io::Write;
     use std::process::Stdio;
     let dir = tempfile::tempdir().unwrap();
-    let mut child = std::process::Command::new(assert_cmd::cargo::cargo_bin!("terobacter-dev"))
+    let mut child = std::process::Command::new(assert_cmd::cargo::cargo_bin!("pterobacter-dev"))
         .env("TERO_INTERNAL_ANIM_WORKER", "1")
         .current_dir(dir.path())
         .stdin(Stdio::piped())
@@ -424,7 +424,7 @@ fn en4_development_parser_uses_the_production_weighted_metric_reader() {
     let queries = dir.path().join("queries.json");
     std::fs::write(&refs, "{\"R\":40}").unwrap();
     std::fs::write(&queries, "{\"Q\":40}").unwrap();
-    let output = cargo_bin_cmd!("terobacter-dev")
+    let output = cargo_bin_cmd!("pterobacter-dev")
         .arg("anim-parse")
         .arg("--filtered-delta")
         .arg(fixture("weighted.filter"))
@@ -453,7 +453,7 @@ fn en4_malformed_record_headers_fail_without_metrics_or_panic() {
     for header in ["unknown q nope 100", "r unknown 100 nope"] {
         for block in ["", "1 10 1 10 0 0 0\n0\n"] {
             std::fs::write(&delta, format!("r.fa q.fa\nNUCMER\n>{header}\n{block}")).unwrap();
-            let output = cargo_bin_cmd!("terobacter-dev")
+            let output = cargo_bin_cmd!("pterobacter-dev")
                 .arg("anim-parse")
                 .arg("--filtered-delta")
                 .arg(&delta)
@@ -478,7 +478,7 @@ fn sigterm_cancellation_retains_incomplete_pair_and_stops_native_worker() {
     use std::time::{Duration, Instant};
     let dir = tempfile::tempdir().unwrap();
     let out = dir.path().join("cancelled");
-    let mut child = Command::new(assert_cmd::cargo::cargo_bin!("terobacter-dev"))
+    let mut child = Command::new(assert_cmd::cargo::cargo_bin!("pterobacter-dev"))
         .args(["anim-pair", "--query"])
         .arg(fixture("identical.q.fa"))
         .arg("--reference")
