@@ -1,4 +1,4 @@
-//! Embedded skani search under the frozen AVX2-compatible DNA seeding profile.
+//! Embedded skani search with AVX2-compatible seeding and content-ordered orientation ties.
 //!
 //! This adapter owns I/O and measurement only. It does not assign taxa. Database
 //! authentication belongs to the reference-package loader; opened database files
@@ -21,7 +21,7 @@ use crate::evidence::Percent;
 
 pub const ENGINE_VERSION: &str = "0.3.2";
 pub const ENGINE_REVISION: &str = "22da4ae9e44b2e3e686c8e5c71fcd16cec2b9791";
-pub const ENGINE_PROFILE: &str = "skani-0.3.2-avx2-compatible-dna-v1";
+pub const ENGINE_PROFILE: &str = "skani-0.3.2-avx2-content-order-dna-v2";
 
 #[derive(Debug, thiserror::Error)]
 #[error("skani measurement failed: {0}")]
@@ -248,8 +248,8 @@ impl SkaniDatabase {
 
     /// Search the exact bytes a workflow has validated and hashed. All supplied
     /// records reach the pinned sketcher; its native 500-base floor is unchanged.
-    /// Keep the original query label: upstream uses it to break orientation ties.
-    /// The label is never opened as a file by this method.
+    /// Keep the original query label for provenance. The content-order profile does not use
+    /// filenames to choose orientation. The label is never opened as a file by this method.
     pub fn search_bytes(
         &self,
         query_label: &str,
@@ -287,7 +287,7 @@ impl SkaniDatabase {
                         .get_sketch(i)
                         .map_err(|e| reference_error(marker, e))?;
                     let map = chain::map_params_from_sketch(&reference, false, &cp, &model);
-                    let result = chain::chain_seeds(&reference, &query, map);
+                    let result = chain::chain_seeds_content_order(&reference, &query, map);
                     if result.ani > 0.5 {
                         SkaniRow::from_estimate(result).map(Some)
                     } else {

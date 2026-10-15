@@ -119,7 +119,7 @@ fn v1_json_carries_the_strongest_matches_panel_summary_and_distinct_versions() {
     assert_eq!(versions["report_schema"], "terobacter.assembly-call/1");
     assert_eq!(
         versions["skani_method"],
-        "skani-0.3.2-avx2-compatible-dna-v1"
+        "skani-0.3.2-avx2-content-order-dna-v2"
     );
     assert_eq!(versions["implementation"], env!("CARGO_PKG_VERSION"));
     assert_eq!(versions["reference_data"]["manifest_sha256"], pin);

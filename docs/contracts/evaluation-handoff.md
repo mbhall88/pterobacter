@@ -19,7 +19,8 @@ This page binds the frozen P4a-r3 evaluation design to this release candidate. I
 | v1 policy | `conservative-assembly-v1` |
 | v2 policy | `conservative-assembly-anim-v2`, contract revision `P1-r1`, `validation_status: not_yet_validated` |
 | Genomovar contract | P3a-r1, reported by `p3a-genomovar-contract-r1` |
-| skani compatibility profile | `skani-0.3.2-avx2-compatible-dna-v1` |
+| Historical skani compatibility profile | `skani-0.3.2-avx2-compatible-dna-v1` |
+| Current skani candidate profile, pending re-evaluation | `skani-0.3.2-avx2-content-order-dna-v2` |
 | ANIm method profile | `reciprocal-mummer4-4.0.1-preserve-n-mum-1-span-v1`, amendment `P1-ANIM-MUMMER4-r1` |
 | Reason-vocabulary map | [reason-vocabulary.tsv](reason-vocabulary.tsv), SHA-256 `b988ab4f895741cd57dcaac765707d38fd7187c49f3401deb0b28e66f67431d1` |
 | Policy identity | Compiled in. A report's `genomovar.parent.policy_sha256` hashes the exact v1 or v2 policy source, `genomovar.policy_sha256` the P3a reporting contract, and v2 `settings_sha256` the policy mode and thresholds. |
