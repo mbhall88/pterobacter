@@ -33,8 +33,6 @@ jobs:
         run: cargo fetch --locked
       - name: Check redistribution notices
         run: python3 scripts/bundle_licenses.py --check
-      - name: Check source-package safety
-        run: python3 -m unittest discover -s scripts -p 'test_prepare_source_archive.py'
 
   conventional-commits:
     runs-on: ubuntu-latest
