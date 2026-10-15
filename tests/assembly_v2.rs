@@ -577,6 +577,16 @@ fn v2_aliases_preserve_sequential_batch_status_without_fallback() {
             .as_object_mut()
             .unwrap()
             .remove("wall_seconds");
+        for result in report.as_array_mut().unwrap() {
+            let path = result["data_provenance"]["anim_evidence_directory"]
+                .as_str()
+                .unwrap();
+            assert!(std::path::Path::new(path).is_dir());
+            result["data_provenance"]
+                .as_object_mut()
+                .unwrap()
+                .remove("anim_evidence_directory");
+        }
         reports.push(report);
     }
     assert_eq!(reports[0], reports[1]);

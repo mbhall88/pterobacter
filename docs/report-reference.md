@@ -15,6 +15,16 @@ Use this reference to check exact output fields, evidence completeness and versi
 
 The TSV and Markdown files are produced from the JSON. They state the same final calls, reasons, settings, minima and method, and they cannot show a label the JSON does not assign. If you find a difference, the JSON is right, and the difference is a bug worth reporting.
 
+### Data selection
+
+Native reports add `data_provenance`: the actual reference trust source, selected
+catalogue/release/citation when managed, explicit or catalogue-derived component
+pins, typing request status and the retained ANIm evidence directory. Each
+rescue-mode run uses a unique directory unless an explicit new output path is
+supplied. This path and catalogue metadata are transport provenance, separate
+from scientific measurements and package identities. Markdown includes the same
+selection metadata. See [database management](databases.md).
+
 ### The final call
 
 `call_status` is `assigned`, `unresolved` or `not_evaluated`.

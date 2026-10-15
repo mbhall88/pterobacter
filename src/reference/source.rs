@@ -7,12 +7,10 @@ use std::collections::BTreeMap;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-use super::derive::{file_record, COMPONENTS, SOURCE_SCHEMA};
+use super::derive::{file_record, COMPONENTS};
 use super::manifest::Portable;
 use super::tables::TABLES;
 use super::{inconsistent, json_record, PackageError};
-
-const EXPORT_SCOPE: &str = "full_local_source_validation_at_export_not_reexecuted_at_load";
 
 /// The source manifest, kept whole for the derivation check, with the fields read before it.
 pub(super) struct SourceManifest {
@@ -57,8 +55,11 @@ struct LocalValidation {
 }
 
 impl SourceManifest {
-    pub(super) fn parse(bytes: &[u8]) -> Result<Self, PackageError> {
-        let value: Value = json_record(bytes, "the source manifest", SOURCE_SCHEMA)?;
+    pub(super) fn parse(
+        bytes: &[u8],
+        flavour: super::flavour::Flavour,
+    ) -> Result<Self, PackageError> {
+        let value: Value = json_record(bytes, "the source manifest", flavour.source_schema())?;
         let head: Head = serde_json::from_value(value.clone())
             .map_err(|error| inconsistent(format!("the source manifest is malformed: {error}")))?;
         Ok(Self { value, head })
@@ -91,15 +92,15 @@ impl SourceManifest {
         let local = &export.local_validation;
         if !local.valid
             || local.positive_calling_policy_enabled
-            || local.schema_version != SOURCE_SCHEMA
+            || local.schema_version != portable.flavour().source_schema()
         {
             return Err(inconsistent(
                 "the export attestation does not record a valid local validation",
             ));
         }
-        if !export.no_external_distribution
+        if export.no_external_distribution != portable.flavour().no_external_distribution()
             || !export.no_sequence_or_sketch_recomputation
-            || export.scope != EXPORT_SCOPE
+            || export.scope != portable.flavour().export_scope()
         {
             return Err(inconsistent("the export attestation has another scope"));
         }

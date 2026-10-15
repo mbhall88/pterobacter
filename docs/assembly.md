@@ -1,5 +1,8 @@
 # Whole-assembly classification
 
+For managed provisioning and automatic FASTA/evidence resolution, see
+[database management](databases.md). Explicit package paths below remain supported.
+
 `ptero` and `pterobacter` accept one or more isolate assembly FASTAs, without a subcommand:
 
 ```sh
@@ -10,7 +13,7 @@ pterobacter --no-anim --reference-package reference --expected-sha256 MANIFEST_S
   --jobs 2 --threads 4 --output batch.json first.fa second.fa
 ```
 
-Use the SHA-256 of `portable.json` supplied through a trusted package handoff. Computing a digest from an untrusted package does not establish its origin. The command verifies every listed asset, package metadata and component membership before opening the embedded skani database, and checks the package again before writing results. A provisioned run needs no network or external executable: no dependency is a network client, the source opens no socket, and where unprivileged namespaces are available, the test suite runs skani with MLST and a boundary ANIm analysis inside a network namespace that has no interface but loopback. Archived search labels are provenance labels; no archived FASTA is opened.
+Use the SHA-256 of `portable.json` supplied through a trusted package handoff. Computing a digest from an untrusted package does not establish its origin. The command verifies every listed asset, package metadata and component membership before opening the embedded skani database, and checks the package again before writing results. Classification from installed or explicit packages makes no network requests and needs no external executable. The HTTPS client is confined to database installation; where unprivileged namespaces are available, tests run skani with MLST and boundary ANIm inside a network namespace with only an unconfigured loopback interface. Archived search labels are provenance labels; no archived FASTA is opened.
 
 ## ANIm near the species boundary
 

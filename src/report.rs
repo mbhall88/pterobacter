@@ -782,7 +782,12 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
         }
     }
     let _ = writeln!(md, "### Supplementary results\n");
-    let _ = writeln!(md, "- Historical MLST: {}", or_dash(g("mlst_status")));
+    let mlst_label = if report["mlst"]["database"]["schema_version"] == 2 {
+        "MLST"
+    } else {
+        "Historical MLST"
+    };
+    let _ = writeln!(md, "- {mlst_label}: {}", or_dash(g("mlst_status")));
     if !g("mlst_sequence_type").is_empty() || !g("mlst_state").is_empty() {
         let _ = writeln!(
             md,
@@ -802,6 +807,16 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
         or_dash(g("record_count"))
     );
     let _ = writeln!(md, "- Evidence SHA-256: {}", or_dash(g("evidence_sha256")));
+    if let Some(provenance) = report.get("data_provenance") {
+        let _ = writeln!(md, "\nData selection, citation and retained evidence:\n");
+        for line in serde_json::to_string_pretty(provenance)
+            .expect("JSON value")
+            .lines()
+        {
+            let _ = writeln!(md, "    {line}");
+        }
+        let _ = writeln!(md);
+    }
     let _ = writeln!(
         md,
         "- Reference package {}, manifest SHA-256 {}",

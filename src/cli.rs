@@ -10,7 +10,7 @@ pub mod v2;
 use crate::decision::V1_POLICY_ID;
 use crate::evidence::sha256_hex;
 use crate::reference::PackageSource;
-use clap::Parser;
+use clap::{CommandFactory, FromArgMatches, Parser};
 use serde_json::{json, Value};
 use std::collections::BTreeSet;
 use std::fs::{self, File};
@@ -54,24 +54,33 @@ impl ThresholdArgs {
     name = "pterobacter",
     version,
     about,
+    subcommand_negates_reqs = true,
+    subcommand_precedence_over_arg = true,
     after_help = "Uses skani first, then ANIm for eligible samples near the species boundary.
 ANIm can be slower; use -n/--no-anim to skip it.
 ANI thresholds are percentages, e.g. --species-ani 96.5. Require 80 <= species <= subspecies <= 100.
 Custom thresholds cannot be combined with --no-anim and mark results custom_unvalidated.
 Guide: https://github.com/mbhall88/pterobacter/blob/main/docs/assembly.md"
 )]
-struct Public {
+pub(crate) struct Public {
+    #[command(subcommand)]
+    command: Option<database::Database>,
+    #[command(flatten)]
+    databases: database::Options,
+    /// Enable optional MLST using the selected managed scheme
+    #[arg(short = 'l', long)]
+    mlst: bool,
     #[command(flatten)]
     thresholds: ThresholdArgs,
     /// Isolate assembly FASTA files, analysed whole and as supplied
     #[arg(value_name = "ASSEMBLY", required = true, num_args = 1..)]
     assemblies: Vec<PathBuf>,
     /// Authenticated reference package directory
-    #[arg(short = 'r', long)]
-    reference_package: PathBuf,
+    #[arg(short = 'r', long, requires = "expected_sha256")]
+    reference_package: Option<PathBuf>,
     /// Expected SHA-256 of portable.json, obtained from a trusted source
-    #[arg(short = 'R', long, value_parser = parse_sha256)]
-    expected_sha256: String,
+    #[arg(short = 'R', long, value_parser = parse_sha256, requires = "reference_package")]
+    expected_sha256: Option<String>,
     /// Skip ANIm near the species boundary; use skani only
     #[arg(short = 'n', long)]
     no_anim: bool,
@@ -84,7 +93,7 @@ struct Public {
     /// Write the JSON report to this new file instead of standard output; never replaced
     #[arg(short = 'o', long, value_name = "FILE")]
     output: Option<PathBuf>,
-    /// Historical MLST scheme package directory; requests optional supplementary MLST
+    /// MLST scheme package directory; requests optional supplementary MLST
     #[arg(short = 'm', long, requires = "mlst_expected_sha256")]
     mlst_package: Option<PathBuf>,
     /// Expected SHA-256 of the MLST package manifest.json, obtained from a trusted source
@@ -118,7 +127,43 @@ pub fn run_public() -> ExitCode {
     if let Some(status) = crate::anim::run_worker_if_requested() {
         return status;
     }
-    let args = Public::parse();
+    let matches = Public::command().get_matches();
+    if matches.subcommand().is_some() {
+        let mut command = Public::command();
+        let conflict = command
+            .get_arguments()
+            .find(|arg| {
+                !arg.is_global_set()
+                    && matches.value_source(arg.get_id().as_str())
+                        == Some(clap::parser::ValueSource::CommandLine)
+            })
+            .map(|arg| arg.get_id().to_string());
+        if let Some(arg) = conflict {
+            command
+                .error(
+                    clap::error::ErrorKind::ArgumentConflict,
+                    format!("classification argument {arg} cannot be used with database commands"),
+                )
+                .exit();
+        }
+    }
+    let mut args = Public::from_arg_matches(&matches).expect("clap validated arguments");
+    if let Some(command) = args.command.take() {
+        return match database::run(command, &args.databases) {
+            Ok(value) => {
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&value).expect("serializes")
+                );
+                ExitCode::SUCCESS
+            }
+            Err(error) => {
+                eprintln!("error: {error}");
+                ExitCode::from(2)
+            }
+        };
+    }
+
     if args.no_anim
         && (args.thresholds.species_ani.is_some() || args.thresholds.subspecies_ani.is_some())
     {
@@ -132,13 +177,35 @@ pub fn run_public() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
+    let selection = match database::resolve(&mut args) {
+        Ok(value) => value,
+        Err(error) => {
+            eprintln!("error: {error}");
+            return ExitCode::from(2);
+        }
+    };
+    let evidence_root = if !args.no_anim && args.anim.anim_output.is_none() {
+        match database::state_root() {
+            Ok(root) => Some(root),
+            Err(error) => {
+                eprintln!("error: {error}");
+                return ExitCode::from(2);
+            }
+        }
+    } else {
+        None
+    };
     if let Err(error) = outputs::check(&outputs::Paths {
         report: args.output.as_deref(),
         report_dir: args.report_dir.as_deref(),
-        anim_output: args.anim.anim_output.as_deref(),
+        anim_output: args
+            .anim
+            .anim_output
+            .as_deref()
+            .or(evidence_root.as_deref()),
         anim_cache: args.anim.anim_cache.as_deref(),
         packages: [
-            Some(args.reference_package.as_path()),
+            args.reference_package.as_deref(),
             args.anim.anim_reference_package.as_deref(),
             args.mlst_package.as_deref(),
         ]
@@ -150,6 +217,21 @@ pub fn run_public() -> ExitCode {
         eprintln!("error: {error}");
         return ExitCode::from(2);
     }
+    let reserved_evidence = if let Some(root) = &evidence_root {
+        let reserve = database::create_evidence(root);
+        match reserve {
+            Ok(path) => {
+                args.anim.anim_output = Some(path);
+                true
+            }
+            Err(error) => {
+                eprintln!("error reserving ANIm evidence: {error}");
+                return ExitCode::from(2);
+            }
+        }
+    } else {
+        false
+    };
     if let Some(dir) = &args.report_dir {
         if let Err(error) = fs::create_dir(dir) {
             eprintln!("error: --report-dir must be a new directory: {error}");
@@ -157,7 +239,7 @@ pub fn run_public() -> ExitCode {
         }
     }
     install_cancel_handlers();
-    let output_error = if !args.no_anim {
+    let output_error = if !args.no_anim && !reserved_evidence {
         args.anim
             .anim_output
             .as_ref()
@@ -170,7 +252,8 @@ pub fn run_public() -> ExitCode {
         .mlst_package
         .as_deref()
         .zip(args.mlst_expected_sha256.as_deref())
-        .map(|(directory, sha256)| mlst::Mlst::new(directory, sha256));
+        .map(|(directory, sha256)| mlst::Mlst::new(directory, sha256))
+        .or_else(|| selection.typing_error.clone().map(mlst::Mlst::unavailable));
     let batch = Batch {
         args: &args,
         thresholds: &thresholds,
@@ -231,6 +314,10 @@ pub fn run_public() -> ExitCode {
         crate::genomovar::recheck(report);
     }
     for report in &mut results {
+        report["data_provenance"] = selection.provenance.clone();
+        if let Some(path) = &args.anim.anim_output {
+            report["data_provenance"]["anim_evidence_directory"] = json!(path);
+        }
         crate::report::annotate(report);
     }
     let rendered = args
@@ -367,7 +454,12 @@ impl Batch<'_> {
             let workflow = self
                 .workflow
                 .get_or_init(|| {
-                    assembly::AssemblyWorkflow::open(&args.reference_package, &args.expected_sha256)
+                    assembly::AssemblyWorkflow::open(
+                        args.reference_package
+                            .as_deref()
+                            .expect("reference resolved"),
+                        args.expected_sha256.as_deref().expect("digest resolved"),
+                    )
                 })
                 .as_ref()
                 .map_err(|e| (4, e.clone()))?;
@@ -658,15 +750,30 @@ mod public_option_tests {
 
     #[test]
     fn every_public_option_has_a_unique_short_form() {
-        let command = Public::command();
-        command.clone().debug_assert();
-        let mut seen = BTreeSet::new();
-        for arg in command.get_arguments().filter(|a| a.get_long().is_some()) {
-            let short = arg
-                .get_short()
-                .unwrap_or_else(|| panic!("missing short form: {}", arg.get_id()));
-            assert!(seen.insert(short), "duplicate -{short}");
+        fn check(command: &clap::Command) {
+            let mut seen = BTreeSet::new();
+            for arg in command.get_arguments().filter(|a| a.get_long().is_some()) {
+                let short = arg.get_short().unwrap_or_else(|| {
+                    panic!(
+                        "missing short form: {} {}",
+                        command.get_name(),
+                        arg.get_id()
+                    )
+                });
+                assert!(
+                    seen.insert(short),
+                    "duplicate -{short} in {}",
+                    command.get_name()
+                );
+            }
+            for child in command.get_subcommands() {
+                check(child);
+            }
         }
+        let mut command = Public::command();
+        command.clone().debug_assert();
+        command.build();
+        check(&command);
     }
 
     #[test]

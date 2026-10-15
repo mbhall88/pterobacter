@@ -10,6 +10,7 @@
 //! Pure: callers supply the package through [`PackageSource`](crate::reference::PackageSource)
 //! and the assembly as parsed records.
 mod engine;
+mod metadata;
 mod rules;
 mod scheme;
 

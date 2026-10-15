@@ -16,7 +16,7 @@ The input is always an isolate assembly FASTA. Every public option has a short f
 
 ## MLST
 
-MLST is off by default in this build. To request it, provide the scheme directory with `--mlst-package` and its trusted manifest hash with `--mlst-expected-sha256`. [The MLST guide](historical-mlst.md) has the working command and explains the scheme's date limit. Selecting an installed scheme without these paths, and accepting newer scheme versions, are planned in [issue39](https://github.com/mbhall88/pterobacter/issues/39).
+MLST is off by default. Use `-l/--mlst` with a selected managed database, or provide `--mlst-package` and `--mlst-expected-sha256` explicitly. [Database management](databases.md) includes a working local install example; [historical MLST](historical-mlst.md) explains the historical cutoff, and the [current/custom contract](contracts/MLST-PACKAGE-v2.md) defines compatible newer local packages. Current PubMLST provisioning and public download URLs remain unavailable.
 
 ## Alignment files and resource limits
 
@@ -43,12 +43,27 @@ Captured from the current `ptero --help`. The `pterobacter` alias accepts the sa
 ```text
 Standalone, self-contained Enterobacter isolate classification
 
-Usage: ptero [OPTIONS] --reference-package <REFERENCE_PACKAGE> --expected-sha256 <EXPECTED_SHA256> <ASSEMBLY>...
+Usage: ptero [OPTIONS] <ASSEMBLY>...
+       ptero [OPTIONS] [ASSEMBLY]... <COMMAND>
+
+Commands:
+  database  Install, list or verify pinned reference and typing components
+  help      Print this message or the help of the given subcommand(s)
 
 Arguments:
   <ASSEMBLY>...  Isolate assembly FASTA files, analysed whole and as supplied
 
 Options:
+  -D, --database <DATABASE>
+          Exact installed database version; otherwise use the catalogue's published default
+  -B, --database-dir <DIR>
+          Managed database store on a filesystem supporting atomic no-replace rename
+  -C, --catalogue <CATALOGUE>
+          Explicit trusted catalogue file; requires its independently supplied SHA-256
+  -H, --catalogue-sha256 <CATALOGUE_SHA256>
+          Expected SHA-256 of the explicit catalogue
+  -l, --mlst
+          Enable optional MLST using the selected managed scheme
   -s, --species-ani <PERCENT>
           Minimum species ANI (%): skani >= this value; ANIm must be strictly greater [default: 96]
   -S, --subspecies-ani <PERCENT>
@@ -66,7 +81,7 @@ Options:
   -o, --output <FILE>
           Write the JSON report to this new file instead of standard output; never replaced
   -m, --mlst-package <MLST_PACKAGE>
-          Historical MLST scheme package directory; requests optional supplementary MLST
+          MLST scheme package directory; requests optional supplementary MLST
   -M, --mlst-expected-sha256 <MLST_EXPECTED_SHA256>
           Expected SHA-256 of the MLST package manifest.json, obtained from a trusted source
   -d, --report-dir <DIR>

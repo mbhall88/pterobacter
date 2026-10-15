@@ -1,7 +1,7 @@
 //! Historical MLST through the library seam: package verification, typing states and the
 //! provenance every record carries.
 mod common;
-use common::mlst::{revcomp, SyntheticScheme, ALLELE_LEN};
+use common::mlst::{custom_scheme, revcomp, SyntheticScheme, ALLELE_LEN};
 use serde_json::{json, Value};
 use terobacter::mlst::{type_assembly, MlstError, Record, Scheme, LIMITATION};
 
@@ -357,5 +357,54 @@ fn largest_supported_allele_id_can_be_typed_at_repeated_exact_locations() {
     assert_eq!(
         record["loci"][0]["raw_token"],
         "18446744073709551615,18446744073709551615"
+    );
+}
+
+#[test]
+fn custom_metadata_is_separate_and_preserves_typing_states() {
+    let s = custom_scheme();
+    let result = type_one(&s, &s.st5_pieces());
+    assert_eq!(result["sequence_type"], "5");
+    assert_eq!(result["database"]["schema_version"], 2);
+    assert_eq!(result["database"]["submission_cutoff"], Value::Null);
+    assert_eq!(result["database"]["submission_coverage"]["kind"], "unknown");
+    let incomplete = type_one(&s, &with_locus(&s, 3, None));
+    assert_eq!(incomplete["state"], "incomplete_profile");
+    let mut ambiguous = s.st5_pieces();
+    ambiguous.push(s.allele(0, 2));
+    let result = type_one(&s, &ambiguous);
+    assert_eq!(result["sequence_type"], Value::Null);
+    assert_ne!(result["state"], "exact_profile_match");
+    for (field, value) in [
+        ("retrieved_utc", json!("2026-02-30T00:00:00Z")),
+        ("retrieved_utc", json!("2026-10-15é00:00:00Z")),
+        ("loci", json!(["wrong"])),
+        ("source", Value::Null),
+        ("rights", Value::Null),
+        (
+            "submission_coverage",
+            json!({"kind":"unknown","through":"2026-10-15"}),
+        ),
+        ("submission_cutoff", json!("2024-12-31")),
+        ("data_root", json!("../outside")),
+        ("schema_version", json!(3)),
+    ] {
+        let mut s = custom_scheme();
+        let mut m = s.manifest();
+        m[field] = value;
+        s.set_manifest(&m);
+        assert!(
+            Scheme::verify(&s, &s.manifest_sha256()).is_err(),
+            "invalid {field}"
+        );
+    }
+    let mut current = custom_scheme();
+    let mut m = current.manifest();
+    m["package_scope"] = "current_snapshot".into();
+    m["submission_coverage"] = json!({"kind":"through_submission_date","through":"2025-12-31"});
+    current.set_manifest(&m);
+    assert_eq!(
+        type_one(&current, &current.st5_pieces())["database"]["submission_cutoff"],
+        "2025-12-31"
     );
 }

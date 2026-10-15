@@ -192,3 +192,44 @@ impl PackageSource for SyntheticScheme {
         Ok(self.files.keys().cloned().collect())
     }
 }
+
+pub fn custom_scheme() -> SyntheticScheme {
+    let mut s = SyntheticScheme::new();
+    let mut m = s.manifest();
+    for k in [
+        "submission_cutoff",
+        "complete_through_cutoff_independently_established",
+        "cutoff_evidence",
+    ] {
+        m.as_object_mut().unwrap().remove(k);
+    }
+    m["schema_version"] = 2.into();
+    m["schema"] = "pterobacter.mlst-scheme/2".into();
+    m["package_scope"] = "custom".into();
+    m["package_id"] = "synthetic-custom".into();
+    m["retrieved_utc"] = "2026-10-15T00:00:00Z".into();
+    m["currency_statement"] = "Synthetic snapshot; submission coverage unknown".into();
+    m["source"] =
+        json!({"name":"Synthetic test generator","urls":["https://example.org/synthetic"]});
+    m["rights"] = json!({"statement":"Generated test data","access":"local fixture","terms_url":"https://example.org/terms","redistribution":"permitted"});
+    m["submission_coverage"] = json!({"kind":"unknown","through":null});
+    m["data_root"] = "custom/scheme".into();
+    m["profiles_file"] = "profiles.tsv".into();
+    let hashes = m["data_sha256"].as_object().unwrap().clone();
+    let mut new_hashes = serde_json::Map::new();
+    for (p, h) in hashes {
+        let name = p.rsplit('/').next().unwrap();
+        let name = if name == "ecloacae.txt" {
+            "profiles.tsv"
+        } else {
+            name
+        };
+        let target = format!("custom/scheme/{name}");
+        let b = s.files.remove(&p).unwrap();
+        s.files.insert(target.clone(), b);
+        new_hashes.insert(target, h);
+    }
+    m["data_sha256"] = new_hashes.into();
+    s.set_manifest(&m);
+    s
+}

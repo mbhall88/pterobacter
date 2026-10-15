@@ -1,8 +1,17 @@
-//! Installer transport primitives. No public catalogue format or command is committed here.
+//! Managed catalogue commands, transport verification and offline package selection.
 //!
 //! A reviewed catalogue adapter must supply the pins independently of the downloaded payload.
 //! Scientific loaders remain responsible for verifying component compatibility before publication.
+pub mod catalogue;
+mod commands;
 pub mod install;
+mod store;
+pub(crate) use commands::{resolve, run, state_root};
+pub use commands::{Action, Database, Options};
+pub(crate) fn create_evidence(root: &Path) -> io::Result<PathBuf> {
+    store::ensure_tree(root)?;
+    reserve_evidence(root)
+}
 
 use std::io;
 use std::path::{Path, PathBuf};

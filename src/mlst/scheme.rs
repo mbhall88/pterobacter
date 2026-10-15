@@ -67,10 +67,6 @@ fn is_sha256(s: &str) -> bool {
     crate::reference::is_sha256(s)
 }
 
-fn data_path(file: &str) -> String {
-    format!("pubmlst/{SCHEME}/{file}")
-}
-
 /// Lines of a text file with LF or CRLF endings. A bare CR is refused.
 fn lines(bytes: &[u8], path: &str) -> Result<Vec<String>, MlstError> {
     let text = std::str::from_utf8(bytes)
@@ -146,38 +142,46 @@ impl Scheme {
         }
         let manifest: Map<String, Value> = serde_json::from_slice(&bytes)
             .map_err(|e| invalid(format!("manifest is not a JSON object: {e}")))?;
-        if manifest.get("schema_version").and_then(Value::as_u64) != Some(1)
-            || manifest.get("schema_version").map(Value::to_string) != Some("1".into())
-            || manifest.get("scheme") != Some(&json!(SCHEME))
-        {
-            return Err(invalid("unsupported MLST package"));
-        }
-        if manifest.get("loci") != Some(&json!(LOCI))
-            || manifest.get("submission_cutoff") != Some(&json!(SUBMISSION_CUTOFF))
-        {
-            return Err(invalid("unsupported locus order or submission cutoff"));
-        }
-        if manifest.get("limitation") != Some(&json!(LIMITATION)) {
-            return Err(invalid("manifest lacks the required cutoff limitation"));
-        }
-        for key in [
-            "package_id",
-            "retrieved_utc",
-            "sequence_state",
-            "data_terms_url",
-        ] {
-            text(&manifest, key)?;
-        }
-        if manifest.get("complete_through_cutoff_independently_established") != Some(&json!(false))
-        {
-            return Err(invalid(
-                "a package claiming exhaustive historical completeness is not supported",
-            ));
-        }
+        let (data_root, profiles_file) =
+            if manifest.get("schema_version").map(Value::to_string) == Some("1".into()) {
+                if manifest.get("schema_version").and_then(Value::as_u64) != Some(1)
+                    || manifest.get("schema_version").map(Value::to_string) != Some("1".into())
+                    || manifest.get("scheme") != Some(&json!(SCHEME))
+                {
+                    return Err(invalid("unsupported MLST package"));
+                }
+                if manifest.get("loci") != Some(&json!(LOCI))
+                    || manifest.get("submission_cutoff") != Some(&json!(SUBMISSION_CUTOFF))
+                {
+                    return Err(invalid("unsupported locus order or submission cutoff"));
+                }
+                if manifest.get("limitation") != Some(&json!(LIMITATION)) {
+                    return Err(invalid("manifest lacks the required cutoff limitation"));
+                }
+                for key in [
+                    "package_id",
+                    "retrieved_utc",
+                    "sequence_state",
+                    "data_terms_url",
+                ] {
+                    text(&manifest, key)?;
+                }
+                if manifest.get("complete_through_cutoff_independently_established")
+                    != Some(&json!(false))
+                {
+                    return Err(invalid(
+                        "a package claiming exhaustive historical completeness is not supported",
+                    ));
+                }
+                (format!("pubmlst/{SCHEME}"), format!("{SCHEME}.txt"))
+            } else {
+                super::metadata::layout(&manifest)?
+            };
+        let data_path = |file: &str| format!("{data_root}/{file}");
         let files: Vec<String> = LOCI
             .iter()
             .map(|l| format!("{l}.tfa"))
-            .chain([format!("{SCHEME}.txt")])
+            .chain([profiles_file.clone()])
             .map(|f| data_path(&f))
             .collect();
         let hashes = manifest
@@ -188,6 +192,16 @@ impl Scheme {
                     && h.values().all(|d| d.as_str().is_some_and(is_sha256))
             })
             .ok_or_else(|| invalid("unexpected package data inventory"))?;
+        if manifest.get("schema_version") == Some(&json!(2)) {
+            let expected: BTreeSet<String> = files
+                .iter()
+                .cloned()
+                .chain([MANIFEST_PATH.into()])
+                .collect();
+            if source.inventory().map_err(|e| invalid(e.to_string()))? != expected {
+                return Err(invalid("unlisted or missing current/custom MLST file"));
+            }
+        }
         let mut data = BTreeMap::new();
         for path in &files {
             let bytes = read(source, path)?;
@@ -212,7 +226,7 @@ impl Scheme {
         if all.len() > MAX_ALLELES {
             return Err(invalid("too many alleles"));
         }
-        let path = data_path(&format!("{SCHEME}.txt"));
+        let path = data_path(&profiles_file);
         let rows = lines(&data[&path], &path)?;
         let header: Vec<&str> = rows.first().map_or(vec![], |h| h.split('\t').collect());
         let expected: Vec<&str> = ["ST"]
@@ -286,6 +300,13 @@ impl Scheme {
     /// Identity, cutoff, retrieval and licence provenance for reports.
     pub fn database(&self) -> Value {
         let m = &self.manifest;
+        if m.get("schema_version") == Some(&json!(2)) {
+            return json!({"schema_version":2,"package_id":m["package_id"],"package_manifest_sha256":self.manifest_sha256,
+            "scheme":m["scheme"],"loci":LOCI,"package_scope":m["package_scope"],"retrieved_utc":m["retrieved_utc"],
+            "sequence_state":m["sequence_state"],"submission_coverage":m["submission_coverage"],"source":m["source"],"rights":m["rights"],
+            "submission_cutoff":m["submission_coverage"]["through"],"post_cutoff_currency":"source_declared_snapshot_not_independently_established",
+            "limitation":m["currency_statement"],"data_sha256":m["data_sha256"],"allele_count":self.alleles.len(),"profile_count":self.profiles.len()});
+        }
         json!({
             "package_id": m["package_id"],
             "package_manifest_sha256": self.manifest_sha256,

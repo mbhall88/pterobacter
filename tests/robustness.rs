@@ -476,7 +476,7 @@ fn interrupted_concurrent_v2_batch_withholds_every_call_and_keeps_pair_evidence(
 }
 
 #[test]
-fn the_source_opens_no_socket() {
+fn classification_has_no_direct_socket_code_and_transport_is_confined() {
     let mut stack = vec![
         Path::new(env!("CARGO_MANIFEST_DIR")).join("src"),
         Path::new(env!("CARGO_MANIFEST_DIR")).join("native"),
@@ -488,7 +488,21 @@ fn the_source_opens_no_socket() {
                 stack.push(path);
                 continue;
             }
+            if path.extension().is_some_and(|e| e == "der") {
+                continue; // Generated local TLS test certificate/key, never production code.
+            }
             let text = std::fs::read_to_string(&path).unwrap();
+            if path.ends_with("cli/database/network_tests.rs") {
+                continue; // Loopback server testing certificate and downgrade refusal.
+            }
+            if text.contains("ureq::") {
+                assert!(
+                    path.ends_with("cli/database/commands.rs")
+                        || path.ends_with("cli/database/catalogue.rs"),
+                    "network adapter escaped database management: {}",
+                    path.display()
+                );
+            }
             for needle in ["std::net", "TcpStream", "UdpSocket", "socket(", "<netdb.h>"] {
                 assert!(!text.contains(needle), "{} uses {needle}", path.display());
             }
@@ -497,19 +511,20 @@ fn the_source_opens_no_socket() {
 }
 
 #[test]
-fn the_locked_dependency_graph_has_no_network_client() {
+fn the_locked_dependency_graph_uses_only_the_reviewed_database_client() {
     let lock = include_str!("../Cargo.lock");
+    for name in ["ureq", "rustls"] {
+        assert!(lock.contains(&format!("name = \"{name}\"\n")));
+    }
     for name in [
         "reqwest",
         "hyper",
-        "ureq",
         "curl",
         "curl-sys",
         "isahc",
         "attohttpc",
         "native-tls",
         "openssl",
-        "rustls",
         "h2",
     ] {
         assert!(

@@ -1147,3 +1147,67 @@ fn a_native_version_2_package_verifies_without_a_conversion_record() {
     assert_eq!(package.package().converted_from_sha256, None);
     assert_eq!(package.counts().reference_scope_records, 9);
 }
+
+fn public_flavour() -> Synthetic {
+    let mut s = Synthetic::new();
+    s.without_conversion();
+    edit_source(&mut s, |v| {
+        v["schema_version"] = "1.1.0-public-reference-package".into();
+        v["release_state"] = "public_reference_export".into();
+        v["path_semantics"] = "namespace_labels_not_local_paths".into();
+    });
+    s.edit_json(EXPORT_PATH, |v| {
+        v["local_validation"]["schema_version"] = "1.1.0-public-reference-package".into();
+        v["no_external_distribution"] = false.into();
+        v["scope"] =
+            "frozen_package_transformation_validated_at_export_not_reexecuted_at_load".into();
+    });
+    s.edit_manifest(|v| {
+        v["schema_version"] = "2.1.0-public-portable-reference-package".into();
+        v["release_state"] = "public_reference_export".into();
+        v["trust_basis"] = "catalogue_pinned_manifest_digest_and_export_attestation".into();
+    });
+    s
+}
+
+#[test]
+fn public_flavour_requires_the_entire_profile_and_preserves_scientific_checks() {
+    public_flavour()
+        .verify()
+        .expect("explicit pin accepts the public profile");
+    for field in ["schema_version", "release_state", "trust_basis"] {
+        let mut s = public_flavour();
+        let original: Value = serde_json::from_slice(&Synthetic::new().files()[MANIFEST]).unwrap();
+        s.edit_manifest(|v| v[field] = original[field].clone());
+        assert!(s.verify().is_err(), "mixed portable {field}");
+    }
+    for field in ["schema_version", "release_state", "path_semantics"] {
+        let mut s = public_flavour();
+        let original: Value = serde_json::from_slice(Synthetic::new().file(SOURCE_PATH)).unwrap();
+        edit_source(&mut s, |v| v[field] = original[field].clone());
+        assert!(s.verify().is_err(), "mixed source {field}");
+    }
+    for field in ["local_validation", "no_external_distribution", "scope"] {
+        let mut s = public_flavour();
+        let original: Value = serde_json::from_slice(Synthetic::new().file(EXPORT_PATH)).unwrap();
+        s.edit_json(EXPORT_PATH, |v| v[field] = original[field].clone());
+        assert!(s.verify().is_err(), "mixed attestation {field}");
+    }
+    let mut s = public_flavour();
+    s.edit_manifest(|v| v["schema_version"] = "2.2.0-unknown".into());
+    assert_eq!(
+        s.verify().unwrap_err().kind(),
+        PackageErrorKind::Incompatible
+    );
+    let mut s = public_flavour();
+    s.alter(PRIMARY_INDEX);
+    assert!(s.verify().is_err());
+    let mut s = public_flavour();
+    edit_source(&mut s, |v| {
+        v["positive_calling_policy_enabled"] = true.into()
+    });
+    assert!(s.verify().is_err());
+    Synthetic::new()
+        .verify()
+        .expect("frozen development flavour still verifies");
+}

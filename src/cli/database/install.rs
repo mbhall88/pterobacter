@@ -14,7 +14,8 @@ const MAX_FILES: usize = 100_000;
 static NEXT: AtomicU64 = AtomicU64::new(0);
 
 /// A regular file's expected transport-relative path and exact bytes.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct FilePin {
     pub path: String,
     pub bytes: u64,
@@ -59,7 +60,7 @@ impl Installed {
 fn invalid(message: impl Into<String>) -> io::Error {
     io::Error::new(io::ErrorKind::InvalidData, message.into())
 }
-fn identifier(value: &str) -> bool {
+pub(super) fn identifier(value: &str) -> bool {
     !value.is_empty()
         && value.len() <= 128
         && value.as_bytes()[0].is_ascii_alphanumeric()
@@ -224,17 +225,17 @@ pub fn verify(
     verify_files(directory, plan)
 }
 
-fn private_dir(path: &Path) -> io::Result<()> {
+pub(super) fn private_dir(path: &Path) -> io::Result<()> {
     fs::DirBuilder::new().mode(0o700).create(path)
 }
-fn private_file(path: &Path) -> io::Result<File> {
+pub(super) fn private_file(path: &Path) -> io::Result<File> {
     OpenOptions::new()
         .write(true)
         .create_new(true)
         .mode(0o600)
         .open(path)
 }
-fn private_root(path: &Path) -> io::Result<PathBuf> {
+pub(super) fn private_root(path: &Path) -> io::Result<PathBuf> {
     match private_dir(path) {
         Ok(()) => {}
         Err(e) if e.kind() == io::ErrorKind::AlreadyExists => {}
@@ -249,7 +250,7 @@ fn private_root(path: &Path) -> io::Result<PathBuf> {
     }
     fs::canonicalize(path)
 }
-fn new_stage(root: &Path, version: &str) -> io::Result<PathBuf> {
+pub(super) fn new_stage(root: &Path, version: &str) -> io::Result<PathBuf> {
     new_directory(root, &format!(".{version}.staging"))
 }
 fn new_directory(root: &Path, prefix: &str) -> io::Result<PathBuf> {
@@ -289,7 +290,7 @@ impl Drop for RemoveTree {
     }
 }
 
-fn copy_pinned(
+pub(super) fn copy_pinned(
     reader: &mut dyn Read,
     writer: &mut dyn Write,
     bytes: u64,
@@ -338,6 +339,14 @@ impl<R: Read> Read for Bounded<R> {
     }
 }
 fn extract(archive: &Path, destination: &Path, pin: &ArchivePin) -> io::Result<()> {
+    extract_checked(archive, destination, pin, false)
+}
+pub(super) fn extract_checked(
+    archive: &Path,
+    destination: &Path,
+    pin: &ArchivePin,
+    exact: bool,
+) -> io::Result<()> {
     let reader = Bounded {
         reader: GzDecoder::new(BufReader::new(File::open(archive)?)),
         remaining: pin.tar_bytes_limit,
@@ -354,6 +363,9 @@ fn extract(archive: &Path, destination: &Path, pin: &ArchivePin) -> io::Result<(
     for entry in archive.entries()?.raw(true) {
         let mut entry = entry?;
         let kind = entry.header().entry_type();
+        if &entry.header().as_bytes()[257..265] != b"ustar\x0000" {
+            return Err(invalid("managed archives require POSIX ustar headers"));
+        }
         if entry.header().as_bytes().contains(&b'\\') {
             return Err(invalid("backslashes in archive headers are forbidden"));
         }
@@ -383,7 +395,7 @@ fn extract(archive: &Path, destination: &Path, pin: &ArchivePin) -> io::Result<(
         } else {
             path
         };
-        if !safe_path(path) || !seen.insert(path.to_owned()) {
+        if !super::catalogue::path(path) || !seen.insert(path.to_owned()) {
             return Err(invalid("unsafe or duplicate archive path"));
         }
         let path = if let Some(root) = &pin.archive_root {
@@ -436,6 +448,9 @@ fn extract(archive: &Path, destination: &Path, pin: &ArchivePin) -> io::Result<(
     let mut compressed = reader.reader.into_inner();
     if !compressed.fill_buf()?.is_empty() {
         return Err(invalid("multiple gzip members or trailing compressed data"));
+    }
+    if exact && decoded_bytes != pin.tar_bytes_limit {
+        return Err(invalid("decoded tar length differs from catalogue"));
     }
     if decoded_bytes % 512 != 0 || decoded_bytes < add(last_end, 1024)? {
         return Err(invalid("missing or malformed tar terminator"));
@@ -503,7 +518,7 @@ fn walk(
     }
     Ok(())
 }
-fn verify_files(directory: &Path, plan: &InstallPlan) -> io::Result<()> {
+pub(super) fn verify_files(directory: &Path, plan: &InstallPlan) -> io::Result<()> {
     require_dir(directory)?;
     let mut expected = BTreeSet::new();
     for archive in &plan.archives {
@@ -511,36 +526,50 @@ fn verify_files(directory: &Path, plan: &InstallPlan) -> io::Result<()> {
             expected.insert(format!("{}/{}", archive.component, file.path));
         }
     }
+    verify_inventory(directory, &expected)?;
+    for archive in &plan.archives {
+        verify_pins(&directory.join(&archive.component), &archive.files)?;
+    }
+    Ok(())
+}
+pub(super) fn verify_component(directory: &Path, pin: &ArchivePin) -> io::Result<()> {
+    require_dir(directory)?;
+    let expected = pin.files.iter().map(|f| f.path.clone()).collect();
+    verify_inventory(directory, &expected)?;
+    verify_pins(directory, &pin.files)
+}
+fn verify_inventory(directory: &Path, expected: &BTreeSet<String>) -> io::Result<()> {
     let mut actual = BTreeSet::new();
     let mut dirs = BTreeSet::new();
+    let expected_dirs = parents(expected.iter().map(String::as_str));
     walk(
         directory,
         "",
         &mut actual,
         &mut dirs,
-        &expected,
-        &parents(expected.iter().map(String::as_str)),
+        expected,
+        &expected_dirs,
     )?;
-    if actual != expected || dirs != parents(expected.iter().map(String::as_str)) {
+    if actual != *expected || dirs != expected_dirs {
         return Err(invalid("installed inventory differs from trusted plan"));
     }
-    for archive in &plan.archives {
-        for file in &archive.files {
-            let path = directory.join(&archive.component).join(&file.path);
-            let mut input = OpenOptions::new()
-                .read(true)
-                .custom_flags(libc::O_NOFOLLOW)
-                .open(&path)?;
-            if input.metadata()?.len() != file.bytes {
-                return Err(invalid("installed size mismatch"));
-            }
-            copy_pinned(&mut input, &mut io::sink(), file.bytes, &file.sha256)?;
+    Ok(())
+}
+fn verify_pins(directory: &Path, pins: &[FilePin]) -> io::Result<()> {
+    for file in pins {
+        let mut input = OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_NOFOLLOW)
+            .open(directory.join(&file.path))?;
+        if input.metadata()?.len() != file.bytes {
+            return Err(invalid("installed size mismatch"));
         }
+        copy_pinned(&mut input, &mut io::sink(), file.bytes, &file.sha256)?;
     }
     Ok(())
 }
 
-fn sync_directories(root: &Path) -> io::Result<()> {
+pub(super) fn sync_directories(root: &Path) -> io::Result<()> {
     for entry in fs::read_dir(root)? {
         let entry = entry?;
         if fs::symlink_metadata(entry.path())?.is_dir() {
@@ -550,7 +579,7 @@ fn sync_directories(root: &Path) -> io::Result<()> {
     File::open(root)?.sync_all()
 }
 
-fn available_space(root: &Path) -> io::Result<u64> {
+pub(super) fn available_space(root: &Path) -> io::Result<u64> {
     use std::ffi::CString;
     use std::os::unix::ffi::OsStrExt;
     let path =
@@ -571,7 +600,7 @@ fn filesystem_bytes(blocks: impl Into<u64>, block_size: impl Into<u64>) -> io::R
         .ok_or_else(|| invalid("filesystem size overflow"))
 }
 
-fn rename_no_replace(from: &Path, to: &Path) -> io::Result<()> {
+pub(super) fn rename_no_replace(from: &Path, to: &Path) -> io::Result<()> {
     use std::ffi::CString;
     use std::os::unix::ffi::OsStrExt;
     let from =

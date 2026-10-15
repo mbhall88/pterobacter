@@ -590,3 +590,47 @@ fn filesystem_capacity_widens_platform_counters_before_multiplication() {
     assert_eq!(filesystem_bytes(u64::MAX, 1_u32).unwrap(), u64::MAX);
     assert!(filesystem_bytes(u64::MAX, 2_u32).is_err());
 }
+
+#[test]
+fn managed_profile_enforces_ustar_path_alphabet_and_exact_decoded_length() {
+    let (plan, _) = fixture();
+    for variant in 0..7 {
+        let root = private_temp();
+        let mut raw = raw_tar(&[("sub/data.bin", b'0', b"pinned fixture payload")]);
+        if variant == 1 {
+            raw[257..265].copy_from_slice(b"ustar  \0");
+        }
+        if variant == 2 {
+            raw[257..265].fill(0);
+        }
+        if variant == 3 {
+            raw[0] = b'+';
+        }
+        if variant == 4 {
+            raw[0] = 0xff;
+        }
+        if (1..=4).contains(&variant) {
+            let mut h = tar::Header::new_ustar();
+            h.as_mut_bytes().copy_from_slice(&raw[..512]);
+            h.set_cksum();
+            raw[..512].copy_from_slice(h.as_bytes());
+        }
+        let bytes = gzip(&raw);
+        assert_eq!(bytes, gzip(&raw), "deterministic rebuild");
+        let mut pin = plan.archives[0].clone();
+        pin.tar_bytes_limit = raw.len() as u64 + if variant == 5 { 512 } else { 0 };
+        if variant == 6 {
+            pin.tar_bytes_limit -= 512;
+        }
+        let source = root.path().join("input.gz");
+        fs::write(&source, bytes).unwrap();
+        let destination = root.path().join("component");
+        private_dir(&destination).unwrap();
+        let result = extract_checked(&source, &destination, &pin, true);
+        assert_eq!(
+            result.is_ok(),
+            variant == 0,
+            "profile variant {variant}: {result:?}"
+        );
+    }
+}

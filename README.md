@@ -46,6 +46,11 @@ Release downloads are planned; they are not available yet.
 
 ## Classify an assembly
 
+[Database management](docs/databases.md) provides install/list/verify commands,
+a local synthetic example, optional MLST and automatic ANIm evidence placement.
+The embedded catalogue is empty until the public data export is accepted.
+
+
 Obtain the reference directory and its trusted manifest SHA-256 through the private handoff. In this example the directory is named `reference`, and `REFERENCE_SHA256` contains that supplied digest. [Reference setup](docs/reference-setup.md) explains verification and sets `ANIM_REFERENCE_PACKAGE` and `ANIM_SHA256` for the matching genome FASTAs used by the default alignment rescue.
 
 ```sh
