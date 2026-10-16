@@ -575,3 +575,67 @@ fn fresh_development_pair_controls_are_optional_independent_and_reported() {
         }
     }
 }
+
+#[test]
+fn nanosecond_duration_limits_round_trip_without_changing_binary64() {
+    // This exact witness was rounded down by one ULP without float_roundtrip.
+    let witness = Duration::new(1799, 55_020_442).as_secs_f64();
+    assert_eq!(witness.to_bits(), 0x409c1c3857475c02);
+    assert_eq!(
+        serde_json::to_string(&witness).unwrap(),
+        "1799.0550204420001"
+    );
+    for seconds in [0, 1, 59, 1799, 7199, 86400] {
+        for nanos in (0..1_000_000)
+            .step_by(997)
+            .chain([1, 55_020_442, 999_999_999])
+        {
+            let expected = Duration::new(seconds, nanos).as_secs_f64();
+            let wire = serde_json::to_vec(&expected).unwrap();
+            let received: f64 = serde_json::from_slice(&wire).unwrap();
+            assert_eq!(
+                received.to_bits(),
+                expected.to_bits(),
+                "{seconds}s {nanos}ns"
+            );
+        }
+    }
+}
+
+#[test]
+fn worker_accepts_the_exact_fractional_transport_and_rejects_one_ulp_mismatch() {
+    let time = Duration::new(1799, 55_020_442);
+    for corrupted in [false, true] {
+        let directory = tempfile::tempdir().unwrap();
+        std::fs::write(
+            directory.path().join("blocked.fa"),
+            ">synthetic\nACGTACGT\n",
+        )
+        .unwrap();
+        let mut request = new_request(
+            Some(time),
+            None,
+            terobacter::anim::limits::inherited().unwrap(),
+        );
+        if corrupted {
+            request["wall_seconds"] = json!(f64::from_bits(time.as_secs_f64().to_bits() + 1));
+        }
+        let mut worker = Worker::start(directory.path(), &serde_json::to_vec(&request).unwrap());
+        let status = worker.finish();
+        let error = worker.stderr();
+        if corrupted {
+            assert_eq!(status.code(), Some(1));
+            assert!(
+                error.contains("worker transport differs from execution profile"),
+                "{error}"
+            );
+            assert!(!directory.path().join("limits.json").exists());
+            assert!(!directory.path().join("native.delta").exists());
+        } else {
+            assert!(status.success(), "{status}: {error}");
+            assert!(directory.path().join("limits.json").is_file());
+            assert!(directory.path().join("native.delta").is_file());
+            assert!(directory.path().join("native.filter").is_file());
+        }
+    }
+}
