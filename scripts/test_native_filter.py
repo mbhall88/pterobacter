@@ -12,9 +12,14 @@ class NativeFilterTests(unittest.TestCase):
     def test_portable_stream_and_actual_filter(self):
         root = Path(__file__).resolve().parent.parent
         # Reuse the GNU toolchain required by the crate, including CI's Homebrew GCC.
-        explicit = os.environ.get('CXX') or os.environ.get('HOST_CXX')
-        if explicit:
-            compiler = shlex.split(explicit)
+        host = next(line[6:] for line in subprocess.check_output(
+            ['rustc', '-vV'], text=True).splitlines() if line.startswith('host: '))
+        keys = [f'CXX_{host}', 'CXX_' + host.replace('-', '_').replace('.', '_'),
+                'HOST_CXX', 'CXX']
+        key = next((key for key in keys if key in os.environ), None)
+        if key is not None:
+            compiler = shlex.split(os.environ[key])
+            self.assertTrue(compiler, f'Empty compiler override: {key}')
         elif sys.platform == 'darwin':
             prefix = subprocess.check_output(['brew', '--prefix', 'gcc'], text=True).strip()
             candidates = list((Path(prefix) / 'bin').glob('g++-[0-9]*'))
