@@ -16,6 +16,7 @@ lint:
 # test bodies that exercise concurrency still spawn their own workers
 test:
     python3 -m unittest discover -s scripts -p 'test_prepare_source_archive.py'
+    python3 -m unittest discover -s scripts -p 'test_native_filter.py'
     cargo test -v --all-targets --no-fail-fast -- --test-threads=1
     cargo test -v --all-targets --all-features --no-fail-fast -- --test-threads=1
 

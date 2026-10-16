@@ -1,0 +1,5 @@
+reference.fa query.fa
+NUCMER
+>reference query 1000 1000
+101 200 701 800 0 0 0
+0

@@ -67,7 +67,7 @@ impl Method {
             query_threads: 1,
             reference_n_policy: "preserved; literal character identity; known long-N limitation"
                 .into(),
-            filter_rng: "isolated worker process; libc srand(1); one-to-one flag1to1(-1,100)"
+            filter_rng: "private glibc-compatible seed-1 stream per orientation; one-to-one flag1to1(-1,100)"
                 .into(),
             memory_policy:
                 "Linux: RLIMIT_AS; macOS: Mach peak RSS watchdog at 10 ms; failures retained".into(),

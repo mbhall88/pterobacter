@@ -11,6 +11,7 @@
 #ifndef __DELTA_HH
 #define __DELTA_HH
 
+#include <mummer/pterobacter_filter_rng.hh>
 #include "tigrinc.hh"
 #include <cassert>
 #include <string>
@@ -472,6 +473,7 @@ struct DeltaNode_t
 //==============================================================================
 class DeltaGraph_t
 {
+  pterobacter::FilterRng filter_rng_;
 public:
 
   std::map<std::string, DeltaNode_t> refnodes;

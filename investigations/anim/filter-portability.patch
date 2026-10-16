@@ -1,0 +1,78 @@
+diff --git a/vendor/mummer4/include/mummer/delta.hh b/vendor/mummer4/include/mummer/delta.hh
+index aa80dcc..5e1847b 100644
+--- a/vendor/mummer4/include/mummer/delta.hh
++++ b/vendor/mummer4/include/mummer/delta.hh
+@@ -11,6 +11,7 @@
+ #ifndef __DELTA_HH
+ #define __DELTA_HH
+ 
++#include <mummer/pterobacter_filter_rng.hh>
+ #include "tigrinc.hh"
+ #include <cassert>
+ #include <string>
+@@ -472,6 +473,7 @@ struct DeltaNode_t
+ //==============================================================================
+ class DeltaGraph_t
+ {
++  pterobacter::FilterRng filter_rng_;
+ public:
+ 
+   std::map<std::string, DeltaNode_t> refnodes;
+diff --git a/vendor/mummer4/src/tigr/delta.cc b/vendor/mummer4/src/tigr/delta.cc
+index 7e89f1d..cd274ee 100644
+--- a/vendor/mummer4/src/tigr/delta.cc
++++ b/vendor/mummer4/src/tigr/delta.cc
+@@ -98,7 +98,7 @@ inline long DiffAligns
+ 
+ //------------------------------------------------------------ PickBest --------
+ long PickBest
+-(const LIS_t * lis, const vector<long> & allbest, float epsilon)
++(const LIS_t * lis, const vector<long> & allbest, float epsilon, pterobacter::FilterRng & rng)
+ {
+   long size = allbest.size();
+   if ( epsilon < 0 && size != 0 )
+@@ -108,7 +108,7 @@ long PickBest
+         if ( lis[allbest[eqc]].diff != lis[allbest.front()].diff )
+           break;
+       
+-      return (int)((double)eqc*rand() / (RAND_MAX + 1.0));
++      return rng.choose(eqc);
+     }
+   return size;
+ }
+@@ -639,6 +639,8 @@ void DeltaGraph_t::flagGOOD()
+ //! \brief Intersection of flagQLIS and flagRLIS
+ void DeltaGraph_t::flag1to1(float epsilon, float maxolap)
+ {
++  // Each orientation starts at seed 1; RLIS and QLIS share the same stream.
++  filter_rng_ = pterobacter::FilterRng();
+   flagRLIS(epsilon, maxolap, false);
+   flagQLIS(epsilon, maxolap, false);
+ 
+@@ -817,7 +819,7 @@ void DeltaGraph_t::flagGLIS (float epsilon)
+                 }
+             } while ( UpdateBest (lis, n, allbest, epsilon) );
+ 
+-          long beg = PickBest (lis, allbest, epsilon);
++          long beg = PickBest (lis, allbest, epsilon, filter_rng_);
+           long end = allbest.size();
+           if ( beg == end ) beg = 0;
+           else end = beg + 1;
+@@ -955,7 +957,7 @@ void DeltaGraph_t::flagQLIS (float epsilon, float maxolap, bool flagbad)
+             }
+         } while ( UpdateBest (lis, n, allbest, epsilon) );
+ 
+-      long beg = PickBest (lis, allbest, epsilon);
++      long beg = PickBest (lis, allbest, epsilon, filter_rng_);
+       long end = allbest.size();
+       if ( beg == end ) beg = 0;
+       else end = beg + 1;
+@@ -1076,7 +1078,7 @@ void DeltaGraph_t::flagRLIS (float epsilon, float maxolap, bool flagbad)
+             }
+         } while ( UpdateBest (lis, n, allbest, epsilon) );
+ 
+-      long beg = PickBest (lis, allbest, epsilon);
++      long beg = PickBest (lis, allbest, epsilon, filter_rng_);
+       long end = allbest.size();
+       if ( beg == end ) beg = 0;
+       else end = beg + 1;
