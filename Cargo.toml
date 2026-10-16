@@ -35,7 +35,7 @@ path = "src/bin/pterobacter-dev.rs"
 required-features = ["dev"]
 
 [dependencies]
-num-bigint = "0.4.8"
+num-bigint = "0.5.1"
 skani = { path = "vendor/skani" }
 bincode = "1.3.3"
 needletail = "0.7.3"
