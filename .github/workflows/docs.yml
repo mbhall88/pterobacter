@@ -30,7 +30,7 @@ jobs:
         with:
           name: documentation-preview
           path: target/docs
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         if: github.event_name == 'workflow_dispatch' && inputs.publish
         with:
           path: target/docs
