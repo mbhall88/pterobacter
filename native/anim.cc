@@ -4,12 +4,11 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
-#include <cstdlib>
 #include <cstring>
 
 // Only called inside an isolated worker, once per orientation. Fatal exits and
 // exceptions escaping upstream threads cannot kill the coordinating process.
-// libc RNG is private to the worker; retain CLI-compatible seed-1 tie handling.
+// flag1to1 owns its seed-1 glibc-compatible tie stream on every platform.
 extern "C" int tero_anim_orientation(const char* reference, const char* query,
                                      const char* prefix, char* error, size_t capacity) {
   try {
@@ -31,7 +30,6 @@ extern "C" int tero_anim_orientation(const char* reference, const char* query,
     if (!output) throw std::runtime_error("cannot write delta output");
     std::ofstream filtered(std::string(prefix) + ".filter");
     if (!filtered) throw std::runtime_error("cannot open filtered output");
-    std::srand(1);
     DeltaGraph_t graph;
     graph.build(delta, true);
     graph.flag1to1(-1.0, 100.0);

@@ -2,11 +2,13 @@
 
 This subset comes from MUMmer4 v4.0.1, commit `eb734606f2d516f42a0e0dce7a116bfb88ec1ebf`. `upstream-files.json` records the original SHA-256 of each selected upstream file. The eight compiled translation units are listed in `build.rs`; the remaining files are headers and upstream notices.
 
-The only upstream code changes are the five lines in `investigations/anim/mummer4-maintenance.patch`, approved in PR #18:
+The original upstream code changes are the five lines in `investigations/anim/mummer4-maintenance.patch`, approved in PR #18:
 
 - Preserve reference Ns rather than replacing them with pseudorandom nucleotides.
 - Write delta output to the caller's stream at three sites.
 - Correct the public `align_file` template parameter.
+
+The additional `investigations/anim/filter-portability.patch` gives each delta graph a private tie-break stream. `include/mummer/pterobacter_filter_rng.hh` is new MIT-licensed Pterobacter code implementing the seed-1 glibc output sequence with explicit-width unsigned arithmetic. `flag1to1` resets it once per orientation, then shares it across reference and query filtering. It preserves the Linux choice arithmetic, including draws for a single candidate, without reading or changing process-global libc state. The original upstream hash manifest remains unchanged. This corrects platform-dependent filtering; it does not change the scientific profile, parser or classification thresholds.
 
 `native/anim.cc` supplies the Terobacter bridge. Alignment and filtering use the pinned library directly; no MUMmer executable is required at runtime. A worker process of the current Terobacter executable contains each native orientation.
 

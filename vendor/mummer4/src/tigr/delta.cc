@@ -98,7 +98,7 @@ inline long DiffAligns
 
 //------------------------------------------------------------ PickBest --------
 long PickBest
-(const LIS_t * lis, const vector<long> & allbest, float epsilon)
+(const LIS_t * lis, const vector<long> & allbest, float epsilon, pterobacter::FilterRng & rng)
 {
   long size = allbest.size();
   if ( epsilon < 0 && size != 0 )
@@ -108,7 +108,7 @@ long PickBest
         if ( lis[allbest[eqc]].diff != lis[allbest.front()].diff )
           break;
       
-      return (int)((double)eqc*rand() / (RAND_MAX + 1.0));
+      return rng.choose(eqc);
     }
   return size;
 }
@@ -639,6 +639,8 @@ void DeltaGraph_t::flagGOOD()
 //! \brief Intersection of flagQLIS and flagRLIS
 void DeltaGraph_t::flag1to1(float epsilon, float maxolap)
 {
+  // Each orientation starts at seed 1; RLIS and QLIS share the same stream.
+  filter_rng_ = pterobacter::FilterRng();
   flagRLIS(epsilon, maxolap, false);
   flagQLIS(epsilon, maxolap, false);
 
@@ -817,7 +819,7 @@ void DeltaGraph_t::flagGLIS (float epsilon)
                 }
             } while ( UpdateBest (lis, n, allbest, epsilon) );
 
-          long beg = PickBest (lis, allbest, epsilon);
+          long beg = PickBest (lis, allbest, epsilon, filter_rng_);
           long end = allbest.size();
           if ( beg == end ) beg = 0;
           else end = beg + 1;
@@ -955,7 +957,7 @@ void DeltaGraph_t::flagQLIS (float epsilon, float maxolap, bool flagbad)
             }
         } while ( UpdateBest (lis, n, allbest, epsilon) );
 
-      long beg = PickBest (lis, allbest, epsilon);
+      long beg = PickBest (lis, allbest, epsilon, filter_rng_);
       long end = allbest.size();
       if ( beg == end ) beg = 0;
       else end = beg + 1;
@@ -1076,7 +1078,7 @@ void DeltaGraph_t::flagRLIS (float epsilon, float maxolap, bool flagbad)
             }
         } while ( UpdateBest (lis, n, allbest, epsilon) );
 
-      long beg = PickBest (lis, allbest, epsilon);
+      long beg = PickBest (lis, allbest, epsilon, filter_rng_);
       long end = allbest.size();
       if ( beg == end ) beg = 0;
       else end = beg + 1;
