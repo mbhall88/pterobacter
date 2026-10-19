@@ -31,6 +31,34 @@ fn value(out: std::process::Output) -> Value {
     );
     serde_json::from_slice(&out.stdout).unwrap()
 }
+
+#[test]
+fn embedded_catalogue_lists_published_default_without_installing() {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("absent-store");
+    let listed = value(
+        assert_cmd::cargo::cargo_bin_cmd!("ptero")
+            .arg("--database-dir")
+            .arg(&store)
+            .args(["database", "list"])
+            .output()
+            .unwrap(),
+    );
+    let versions = listed["versions"].as_array().unwrap();
+    assert_eq!(versions.len(), 1);
+    let release = &versions[0];
+    assert_eq!(release["version"], "2026-10-15");
+    assert_eq!(release["status"], "published");
+    assert_eq!(release["default"], true);
+    assert_eq!(
+        release["citation"]["doi"],
+        "10.6084/m9.figshare.34640883.v1"
+    );
+    let components = release["components"].as_array().unwrap();
+    assert_eq!(components.len(), 3);
+    assert!(components.iter().all(|c| c["state"] == "not_installed"));
+    assert!(!store.exists());
+}
 fn install(f: &Fixture, store: &Path, extra: &[&str]) -> Value {
     value(
         f.command(store)

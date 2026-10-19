@@ -21,4 +21,4 @@ Use one isolate assembly per input. Reads, metagenomes and mixed samples are out
 
 The [full command-line help](cli-help.md) lists all options exactly as `ptero --help` prints them.
 
-The [report reference](report-reference.md) describes every output field and includes a separate illustrative manual-review recipe. The [command reference](assembly.md) covers advanced ANIm settings, cache verification and exit codes. Managed provisioning is implemented; public export acceptance and live downloads remain pending.
+The [report reference](report-reference.md) describes every output field and includes a separate illustrative manual-review recipe. The [command reference](assembly.md) covers advanced ANIm settings, cache verification and exit codes. The [published reference database](https://doi.org/10.6084/m9.figshare.34640883.v1) can be installed with `ptero database install 2026-10-15`.

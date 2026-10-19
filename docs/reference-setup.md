@@ -1,6 +1,6 @@
 # Set up the reference data
 
-Use [database management](databases.md) to install a trusted version once, then select it when classifying assemblies. The installer accepts local archives and supports catalogue-pinned HTTPS downloads. No public catalogue or download URL is available yet; the guide includes the supported local installation workflow.
+Use [database management](databases.md) to install a trusted version once, then select it when classifying assemblies. The installer accepts local archives and supports catalogue-pinned HTTPS downloads. This build pins the published [2026-10-15 database](https://doi.org/10.6084/m9.figshare.34640883.v1); run `ptero database install 2026-10-15` to install its sketches and genome FASTAs.
 
 If you already have unpacked reference directories and their trusted manifest hashes, you can use them directly as shown below.
 

@@ -1,19 +1,39 @@
 # Install and use a database
 
-Database management uses `ptero database install VERSION`, `database list` and
-`database verify VERSION`. Classification keeps its assembly interface:
+Install the published database once:
 
 ```sh
-ptero -D VERSION isolate.fa
-ptero -D VERSION --mlst isolate.fa
+ptero database install 2026-10-15
+ptero database verify 2026-10-15
+ptero --report-dir isolate-report isolate.fa
 ```
 
-`VERSION` must identify an exact entry in the trusted catalogue. Ordinary
-classification can omit `-D` only when that catalogue names one published default.
-It never selects the newest directory, substitutes another version or downloads
-missing files. This build embeds an empty catalogue: the public export and download
-record are still awaiting acceptance. No public database URL or DOI is assigned.
-Use the local example below or a separately trusted catalogue handoff.
+The database is published on [Figshare](https://doi.org/10.6084/m9.figshare.34640883.v1).
+This build pins version `2026-10-15` as its default, including the archive hashes,
+extracted-file inventories and component bindings. Default installation downloads
+about 333 MB for reference sketches and whole-genome FASTAs. Classification works
+offline after installation and does not download missing components.
+
+To add optional historical MLST:
+
+```sh
+ptero database install 2026-10-15 --mlst
+ptero --mlst --report-dir typed-report isolate.fa
+```
+
+Typing uses scheme records submitted on or before **31 December 2024**. It is not
+a current PubMLST scheme. Installing it does not enable typing automatically;
+request `--mlst` when classifying.
+
+Use `ptero database list` to inspect versions and component presence. Select an
+exact version with `ptero -D 2026-10-15 isolate.fa`; without `-D`, this build uses
+the single published default pinned above. It never selects the newest directory
+or substitutes another version. Downloads use the file URLs pinned for Figshare
+record version 1, and every component must match its expected hashes.
+
+On HPC systems, install to supported local storage using `--database-dir DIR` and
+pass that option for classification too. Some shared filesystems, including a
+tested GPFS filesystem, cannot support atomic activation and are refused.
 
 ## A working local example
 
