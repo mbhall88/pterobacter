@@ -46,19 +46,20 @@ Release downloads are planned; they are not available yet.
 
 ## Classify an assembly
 
-[Database management](docs/databases.md) provides install/list/verify commands,
-a local synthetic example, optional MLST and automatic ANIm evidence placement.
-The embedded catalogue is empty until the public data export is accepted.
-
-
-Obtain the reference directory and its trusted manifest SHA-256 through the private handoff. In this example the directory is named `reference`, and `REFERENCE_SHA256` contains that supplied digest. [Reference setup](docs/reference-setup.md) explains verification and sets `ANIM_REFERENCE_PACKAGE` and `ANIM_SHA256` for the matching genome FASTAs used by the default alignment rescue.
+Install the reference database once, then classify an assembly:
 
 ```sh
-ptero --reference-package reference --expected-sha256 "$REFERENCE_SHA256" \
-  --anim-reference-package "$ANIM_REFERENCE_PACKAGE" --expected-anim-sha256 "$ANIM_SHA256" \
-  --anim-output isolate-alignments \
-  --output isolate.json --report-dir isolate-report isolate.fa
+ptero database install 2026-10-15
+ptero --output isolate.json --report-dir isolate-report isolate.fa
 ```
+
+This build uses database version `2026-10-15` by default. Installation downloads
+and verifies the reference sketches and whole-genome FASTAs from
+[Figshare](https://doi.org/10.6084/m9.figshare.34640883.v1). Classification then
+works offline. Use `-D 2026-10-15` to select this version explicitly.
+[Database management](docs/databases.md) covers verification, storage locations
+and optional historical MLST; [explicit reference setup](docs/reference-setup.md)
+covers existing unpacked packages.
 
 Pterobacter first estimates ANI with skani. For eligible samples just below the species boundary, it also runs ANIm using whole-genome alignments to refine the estimate. ANIm can take longer, especially in large batches with many borderline samples; samples outside that band do not incur alignment work. Use `-n` or `--no-anim` to skip ANIm and use skani only. When using `--no-anim`, omit the alignment package and evidence options. This opt-out changes runtime analysis; building the executable still requires the C++ compiler. [All short options](docs/cli-help.md) are listed in the command help.
 
@@ -101,10 +102,7 @@ For an observed public-assembly example, the reviewed case `VAL-L3-1B0C8D325620`
 ## Run a batch
 
 ```sh
-ptero --reference-package reference --expected-sha256 "$REFERENCE_SHA256" \
-  --anim-reference-package "$ANIM_REFERENCE_PACKAGE" --expected-anim-sha256 "$ANIM_SHA256" \
-  --anim-output batch-alignments \
-  --jobs 2 --threads 2 --output batch.json --report-dir batch-report \
+ptero --jobs 2 --threads 2 --output batch.json --report-dir batch-report \
   isolate_1.fa isolate_2.fa
 ```
 
@@ -118,7 +116,7 @@ A genomovar result is a conditional match to a reference definition. An unrepres
 
 ## Cite and contribute
 
-Use the software metadata in [CITATION.cff](CITATION.cff) when citing Pterobacter.
+Use the software metadata in [CITATION.cff](CITATION.cff) when citing Pterobacter. Cite the [reference database](https://doi.org/10.6084/m9.figshare.34640883.v1) separately.
 
 <!-- Maintainer TODO: add the accompanying paper citation and DOI here and in CITATION.cff when available. --> [Contributing](CONTRIBUTING.md) covers repository checks and development commands.
 

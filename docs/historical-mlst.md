@@ -2,7 +2,14 @@
 
 MLST reports the sequence type (ST) from the scheme's allele profile. Here, "historical" describes the bundled data cutoff, not a different typing method: the scheme retains submissions through 31 December 2024, retrieved in 2026. It is not a live copy of PubMLST.
 
-MLST is off by default in the current build. To include a sequence type alongside classification, obtain the historical scheme directory and its trusted manifest digest through the private handoff, then pass both options:
+MLST is off by default. Install the historical scheme and request it when classifying:
+
+```sh
+ptero database install 2026-10-15 --mlst
+ptero --mlst --report-dir typed-report isolate.fa
+```
+
+This scheme contains records submitted on or before 31 December 2024; it is not a current scheme. If you already have a verified scheme directory and its trusted manifest digest, you can use explicit paths instead:
 
 ```sh
 ptero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256" \
@@ -23,8 +30,6 @@ If requested typing fails after classification completes, the classification res
 
 ## Using a newer Enterobacter scheme
 
-The current loader accepts only the historical package described above. It checks the 31 December 2024 submission cutoff and its limitation text, as well as the allele/profile hashes. A fresh PubMLST export cannot be passed directly to `--mlst-package`, and editing the cutoff to make it load would misdescribe the data.
+The bundled package retains the historical cutoff described above. Do not edit that date to make an incompatible scheme load. A fresh PubMLST export needs packaging and verification before it can be used.
 
-The [PubMLST Enterobacter page](https://pubmlst.org/organisms/enterobacter-spp) links to the typing database; PubMLST also documents [allele/profile downloads and API access](https://pubmlst.org/data). Those sources provide scheme data, which still need a compatible package before this executable can use them.
-
-[Managed database support](https://github.com/mbhall88/pterobacter/issues/39) tracks selecting an installed MLST scheme without a package path and importing a separately versioned newer scheme. That change will include a tested download/install/classify example with the scheme's retrieval date and hashes. Until it is implemented, the command above uses the historical package. Updating the scheme will not change the species, subspecies or genomovar rules.
+The [PubMLST Enterobacter page](https://pubmlst.org/organisms/enterobacter-spp) links to the typing database. The [current/custom package contract](contracts/MLST-PACKAGE-v2.md) supports separately versioned local seven-locus schemes with recorded provenance and rights. Automatic provisioning of a current PubMLST scheme is not available; source access and redistribution terms still need review. Updating a scheme does not change species, subspecies or genomovar rules.

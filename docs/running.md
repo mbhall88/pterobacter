@@ -2,15 +2,12 @@
 
 Pass one whole isolate assembly per FASTA input. Keep plasmids, draft contigs and short records: no manual chromosome selection is required. Gzip, bzip2, xz and zstd FASTA are supported. Reads, metagenomes and mixed samples are outside the supported input.
 
-First [install the program](installation.md) and [set up the reference variables](reference-setup.md).
+First [install the program](installation.md) and [install the database](databases.md).
 
 ## One assembly
 
 ```sh
-ptero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256" \
-  --anim-reference-package "$ANIM_REFERENCE_PACKAGE" --expected-anim-sha256 "$ANIM_SHA256" \
-  --anim-output isolate-alignments \
-  --threads 2 --output isolate.json --report-dir isolate-report isolate.fa
+ptero --threads 2 --output isolate.json --report-dir isolate-report isolate.fa
 ```
 
 Open `isolate-report/report.md` for the answer and warnings. The full JSON is in `isolate.json` and `isolate-report/report.json`; [reading results](results.md) explains the fields. Without `--output`, the full JSON goes to standard output. `--report-dir` adds the report files without changing that destination.
@@ -18,10 +15,7 @@ Open `isolate-report/report.md` for the answer and warnings. The full JSON is in
 ## A batch
 
 ```sh
-ptero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256" \
-  --anim-reference-package "$ANIM_REFERENCE_PACKAGE" --expected-anim-sha256 "$ANIM_SHA256" \
-  --anim-output batch-alignments \
-  --jobs 2 --threads 2 --output batch.json --report-dir batch-report \
+ptero --jobs 2 --threads 2 --output batch.json --report-dir batch-report \
   isolate_1.fa isolate_2.fa
 ```
 
@@ -32,9 +26,7 @@ The main JSON is an array in input order. `calls.tsv` has one row per assembly, 
 For many files, put the paths in a list instead of on the command line:
 
 ```sh
-ptero -r "$REFERENCE_PACKAGE" -R "$REFERENCE_SHA256" \
-  -a "$ANIM_REFERENCE_PACKAGE" -A "$ANIM_SHA256" -e batch-alignments \
-  -j 2 -t 2 -o batch.json -d batch-report --input-list assemblies.txt
+ptero -j 2 -t 2 -o batch.json -d batch-report --input-list assemblies.txt
 ```
 
 `assemblies.txt` holds one assembly path per line, as UTF-8 text. Blank lines are skipped and Windows line endings are accepted. Every other character on a line belongs to the path, including spaces, and there is no comment syntax. A relative path is read from the directory that holds the list, not from where you run the command.
@@ -48,9 +40,7 @@ EC-002	/data/run7/EC-002.fasta
 ```
 
 ```sh
-ptero -r "$REFERENCE_PACKAGE" -R "$REFERENCE_SHA256" \
-  -a "$ANIM_REFERENCE_PACKAGE" -A "$ANIM_SHA256" -e batch-alignments \
-  -o batch.json -d batch-report --sample-sheet samples.tsv
+ptero -o batch.json -d batch-report --sample-sheet samples.tsv
 ```
 
 Each row needs exactly two fields, both filled. Names and paths must each appear once; two spellings of the same file, or a link to it, count as the same path. For a single assembly given on the command line, `--sample-name NAME` sets its name.

@@ -42,6 +42,6 @@ An uncached machine still needs to obtain those prerequisites. At runtime the pr
 
 ## Next: reference data
 
-Classification needs reference data separately from the executable. Obtain the directory and its trusted digest through the private handoff, then follow [reference setup](reference-setup.md) and [run an assembly](running.md). The current source version is `0.0.0`; retain the supplied source commit and binary identity with your analysis record.
+Classification needs reference data separately from the executable. Run `ptero database install 2026-10-15`, then follow [database setup](databases.md) and [run an assembly](running.md). The current source version is `0.0.0`; retain the supplied source commit and binary identity with your analysis record.
 
 For test commands and the optional development binary, see [Contributing](../CONTRIBUTING.md). [Measured package and platform details](release-preparation.md) remain available for packaging review.

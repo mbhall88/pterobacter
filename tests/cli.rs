@@ -2,6 +2,7 @@
 
 use assert_cmd::cargo::cargo_bin_cmd;
 use assert_cmd::Command;
+use sha2::Digest;
 
 const COMMANDS: [&str; 2] = ["ptero", "pterobacter"];
 
@@ -103,13 +104,42 @@ fn help_shows_the_approved_classification_and_database_interfaces() {
 
 #[test]
 fn an_assembly_run_without_a_pinned_default_requires_an_explicit_package_or_version() {
+    let temp = tempfile::tempdir().unwrap();
+    let catalogue = temp.path().join("empty-catalogue.json");
+    let bytes = br#"{"schema":"pterobacter.database-catalogue/1","releases":[]}"#;
+    std::fs::write(&catalogue, bytes).unwrap();
+    let pin = format!("{:x}", sha2::Sha256::digest(bytes));
     for name in COMMANDS {
-        let output = command(name).arg("query.fa").output().unwrap();
+        let output = command(name)
+            .arg("--catalogue")
+            .arg(&catalogue)
+            .args(["--catalogue-sha256", &pin, "query.fa"])
+            .output()
+            .unwrap();
         assert_eq!(output.status.code(), Some(2));
         assert!(output.stdout.is_empty());
         let stderr = String::from_utf8_lossy(&output.stderr);
         assert!(stderr.contains("--reference-package"), "{stderr}");
         assert!(stderr.contains("--expected-sha256"), "{stderr}");
+    }
+}
+
+#[test]
+fn published_default_requires_installation_before_classification() {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("not-installed");
+    for name in COMMANDS {
+        let output = command(name)
+            .arg("--database-dir")
+            .arg(&store)
+            .arg("query.fa")
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty());
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(stderr.contains("install this exact version"), "{stderr}");
+        assert!(!store.exists(), "classification must not provision data");
     }
 }
 
