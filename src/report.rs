@@ -830,12 +830,7 @@ fn markdown_assembly(index: usize, report: &Value, s: &BTreeMap<&'static str, St
         }
     }
     let _ = writeln!(md, "### Supplementary results\n");
-    let mlst_label = if report["mlst"]["database"]["schema_version"] == 2 {
-        "MLST"
-    } else {
-        "Historical MLST"
-    };
-    let _ = writeln!(md, "- {mlst_label}: {}", or_dash(g("mlst_status")));
+    let _ = writeln!(md, "- MLST: {}", or_dash(g("mlst_status")));
     if !g("mlst_sequence_type").is_empty() || !g("mlst_state").is_empty() {
         let _ = writeln!(
             md,

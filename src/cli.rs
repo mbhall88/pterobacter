@@ -64,16 +64,19 @@ Give assemblies as arguments, or list them with -f/--input-list or -F/--sample-s
 Sample names label reports only; analysis uses each file path.
 ANI thresholds are percentages, e.g. --species-ani 96.5. Require 80 <= species <= subspecies <= 100.
 Custom thresholds cannot be combined with --no-anim and mark results custom_unvalidated.
-Guide: https://github.com/mbhall88/pterobacter/blob/main/docs/assembly.md"
+Guide: https://mbhall88.github.io/pterobacter/assembly.html"
 )]
 pub(crate) struct Public {
     #[command(subcommand)]
     command: Option<database::Database>,
     #[command(flatten)]
     databases: database::Options,
-    /// Enable optional MLST using the selected managed scheme
-    #[arg(short = 'l', long)]
+    /// Compatibility flag: MLST is now enabled by default
+    #[arg(short = 'l', long, hide = true)]
     mlst: bool,
+    /// Skip MLST sequence typing
+    #[arg(short = 'x', long, conflicts_with_all = ["mlst", "mlst_package", "mlst_expected_sha256"])]
+    no_mlst: bool,
     #[command(flatten)]
     thresholds: ThresholdArgs,
     /// Isolate assembly FASTA files, analysed whole and as supplied
@@ -106,7 +109,7 @@ pub(crate) struct Public {
     /// Write the JSON report to this new file instead of standard output; never replaced
     #[arg(short = 'o', long, value_name = "FILE")]
     output: Option<PathBuf>,
-    /// MLST scheme package directory; requests optional supplementary MLST
+    /// MLST scheme package directory; overrides the managed scheme
     #[arg(short = 'm', long, requires = "mlst_expected_sha256")]
     mlst_package: Option<PathBuf>,
     /// Expected SHA-256 of the MLST package manifest.json, obtained from a trusted source

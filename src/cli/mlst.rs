@@ -1,4 +1,4 @@
-//! Optional historical MLST for `tero <assembly>`: opens the scheme package once, types each
+//! MLST for `ptero <assembly>`: opens the scheme package once, types each
 //! validated assembly and keeps a failure explicit without touching the classification.
 use crate::cli::Directory;
 use crate::evidence::sha256_hex;

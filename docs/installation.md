@@ -14,7 +14,16 @@ ptero --version
 pterobacter --version
 ```
 
-Both installed names run the same program. Use `pterobacter` if another installed tool already uses `ptero`. Cargo's installation directory must be on your `PATH`.
+Both installed names run the same program. Use `pterobacter` if another installed tool already uses `ptero`. Cargo's installation directory must be on your `PATH`. It is usually `~/.cargo/bin`.
+
+To build without installing, use:
+
+```sh
+cargo build --release --locked
+./target/release/ptero --version
+```
+
+For a debug build, use `cargo build --locked` and `./target/debug/ptero`. These local paths apply to `cargo build`; `cargo install` makes the commands available through Cargo's bin directory.
 
 The measured Linux build used Rust 1.95.0 and GCC 11.5.0 on x86_64 Red Hat Enterprise Linux 9.8. The binary links system C/C++ libraries; the inspected build requires glibc symbols through 2.34. These describe the tested build, not a minimum Rust version or compatibility guarantee for every Linux system. The source includes Rust and embedded C/C++.
 
@@ -38,7 +47,7 @@ First provision Rust, GNU C++, the source and its locked Cargo dependencies thro
 CARGO_NET_OFFLINE=true cargo install --path . --locked --offline
 ```
 
-An uncached machine still needs to obtain those prerequisites. At runtime the program embeds skani, MUMmer4 and the historical MLST matcher; no external analysis executable is required.
+An uncached machine still needs to obtain those prerequisites. At runtime the program embeds skani, MUMmer4 and the MLST matcher; no external analysis executable is required.
 
 ## Next: reference data
 

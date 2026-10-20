@@ -10,7 +10,7 @@ fn skani_only(name: &str) -> assert_cmd::Command {
         "pterobacter" => cargo_bin_cmd!("pterobacter"),
         _ => unreachable!(),
     };
-    command.arg("--no-anim");
+    command.args(["--no-anim", "--no-mlst"]);
     command
 }
 
@@ -215,7 +215,8 @@ fn run_with_mlst(
     mlst_sha256: &str,
     queries: &[&std::path::Path],
 ) -> (Option<i32>, Value) {
-    let output = skani_only("ptero")
+    let output = cargo_bin_cmd!("ptero")
+        .arg("--no-anim")
         .arg("--reference-package")
         .arg(dir.join("package"))
         .args(["--expected-sha256", pin])

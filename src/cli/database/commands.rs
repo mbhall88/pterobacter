@@ -43,7 +43,7 @@ pub enum Database {
 }
 #[derive(Debug, Subcommand)]
 pub enum Action {
-    /// Install an exact version; reference and primary FASTAs are included by default
+    /// Install an exact version with reference sketches, whole-genome FASTAs and MLST
     Install {
         version: String,
         /// Directory containing locally supplied component archives; no network use
@@ -52,10 +52,13 @@ pub enum Action {
         /// Local archive file, repeat for multiple components; no network use
         #[arg(short = 'f', long, conflicts_with = "from_directory")]
         from_file: Vec<PathBuf>,
-        /// Also install the release's optional typing component
-        #[arg(short = 'l', long)]
+        /// Compatibility flag: MLST is now included by default
+        #[arg(short = 'l', long, hide = true)]
         mlst: bool,
-        /// Install only components needed for skani-only classification
+        /// Skip the MLST scheme download
+        #[arg(short = 'x', long, conflicts_with = "mlst")]
+        no_mlst: bool,
+        /// Skip whole-genome FASTAs used by ANIm
         #[arg(short = 'n', long)]
         no_anim: bool,
     },
@@ -277,11 +280,12 @@ pub fn run(command: Database, options: &Options) -> io::Result<Value> {
             version,
             from_directory,
             from_file,
-            mlst,
+            no_mlst,
             no_anim,
+            ..
         } => {
             let r = cat.select(Some(&version))?;
-            let required = selected(r, no_anim, mlst)?;
+            let required = selected(r, no_anim, !no_mlst)?;
             if from_directory.as_ref().is_some_and(|p| !p.is_dir()) {
                 return Err(invalid("--from-directory must name a local directory"));
             }
@@ -339,7 +343,7 @@ pub fn resolve(args: &mut super::super::Public) -> io::Result<Selection> {
     } else {
         "embedded_catalogue"
     };
-    let mut provenance = json!({"reference_trust":"operator_pin","reference_manifest_sha256":args.expected_sha256,"mlst_requested":args.mlst||args.mlst_package.is_some()});
+    let mut provenance = json!({"reference_trust":"operator_pin","reference_manifest_sha256":args.expected_sha256,"mlst_requested":!args.no_mlst});
     let mut typing_error = None;
     if args.reference_package.is_none() {
         let r = cat.select(args.databases.database.as_deref())?;
@@ -367,24 +371,24 @@ pub fn resolve(args: &mut super::super::Public) -> io::Result<Selection> {
                 args.anim.expected_anim_sha256 = Some(component.identity.sha256.clone());
             }
         }
-        if args.mlst && args.mlst_package.is_none() {
+        if !args.no_mlst && args.mlst_package.is_none() {
             match r.typing(){
-                None=>typing_error=Some("the selected release has no optional MLST component".into()),
+                None=>typing_error=Some("the selected release has no MLST component; use --no-mlst to skip typing".into()),
                 Some(c)=>match verify_component(&base,c,r,Some(&package)) {
                     Ok(())=>{args.mlst_package=Some(base.join(&c.id));args.mlst_expected_sha256=Some(c.identity.sha256.clone());},
-                    Err(e)=>typing_error=Some(format!("requested optional MLST is unavailable: {e}; install this exact component explicitly")),
+                    Err(e)=>typing_error=Some(format!("MLST is unavailable: {e}; rerun database install for this exact version, or use --no-mlst")),
                 }
             }
         }
         provenance = json!({"reference_trust":if args.databases.catalogue.is_some(){"operator_pinned_catalogue"}else{"embedded_catalogue"},"catalogue_sha256":sha,"database":r.database,"version":r.version,"status":r.status,"citation":r.citation,"reference_manifest_sha256":c.identity.sha256});
-    } else if args.mlst && args.mlst_package.is_none() {
+    } else if !args.no_mlst && args.mlst_package.is_none() {
         typing_error = Some(
-            "--mlst needs a selected managed release or an explicit MLST package/digest pair"
+            "MLST needs an explicit --mlst-package/--mlst-expected-sha256 pair with an explicit reference; use --no-mlst to skip typing"
                 .into(),
         );
     }
-    provenance["mlst_requested"] = json!(args.mlst || explicit_mlst);
-    if args.mlst || explicit_mlst {
+    provenance["mlst_requested"] = json!(!args.no_mlst);
+    if !args.no_mlst {
         provenance["mlst_trust"] = json!(if explicit_mlst {
             "operator_pin"
         } else if args.mlst_package.is_some() {

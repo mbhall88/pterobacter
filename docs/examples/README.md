@@ -28,3 +28,5 @@ Original fixture and renderer SHA-256 hashes, retained for the historical files:
 - `tests/genomovar_policy.rs`: `bc5302ea1fd09df79151ecb855b8e24c1e4ffd83bf03049b61acee1e4de9ec71`
 - `src/report.rs`: `e47fe20df47033a0dd5ef61372e177cd1c47d60df2f9771440161467b8477f38`
 - `src/genomovar.rs`: `9e2eb08b8413bb507b265a261fa74ee3fd9a194af559a0166156ffd0136c88e1`
+
+The readable examples use the current label “MLST”. Original rendered outputs retain their earlier wording and hashes. These fixtures omit typing; use `--no-mlst` to request that behavior in a new run.

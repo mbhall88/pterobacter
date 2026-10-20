@@ -20,7 +20,7 @@ Assemblies can come from the command line, from `-f` / `--input-list FILE` with 
 
 ## MLST
 
-MLST is off by default. Use `-l/--mlst` with a selected managed database, or provide `--mlst-package` and `--mlst-expected-sha256` explicitly. [Database management](databases.md) includes a working local install example; [historical MLST](historical-mlst.md) explains the historical cutoff, and the [current/custom contract](contracts/MLST-PACKAGE-v2.md) defines compatible newer local packages. Current PubMLST provisioning and public download URLs remain unavailable.
+MLST runs by default. Use `-x/--no-mlst` to skip it. For explicit packages, provide `--mlst-package` and `--mlst-expected-sha256` explicitly. [Database management](databases.md) includes a working local install example; [MLST](historical-mlst.md) explains the submission cutoff, and the [current/custom contract](contracts/MLST-PACKAGE-v2.md) defines compatible newer local packages. The bundled scheme is downloaded with the managed database; automatic provisioning of newer PubMLST records is not available.
 
 ## Alignment files and resource limits
 
@@ -66,8 +66,8 @@ Options:
           Explicit trusted catalogue file; requires its independently supplied SHA-256
   -H, --catalogue-sha256 <CATALOGUE_SHA256>
           Expected SHA-256 of the explicit catalogue
-  -l, --mlst
-          Enable optional MLST using the selected managed scheme
+  -x, --no-mlst
+          Skip MLST sequence typing
   -s, --species-ani <PERCENT>
           Minimum species ANI (%): skani >= this value; ANIm must be strictly greater [default: 96]
   -S, --subspecies-ani <PERCENT>
@@ -91,7 +91,7 @@ Options:
   -o, --output <FILE>
           Write the JSON report to this new file instead of standard output; never replaced
   -m, --mlst-package <MLST_PACKAGE>
-          MLST scheme package directory; requests optional supplementary MLST
+          MLST scheme package directory; overrides the managed scheme
   -M, --mlst-expected-sha256 <MLST_EXPECTED_SHA256>
           Expected SHA-256 of the MLST package manifest.json, obtained from a trusted source
   -d, --report-dir <DIR>
@@ -121,5 +121,5 @@ Give assemblies as arguments, or list them with -f/--input-list or -F/--sample-s
 Sample names label reports only; analysis uses each file path.
 ANI thresholds are percentages, e.g. --species-ani 96.5. Require 80 <= species <= subspecies <= 100.
 Custom thresholds cannot be combined with --no-anim and mark results custom_unvalidated.
-Guide: https://github.com/mbhall88/pterobacter/blob/main/docs/assembly.md
+Guide: https://mbhall88.github.io/pterobacter/assembly.html
 ```

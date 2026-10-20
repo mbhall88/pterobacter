@@ -85,7 +85,7 @@ This example uses invented numbers. It follows an isolate that remains unresolve
 You run:
 
 ```sh
-ptero --reference-package REFERENCE_DIR --expected-sha256 PORTABLE_JSON_SHA256 \
+ptero --no-mlst --reference-package REFERENCE_DIR --expected-sha256 PORTABLE_JSON_SHA256 \
   --anim-reference-package REFERENCE_FASTAS --expected-anim-sha256 ANIM_SHA256 \
   --anim-output ani-evidence --report-dir review isolate_17.fa
 ```
@@ -144,5 +144,5 @@ Open `follow_up.dnd` in a tree viewer. Three patterns are common. The isolate ne
 - Pterobacter takes one isolate assembly per input. Metagenomes and mixed samples are out of scope, and a clean report does not prove the assembly is pure.
 - Quality control is your responsibility. Pterobacter runs no CheckM2 or other quality check on a query.
 - Reads are not supported. Input kind and provenance stay explicit in the reports so that read support can be added later with its own validation.
-- Optional historical MLST covers PubMLST submissions through 31 December 2024. It never sets a taxon.
+- MLST covers PubMLST submissions through 31 December 2024. It never sets a taxon.
 - A genomovar call is a conditional match to one frozen group, not a population boundary. An unrepresented group can match a neighbouring reference group. Overlapping compatible groups are withheld; singleton matches retain a sparse-reference warning. See [genomovar.md](genomovar.md).

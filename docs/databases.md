@@ -11,19 +11,17 @@ ptero --report-dir isolate-report isolate.fa
 The database is published on [Figshare](https://doi.org/10.6084/m9.figshare.34640883.v1).
 This build pins version `2026-10-15` as its default, including the archive hashes,
 extracted-file inventories and component bindings. Default installation downloads
-about 333 MB for reference sketches and whole-genome FASTAs. Classification works
+about 333 MB for reference sketches, whole-genome FASTAs and MLST. Classification works
 offline after installation and does not download missing components.
 
-To add optional historical MLST:
+MLST is installed and enabled by default. To omit it:
 
 ```sh
-ptero database install 2026-10-15 --mlst
-ptero --mlst --report-dir typed-report isolate.fa
+ptero database install 2026-10-15 --no-mlst
+ptero --no-mlst --report-dir isolate-report isolate.fa
 ```
 
-Typing uses scheme records submitted on or before **31 December 2024**. It is not
-a current PubMLST scheme. Installing it does not enable typing automatically;
-request `--mlst` when classifying.
+Rerun installation without `--no-mlst` to add the scheme later. Typing uses records submitted on or before **31 December 2024**; see [MLST](historical-mlst.md) for coverage and limitations.
 
 Use `ptero database list` to inspect versions and component presence. Select an
 exact version with `ptero -D 2026-10-15 isolate.fa`; without `-D`, this build uses
@@ -38,7 +36,7 @@ tested GPFS filesystem, cannot support atomic activation and are refused.
 ## A working local example
 
 This source-checkout example generates archives from the existing synthetic native
-rescue and historical typing fixtures. It exercises provisioning and classification;
+rescue and typing fixtures. It exercises provisioning and classification;
 its invented organisms and MLST alleles are software test data.
 
 ```sh
@@ -55,15 +53,6 @@ ptero_cmd=target/debug/ptero
   --from-directory "$demo/archives"
 "$ptero_cmd" --catalogue "$demo/catalogue.json" --catalogue-sha256 "$pin" \
   --database-dir "$demo/store" -D fixture-1 "$demo/fixed-query.fa" > "$demo/report.json"
-# Add typing later without replacing the reference or FASTAs.
-"$ptero_cmd" --catalogue "$demo/catalogue.json" --catalogue-sha256 "$pin" \
-  --database-dir "$demo/store" database install fixture-1 \
-  --from-directory "$demo/archives" --mlst
-"$ptero_cmd" --catalogue "$demo/catalogue.json" --catalogue-sha256 "$pin" \
-  --database-dir "$demo/store" database verify fixture-1
-"$ptero_cmd" --catalogue "$demo/catalogue.json" --catalogue-sha256 "$pin" \
-  --database-dir "$demo/store" -D fixture-1 --mlst "$demo/fixed-query.fa" \
-  > "$demo/typed-report.json"
 ```
 
 The catalogue override always requires `-C/--catalogue` and
@@ -78,9 +67,7 @@ local archives. Retrieval alone is never a publication or scientific acceptance.
 
 ## Components and paths
 
-Default installation includes `reference` and its bound `primary-fasta` component.
-`--no-anim` installs only the reference. Optional typing is installed only with
-`--mlst`, and requested during classification with `-l/--mlst`. Every selected
+Default installation includes `reference`, its bound `primary-fasta` component, and the MLST scheme. `--no-anim` skips the FASTAs; `--no-mlst` skips the scheme. Use both to install only the reference sketches. During classification, `--no-mlst` skips typing even if the scheme is installed. The old `-l/--mlst` flags are accepted for compatibility but are no longer needed. Every selected
 component is fully verified during reuse and classification. A missing required
 component stops classification; missing or invalid requested typing produces a
 failed MLST record and exit 6 while preserving a completed taxonomic result.
@@ -117,7 +104,7 @@ installation support is not claimed.
 `--reference-package DIR --expected-sha256 HEX` continues to accept development
 and public package flavours and conflicts with `--database`. Explicit ANIm and
 MLST path/digest pairs override only their own components and still pass full
-verification. Explicit MLST is itself an opt-in. An explicit reference never gains
+verification. When using an explicit reference, also supply an MLST path/digest pair or use `--no-mlst`. No unrelated managed scheme is chosen implicitly. An explicit reference never gains
 an unrelated default FASTA component: any supplied FASTAs must bind to its exact
 manifest. No default catalogue is inferred from an installation receipt.
 
@@ -127,7 +114,7 @@ metadata appears in JSON and database inspection; ordinary `--version` remains a
 tool version. Public flavour metadata is an export profile, not evidence of
 publication, redistribution rights or independent scientific validation.
 
-Historical MLST keeps its 31 December 2024 submission cutoff and limitation.
+MLST keeps its 31 December 2024 submission cutoff and limitation.
 A 2026 retrieval date does not establish newer coverage. The separately versioned
 [current/custom contract](contracts/MLST-PACKAGE-v2.md) supports compatible local
 seven-locus schemes with explicit provenance and rights. Current PubMLST

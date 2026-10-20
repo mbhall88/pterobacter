@@ -4,11 +4,13 @@ use serde_json::Value;
 mod common;
 
 fn command(name: &str) -> assert_cmd::Command {
-    match name {
+    let mut command = match name {
         "ptero" => cargo_bin_cmd!("ptero"),
         "pterobacter" => cargo_bin_cmd!("pterobacter"),
         _ => unreachable!(),
-    }
+    };
+    command.arg("--no-mlst");
+    command
 }
 
 #[test]

@@ -21,6 +21,15 @@ fn installed_bin() -> PathBuf {
 fn run(bin: &Path, name: &str, args: &[&std::ffi::OsStr]) -> Output {
     Command::new(bin.join(name))
         .env_clear()
+        .args(
+            if args.iter().any(|a| *a == "--reference-package")
+                && !args.iter().any(|a| *a == "--mlst-package")
+            {
+                vec!["--no-mlst"]
+            } else {
+                vec![]
+            },
+        )
         .args(args)
         .output()
         .unwrap()

@@ -11,7 +11,8 @@ fn tero(
     query: &[&std::path::Path],
 ) -> std::process::Output {
     let mut cmd = cargo_bin_cmd!("ptero");
-    cmd.arg("--reference-package")
+    cmd.arg("--no-mlst")
+        .arg("--reference-package")
         .arg(dir.join("package"))
         .args(["--expected-sha256", pin]);
     if !extra.iter().any(|a| {
@@ -402,6 +403,7 @@ fn unmeasured_challenges_are_not_reported_as_negative_evidence() {
     let missing = dir.path().join("missing.fa");
     let reports = dir.path().join("reports");
     let output = std::process::Command::new(cargo_bin_cmd!("ptero").get_program())
+        .arg("--no-mlst")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args(["--expected-sha256", &pin])

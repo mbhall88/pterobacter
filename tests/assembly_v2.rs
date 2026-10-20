@@ -10,6 +10,7 @@ fn outside_band_v2_uses_the_same_skani_call_without_requiring_fastas() {
     let query = dir.path().join("query.fa");
     std::fs::write(&query, [b">synthetic\n".as_slice(), &seq, b"\n"].concat()).unwrap();
     let output = cargo_bin_cmd!("ptero")
+        .arg("--no-mlst")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args(["--expected-sha256", &pin])
@@ -47,6 +48,7 @@ fn triggered_query_missing_fastas_preserves_the_v2_plan_and_exits_incomplete() {
     )
     .unwrap();
     let output = cargo_bin_cmd!("ptero")
+        .arg("--no-mlst")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args(["--expected-sha256", &pin])
@@ -76,6 +78,7 @@ fn native_rescue_measures_every_primary_competitor_including_unreturned() {
     let anim_pin =
         common::package::sha256_hex(&std::fs::read(dir.path().join("fastas/anim.json")).unwrap());
     let output = cargo_bin_cmd!("ptero")
+        .arg("--no-mlst")
         .arg("--reference-package")
         .arg(dir.path().join("package"))
         .args([
@@ -296,6 +299,7 @@ impl Prepared {
     }
     fn command_to(&self, query: &std::path::Path, output: &str) -> assert_cmd::Command {
         let mut command = cargo_bin_cmd!("ptero");
+        command.arg("--no-mlst");
         command
             .arg("--reference-package")
             .arg(self.dir.path().join("package"))
@@ -525,6 +529,7 @@ fn existing_output_is_preserved_and_v1_rejects_anim_options() {
         "preserve"
     );
     let output = cargo_bin_cmd!("pterobacter")
+        .arg("--no-mlst")
         .arg("--no-anim")
         .arg("--reference-package")
         .arg(prepared.dir.path().join("package"))

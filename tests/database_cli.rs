@@ -75,15 +75,15 @@ fn install(f: &Fixture, store: &Path, extra: &[&str]) -> Value {
     )
 }
 #[test]
-fn installs_then_adds_optional_typing_and_reuses_offline() {
+fn opted_out_install_can_add_default_typing_and_reuse_offline() {
     let f = Fixture::new();
     let store = f.source.path().join("store");
-    install(&f, &store, &[]);
+    install(&f, &store, &["--no-mlst"]);
     let dir = store.join("synthetic/fixture-1");
     assert!(dir.join("primary-fasta/anim.json").is_file());
     assert!(!dir.join("mlst-historical").exists());
     let before = fs::read(dir.join("reference/portable.json")).unwrap();
-    install(&f, &store, &["--mlst"]);
+    install(&f, &store, &[]);
     assert_eq!(
         before,
         fs::read(dir.join("reference/portable.json")).unwrap()
@@ -92,7 +92,7 @@ fn installs_then_adds_optional_typing_and_reuses_offline() {
     fs::remove_dir_all(&f.archive_dir).unwrap();
     let reuse = value(
         f.command(&store)
-            .args(["database", "install", "fixture-1", "--mlst"])
+            .args(["database", "install", "fixture-1"])
             .output()
             .unwrap(),
     );
@@ -123,10 +123,10 @@ fn installs_then_adds_optional_typing_and_reuses_offline() {
 fn managed_native_rescue_matches_explicit_invocation_and_retains_unique_evidence() {
     let f = Fixture::new();
     let store = f.source.path().join("store");
-    install(&f, &store, &[]);
+    install(&f, &store, &["--no-mlst"]);
     let missing_typing = f
         .command(&store)
-        .args(["--database", "fixture-1", "--mlst"])
+        .args(["--database", "fixture-1"])
         .arg(&f.query)
         .output()
         .unwrap();
@@ -143,6 +143,7 @@ fn managed_native_rescue_matches_explicit_invocation_and_retains_unique_evidence
     let explicit = value(
         assert_cmd::cargo::cargo_bin_cmd!("ptero")
             .args([
+                "--no-mlst",
                 "--reference-package",
                 f.source.path().join("package").to_str().unwrap(),
                 "--expected-sha256",
@@ -174,6 +175,7 @@ fn managed_native_rescue_matches_explicit_invocation_and_retains_unique_evidence
     ] {
         assert_eq!(managed[key], explicit[key], "scientific field {key}");
     }
+    install(&f, &store, &[]);
     let again = value(
         f.command(&store)
             .args(["--database", "fixture-1"])
@@ -434,17 +436,17 @@ fn managed_custom_scheme_and_explicit_typing_override_preserve_the_taxonomy() {
     f.save();
     fs::write(f.archive_dir.join("mlst-custom.tar.gz"), bytes).unwrap();
     let store = f.source.path().join("store");
-    install(&f, &store, &["--mlst", "--no-anim"]);
+    install(&f, &store, &["--no-anim"]);
     let plain = value(
         f.command(&store)
-            .args(["-D", "fixture-1", "-n"])
+            .args(["-D", "fixture-1", "-n", "--no-mlst"])
             .arg(&f.query)
             .output()
             .unwrap(),
     );
     let typed = value(
         f.command(&store)
-            .args(["-D", "fixture-1", "-n", "-l"])
+            .args(["-D", "fixture-1", "-n"])
             .arg(&f.query)
             .output()
             .unwrap(),
@@ -537,4 +539,122 @@ fn malformed_sample_sheet_fails_before_managed_database_state_is_created() {
     assert!(String::from_utf8_lossy(&out.stderr).contains("sample sheet"));
     assert!(!store.exists());
     assert!(!f.source.path().join("state").exists());
+}
+
+#[test]
+fn default_install_and_both_commands_type_without_an_opt_in() {
+    let f = Fixture::new();
+    let scheme = common::mlst::SyntheticScheme::new();
+    let mut query = fs::read(&f.query).unwrap();
+    query.extend(b"\n>typing\n");
+    query.extend(scheme.assembly(&scheme.st5_pieces()));
+    query.push(b'\n');
+    fs::write(&f.query, query).unwrap();
+    let store = f.source.path().join("store");
+    let installed = install(&f, &store, &[]);
+    assert_eq!(installed["components"].as_array().unwrap().len(), 3);
+    for name in ["ptero", "pterobacter"] {
+        for mode in [vec![], vec!["--no-anim"]] {
+            let run = |skip: bool| {
+                let mut c = match name {
+                    "ptero" => assert_cmd::cargo::cargo_bin_cmd!("ptero"),
+                    _ => assert_cmd::cargo::cargo_bin_cmd!("pterobacter"),
+                };
+                c.args([
+                    "-C",
+                    f.catalogue_path.to_str().unwrap(),
+                    "-H",
+                    &f.catalogue_pin,
+                    "-B",
+                    store.to_str().unwrap(),
+                    "-D",
+                    "fixture-1",
+                ])
+                .env("XDG_STATE_HOME", f.source.path().join("state"))
+                .args(&mode);
+                if skip {
+                    c.arg("--no-mlst");
+                }
+                value(c.arg(&f.query).output().unwrap())
+            };
+            let typed = run(false);
+            let skipped = run(true);
+            assert_eq!(typed["mlst"]["status"], "complete");
+            assert_eq!(typed["mlst"]["sequence_type"], "5");
+            assert_eq!(typed["data_provenance"]["mlst_requested"], true);
+            assert_eq!(skipped["mlst"]["status"], "not_requested");
+            assert_eq!(skipped["data_provenance"]["mlst_requested"], false);
+            for key in [
+                "assignment",
+                "species_id",
+                "subspecies_id",
+                "genomovar",
+                "ranked_reference_evidence",
+            ] {
+                assert_eq!(typed[key], skipped[key], "{name} {mode:?} {key}");
+            }
+        }
+    }
+}
+
+#[test]
+fn no_mlst_skips_a_corrupt_scheme_and_conflicts_with_explicit_typing() {
+    let f = Fixture::new();
+    let store = f.source.path().join("store");
+    install(&f, &store, &[]);
+    let path = store.join("synthetic/fixture-1/mlst-historical/manifest.json");
+    fs::write(&path, b"corrupt").unwrap();
+    let out = f
+        .command(&store)
+        .args(["-D", "fixture-1", "-n"])
+        .arg(&f.query)
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(6));
+    let failed: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(failed["mlst"]["status"], "failed");
+    let skipped = value(
+        f.command(&store)
+            .args(["-D", "fixture-1", "-n", "-x"])
+            .arg(&f.query)
+            .output()
+            .unwrap(),
+    );
+    assert_eq!(skipped["mlst"]["status"], "not_requested");
+    assert_eq!(failed["assignment"], skipped["assignment"]);
+    assert_eq!(fs::read(&path).unwrap(), b"corrupt");
+    for flags in [
+        vec!["--no-mlst", "--mlst"],
+        vec!["--no-mlst", "-m", "unused", "-M", &f.reference],
+    ] {
+        let out = f
+            .command(&store)
+            .args(flags)
+            .arg(&f.query)
+            .output()
+            .unwrap();
+        assert_eq!(out.status.code(), Some(2));
+        assert!(out.stdout.is_empty());
+    }
+}
+
+#[test]
+fn explicit_reference_without_scheme_reports_missing_default_mlst() {
+    let f = Fixture::new();
+    let out = assert_cmd::cargo::cargo_bin_cmd!("ptero")
+        .args([
+            "-n",
+            "-r",
+            f.source.path().join("package").to_str().unwrap(),
+            "-R",
+            &f.reference,
+        ])
+        .arg(&f.query)
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(6));
+    let result: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(result["mlst"]["status"], "failed");
+    assert_eq!(result["data_provenance"]["mlst_trust"], "unavailable");
+    assert!(result["mlst"].to_string().contains("--no-mlst"));
 }
