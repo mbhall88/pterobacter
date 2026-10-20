@@ -39,6 +39,9 @@ def check(image, fixture, output, version, commit):
                                'test -s /usr/share/doc/pterobacter/THIRD-PARTY-NOTICES.txt; '
                                '! command -v cargo; ! command -v g++; ! test -d /source'])
     assert inventory.splitlines() == ['ptero', 'pterobacter']
+    (output / 'container-inspect.json').write_text(json.dumps(inspect, indent=2) + '\n')
+    (output / 'runtime-libraries.txt').write_text(command(base + ['--entrypoint', '/bin/sh', image, '-c',
+        'ldd /usr/local/bin/ptero; dpkg-query -W; sha256sum /usr/local/bin/*']) + '\n')
     pin = (fixture / 'catalogue.sha256').read_text().strip()
     selected = ['--catalogue', '/fixture/catalogue.json', '--catalogue-sha256', pin]
     def run(args, name, binary='ptero'):
