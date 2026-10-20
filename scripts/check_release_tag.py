@@ -30,7 +30,7 @@ def check(tag, publish=False):
         if repository['visibility'] != 'PUBLIC':
             raise ValueError('Repository is private: obtain author approval for source visibility before public distribution')
         runs = json.loads(output(['gh', 'run', 'list', '--repo', repository['nameWithOwner'],
-                                  '--workflow', 'ci.yml', '--commit', commit, '--event', 'push',
+                                  '--workflow', 'ci.yml', '--branch', 'main', '--commit', commit, '--event', 'push',
                                   '--status', 'success', '--json', 'headSha,conclusion']))
         if not any(r['headSha'] == commit and r['conclusion'] == 'success' for r in runs):
             raise ValueError('No successful main CI run for this exact source commit')

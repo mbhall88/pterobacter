@@ -27,6 +27,9 @@ env:
 
 jobs:
   source:
+    permissions:
+      contents: read
+      actions: read
     runs-on: ubuntu-22.04
     outputs:
       version: ${{ steps.identity.outputs.version }}
