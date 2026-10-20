@@ -38,6 +38,8 @@ def extract_crate(path, destination, prefix):
     with tarfile.open(path) as archive:
         for member in archive:
             name = PurePosixPath(member.name)
+            if '__pycache__' in name.parts or 'target' in name.parts or name.suffix == '.pyc':
+                raise ValueError('Build cache in Cargo archive: ' + member.name)
             if (name.is_absolute() or '..' in name.parts or name.parts[0] != prefix
                     or member.name in seen or not member.isfile()):
                 raise ValueError('Unexpected Cargo archive member: ' + member.name)
