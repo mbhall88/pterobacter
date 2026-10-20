@@ -1,6 +1,6 @@
 # Set up the reference data
 
-Use [database management](databases.md) to install a trusted version once, then select it when classifying assemblies. The installer accepts local archives and supports catalogue-pinned HTTPS downloads. This build pins the published [2026-10-15 database](https://doi.org/10.6084/m9.figshare.34640883.v1); run `ptero database install 2026-10-15` to install its sketches and genome FASTAs.
+Use [database management](databases.md) to install a trusted version once, then select it when classifying assemblies. The installer accepts local archives and supports catalogue-pinned HTTPS downloads. This build pins the published [2026-10-15 database](https://doi.org/10.6084/m9.figshare.34640883.v1); run `ptero database install 2026-10-15` to install its sketches, genome FASTAs and MLST scheme.
 
 If you already have unpacked reference directories and their trusted manifest hashes, you can use them directly as shown below.
 
@@ -20,11 +20,13 @@ ANIM_SHA256=THE_TRUSTED_ANIM_JSON_SHA256
 Replace these placeholders with the two directories and their supplied digests. These variables are shell conveniences for the explicit-directory workflow; pass them with each invocation:
 
 ```sh
-ptero --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256" \
+ptero --no-mlst --reference-package "$REFERENCE_PACKAGE" --expected-sha256 "$REFERENCE_SHA256" \
   --anim-reference-package "$ANIM_REFERENCE_PACKAGE" --expected-anim-sha256 "$ANIM_SHA256" \
   --anim-output isolate-alignments \
   --output isolate.json --report-dir isolate-report isolate.fa
 ```
+
+This explicit-path example skips MLST. To include it, omit `--no-mlst` and supply the [MLST package and digest](historical-mlst.md).
 
 Reuse the same package for another assembly or batch. Do not move output files into the reference directory. The [coverage guide](supported-taxa.md) describes which names and groups it represents.
 
@@ -32,6 +34,6 @@ Reuse the same package for another assembly or batch. Do not move output files i
 
 The default analysis starts with skani and adds MUMmer4 alignments for eligible borderline queries. Supply the matching whole-assembly reference FASTA directory and its trusted `anim.json` digest so those comparisons can run. [The command reference](assembly.md#boundary-anim) gives the complete invocation. A query that needs alignments fails with an incomplete report if this component is absent; it never silently switches to skani-only classification. To choose skani only, add `--no-anim` and omit `--anim-reference-package`, `--expected-anim-sha256` and `--anim-output`.
 
-For a managed database, install the optional historical MLST component and request typing with `--mlst`. An explicit scheme directory and trusted `manifest.json` digest are also supported. Follow [historical MLST setup](historical-mlst.md). Typing does not change classification.
+Managed database installation includes MLST, and typing runs by default. Use `--no-mlst` on installation or classification to opt out. An explicit scheme directory and trusted `manifest.json` digest are also supported. Follow [MLST setup](historical-mlst.md). Typing does not change classification.
 
 Once the executable and required components are installed, classification is offline. Use `ptero database list` to inspect installed versions and `ptero database verify VERSION` to recheck their contents.

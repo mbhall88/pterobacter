@@ -54,7 +54,7 @@ With ANIm disabled, there is no alignment-based foreign-parent challenge test, s
 
 ### Supplementary results
 
-- Historical MLST: not_requested
+- MLST: not_requested
 - Genomovar search: withheld
 
 ### Provenance
@@ -114,7 +114,7 @@ With ANIm disabled, there is no alignment-based foreign-parent challenge test, s
 
 ### Supplementary results
 
-- Historical MLST: not_requested
+- MLST: not_requested
 - Genomovar search: —
 
 ### Provenance
@@ -187,7 +187,7 @@ No reference challenged the call. The competitor panel was fully measured.
 
 ### Supplementary results
 
-- Historical MLST: not_requested
+- MLST: not_requested
 - Genomovar search: withheld
 
 ### Provenance

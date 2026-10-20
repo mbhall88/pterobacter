@@ -4,13 +4,11 @@
 
 Pronounced with a silent P, like pterodactyl.
 
-[![CI](https://github.com/mbhall88/pterobacter/actions/workflows/ci.yml/badge.svg)](https://github.com/mbhall88/pterobacter/actions/workflows/ci.yml) [![User guide](https://img.shields.io/badge/docs-user_guide-236b73)](docs/usage.md)
+[![CI](https://github.com/mbhall88/pterobacter/actions/workflows/ci.yml/badge.svg)](https://github.com/mbhall88/pterobacter/actions/workflows/ci.yml) [![User guide](https://img.shields.io/badge/docs-user_guide-236b73)](https://mbhall88.github.io/pterobacter/)
 
-Classify *Enterobacter* isolate assemblies and report supported species and subspecies calls, the closest references, and reasons for uncertainty. Give Pterobacter a whole assembly in FASTA format, including its plasmids and draft contigs.
+Classify *Enterobacter* isolate assemblies by species and subspecies, with sequence typing (MLST), genomovar matches where supported, and warnings for uncertain calls. Supply a whole assembly in FASTA format, including plasmids and draft contigs.
 
 ## Install
-
-### From source
 
 You need Rust and GNU C++ with C++17 support. On macOS, first install the Xcode command-line tools and Homebrew GCC:
 
@@ -19,85 +17,35 @@ xcode-select --install  # skip if already installed
 brew install gcc
 ```
 
+Install from source:
+
 ```sh
-git clone git@github.com:mbhall88/pterobacter.git
+git clone https://github.com/mbhall88/pterobacter.git
 cd pterobacter
 cargo install --path . --locked
 ptero --version
 ```
 
-See [installation](docs/installation.md) for compiler setup, offline builds and platform limits. Native macOS builds automatically discover installed Homebrew GNU C++ when no compiler override is supplied.
+`cargo install` puts `ptero` and its equivalent alias `pterobacter` in Cargo's bin directory, usually `~/.cargo/bin`; that directory must be on your `PATH`. To build without installing, use `cargo build --release --locked` and run `./target/release/ptero` instead.
 
-### Cargo
-
-Registry installation is planned. For now, use `cargo install --path . --locked` from the source checkout above.
-
-### Conda
-
-A Bioconda package is planned; it is not available yet.
-
-### Containers
-
-Container images are planned; they are not available yet.
-
-### Precompiled binaries
-
-Release downloads are planned; they are not available yet.
+See the [installation guide](https://mbhall88.github.io/pterobacter/installation.html) for compiler setup and platform details. Registry packages and precompiled releases are not available yet.
 
 ## Classify an assembly
 
-Install the reference database once, then classify an assembly:
+Install the database, then classify an assembly:
 
 ```sh
 ptero database install 2026-10-15
 ptero --output isolate.json --report-dir isolate-report isolate.fa
 ```
 
-This build uses database version `2026-10-15` by default. Installation downloads
-and verifies the reference sketches and whole-genome FASTAs from
-[Figshare](https://doi.org/10.6084/m9.figshare.34640883.v1). Classification then
-works offline. Use `-D 2026-10-15` to select this version explicitly.
-[Database management](docs/databases.md) covers verification, storage locations
-and optional historical MLST; [explicit reference setup](docs/reference-setup.md)
-covers existing unpacked packages.
+The database includes reference genomes and an MLST scheme. This build uses version `2026-10-15`, published on [Figshare](https://doi.org/10.6084/m9.figshare.34640883.v1). See [database management](https://mbhall88.github.io/pterobacter/databases.html) for storage locations and verification.
 
-Pterobacter first estimates ANI with skani. For eligible samples just below the species boundary, it also runs ANIm using whole-genome alignments to refine the estimate. ANIm can take longer, especially in large batches with many borderline samples; samples outside that band do not incur alignment work. Use `-n` or `--no-anim` to skip ANIm and use skani only. When using `--no-anim`, omit the alignment package and evidence options. This opt-out changes runtime analysis; building the executable still requires the C++ compiler. [All short options](docs/cli-help.md) are listed in the command help.
+Pterobacter estimates average nucleotide identity (ANI) with skani and uses genome alignments (ANIm) to investigate eligible samples near the species boundary. MLST runs by default. Use `--no-anim` to skip the alignment step or `--no-mlst` to skip sequence typing. You can also pass `--no-mlst` to `database install` to omit the scheme download.
 
-`ptero` and `pterobacter` are equivalent commands. Open `isolate-report/report.md` for the readable result, or `isolate-report/calls.tsv` for one row per assembly. `isolate.json` and `isolate-report/report.json` retain the detailed report; `evidence.tsv` contains the comparisons. Choose their names with `--output FILE` and `--report-dir DIR`; both paths must be new. The four filenames inside the report directory are fixed.
+Open `isolate-report/report.md` for the readable result or `isolate-report/calls.tsv` for a table of calls. The JSON report and `evidence.tsv` contain the detailed comparisons. Output files and directories must be new.
 
-Here are selected fields from a saved skani-only report fixture, corresponding to `--no-anim`:
-
-```json
-{
-  "assignment": {
-    "status": "assigned",
-    "species_name": "Enterobacter syntheticus",
-    "subspecies_name": "Enterobacter syntheticus subsp. syntheticus",
-    "genomovar_id": null
-  },
-  "genomovar": {
-    "status": "withheld",
-    "genomovar_id": null,
-    "reasons": ["absent_eligible_parent"]
-  }
-}
-```
-
-This synthetic fixture assigns species and subspecies while withholding the genomovar. The default rescue-mode JSON uses top-level `species_id` and `subspecies_id` fields; the [report guide](docs/report-reference.md) describes both formats. An assigned genomovar looks like this in the synthetic fixture:
-
-```json
-{
-  "genomovar": {
-    "genomovar_id": "GV01",
-    "reasons": [],
-    "status": "assigned"
-  }
-}
-```
-
-`GV01` is the fixture's short ID. The reference package uses versioned IDs such as `ECTX-GV-2026-10-02-v1-GV01`. [Example files](docs/examples/README.md) include complete JSON, TSV and Markdown outputs and explain their sources.
-
-For an observed public-assembly example, the reviewed case `VAL-L3-1B0C8D325620` matched the proposed *E. xiangfangensis* subsp. *hoffmannii* group. Its closest diversity reference had 99.97% ANI, 93.65% query aligned fraction and 92.61% reference aligned fraction. The [worked example](docs/boundary-review.md#a-recorded-wider-context-example) includes its saved comparisons and tree review. An unresolved call keeps its name fields empty; the closest reference is evidence, not a replacement label. Check reasons and warnings in the readable report. [Reading results](docs/results.md) explains these cases and the fixture source.
+See [example outputs](https://mbhall88.github.io/pterobacter/examples/index.html) and [reading results](https://mbhall88.github.io/pterobacter/results.html). For an uncertain assignment, the [worked boundary-review example](https://mbhall88.github.io/pterobacter/boundary-review.html#a-recorded-wider-context-example) shows how to examine genome comparisons and tree evidence.
 
 ## Run a batch
 
@@ -106,18 +54,22 @@ ptero --jobs 2 --threads 2 --output batch.json --report-dir batch-report \
   isolate_1.fa isolate_2.fa
 ```
 
-`--jobs 2` processes two assemblies concurrently. `--threads 2` gives each assembly two threads for the embedded search, for up to four search threads in total. Each input has its own result and execution status. See the [batch JSON](docs/examples/output/batch/report.json), [calls table](docs/examples/output/batch/calls.tsv) and [readable report](docs/examples/readable/batch.md) for a synthetic batch with both completed and failed inputs.
+This processes two assemblies at a time, with two search threads per assembly. You can also provide a [file list or sample sheet](https://mbhall88.github.io/pterobacter/running.html#a-list-of-assemblies-or-named-samples).
 
-## Guides
+## Documentation
 
-The [user guide](docs/usage.md) covers reference setup, running assemblies, results and troubleshooting. See [supported taxa](docs/supported-taxa.md) for naming and sampling limits, [historical MLST](docs/historical-mlst.md) for optional typing, and [the boundary-review example](docs/boundary-review.md) for an uncertain result needing wider context.
+The [user guide](https://mbhall88.github.io/pterobacter/) covers:
 
-A genomovar result is a conditional match to a reference definition. An unrepresented group can match a neighbouring group; overlapping matches are withheld, and one-member groups carry a sparse-reference warning. See [genomovar matches](docs/genomovar.md). Quality control remains your responsibility.
+- [Running assemblies](https://mbhall88.github.io/pterobacter/running.html) and [command-line options](https://mbhall88.github.io/pterobacter/cli-help.html)
+- [Supported taxa](https://mbhall88.github.io/pterobacter/supported-taxa.html) and naming conventions
+- [MLST](https://mbhall88.github.io/pterobacter/historical-mlst.html), including scheme coverage and using your own scheme
+- [Genomovar matches](https://mbhall88.github.io/pterobacter/genomovar.html)
+- [Investigating uncertain results](https://mbhall88.github.io/pterobacter/boundary-review.html) and [troubleshooting](https://mbhall88.github.io/pterobacter/troubleshooting.html)
 
 ## Cite and contribute
 
-Use the software metadata in [CITATION.cff](CITATION.cff) when citing Pterobacter. Cite the [reference database](https://doi.org/10.6084/m9.figshare.34640883.v1) separately.
+Use [CITATION.cff](CITATION.cff) when citing Pterobacter, and cite the [reference database](https://doi.org/10.6084/m9.figshare.34640883.v1) separately.
 
-<!-- Maintainer TODO: add the accompanying paper citation and DOI here and in CITATION.cff when available. --> [Contributing](CONTRIBUTING.md) covers repository checks and development commands.
+<!-- Maintainer TODO: add the accompanying paper citation and DOI here and in CITATION.cff when available. -->
 
-The combined executable is distributed under [GPL-3.0-or-later](LICENSE-GPL-3.0.txt). Pterobacter-authored source retains its [MIT licence](LICENSE). See [licensing and source availability](docs/licensing.md) for component terms and corresponding source.
+[Contributing](CONTRIBUTING.md) covers development and checks. The combined executable is distributed under [GPL-3.0-or-later](LICENSE-GPL-3.0.txt); Pterobacter-authored source retains its [MIT licence](LICENSE). See [licensing and source availability](https://mbhall88.github.io/pterobacter/licensing.html) for component terms.

@@ -13,7 +13,7 @@ Start with a whole isolate assembly in FASTA format. Pterobacter keeps all suppl
 | Find the answer and warnings | [Reading results](results.md) |
 | Investigate an uncertain result | [Boundary review and worked example](boundary-review.md) |
 | Check which taxa are represented | [Reference coverage](supported-taxa.md) |
-| Add historical sequence typing | [Historical MLST](historical-mlst.md) |
+| Understand sequence typing | [MLST](historical-mlst.md) |
 | Interpret a genomovar match | [Genomovar matches](genomovar.md) |
 | Resolve a failed run | [Troubleshooting](troubleshooting.md) |
 

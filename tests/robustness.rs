@@ -13,12 +13,18 @@ fn write_query(dir: &Path, name: &str, seq: &[u8]) -> PathBuf {
     path
 }
 
-fn public_command(dir: &Path, pin: &str) -> assert_cmd::Command {
+fn public_command_with_mlst(dir: &Path, pin: &str) -> assert_cmd::Command {
     let mut command = cargo_bin_cmd!("ptero");
     command
         .arg("--reference-package")
         .arg(dir.join("package"))
         .args(["--expected-sha256", pin]);
+    command
+}
+
+fn public_command(dir: &Path, pin: &str) -> assert_cmd::Command {
+    let mut command = public_command_with_mlst(dir, pin);
+    command.arg("--no-mlst");
     command
 }
 
@@ -594,8 +600,9 @@ fn provisioned_v1_run_with_mlst_completes_without_a_network() {
         .concat(),
     )
     .unwrap();
-    let mut command = v1(dir.path(), &pin);
+    let mut command = public_command_with_mlst(dir.path(), &pin);
     command
+        .arg("--no-anim")
         .arg("--mlst-package")
         .arg(dir.path().join("mlst"))
         .args(["--mlst-expected-sha256", &scheme.manifest_sha256()])

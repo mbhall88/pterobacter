@@ -2,7 +2,7 @@
 
 Modified combined package: Pterobacter. This distribution notice was added on 15 October 2026. The native-source notes and retained patches describe changes to upstream components.
 
-The combined Pterobacter executable is distributed under [GPL-3.0-or-later](../LICENSE-GPL-3.0.txt). Pterobacter-authored source retains its [MIT licence](../LICENSE). These describe different scopes: the executable incorporates upstream code with additional conditions. The reference databases and optional MLST data have separate terms; this software licence does not replace them or apply automatically to your classification results.
+The combined Pterobacter executable is distributed under [GPL-3.0-or-later](../LICENSE-GPL-3.0.txt). Pterobacter-authored source retains its [MIT licence](../LICENSE). These describe different scopes: the executable incorporates upstream code with additional conditions. The reference databases and MLST data have separate terms; this software licence does not replace them or apply automatically to your classification results.
 
 You can run the program for any purpose. If you redistribute the combined executable, provide the applicable notices and complete corresponding source under the GPL conditions. Our releases must make that source available alongside the binaries. See [GPLv3 sections 1, 5 and 6](https://www.gnu.org/licenses/gpl-3.0.html) for the terms.
 

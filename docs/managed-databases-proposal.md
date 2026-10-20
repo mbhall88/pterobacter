@@ -1,5 +1,7 @@
 # Managed databases: proposal for issue 39
 
+> 20 October 2026: MLST now defaults on for installation and classification, with `--no-mlst` to opt out. The opt-in design below is retained as history; see [database management](databases.md) for current behavior.
+
 This proposal awaits Astra's review together with the draft DC-1 distribution
 contract from [Enterobacter #34](https://github.com/mbhall88/Enterobacter/issues/34#issuecomment-6185508536).
 The commands below are proposed interfaces. They are **not implemented commands**.

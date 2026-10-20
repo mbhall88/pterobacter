@@ -13,6 +13,7 @@ struct Run {
 
 fn ptero(package: &Path, pin: &str, args: &[&std::ffi::OsStr]) -> Run {
     let output = cargo_bin_cmd!("ptero")
+        .arg("--no-mlst")
         .env("XDG_STATE_HOME", package.parent().unwrap().join("state"))
         .env("HOME", package.parent().unwrap().join("home"))
         .arg("--reference-package")

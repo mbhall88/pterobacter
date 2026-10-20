@@ -1,4 +1,4 @@
-//! Optional historical MLST for whole assemblies. Supplementary typing: it never sets or changes
+//! MLST for whole assemblies. Supplementary typing: it never sets or changes
 //! a species, subspecies, lineage or genomovar.
 //!
 //! The engine is `terobacter-ungapped-mlst`, route D of the MLST feasibility study. It reproduces
