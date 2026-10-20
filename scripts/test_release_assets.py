@@ -98,6 +98,14 @@ class ReleaseAssetsTests(unittest.TestCase):
                     publisher.publish('v1.2.3', root, 'owner/repo')
                 upload.assert_not_called(); command.assert_not_called()
 
+    def test_release_please_tag_format_is_accepted(self):
+        config = json.loads(Path('release-please-config.json').read_text())
+        self.assertFalse(config['packages']['.']['include-v-in-tag'])
+        with patch.object(release.tomllib, 'loads', return_value={'package': {'version': '1.2.3'}}), \
+             patch.object(release, 'output', side_effect=['a' * 40, 'a' * 40]), \
+             patch.object(release.subprocess, 'run'):
+            self.assertEqual(release.check('1.2.3')['tag'], '1.2.3')
+
     def test_private_repository_is_refused_before_publication(self):
         with patch.object(release.tomllib, 'loads', return_value={'package': {'version': '1.2.3'}}), \
              patch.object(release, 'output', side_effect=['a' * 40, 'a' * 40, json.dumps({'visibility': 'PRIVATE'})]), \

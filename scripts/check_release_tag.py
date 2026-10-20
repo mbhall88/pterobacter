@@ -15,9 +15,9 @@ def check(tag, publish=False):
     version = tomllib.loads(Path('Cargo.toml').read_text())['package']['version']
     commit = output(['git', 'rev-parse', 'HEAD'])
     if tag:
-        if not re.fullmatch(r'v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?', tag):
-            raise ValueError('Expected a version tag such as v0.1.0')
-        if tag != 'v' + version:
+        if not re.fullmatch(r'v?\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?', tag):
+            raise ValueError('Expected a version tag such as 0.1.0')
+        if tag.removeprefix('v') != version:
             raise ValueError('Tag does not match Cargo package version')
         if output(['git', 'rev-parse', f'refs/tags/{tag}^{{commit}}']) != commit:
             raise ValueError('Checkout does not match the tag')

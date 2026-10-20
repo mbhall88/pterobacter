@@ -30,11 +30,11 @@ Use `aarch64-apple-darwin` on an Apple Silicon Mac. The output must be new and o
 
 Publication makes source, crate and binaries public and requires Michael's approval. The source repository must be public for this workflow; changing its visibility is a separate decision. A configured token alone is not publication approval.
 
-1. Review and merge the release-please version PR. Confirm the resulting version tag and GitHub release exist and main CI has passed for that exact commit.
-2. Run **Distribution** from main, set the tag to the reviewed tag such as `v0.1.0`, and set **publish=true**. The workflow checks the tag against Cargo's version, its ancestry on main, repository visibility and successful source CI.
+1. Once publication is approved, update the README and installation page in the release candidate to show the approved crates.io and binary installation commands. This ensures the packaged README describes the released version. Review and merge the release-please version PR. Confirm the resulting version tag and GitHub release exist and main CI has passed for that exact commit.
+2. Run **Distribution** from main, set the tag to the reviewed tag such as `0.1.0`, and set **publish=true**. The workflow checks the tag against Cargo's version, its ancestry on main, repository visibility and successful source CI.
 3. Both native builds and the corresponding-source rebuild must pass. The collector validates the inventories and hashes. The publisher then regenerates the crate and compares it byte-for-byte with the tested archive.
 4. Only the publication job receives `CARGO_REGISTRY_TOKEN`. It uploads corresponding source before binaries, publishes the crate, verifies its registry checksum, then attaches the remaining assets.
-5. Verify the public downloads and installation, then update the README and installation page to present the now-available channels. Until then, their availability remains described as pending.
+5. Verify the public downloads, checksums and installation instructions after publication. Until publication is approved, the main README and installation page continue to describe those channels as pending.
 
 If a network failure interrupts publication, rerun the same reviewed tag. Existing registry versions and GitHub assets are accepted only when their bytes match; differing content is refused, never replaced. Do not change a published version's contents to repair an upload.
 
