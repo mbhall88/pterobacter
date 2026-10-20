@@ -6,6 +6,7 @@ authors = ["Michael Hall <michael@mbh.sh>"]
 edition = "2021"
 repository = "https://github.com/mbhall88/pterobacter"
 homepage = "https://github.com/mbhall88/pterobacter"
+documentation = "https://mbhall88.github.io/pterobacter/"
 readme = "README.md"
 keywords = ["bioinformatics", "enterobacter", "classification", "ani", "taxonomy"]
 categories = ["science", "command-line-utilities"]
@@ -55,7 +56,6 @@ tar = { version = "0.4.46", default-features = false }
 flate2 = "1.1.10"
 ureq = { version = "3", default-features = false, features = ["rustls"] }
 
-
 # Dependencies of the reviewed embedded skani and partitions code.
 bio = "1.4.0"
 bit-vec = "0.5.1"
@@ -91,3 +91,11 @@ lto = true # https://doc.rust-lang.org/cargo/reference/profiles.html
 # Keep test builds smaller; CARGO_PROFILE_TEST_DEBUG can restore symbols for debugging.
 [profile.test]
 debug = 0
+
+# cargo-shear 1.14 does not normalize the ../vendor module paths in src/lib.rs.
+# These imports are used by the compiled embedded engines. Their source inventory
+# and content are checked by scripts/check_embedded_sources.py; remove these
+# exceptions when the checker follows those paths.
+[package.metadata.cargo-shear]
+ignored = ["bio", "bit-vec", "fastrand", "fxhash", "gbdt", "gcollections", "interval", "log", "memmap2", "num-traits", "proptest", "rand", "rust-lapper", "simple-logging", "smallvec", "statrs"]
+ignored-paths = ["vendor/skani/src/**", "vendor/partitions/src/**"]

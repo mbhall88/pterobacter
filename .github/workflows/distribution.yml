@@ -109,6 +109,7 @@ jobs:
           TMPDIR: ${{ runner.temp }}
         run: |
           python3 -m unittest discover -s scripts -p test_distribution.py
+          python3 -m unittest discover -s scripts -p test_release_assets.py
           python3 scripts/build_binary_distribution.py --target "$TARGET" --output "$RUNNER_TEMP/binary-assets"
       - uses: actions/upload-artifact@v7
         with:

@@ -17,10 +17,13 @@ lint:
 test:
     python3 scripts/check_embedded_sources.py
     python3 -m unittest discover -s scripts -p 'test_distribution.py'
+    python3 -m unittest discover -s scripts -p 'test_release_assets.py'
     python3 -m unittest discover -s scripts -p 'test_prepare_source_archive.py'
     python3 -m unittest discover -s scripts -p 'test_native_filter.py'
     cargo test -v --all-targets --no-fail-fast -- --test-threads=1
     cargo test -v --all-targets --all-features --no-fail-fast -- --test-threads=1
+    cargo test --locked --doc
+    cargo test --locked --all-features --doc
 
 # check that a default install exposes only the public commands, then smoke-test them
 install-check:

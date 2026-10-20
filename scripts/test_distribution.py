@@ -31,7 +31,9 @@ class DistributionTests(unittest.TestCase):
     def test_crate_extraction_rejects_links_traversal_and_duplicate_members(self):
         for names, link in [(['../escape'], False), (['/absolute'], False),
                             (['other/file'], False), (['pkg/link'], True),
-                            (['pkg/file', 'pkg/file'], False)]:
+                            (['pkg/file', 'pkg/file'], False),
+                            (['pkg/scripts/__pycache__/x.pyc'], False),
+                            (['pkg/target/cache'], False)]:
             with self.subTest(names=names, link=link), tempfile.TemporaryDirectory() as temporary:
                 root = Path(temporary); archive = root / 'bad.crate'
                 with tarfile.open(archive, 'w:gz') as packed:

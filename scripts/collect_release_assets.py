@@ -2,7 +2,7 @@
 import argparse
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import shutil
 import tarfile
 
@@ -65,8 +65,11 @@ def collect(inputs, destination, version, commit):
         if len(archive.getmembers()) != len(expected) or set(archive.getnames()) != expected:
             raise ValueError('Corresponding source inventory mismatch')
         for member in archive:
-            if not member.isfile():
-                raise ValueError('Non-regular corresponding source member')
+            path = PurePosixPath(member.name)
+            if (path.is_absolute() or '..' in path.parts
+                    or path.parts[0] != 'pterobacter-corresponding-source'
+                    or not member.isfile()):
+                raise ValueError('Unsafe corresponding source member')
             name = member.name.removeprefix('pterobacter-corresponding-source/')
             if name == 'SOURCE-ARCHIVE.json':
                 continue
