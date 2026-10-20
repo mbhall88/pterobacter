@@ -63,6 +63,15 @@ def write_archive(files, prefix, destination):
                     archive.addfile(info, content)
 
 
+def check_macos_runtime(text):
+    """Refuse undeclared non-system library requirements in a Mac download."""
+    for line in text.splitlines()[1:]:
+        library = line.strip().split(' (', 1)[0]
+        if not library.startswith(('/usr/lib/', '/System/Library/',
+                                   '/opt/homebrew/opt/gcc/', '/opt/homebrew/opt/xz/')):
+            raise ValueError('Undocumented macOS runtime library: ' + library)
+
+
 def build(destination, target, allow_dirty=False):
     if target not in TARGETS or (platform.system(), platform.machine()) != TARGETS[target]:
         raise ValueError('Build on the native, supported target runner')
@@ -110,6 +119,9 @@ def build(destination, target, allow_dirty=False):
         inspect = ['ldd'] if platform.system() == 'Linux' else ['otool', '-L']
         runtime = {name: output([*inspect, binaries / name], cwd=source) for name in ['ptero', 'pterobacter']}
         runtime = {name: text.replace(str(binaries / name), name) for name, text in runtime.items()}
+        if platform.system() == 'Darwin':
+            for text in runtime.values():
+                check_macos_runtime(text)
         files = {'bin/' + name: binaries / name for name in ['ptero', 'pterobacter']}
         files.update({name: source / name for name in NOTICES})
         instructions = tmp / 'README.txt'
@@ -122,8 +134,8 @@ Guide: https://mbhall88.github.io/pterobacter/
 
 This native build requires the runtime libraries listed in manifest.json.
 Linux builds use glibc and the GNU C++ runtime; they are not static musl builds.
-Apple Silicon macOS builds require Homebrew GCC runtime libraries:
-  brew install gcc
+Apple Silicon macOS builds require Homebrew GCC and XZ runtime libraries:
+  brew install gcc xz
 No Rust compiler or external analysis executable is needed to run these binaries.
 
 Combined executable: GPL-3.0-or-later. Pterobacter-authored source: MIT.

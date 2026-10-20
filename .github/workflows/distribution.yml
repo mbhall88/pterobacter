@@ -102,9 +102,9 @@ jobs:
         with:
           python-version: '3.12'
       - uses: dtolnay/rust-toolchain@stable
-      - name: Install GNU C++ runtime and compiler on macOS
+      - name: Install GNU C++ and XZ on macOS
         if: runner.os == 'macOS'
-        run: brew install gcc
+        run: brew install gcc xz
       - name: Build and verify the Cargo package and installed binaries
         env:
           TARGET: ${{ matrix.target }}

@@ -56,6 +56,14 @@ class DistributionTests(unittest.TestCase):
             output = dist.extract_crate(archive, root / 'out', 'pkg')
             self.assertEqual((output / 'Cargo.toml').read_bytes(), b'abc')
 
+    def test_macos_runtime_requirements_are_declared(self):
+        dist.check_macos_runtime('ptero:\n /usr/lib/libSystem.B.dylib (version)\n'
+                                 ' /opt/homebrew/opt/gcc/lib/libstdc++.6.dylib (version)\n'
+                                 ' /opt/homebrew/opt/xz/lib/liblzma.5.dylib (version)')
+        for path in ['/opt/homebrew/opt/undeclared/lib/new.dylib', '/tmp/build/libprivate.dylib']:
+            with self.assertRaisesRegex(ValueError, 'Undocumented'):
+                dist.check_macos_runtime('ptero:\n ' + path + ' (version)')
+
     def test_publication_requires_real_matching_tag(self):
         with patch.object(release, 'output', return_value='a' * 40):
             with self.assertRaisesRegex(ValueError, 'real reviewed version tag'):

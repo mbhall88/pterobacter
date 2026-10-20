@@ -11,7 +11,7 @@ The **Distribution** workflow prepares crates.io and precompiled downloads. Pull
 
 Each binary is built by installing the extracted `.crate`, then tested with the installed-command smoke test and database/seeding regression fixtures. This checks the files users receive, rather than only the checkout. Scientific rules, reference bytes and database identities are unchanged.
 
-Linux builds run on Ubuntu 22.04 and use glibc and GNU C++ runtime libraries. They are not static musl builds. macOS builds run on macOS 15 for Apple Silicon and require the Homebrew GCC runtime, installed with `brew install gcc`. The binary manifests record the actual linked libraries. Intel macOS, Linux ARM and Windows binaries are not part of this release matrix. Users need no Rust compiler or external analysis executable to run the binaries.
+Linux builds run on Ubuntu 22.04 and use glibc and GNU C++ runtime libraries. They are not static musl builds. macOS builds run on macOS 15 for Apple Silicon and require the Homebrew GCC and XZ runtimes, installed with `brew install gcc xz`. The binary manifests record the actual linked libraries. Intel macOS, Linux ARM and Windows binaries are not part of this release matrix. Users need no Rust compiler or external analysis executable to run the binaries.
 
 ## Prepare a candidate
 
@@ -36,6 +36,6 @@ Publication makes source, crate and binaries public and requires Michael's appro
 4. Only the publication job receives `CARGO_REGISTRY_TOKEN`. It uploads corresponding source before binaries, publishes the crate, verifies its registry checksum, then attaches the remaining assets.
 5. Verify the public downloads, checksums and installation instructions after publication. Until publication is approved, the main README and installation page continue to describe those channels as pending.
 
-If a network failure interrupts publication, rerun the same reviewed tag. Existing registry versions and GitHub assets are accepted only when their bytes match; differing content is refused, never replaced. Do not change a published version's contents to repair an upload.
+If a network failure interrupts only the publication job, rerun the failed job from that original workflow run with `gh run rerun RUN_ID --failed`. This reuses the verified assets. A fresh build of the same tag is not guaranteed to produce identical binary bytes or runtime metadata, so retain the original artifacts for retries. Existing registry versions and GitHub assets are accepted only when their bytes match; differing content is refused, never replaced. Do not change a published version's contents to repair an upload.
 
 The combined executable is GPL-3.0-or-later; Pterobacter-authored source retains MIT. Complete corresponding source and component notices accompany downloads. See [licensing](licensing.md). The `.crate` has registry dependencies; the separate corresponding-source archive supplies those source bytes for offline rebuilding.
