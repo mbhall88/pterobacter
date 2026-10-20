@@ -298,10 +298,7 @@ struct RawReference {
 }
 
 pub(crate) fn sha256_hex(bytes: &[u8]) -> String {
-    Sha256::digest(bytes)
-        .iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect::<String>()
+    crate::hex::encode(&Sha256::digest(bytes))
 }
 
 pub(crate) fn is_sha256(text: &str) -> bool {

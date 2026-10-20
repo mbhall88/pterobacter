@@ -22,10 +22,7 @@ pub fn cases() -> Vec<Value> {
 }
 
 pub fn sha256(text: &str) -> String {
-    Sha256::digest(text.as_bytes())
-        .iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect::<String>()
+    super::hex::encode(&Sha256::digest(text.as_bytes()))
 }
 
 /// skani emits two decimals, and saved evidence with more is rejected rather than rounded. One

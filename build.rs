@@ -1,3 +1,6 @@
+#[path = "src/hex.rs"]
+mod hex;
+
 use sha2::{Digest, Sha256};
 use std::{env, fs, path::Path, process::Command};
 
@@ -44,11 +47,7 @@ fn main() {
     rust_hash.update(fs::read("Cargo.lock").unwrap());
     println!(
         "cargo:rustc-env=TERO_ANIM_SOURCE_SHA256={}",
-        rust_hash
-            .finalize()
-            .iter()
-            .map(|byte| format!("{byte:02x}"))
-            .collect::<String>()
+        hex::encode(&rust_hash.finalize())
     );
     let target = env::var("TARGET").unwrap();
     assert!(
@@ -138,10 +137,7 @@ fn main() {
     hash.update(format!("{:?}", compiler.to_command().get_args()).as_bytes());
     println!(
         "cargo:rustc-env=TERO_ANIM_BUILD_SHA256={}",
-        hash.finalize()
-            .iter()
-            .map(|byte| format!("{byte:02x}"))
-            .collect::<String>()
+        hex::encode(&hash.finalize())
     );
     println!("cargo:rustc-env=TERO_ANIM_COMPILER={version}");
     println!("cargo:rustc-env=TERO_ANIM_TARGET={target}");

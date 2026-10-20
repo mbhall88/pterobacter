@@ -21,6 +21,7 @@ mod resolve;
 mod source;
 mod tables;
 
+use crate::hex::encode as hex;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::io::{self, Read};
 
@@ -565,6 +566,3 @@ pub(crate) fn is_sha256(text: &str) -> bool {
     text.len() == 64 && text.bytes().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
 }
 
-fn hex(bytes: &[u8]) -> String {
-    bytes.iter().map(|b| format!("{b:02x}")).collect()
-}

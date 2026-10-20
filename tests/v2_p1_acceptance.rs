@@ -2,6 +2,8 @@
 //!
 //! Expected values come from the accepted fixture file, never from this implementation. As in
 //! the P1 oracle, `reasons` is a subset check and every other expected field must match exactly.
+use common::hex;
+
 mod common;
 
 use common::p1;
@@ -69,10 +71,7 @@ fn the_fixture_is_the_accepted_p1_file() {
     use sha2::{Digest, Sha256};
     let bytes = include_bytes!("fixtures/p1-acceptance/cases.json");
     assert_eq!(
-        Sha256::digest(bytes)
-            .iter()
-            .map(|byte| format!("{byte:02x}"))
-            .collect::<String>(),
+        hex::encode(&Sha256::digest(bytes)),
         "8b90bdf7c257dd52558a4218e748bd5cf9cb407817997541da4208a1f35ad0bc"
     );
 }

@@ -20,3 +20,5 @@ pub mod rescue;
 pub mod skani;
 
 pub mod anim;
+
+mod hex;

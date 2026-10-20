@@ -1,5 +1,8 @@
 //! Command-line seam: `ptero` and `pterobacter` are two names for one implementation.
 
+#[path = "../src/hex.rs"]
+mod hex;
+
 use assert_cmd::cargo::cargo_bin_cmd;
 use assert_cmd::Command;
 use sha2::Digest;
@@ -108,10 +111,7 @@ fn an_assembly_run_without_a_pinned_default_requires_an_explicit_package_or_vers
     let catalogue = temp.path().join("empty-catalogue.json");
     let bytes = br#"{"schema":"pterobacter.database-catalogue/1","releases":[]}"#;
     std::fs::write(&catalogue, bytes).unwrap();
-    let pin = sha2::Sha256::digest(bytes)
-        .iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect::<String>();
+    let pin = hex::encode(&sha2::Sha256::digest(bytes));
     for name in COMMANDS {
         let output = command(name)
             .arg("--catalogue")

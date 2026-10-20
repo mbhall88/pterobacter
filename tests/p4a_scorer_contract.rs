@@ -3,6 +3,8 @@
 //!
 //! The scorer belongs to P4b. These tests check that every contract reason and record field it
 //! reads has a source in Terobacter output, and that every mapped path exists in real output.
+use common::hex;
+
 mod common;
 
 use std::collections::BTreeSet;
@@ -120,13 +122,7 @@ fn resolves(value: &Value, path: &str) -> bool {
 
 #[test]
 fn fixture_is_the_frozen_p4a_file_and_all_84_cases_are_accounted_for() {
-    assert_eq!(
-        Sha256::digest(FIXTURE)
-            .iter()
-            .map(|byte| format!("{byte:02x}"))
-            .collect::<String>(),
-        FIXTURE_SHA256
-    );
+    assert_eq!(hex::encode(&Sha256::digest(FIXTURE)), FIXTURE_SHA256);
     let data = fixture();
     let count = |section: &str| data[section].as_array().unwrap().len();
     let sections = [
@@ -434,10 +430,7 @@ fn the_handoff_page_states_the_digest_of_each_map() {
             include_bytes!("../docs/contracts/scorer-fields.tsv").as_slice(),
         ),
     ] {
-        let digest = Sha256::digest(bytes)
-            .iter()
-            .map(|byte| format!("{byte:02x}"))
-            .collect::<String>();
+        let digest = hex::encode(&Sha256::digest(bytes));
         let row = page
             .lines()
             .find(|line| line.contains(&format!("]({name})")) && line.contains("SHA-256"))

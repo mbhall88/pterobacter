@@ -36,10 +36,7 @@ pub const LINEAGE_REGISTRY: &str = "metadata/tables/lineage_registry.tsv";
 pub const PRIMARY_INDEX: &str = "databases/primary_whole/index.db";
 
 pub fn sha256_hex(bytes: &[u8]) -> String {
-    Sha256::digest(bytes)
-        .iter()
-        .map(|b| format!("{b:02x}"))
-        .collect()
+    super::hex::encode(&Sha256::digest(bytes))
 }
 
 fn read_tree(root: &Path, dir: &Path, files: &mut BTreeMap<String, Vec<u8>>) {
