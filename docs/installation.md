@@ -58,3 +58,7 @@ For test commands and the optional development binary, see [Contributing](../CON
 ## Planned release downloads
 
 Release preparation now builds a Cargo package and precompiled Linux x86_64 and Apple Silicon macOS archives. They are not published yet; use the source installation above until the first approved release. The Linux binaries use glibc and the GNU C++ runtime. The macOS binaries require Homebrew GCC and XZ runtime libraries, available with `brew install gcc xz`. Each archive records its actual runtime-library requirements and includes licences and checksums. Complete corresponding source is supplied separately beside the binaries.
+
+## Docker
+
+A minimal Docker image can be built from source. See [containers](containers.md) for database and assembly mounts. GHCR publication is prepared for the first approved release.

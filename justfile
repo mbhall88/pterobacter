@@ -18,6 +18,7 @@ test:
     python3 scripts/check_embedded_sources.py
     python3 -m unittest discover -s scripts -p 'test_distribution.py'
     python3 -m unittest discover -s scripts -p 'test_release_assets.py'
+    python3 -m unittest discover -s scripts -p 'test_container.py'
     python3 -m unittest discover -s scripts -p 'test_prepare_source_archive.py'
     python3 -m unittest discover -s scripts -p 'test_native_filter.py'
     cargo test -v --all-targets --no-fail-fast -- --test-threads=1

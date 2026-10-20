@@ -44,3 +44,11 @@ NCBI-derived assemblies and sketches retain the [NCBI molecular-data disclaimer]
 Private archives, manifests, platform instructions and evidence are prepared for review. Public repository visibility, uploads/releases, reference replacements, final software/data versions and author approval remain separate. The frozen ANIm report keeps `not_yet_validated`; acceptance of the evaluation does not silently rewrite that compiled status or imply independent accuracy. Changes to that status need a reviewed candidate and affected validation.
 
 README wording, installation channels, examples, help and option naming can now receive Michael's repository presentation review. Cosmetic feedback does not authorize changes to thresholds, measurement engines, references or classification rules. Each request will receive a checked change or an agreed disposition.
+
+## Container release preparation
+
+The Distribution workflow also builds and tests a Linux amd64 Docker image. Its final stage contains the two commands, Debian runtime libraries and licence notices; the compiler, source tree, synthetic fixtures and reference database stay out of the image. Base image digests are pinned in `Dockerfile`.
+
+The private `verified-container` artifact holds the exact tested image, checksum and receipt. The approved publication job loads this artifact and pushes `ghcr.io/mbhall88/pterobacter:VERSION` after publishing complete corresponding source. It does not rebuild at publication time or overwrite a different image under an existing version tag. Retry the failed publication job in the original workflow run to reuse its tested artifacts.
+
+GHCR uses `GITHUB_TOKEN` with `packages: write` in that publication job only; no additional personal token is needed. Check the package visibility after the first approved push: a newly created GHCR package may be private, and public image availability must be confirmed separately. Native Linux ARM support is not claimed. See [container usage](containers.md).

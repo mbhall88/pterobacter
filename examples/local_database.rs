@@ -24,6 +24,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         destination.join("catalogue.sha256"),
         format!("{}\n", fixture.catalogue_pin),
     )?;
+    let scheme = common::mlst::SyntheticScheme::new();
+    let mut typing_query = Vec::new();
+    for (i, allele) in scheme.st5_pieces().iter().enumerate() {
+        typing_query.extend(format!(">synthetic_locus_{i}\n").bytes());
+        typing_query.extend(allele);
+        typing_query.push(b'\n');
+    }
+    fs::write(destination.join("typing-query.fa"), typing_query)?;
     println!("{}", destination.display());
     Ok(())
 }

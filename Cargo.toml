@@ -13,7 +13,7 @@ categories = ["science", "command-line-utilities"]
 license = "GPL-3.0-or-later"
 # Registry publication is restricted to the explicit release workflow.
 publish = ["crates-io"]
-include = ["src/**", "native/**", "vendor/**", "tests/**", "examples/**", "scripts/*.py", "scripts/*.json", "docs/**", "investigations/anim/*.patch", "Cargo.toml", "Cargo.lock", "build.rs", "README.md", "LICENSE*", "THIRD*", "CITATION.cff"]
+include = ["src/**", "native/**", "vendor/**", "tests/**", "examples/**", "scripts/*.py", "scripts/*.json", "docs/**", "investigations/anim/*.patch", "Cargo.toml", "Cargo.lock", "build.rs", "README.md", "LICENSE*", "THIRD*", "CITATION.cff", "Dockerfile", ".dockerignore"]
 
 [features]
 # Evaluation-only operations. Built only on request; never part of a default build or install.

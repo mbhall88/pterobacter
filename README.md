@@ -28,7 +28,7 @@ ptero --version
 
 `cargo install` puts `ptero` and its equivalent alias `pterobacter` in Cargo's bin directory, usually `~/.cargo/bin`; that directory must be on your `PATH`. To build without installing, use `cargo build --release --locked` and run `./target/release/ptero` instead.
 
-See the [installation guide](https://mbhall88.github.io/pterobacter/installation.html) for compiler setup and platform details. Registry packages and precompiled releases are not available yet.
+See the [installation guide](https://mbhall88.github.io/pterobacter/installation.html) for compiler setup and platform details. Registry packages and precompiled releases are not available yet. For Docker builds and usage, see [containers](https://mbhall88.github.io/pterobacter/containers.html).
 
 ## Classify an assembly
 
