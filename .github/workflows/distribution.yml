@@ -10,7 +10,7 @@ on:
         type: string
         default: ''
       publish:
-        description: Publish this approved tag to crates.io and attach verified release assets
+        description: Publish this approved tag to crates.io, GitHub Releases and GHCR
         type: boolean
         default: false
 
@@ -147,13 +147,57 @@ jobs:
           path: ${{ runner.temp }}/release-assets
           if-no-files-found: error
 
+  container:
+    needs: source
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.source.outputs.commit }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Build and export synthetic fixtures
+        run: |
+          docker build --platform linux/amd64 --target fixtures -t ptero-fixtures .
+          fixture_id=$(docker create ptero-fixtures)
+          docker cp "$fixture_id:/fixture" "$RUNNER_TEMP/fixture"
+          docker rm "$fixture_id"
+      - name: Build and exercise the runtime image
+        env:
+          VERSION: ${{ needs.source.outputs.version }}
+          COMMIT: ${{ needs.source.outputs.commit }}
+        run: |
+          docker build --platform linux/amd64 --build-arg VERSION="$VERSION" --build-arg REVISION="$COMMIT" -t ptero-candidate .
+          python3 -m unittest discover -s scripts -p test_container.py
+          python3 scripts/check_container.py --image ptero-candidate --fixture "$RUNNER_TEMP/fixture" \
+            --output "$RUNNER_TEMP/container" --version "$VERSION" --commit "$COMMIT"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: verified-container
+          path: |
+            ${{ runner.temp }}/container/*image.tar.gz
+            ${{ runner.temp }}/container/container-receipt.json
+            ${{ runner.temp }}/container/CONTAINER-SHA256SUMS
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: container-test-reports
+          path: |
+            ${{ runner.temp }}/container/*.json
+            ${{ runner.temp }}/container/work/**/report.*
+            ${{ runner.temp }}/container/work/**/calls.tsv
+            ${{ runner.temp }}/container/work/**/evidence.tsv
+
   publish:
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish
-    needs: [source, binaries, verify]
+    needs: [source, binaries, verify, container]
     runs-on: ubuntu-22.04
     permissions:
       contents: write
       actions: read
+      packages: write
     environment: release
     steps:
       - uses: actions/checkout@v7
@@ -187,3 +231,18 @@ jobs:
         run: |
           python3 scripts/publish_distribution.py --approved-publication --tag "$TAG" \
             --assets "$RUNNER_TEMP/release-assets" --repository "$GITHUB_REPOSITORY"
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-container
+          path: ${{ runner.temp }}/container
+      - name: Publish the tested image to GHCR
+        env:
+          TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          python3 scripts/publish_container.py --approved-publication --tag "$TAG" \
+            --assets "$RUNNER_TEMP/release-assets" --container "$RUNNER_TEMP/container" --repository "$GITHUB_REPOSITORY"
+      - name: Clear registry credentials
+        if: always()
+        run: docker logout ghcr.io

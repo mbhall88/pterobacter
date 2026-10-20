@@ -2,6 +2,7 @@
 
 - [User guide](usage.md)
 - [Installation](installation.md)
+- [Containers](containers.md)
 - [Reference setup](reference-setup.md)
 - [Running assemblies](running.md)
 - [Reading results](results.md)
