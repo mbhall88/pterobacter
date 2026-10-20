@@ -35,7 +35,7 @@ fn hex_encoder_preserves_zero_padding_and_all_byte_values() {
     let encoded = hex::encode(&bytes);
     assert_eq!(hex::encode(&[]), "");
     assert_eq!(encoded.len(), 512);
-    for (byte, pair) in bytes.iter().zip(encoded.as_bytes().chunks_exact(2)) {
+    for (byte, pair) in bytes.iter().zip(encoded.as_bytes().as_chunks::<2>().0) {
         let text = std::str::from_utf8(pair).unwrap();
         assert_eq!(u8::from_str_radix(text, 16).unwrap(), *byte);
         assert!(text

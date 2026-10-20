@@ -565,4 +565,3 @@ fn is_safe_path(path: &str) -> bool {
 pub(crate) fn is_sha256(text: &str) -> bool {
     text.len() == 64 && text.bytes().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
 }
-
