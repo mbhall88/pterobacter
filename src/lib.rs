@@ -22,3 +22,17 @@ pub mod skani;
 pub mod anim;
 
 mod hex;
+
+// Reviewed upstream implementations are packaged in this crate. Namespaces are
+// adapted mechanically; scripts/check_embedded_sources.py checks the adaptation.
+#[doc(hidden)]
+#[allow(warnings, clippy::all)]
+#[rustfmt::skip]
+#[macro_use]
+#[path = "../vendor/partitions/src/lib.rs"]
+pub mod embedded_partitions;
+#[doc(hidden)]
+#[allow(warnings, clippy::all)]
+#[rustfmt::skip]
+#[path = "../vendor/skani/src/lib.rs"]
+pub mod embedded_skani;

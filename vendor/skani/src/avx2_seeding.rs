@@ -1,5 +1,5 @@
-use crate::params::*;
-use crate::types::*;
+use crate::embedded_skani::params::*;
+use crate::embedded_skani::types::*;
 use std::arch::x86_64::*;
 
 #[inline]

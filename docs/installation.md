@@ -54,3 +54,7 @@ An uncached machine still needs to obtain those prerequisites. At runtime the pr
 Classification needs reference data separately from the executable. Run `ptero database install 2026-10-15`, then follow [database setup](databases.md) and [run an assembly](running.md). The current source version is `0.0.0`; retain the supplied source commit and binary identity with your analysis record.
 
 For test commands and the optional development binary, see [Contributing](../CONTRIBUTING.md). [Measured package and platform details](release-preparation.md) remain available for packaging review.
+
+## Planned release downloads
+
+Release preparation now builds a Cargo package and precompiled Linux x86_64 and Apple Silicon macOS archives. They are not published yet; use the source installation above until the first approved release. The Linux binaries use glibc and the GNU C++ runtime. The macOS binaries require Homebrew GCC runtime libraries, available with `brew install gcc`. Each archive records its actual runtime-library requirements and includes licences and checksums. Complete corresponding source is supplied separately beside the binaries.

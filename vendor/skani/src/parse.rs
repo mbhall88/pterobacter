@@ -1,7 +1,7 @@
-use crate::cli::{Cli, Commands, DistArgs, SearchArgs, SketchArgs, TriangleArgs};
-use crate::cmd_line::*;
-use crate::params::*;
-use crate::regression;
+use crate::embedded_skani::cli::{Cli, Commands, DistArgs, SearchArgs, SketchArgs, TriangleArgs};
+use crate::embedded_skani::cmd_line::*;
+use crate::embedded_skani::params::*;
+use crate::embedded_skani::regression;
 use clap::parser::ArgMatches;
 use log::LevelFilter;
 use log::*;

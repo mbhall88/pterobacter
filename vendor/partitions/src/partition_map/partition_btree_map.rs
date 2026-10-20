@@ -74,7 +74,7 @@ impl<'a, K, V> Iterator for RangeMut<'a, K, V> {
     fn next(&mut self) -> Option<(&'a K, &'a mut V)> {
         let (key, &index) = self.iter.next()?;
 
-        unsafe { Some((key, crate::extend_mut(&mut self.vec[index].1))) }
+        unsafe { Some((key, crate::embedded_partitions::extend_mut(&mut self.vec[index].1))) }
     }
 }
 
@@ -83,7 +83,7 @@ impl<'a, K, V> DoubleEndedIterator for RangeMut<'a, K, V> {
     fn next_back(&mut self) -> Option<(&'a K, &'a mut V)> {
         let (key, &index) = self.iter.next_back()?;
 
-        unsafe { Some((key, crate::extend_mut(&mut self.vec[index].1))) }
+        unsafe { Some((key, crate::embedded_partitions::extend_mut(&mut self.vec[index].1))) }
     }
 }
 

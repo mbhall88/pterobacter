@@ -1,7 +1,7 @@
-use skani::params::SketchParams;
-use skani::sketch_db::{SketchDbReader, SketchDbWriter};
-use skani::types::{SeedPosition, Sketch, TaggedIndex};
 use std::fs;
+use terobacter::embedded_skani::params::SketchParams;
+use terobacter::embedded_skani::sketch_db::{SketchDbReader, SketchDbWriter};
+use terobacter::embedded_skani::types::{SeedPosition, Sketch, TaggedIndex};
 use terobacter::skani::{SearchSettings, SeedingMode, SkaniDatabase};
 mod common;
 
@@ -18,7 +18,7 @@ fn fixture() -> (tempfile::TempDir, std::path::PathBuf) {
         sketch.contigs.push("synthetic".into());
         sketch.contig_lengths.push(seq.len() as u32);
         sketch.total_sequence_length = seq.len();
-        skani::seeding::fmh_seeds(&seq, &params, 0, &mut sketch, true);
+        terobacter::embedded_skani::seeding::fmh_seeds(&seq, &params, 0, &mut sketch, true);
         writer.add_sketch(&params, &sketch).unwrap();
         markers.push(Sketch::get_markers_only(&sketch));
     }
@@ -133,7 +133,7 @@ fn database_corruption_is_an_error_instead_of_a_partial_result() {
     assert!(SkaniDatabase::open(dir.path()).is_err());
     let (dir, _) = fixture();
     let index = dir.path().join("index.db");
-    let mut entries: Vec<skani::sketch_db::IndexEntry> =
+    let mut entries: Vec<terobacter::embedded_skani::sketch_db::IndexEntry> =
         bincode::deserialize(&fs::read(&index).unwrap()).unwrap();
     entries[0].offset = u64::MAX;
     fs::write(index, bincode::serialize(&entries).unwrap()).unwrap();

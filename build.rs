@@ -32,7 +32,7 @@ fn main() {
     println!("cargo:rerun-if-changed=src");
     for vendor in ["vendor/skani", "vendor/partitions"] {
         println!("cargo:rerun-if-changed={vendor}/src");
-        println!("cargo:rerun-if-changed={vendor}/Cargo.toml");
+        println!("cargo:rerun-if-changed={vendor}/Cargo.toml.upstream");
     }
     println!("cargo:rerun-if-changed=Cargo.toml");
     println!("cargo:rerun-if-changed=Cargo.lock");
@@ -41,7 +41,7 @@ fn main() {
     // Hash source and manifests, excluding generated vendor lockfiles/target directories.
     for vendor in ["vendor/skani", "vendor/partitions"] {
         hash_tree(&Path::new(vendor).join("src"), &mut rust_hash);
-        rust_hash.update(fs::read(Path::new(vendor).join("Cargo.toml")).unwrap());
+        rust_hash.update(fs::read(Path::new(vendor).join("Cargo.toml.upstream")).unwrap());
     }
     rust_hash.update(fs::read("Cargo.toml").unwrap());
     rust_hash.update(fs::read("Cargo.lock").unwrap());

@@ -1,10 +1,10 @@
-use crate::chain;
-use crate::file_io;
-use crate::params::*;
-use crate::regression;
-use crate::screen;
-use crate::sketch_db::{has_separate_sketches, is_consolidated_db, SketchDbReader};
-use crate::types::*;
+use crate::embedded_skani::chain;
+use crate::embedded_skani::file_io;
+use crate::embedded_skani::params::*;
+use crate::embedded_skani::regression;
+use crate::embedded_skani::screen;
+use crate::embedded_skani::sketch_db::{has_separate_sketches, is_consolidated_db, SketchDbReader};
+use crate::embedded_skani::types::*;
 use fxhash::FxHashMap;
 use log::*;
 use rayon::prelude::*;

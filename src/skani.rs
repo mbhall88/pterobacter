@@ -9,6 +9,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
+use crate::embedded_skani as skani;
 use bincode::Options;
 use rayon::prelude::*;
 use serde::Serialize;

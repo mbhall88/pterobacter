@@ -1,8 +1,10 @@
 mod common;
 #[test]
 fn orientation_ties_ignore_query_paths_and_preserve_labels() {
-    use skani::{params::SketchParams, sketch_db::SketchDbWriter, types::Sketch};
     use std::fs;
+    use terobacter::embedded_skani::{
+        params::SketchParams, sketch_db::SketchDbWriter, types::Sketch,
+    };
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
     let query_path = root.join("query.fa");
@@ -14,7 +16,7 @@ fn orientation_ties_ignore_query_paths_and_preserve_labels() {
     query.contigs.push("synthetic".into());
     query.contig_lengths.push(seq.len() as u32);
     query.total_sequence_length = seq.len();
-    skani::seeding::fmh_seeds(&seq, &params, 0, &mut query, true);
+    terobacter::embedded_skani::seeding::fmh_seeds(&seq, &params, 0, &mut query, true);
     let mut reference_seq = seq.clone();
     let mut state = 1_u64;
     for base in &mut reference_seq {
@@ -34,7 +36,13 @@ fn orientation_ties_ignore_query_paths_and_preserve_labels() {
     reference.contigs.push("synthetic".into());
     reference.contig_lengths.push(seq.len() as u32);
     reference.total_sequence_length = seq.len();
-    skani::seeding::fmh_seeds(&reference_seq, &params, 0, &mut reference, true);
+    terobacter::embedded_skani::seeding::fmh_seeds(
+        &reference_seq,
+        &params,
+        0,
+        &mut reference,
+        true,
+    );
     assert_eq!(reference.marker_seeds.len(), query.marker_seeds.len());
     let mut writer = SketchDbWriter::new(root.to_str().unwrap()).unwrap();
     writer.add_sketch(&params, &reference).unwrap();

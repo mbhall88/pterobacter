@@ -94,9 +94,7 @@ jobs:
           else
             just test
           fi
-          cargo test --locked -p skani --lib
-          cargo test --locked -p partitions
-          CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$PWD/target}" cargo test --manifest-path vendor/partitions/Cargo.toml --features compact
+          python3 scripts/check_embedded_sources.py
       - name: Check what a default install exposes
         run: |
           if [ "${{ runner.os }}" = macOS ]; then

@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use std::io::Read;
 
 use serde_json::{json, Value};
-use skani::{params::SketchParams, sketch_db::SketchDbWriter, types::Sketch};
+use terobacter::embedded_skani::{params::SketchParams, sketch_db::SketchDbWriter, types::Sketch};
 
 use super::package::{sha256_hex, Synthetic, EXPORT_PATH, LICENCE_PATH, SOURCE_PATH};
 
@@ -78,7 +78,7 @@ pub fn package(sequence: impl Fn(&str) -> Vec<u8>) -> (tempfile::TempDir, String
             sketch.contigs.push("synthetic".into());
             sketch.contig_lengths.push(seq.len() as u32);
             sketch.total_sequence_length = seq.len();
-            skani::seeding::fmh_seeds(&seq, &params, 0, &mut sketch, true);
+            terobacter::embedded_skani::seeding::fmh_seeds(&seq, &params, 0, &mut sketch, true);
             writer.add_sketch(&params, &sketch).unwrap();
             markers.push(Sketch::get_markers_only(&sketch));
         }

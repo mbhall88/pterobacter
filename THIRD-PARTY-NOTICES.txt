@@ -289,14 +289,6 @@ Repository: https://github.com/brendanzab/approx
    limitations under the License.
 
 
-=== atty 0.2.14 ===
-
-atty 0.2.14
-Declared licence: MIT
-Authors: softprops <d.tangren@gmail.com>
-Repository: https://github.com/softprops/atty
-
-
 === autocfg 0.1.8 ===
 
 autocfg 0.1.8
@@ -1207,14 +1199,6 @@ Authors: Alex Crichton <alex@alexcrichton.com>
 Repository: https://github.com/rust-lang/cfg-if
 
 
-=== clap 3.2.25 ===
-
-clap 3.2.25
-Declared licence: MIT OR Apache-2.0
-Authors: 
-Repository: https://github.com/clap-rs/clap
-
-
 === clap 4.6.7 ===
 
 clap 4.6.7
@@ -1231,28 +1215,12 @@ Authors:
 Repository: https://github.com/clap-rs/clap
 
 
-=== clap_derive 3.2.25 ===
-
-clap_derive 3.2.25
-Declared licence: MIT OR Apache-2.0
-Authors: 
-Repository: https://github.com/clap-rs/clap/tree/master/clap_derive
-
-
 === clap_derive 4.6.7 ===
 
 clap_derive 4.6.7
 Declared licence: MIT OR Apache-2.0
 Authors: 
 Repository: https://github.com/clap-rs/clap
-
-
-=== clap_lex 0.2.4 ===
-
-clap_lex 0.2.4
-Declared licence: MIT OR Apache-2.0
-Authors: 
-Repository: https://github.com/clap-rs/clap/tree/master/clap_lex
 
 
 === clap_lex 1.1.1 ===
@@ -2266,14 +2234,6 @@ Authors: Ana Hobden <ana@hoverbear.org>
 Repository: https://github.com/Hoverbear/getset
 
 
-=== hashbrown 0.12.3 ===
-
-hashbrown 0.12.3
-Declared licence: MIT OR Apache-2.0
-Authors: Amanieu d'Antras <amanieu@gmail.com>
-Repository: https://github.com/rust-lang/hashbrown
-
-
 === hashbrown 0.17.1 ===
 
 hashbrown 0.17.1
@@ -2298,14 +2258,6 @@ Authors:
 Repository: https://github.com/withoutboats/heck
 
 
-=== hermit-abi 0.1.19 ===
-
-hermit-abi 0.1.19
-Declared licence: MIT/Apache-2.0
-Authors: Stefan Lankes
-Repository: https://github.com/hermitcore/libhermit-rs
-
-
 === http 1.5.0 ===
 
 http 1.5.0
@@ -2328,14 +2280,6 @@ hybrid-array 0.4.15
 Declared licence: MIT OR Apache-2.0
 Authors: RustCrypto Developers
 Repository: https://github.com/RustCrypto/hybrid-array
-
-
-=== indexmap 1.9.3 ===
-
-indexmap 1.9.3
-Declared licence: Apache-2.0 OR MIT
-Authors: 
-Repository: https://github.com/bluss/indexmap
 
 
 === indexmap 2.14.2 ===
@@ -5223,23 +5167,6 @@ Authors: Jonathan Reem <jonathan.reem@gmail.com>, Matt Brubeck <mbrubeck@limpet.
 Repository: https://github.com/reem/rust-ordered-float
 
 
-=== os_str_bytes 6.5.1 ===
-
-os_str_bytes 6.5.1
-Declared licence: MIT OR Apache-2.0
-Authors: dylni
-Repository: https://github.com/dylni/os_str_bytes
-
-
---- COPYRIGHT ---
-
-Copyright (c) 2019 dylni (https://github.com/dylni)
-
-Licensed under the Apache License, Version 2.0 <LICENSE-APACHE> or the MIT
-license <LICENSE-MIT>, at your option. All files in this project may not be
-copied, modified, or distributed except according to those terms.
-
-
 === partitions 0.2.4 ===
 
 partitions 0.2.4
@@ -7616,14 +7543,6 @@ Authors: Michael Ma
 Repository: https://github.com/statrs-dev/statrs
 
 
-=== strsim 0.10.0 ===
-
-strsim 0.10.0
-Declared licence: MIT
-Authors: Danny Guo <danny@dannyguo.com>
-Repository: https://github.com/dguo/strsim-rs
-
-
 === strsim 0.11.1 ===
 
 strsim 0.11.1
@@ -7704,29 +7623,6 @@ Authors: Steven Allen <steven@stebalien.com>, The Rust Project Developers, Ashle
 Repository: https://github.com/Stebalien/tempfile
 
 
-=== termcolor 1.3.0 ===
-
-termcolor 1.3.0
-Declared licence: Unlicense OR MIT
-Authors: Andrew Gallant <jamslam@gmail.com>
-Repository: https://github.com/BurntSushi/termcolor
-
-
---- COPYING ---
-
-This project is dual-licensed under the Unlicense and MIT licenses.
-
-You may use this code under the terms of either license.
-
-
-=== textwrap 0.16.0 ===
-
-textwrap 0.16.0
-Declared licence: MIT
-Authors: Martin Geisler <martin@geisler.net>
-Repository: https://github.com/mgeisler/textwrap
-
-
 === thiserror 1.0.69 ===
 
 thiserror 1.0.69
@@ -7765,53 +7661,6 @@ thread-id 3.3.0
 Declared licence: MIT/Apache-2.0
 Authors: Ruud van Asseldonk <dev@veniogames.com>
 Repository: https://github.com/ruuda/thread-id
-
-
-=== tikv-jemalloc-sys 0.5.4+5.3.0-patched ===
-
-tikv-jemalloc-sys 0.5.4+5.3.0-patched
-Declared licence: MIT/Apache-2.0
-Authors: Alex Crichton <alex@alexcrichton.com>, Gonzalo Brito Gadeschi <gonzalobg88@gmail.com>, The TiKV Project Developers
-Repository: https://github.com/tikv/jemallocator
-
-
---- jemalloc/COPYING ---
-
-Unless otherwise specified, files in the jemalloc source distribution are
-subject to the following license:
---------------------------------------------------------------------------------
-Copyright (C) 2002-present Jason Evans <jasone@canonware.com>.
-All rights reserved.
-Copyright (C) 2007-2012 Mozilla Foundation.  All rights reserved.
-Copyright (C) 2009-present Facebook, Inc.  All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-1. Redistributions of source code must retain the above copyright notice(s),
-   this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright notice(s),
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER(S) ``AS IS'' AND ANY EXPRESS
-OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
-EVENT SHALL THE COPYRIGHT HOLDER(S) BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
---------------------------------------------------------------------------------
-
-
-=== tikv-jemallocator 0.5.4 ===
-
-tikv-jemallocator 0.5.4
-Declared licence: MIT/Apache-2.0
-Authors: Alex Crichton <alex@alexcrichton.com>, Gonzalo Brito Gadeschi <gonzalobg88@gmail.com>, Simon Sapin <simon.sapin@exyr.org>, Steven Fackler <sfackler@gmail.com>, The TiKV Project Developers
-Repository: https://github.com/tikv/jemallocator
 
 
 === trilean 1.1.0 ===
@@ -8180,21 +8029,6 @@ winapi-i686-pc-windows-gnu 0.4.0
 Declared licence: MIT/Apache-2.0
 Authors: Peter Atashian <retep998@gmail.com>
 Repository: https://github.com/retep998/winapi-rs
-
-
-=== winapi-util 0.1.6 ===
-
-winapi-util 0.1.6
-Declared licence: Unlicense/MIT
-Authors: Andrew Gallant <jamslam@gmail.com>
-Repository: https://github.com/BurntSushi/winapi-util
-
-
---- COPYING ---
-
-This project is dual-licensed under the Unlicense and MIT licenses.
-
-You may use this code under the terms of either license.
 
 
 === winapi-x86_64-pc-windows-gnu 0.4.0 ===
