@@ -163,7 +163,7 @@ pub struct ExpectedPair {
 }
 
 pub fn hash_bytes(bytes: &[u8]) -> String {
-    format!("{:x}", Sha256::digest(bytes))
+    crate::hex::encode(&Sha256::digest(bytes))
 }
 pub fn hash_file(path: &Path) -> Result<String, AnimError> {
     let mut file = File::open(path)?;
@@ -176,7 +176,7 @@ pub fn hash_file(path: &Path) -> Result<String, AnimError> {
         }
         hash.update(&buffer[..n]);
     }
-    Ok(format!("{:x}", hash.finalize()))
+    Ok(crate::hex::encode(&hash.finalize()))
 }
 fn invalid(message: impl Into<String>) -> AnimError {
     AnimError::Invalid(message.into())

@@ -99,7 +99,7 @@ fn check_file(source: &dyn PackageSource, pin: &FilePin) -> Result<(), String> {
         }
         digest.update(&buffer[..n]);
     }
-    if size != pin.bytes || format!("{:x}", digest.finalize()) != pin.sha256 {
+    if size != pin.bytes || crate::hex::encode(&digest.finalize()) != pin.sha256 {
         return Err(format!("{}: component bytes/hash mismatch", pin.path));
     }
     Ok(())

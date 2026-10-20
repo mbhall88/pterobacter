@@ -1,6 +1,8 @@
 //! Development-only member and group exclusions keep a possible call separate from deployment.
 #![cfg(feature = "dev")]
 
+use common::hex;
+
 mod common;
 
 use std::collections::BTreeMap;
@@ -132,7 +134,7 @@ fn measured_contradictions(case: &FixtureCase, group: &str) -> usize {
 
 #[test]
 fn accepted_gv4_removal_fixtures_keep_diagnostic_and_deployment_fields_separate() {
-    assert_eq!(format!("{:x}", Sha256::digest(FIXTURE)), FIXTURE_SHA256);
+    assert_eq!(hex::encode(&Sha256::digest(FIXTURE)), FIXTURE_SHA256);
     let cases: FixtureDocument = serde_json::from_slice(FIXTURE).unwrap();
     assert_eq!(cases.cases.len(), 17);
 

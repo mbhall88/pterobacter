@@ -11,11 +11,14 @@
 //! ```
 //!
 //! `tests/fixtures/mlst-dev/README.md` records how the expected file and the fixtures are derived.
+#[path = "../src/hex.rs"]
+mod hex;
+
 use serde_json::{json, Value};
 
 fn sha256_hex(bytes: &[u8]) -> String {
     use sha2::{Digest, Sha256};
-    format!("{:x}", Sha256::digest(bytes))
+    hex::encode(&Sha256::digest(bytes))
 }
 use terobacter::cli::mlst::parse_records;
 

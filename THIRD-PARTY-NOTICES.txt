@@ -878,9 +878,9 @@ Authors: The Rust Project Developers
 Repository: https://github.com/bitflags/bitflags
 
 
-=== block-buffer 0.10.4 ===
+=== block-buffer 0.12.1 ===
 
-block-buffer 0.10.4
+block-buffer 0.12.1
 Declared licence: MIT OR Apache-2.0
 Authors: RustCrypto Developers
 Repository: https://github.com/RustCrypto/utils
@@ -949,9 +949,9 @@ Authors:
 Repository: https://github.com/trifectatechfoundation/bzip2-rs
 
 
-=== cc 1.6.0 ===
+=== cc 1.8.0 ===
 
-cc 1.6.0
+cc 1.8.0
 Declared licence: MIT OR Apache-2.0
 Authors: 
 Repository: https://github.com/rust-lang/cc-rs
@@ -1279,9 +1279,17 @@ Authors:
 Repository: https://github.com/rust-cli/anstyle.git
 
 
-=== cpufeatures 0.2.17 ===
+=== const-oid 0.10.2 ===
 
-cpufeatures 0.2.17
+const-oid 0.10.2
+Declared licence: Apache-2.0 OR MIT
+Authors: RustCrypto Developers
+Repository: https://github.com/RustCrypto/formats
+
+
+=== cpufeatures 0.3.1 ===
+
+cpufeatures 0.3.1
 Declared licence: MIT OR Apache-2.0
 Authors: RustCrypto Developers
 Repository: https://github.com/RustCrypto/utils
@@ -1319,9 +1327,9 @@ Authors:
 Repository: https://github.com/crossbeam-rs/crossbeam
 
 
-=== crypto-common 0.1.7 ===
+=== crypto-common 0.2.2 ===
 
-crypto-common 0.1.7
+crypto-common 0.2.2
 Declared licence: MIT OR Apache-2.0
 Authors: RustCrypto Developers
 Repository: https://github.com/RustCrypto/traits
@@ -1614,9 +1622,9 @@ Authors: Nick Cameron <nrc@ncameron.org>
 Repository: https://github.com/nrc/derive-new
 
 
-=== digest 0.10.7 ===
+=== digest 0.11.3 ===
 
-digest 0.10.7
+digest 0.11.3
 Declared licence: MIT OR Apache-2.0
 Authors: RustCrypto Developers
 Repository: https://github.com/RustCrypto/traits
@@ -2234,38 +2242,6 @@ Authors: Pierre Talbot <ptalbot@hyc.io>
 Repository: https://github.com/ptal/gcollections
 
 
-=== generic-array 0.14.7 ===
-
-generic-array 0.14.7
-Declared licence: MIT
-Authors: Bartłomiej Kamiński <fizyk20@gmail.com>, Aaron Trent <novacrazy@gmail.com>
-Repository: https://github.com/fizyk20/generic-array.git
-
-
---- LICENSE ---
-
-The MIT License (MIT)
-
-Copyright (c) 2015 Bartłomiej Kamiński
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
 === getrandom 0.2.17 ===
 
 getrandom 0.2.17
@@ -2344,6 +2320,14 @@ httparse 1.10.1
 Declared licence: MIT OR Apache-2.0
 Authors: Sean McArthur <sean@seanmonstar.com>
 Repository: https://github.com/seanmonstar/httparse
+
+
+=== hybrid-array 0.4.15 ===
+
+hybrid-array 0.4.15
+Declared licence: MIT OR Apache-2.0
+Authors: RustCrypto Developers
+Repository: https://github.com/RustCrypto/hybrid-array
 
 
 === indexmap 1.9.3 ===
@@ -5175,6 +5159,14 @@ Authors: The Rust Project Developers
 Repository: https://github.com/rust-num/num-bigint
 
 
+=== num-bigint 0.5.1 ===
+
+num-bigint 0.5.1
+Declared licence: MIT OR Apache-2.0
+Authors: 
+Repository: https://github.com/rust-num/num-bigint
+
+
 === num-complex 0.4.6 ===
 
 num-complex 0.4.6
@@ -7494,17 +7486,17 @@ Authors: Erick Tryzelaar <erick.tryzelaar@gmail.com>, David Tolnay <dtolnay@gmai
 Repository: https://github.com/serde-rs/serde
 
 
-=== serde_json 1.0.151 ===
+=== serde_json 1.0.154 ===
 
-serde_json 1.0.151
+serde_json 1.0.154
 Declared licence: MIT OR Apache-2.0
-Authors: Erick Tryzelaar <erick.tryzelaar@gmail.com>, David Tolnay <dtolnay@gmail.com>
+Authors: 
 Repository: https://github.com/serde-rs/json
 
 
-=== sha2 0.10.9 ===
+=== sha2 0.11.1 ===
 
-sha2 0.10.9
+sha2 0.11.1
 Declared licence: MIT OR Apache-2.0
 Authors: RustCrypto Developers
 Repository: https://github.com/RustCrypto/hashes

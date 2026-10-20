@@ -1,6 +1,9 @@
 //! Helpers shared by the integration tests.
 #![allow(dead_code)] // each test crate uses a different subset
 
+#[path = "../../src/hex.rs"]
+pub mod hex;
+
 pub mod assembly;
 pub mod database;
 pub mod mlst;
