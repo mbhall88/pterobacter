@@ -41,7 +41,11 @@ docker run --rm --platform linux/amd64 \
 
 The report and alignment evidence stay in the mounted working directory. Choose new output names for another run. ANIm and MLST are enabled by default; use `--no-anim` or `--no-mlst` to skip either. See [running assemblies](running.md) and [reading results](results.md).
 
-To use the longer command name, pass `--entrypoint pterobacter` before the image name. Without arguments, the image shows command help.
+Without arguments, the image shows command help. A small init process starts Pterobacter and forwards signals to it. Keep that entrypoint for normal use; it also gives alignment workers the parent process they require. To use the longer command name:
+
+```sh
+docker run --rm --entrypoint /usr/bin/tini pterobacter:local -- pterobacter --help
+```
 
 ## Release provenance
 

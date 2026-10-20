@@ -13,7 +13,7 @@ FROM build AS fixtures
 RUN cargo run --release --locked --example local_database -- /fixture
 
 FROM debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587 AS runtime
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libstdc++6 libgcc-s1 liblzma5 \
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libstdc++6 libgcc-s1 liblzma5 tini \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --gid 10001 ptero && useradd --uid 10001 --gid 10001 --create-home ptero \
     && mkdir /database /work && chown 10001:10001 /database /work
@@ -31,5 +31,5 @@ LABEL org.opencontainers.image.title="Pterobacter" \
 ENV HOME=/home/ptero XDG_DATA_HOME=/database XDG_STATE_HOME=/work/.ptero-state
 USER 10001:10001
 WORKDIR /work
-ENTRYPOINT ["ptero"]
+ENTRYPOINT ["/usr/bin/tini", "--", "ptero"]
 CMD ["--help"]

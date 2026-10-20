@@ -20,7 +20,7 @@ def check(image, fixture, output, version, commit):
     inspect = json.loads(command(['docker', 'image', 'inspect', image]))[0]
     assert inspect['Architecture'] == 'amd64' and inspect['Os'] == 'linux'
     assert inspect['Config']['User'] == '10001:10001'
-    assert inspect['Config']['Entrypoint'] == ['ptero']
+    assert inspect['Config']['Entrypoint'] == ['/usr/bin/tini', '--', 'ptero']
     assert inspect['Size'] < 200_000_000, 'Runtime exceeds the 200 MB uncompressed budget'
     labels = inspect['Config']['Labels']
     assert labels['org.opencontainers.image.revision'] == commit
@@ -31,10 +31,11 @@ def check(image, fixture, output, version, commit):
             '-v', f'{fixture.resolve()}:/fixture:ro',
             '-v', f'{(output / "database").resolve()}:/database',
             '-v', f'{(output / "work").resolve()}:/work']
+    assert command(base + [image, '--version']) == f'pterobacter {version}'
     for binary in ('ptero', 'pterobacter'):
-        assert command(base + ['--entrypoint', binary, image, '--version']) == f'pterobacter {version}'
+        assert command(base + ['--entrypoint', '/usr/bin/tini', image, '--', binary, '--version']) == f'pterobacter {version}'
     inventory = command(base + ['--entrypoint', '/bin/sh', image, '-c',
-                               'ls /usr/local/bin; test -s /etc/ssl/certs/ca-certificates.crt; '
+                               'set -eu; ls /usr/local/bin; test -s /etc/ssl/certs/ca-certificates.crt; '
                                'test -s /usr/share/doc/pterobacter/LICENSE-GPL-3.0.txt; '
                                'test -s /usr/share/doc/pterobacter/THIRD-PARTY-NOTICES.txt; '
                                '! command -v cargo; ! command -v g++; ! test -d /source'])
@@ -45,7 +46,7 @@ def check(image, fixture, output, version, commit):
     pin = (fixture / 'catalogue.sha256').read_text().strip()
     selected = ['--catalogue', '/fixture/catalogue.json', '--catalogue-sha256', pin]
     def run(args, name, binary='ptero'):
-        value = json.loads(command(base + ['--entrypoint', binary, image] + selected + args))
+        value = json.loads(command(base + ['--entrypoint', '/usr/bin/tini', image, '--', binary] + selected + args))
         (output / (name + '.json')).write_text(json.dumps(value, indent=2) + '\n')
         return value
     install = ['database', 'install', 'fixture-1', '--from-directory', '/fixture/archives']
@@ -65,6 +66,9 @@ def check(image, fixture, output, version, commit):
     assert typing['mlst']['sequence_type'] == '5'
     fast = run(['-D', 'fixture-1', '--no-anim', '--no-mlst', '/fixture/fixed-query.fa'], 'opt-outs')
     assert fast['execution']['status'] == 'complete'
+    # Also exercise the unmodified image entrypoint used by the guide.
+    default = json.loads(command(base + [image] + selected + ['-D', 'fixture-1', '--threads', '2', '/fixture/fixed-query.fa']))
+    assert default['rescue_status'] == 'rescued'
     reuse = run(['database', 'install', 'fixture-1'], 'offline-reuse')
     assert all(c['status'] == 'verified_reuse' for c in reuse['components'])
     archive = output / f'pterobacter-{version}-linux-amd64-image.tar.gz'

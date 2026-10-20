@@ -192,6 +192,12 @@ jobs:
             ${{ runner.temp }}/container/container-receipt.json
             ${{ runner.temp }}/container/CONTAINER-SHA256SUMS
           if-no-files-found: error
+      - name: Retain runtime evidence
+        if: always()
+        run: |
+          if [ -d "$RUNNER_TEMP/container/work" ]; then
+            tar -czf "$RUNNER_TEMP/container/runtime-evidence.tar.gz" -C "$RUNNER_TEMP/container" work
+          fi
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -199,6 +205,7 @@ jobs:
           path: |
             ${{ runner.temp }}/container/*.json
             ${{ runner.temp }}/container/runtime-libraries.txt
+            ${{ runner.temp }}/container/runtime-evidence.tar.gz
             ${{ runner.temp }}/container/work/**/report.*
             ${{ runner.temp }}/container/work/**/calls.tsv
             ${{ runner.temp }}/container/work/**/evidence.tsv
