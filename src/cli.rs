@@ -60,6 +60,7 @@ impl ThresholdArgs {
     subcommand_precedence_over_arg = true,
     after_help = "Uses skani first, then ANIm for eligible samples near the species boundary.
 ANIm can be slower; use -n/--no-anim to skip it.
+MLST runs by default; use -x/--no-mlst to skip sequence typing.
 Give assemblies as arguments, or list them with -f/--input-list or -F/--sample-sheet.
 Sample names label reports only; analysis uses each file path.
 ANI thresholds are percentages, e.g. --species-ani 96.5. Require 80 <= species <= subspecies <= 100.

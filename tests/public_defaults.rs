@@ -135,6 +135,8 @@ fn help_explains_boundary_anim_without_internal_selectors() {
                 "--no-anim",
                 "near the species boundary",
                 "ANIm can be slower",
+                "MLST runs by default",
+                "-x/--no-mlst",
                 "default: 96",
                 "default: 98",
                 "skani >=",
