@@ -8,3 +8,7 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # Published skani databases use the bincode 1 format. v3 deliberately fails to compile.
+      - dependency-name: bincode
+        update-types: [version-update:semver-major]

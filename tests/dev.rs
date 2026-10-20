@@ -764,7 +764,12 @@ fn bound_problem_warnings_are_verified_and_changed_artifacts_produce_no_decision
     let dir = tempfile::tempdir().unwrap();
     let evidence = dir.path().join("evidence.json");
     std::fs::write(&evidence, common::FIXTURE).unwrap();
-    let digest = |bytes: &[u8]| format!("{:x}", Sha256::digest(bytes));
+    let digest = |bytes: &[u8]| {
+        Sha256::digest(bytes)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>()
+    };
     let raw: Value = serde_json::from_str(common::FIXTURE).unwrap();
     let artifact = dir.path().join("warning.txt");
     std::fs::write(&artifact, "supplied concern").unwrap();

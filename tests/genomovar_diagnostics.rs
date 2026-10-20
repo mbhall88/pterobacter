@@ -132,7 +132,13 @@ fn measured_contradictions(case: &FixtureCase, group: &str) -> usize {
 
 #[test]
 fn accepted_gv4_removal_fixtures_keep_diagnostic_and_deployment_fields_separate() {
-    assert_eq!(format!("{:x}", Sha256::digest(FIXTURE)), FIXTURE_SHA256);
+    assert_eq!(
+        Sha256::digest(FIXTURE)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>(),
+        FIXTURE_SHA256
+    );
     let cases: FixtureDocument = serde_json::from_slice(FIXTURE).unwrap();
     assert_eq!(cases.cases.len(), 17);
 

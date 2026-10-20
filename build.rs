@@ -43,8 +43,12 @@ fn main() {
     rust_hash.update(fs::read("Cargo.toml").unwrap());
     rust_hash.update(fs::read("Cargo.lock").unwrap());
     println!(
-        "cargo:rustc-env=TERO_ANIM_SOURCE_SHA256={:x}",
-        rust_hash.finalize()
+        "cargo:rustc-env=TERO_ANIM_SOURCE_SHA256={}",
+        rust_hash
+            .finalize()
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>()
     );
     let target = env::var("TARGET").unwrap();
     assert!(
@@ -133,8 +137,11 @@ fn main() {
     hash.update(target.as_bytes());
     hash.update(format!("{:?}", compiler.to_command().get_args()).as_bytes());
     println!(
-        "cargo:rustc-env=TERO_ANIM_BUILD_SHA256={:x}",
+        "cargo:rustc-env=TERO_ANIM_BUILD_SHA256={}",
         hash.finalize()
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>()
     );
     println!("cargo:rustc-env=TERO_ANIM_COMPILER={version}");
     println!("cargo:rustc-env=TERO_ANIM_TARGET={target}");

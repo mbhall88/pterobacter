@@ -311,7 +311,14 @@ pub(super) fn copy_pinned(
         digest.update(&buffer[..count]);
         writer.write_all(&buffer[..count])?;
     }
-    if seen != bytes || format!("{:x}", digest.finalize()) != sha {
+    if seen != bytes
+        || digest
+            .finalize()
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>()
+            != sha
+    {
         return Err(invalid("stream byte size or SHA-256 mismatch"));
     }
     Ok(())

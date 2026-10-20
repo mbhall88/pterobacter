@@ -192,7 +192,11 @@ impl Definition {
                 hasher.update(format!("{group}\t{member}\n"));
             }
         }
-        format!("{:x}", hasher.finalize())
+        hasher
+            .finalize()
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>()
     }
 }
 
@@ -205,7 +209,10 @@ pub fn member_source_sha256(component: &ReferenceComponent) -> String {
         .map(|r| format!("{}\t{}\n", r.reference_id, r.source.sha256))
         .collect();
     lines.sort();
-    format!("{:x}", Sha256::digest(lines.concat()))
+    Sha256::digest(lines.concat())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>()
 }
 
 /// One reported skani comparison between the query and a definition member.

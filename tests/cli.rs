@@ -108,7 +108,10 @@ fn an_assembly_run_without_a_pinned_default_requires_an_explicit_package_or_vers
     let catalogue = temp.path().join("empty-catalogue.json");
     let bytes = br#"{"schema":"pterobacter.database-catalogue/1","releases":[]}"#;
     std::fs::write(&catalogue, bytes).unwrap();
-    let pin = format!("{:x}", sha2::Sha256::digest(bytes));
+    let pin = sha2::Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
     for name in COMMANDS {
         let output = command(name)
             .arg("--catalogue")

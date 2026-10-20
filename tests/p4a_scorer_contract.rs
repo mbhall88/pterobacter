@@ -120,7 +120,13 @@ fn resolves(value: &Value, path: &str) -> bool {
 
 #[test]
 fn fixture_is_the_frozen_p4a_file_and_all_84_cases_are_accounted_for() {
-    assert_eq!(format!("{:x}", Sha256::digest(FIXTURE)), FIXTURE_SHA256);
+    assert_eq!(
+        Sha256::digest(FIXTURE)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>(),
+        FIXTURE_SHA256
+    );
     let data = fixture();
     let count = |section: &str| data[section].as_array().unwrap().len();
     let sections = [
@@ -428,7 +434,10 @@ fn the_handoff_page_states_the_digest_of_each_map() {
             include_bytes!("../docs/contracts/scorer-fields.tsv").as_slice(),
         ),
     ] {
-        let digest = format!("{:x}", Sha256::digest(bytes));
+        let digest = Sha256::digest(bytes)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>();
         let row = page
             .lines()
             .find(|line| line.contains(&format!("]({name})")) && line.contains("SHA-256"))
