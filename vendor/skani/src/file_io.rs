@@ -1,6 +1,6 @@
-use crate::params::*;
-use crate::seeding;
-use crate::types::*;
+use crate::embedded_skani::params::*;
+use crate::embedded_skani::seeding;
+use crate::embedded_skani::types::*;
 use fxhash::FxHashMap;
 use log::*;
 use needletail::parse_fastx_file;
@@ -203,10 +203,10 @@ pub fn fastx_to_sketches(
                                 seed,
                             )
                         } else {
-                            #[cfg(any(target_arch = "x86_64"))]
+                            #[cfg(target_arch = "x86_64")]
                             {
                                 if is_x86_feature_detected!("avx2"){
-                                    use crate::avx2_seeding;
+                                    use crate::embedded_skani::avx2_seeding;
                                     unsafe {
                                         avx2_seeding::avx2_fmh_seeds(
                                             &seq,
@@ -311,10 +311,10 @@ pub fn fastx_to_multiple_sketch_rewrite(
                                 seed,
                             )
                         } else {
-                            #[cfg(any(target_arch = "x86_64"))]
+                            #[cfg(target_arch = "x86_64")]
                             {
                                 if is_x86_feature_detected!("avx2") {
-                                    use crate::avx2_seeding;
+                                    use crate::embedded_skani::avx2_seeding;
                                     unsafe {
                                         avx2_seeding::avx2_fmh_seeds(
                                             &seq,

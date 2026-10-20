@@ -30,8 +30,8 @@ pub const DNA_TO_AA: [u8; 64] =
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 // bytecheck can be used to validate your data if you want
-use crate::params::*;
-use partitions::*;
+use crate::embedded_skani::params::*;
+use crate::embedded_partitions::*;
 use smallvec::smallvec;
 use smallvec::SmallVec;
 use std::collections::{HashMap, HashSet};

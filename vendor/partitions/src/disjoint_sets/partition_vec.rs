@@ -5,12 +5,10 @@
 //! [disjoint-sets/union-find]: https://en.wikipedia.org/wiki/Disjoint-set_data_structure
 //! [`PartitionVec<T>`]: struct.PartitionVec.html
 
-#[cfg(feature = "proptest")]
 use proptest::prelude::*;
-#[cfg(feature = "rayon")]
 use rayon::prelude::*;
 use {
-    crate::{disjoint_sets::metadata::Metadata, extend_mut},
+    crate::embedded_partitions::{disjoint_sets::metadata::Metadata, extend_mut},
     std::{
         cmp::Ordering,
         iter::{FromIterator, FusedIterator},
@@ -37,7 +35,7 @@ use {
 ///
 /// ```
 /// # #[macro_use]
-/// # extern crate partitions;
+/// # extern crate terobacter as partitions;
 /// #
 /// # fn main() {
 /// let mut partition_vec = partition_vec!['a', 'b', 'c', 'd'];
@@ -72,7 +70,7 @@ pub struct PartitionVec<T> {
 ///
 /// ```
 /// # #[macro_use]
-/// # extern crate partitions;
+/// # extern crate terobacter as partitions;
 /// #
 /// # fn main() {
 /// let partition_vec = partition_vec!['a', 'b', 'c'];
@@ -91,7 +89,7 @@ pub struct PartitionVec<T> {
 ///
 /// ```
 /// # #[macro_use]
-/// # extern crate partitions;
+/// # extern crate terobacter as partitions;
 /// #
 /// # fn main() {
 /// let partition_vec = partition_vec![
@@ -124,7 +122,7 @@ pub struct PartitionVec<T> {
 ///
 /// ```
 /// # #[macro_use]
-/// # extern crate partitions;
+/// # extern crate terobacter as partitions;
 /// #
 /// # fn main() {
 /// let partition_vec = partition_vec!['a'; 3];
@@ -143,12 +141,12 @@ pub struct PartitionVec<T> {
 #[macro_export]
 macro_rules! partition_vec {
     ($elem: expr; $len: expr) => {
-        $crate::PartitionVec::from_elem($elem, $len);
+        $crate::embedded_partitions::PartitionVec::from_elem($elem, $len);
     };
     ($($elem: expr),*) => {
         {
             let len = partitions_count_expr![$($elem),*];
-            let mut partition_vec = $crate::PartitionVec::with_capacity(len);
+            let mut partition_vec = $crate::embedded_partitions::PartitionVec::with_capacity(len);
 
             $(
                 partition_vec.push($elem);
@@ -163,7 +161,7 @@ macro_rules! partition_vec {
     ($($elem: expr => $set: expr),*) => {
         {
             let len = partitions_count_expr![$($elem),*];
-            let mut partition_vec = $crate::PartitionVec::with_capacity(len);
+            let mut partition_vec = $crate::embedded_partitions::PartitionVec::with_capacity(len);
             let mut map = ::std::collections::HashMap::new();
 
             $(
@@ -194,7 +192,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #![allow(unused_mut)]
-    /// use partitions::PartitionVec;
+    /// use terobacter::embedded_partitions::PartitionVec;
     ///
     /// let mut partition_vec: PartitionVec<()> = PartitionVec::new();
     /// ```
@@ -215,7 +213,7 @@ impl<T> PartitionVec<T> {
     /// # Examples
     ///
     /// ```
-    /// use partitions::PartitionVec;
+    /// use terobacter::embedded_partitions::PartitionVec;
     ///
     /// let mut partition_vec = PartitionVec::with_capacity(10);
     ///
@@ -252,7 +250,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![(); 4];
@@ -324,7 +322,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// # fn main() {
     /// let mut partition_vec = partition_vec![(); 4];
     ///
@@ -357,7 +355,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// # fn main() {
     /// let mut partition_vec = partition_vec![(); 4];
     ///
@@ -387,7 +385,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![
@@ -447,7 +445,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![(); 4];
@@ -477,7 +475,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![true; 3];
@@ -513,7 +511,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let partition_vec = partition_vec![
@@ -592,7 +590,7 @@ impl<T> PartitionVec<T> {
     /// # Examples
     ///
     /// ```
-    /// let mut partition_vec = partitions::PartitionVec::with_capacity(6);
+    /// let mut partition_vec = terobacter::embedded_partitions::PartitionVec::with_capacity(6);
     ///
     /// for i in 0 .. 6 {
     ///     partition_vec.push(i);
@@ -621,7 +619,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![
@@ -654,7 +652,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![
@@ -691,7 +689,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![
@@ -738,7 +736,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![
@@ -785,7 +783,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut first = partition_vec![
@@ -836,7 +834,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![1];
@@ -868,7 +866,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![1];
@@ -891,7 +889,7 @@ impl<T> PartitionVec<T> {
     /// # Examples
     ///
     /// ```
-    /// let mut partition_vec = partitions::PartitionVec::with_capacity(10);
+    /// let mut partition_vec = terobacter::embedded_partitions::PartitionVec::with_capacity(10);
     ///
     /// partition_vec.extend([1, 2, 3].iter().cloned());
     ///
@@ -920,7 +918,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![
@@ -1003,7 +1001,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![4, 9];
@@ -1045,7 +1043,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![2, 3, 4];
@@ -1065,7 +1063,7 @@ impl<T> PartitionVec<T> {
     /// # Examples
     ///
     /// ```
-    /// let mut partition_vec = partitions::PartitionVec::new();
+    /// let mut partition_vec = terobacter::embedded_partitions::PartitionVec::new();
     /// assert!(partition_vec.is_empty());
     ///
     /// partition_vec.push(1);
@@ -1084,7 +1082,7 @@ impl<T> PartitionVec<T> {
     /// # Examples
     ///
     /// ```
-    /// let mut partition_vec = partitions::PartitionVec::with_capacity(10);
+    /// let mut partition_vec = terobacter::embedded_partitions::PartitionVec::with_capacity(10);
     /// partition_vec.extend([1, 2, 3].iter().cloned());
     ///
     /// assert!(partition_vec.capacity() == 10);
@@ -1105,7 +1103,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// use std::io::{self, Write};
@@ -1127,7 +1125,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// use std::io::{self, Read};
@@ -1154,7 +1152,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let partition_vec = partition_vec![
@@ -1209,7 +1207,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![
@@ -1253,7 +1251,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let partition_vec = partition_vec![
@@ -1299,7 +1297,7 @@ impl<T> PartitionVec<T> {
     ///
     /// ```
     /// # #[macro_use]
-    /// # extern crate partitions;
+    /// # extern crate terobacter as partitions;
     /// #
     /// # fn main() {
     /// let mut partition_vec = partition_vec![
@@ -1544,7 +1542,6 @@ where
     }
 }
 
-#[cfg(feature = "rayon")]
 impl<T> FromParallelIterator<T> for PartitionVec<T>
 where
     T: Send,
@@ -1567,7 +1564,6 @@ where
     }
 }
 
-#[cfg(feature = "rayon")]
 impl<'a, T> FromParallelIterator<&'a T> for PartitionVec<T>
 where
     T: Copy + Send + Sync + 'a,
@@ -1607,7 +1603,6 @@ impl<'a, T> IntoIterator for &'a mut PartitionVec<T> {
     }
 }
 
-#[cfg(feature = "rayon")]
 impl<T> IntoParallelIterator for PartitionVec<T>
 where
     T: Send,
@@ -1620,7 +1615,6 @@ where
     }
 }
 
-#[cfg(feature = "rayon")]
 impl<'a, T> IntoParallelIterator for &'a PartitionVec<T>
 where
     T: Send + Sync,
@@ -1633,7 +1627,6 @@ where
     }
 }
 
-#[cfg(feature = "rayon")]
 impl<'a, T> IntoParallelIterator for &'a mut PartitionVec<T>
 where
     T: Send + Sync,
@@ -1675,7 +1668,6 @@ where
     }
 }
 
-#[cfg(feature = "rayon")]
 impl<T> ParallelExtend<T> for PartitionVec<T>
 where
     T: Send,
@@ -1692,7 +1684,6 @@ where
     }
 }
 
-#[cfg(feature = "rayon")]
 impl<'a, T> ParallelExtend<&'a T> for PartitionVec<T>
 where
     T: Copy + Send + Sync + 'a,
@@ -1705,7 +1696,6 @@ where
     }
 }
 
-#[cfg(feature = "proptest")]
 impl<T> Arbitrary for PartitionVec<T>
 where
     T: Arbitrary,

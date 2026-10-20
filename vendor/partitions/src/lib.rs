@@ -47,10 +47,8 @@
 
 extern crate bit_vec;
 
-#[cfg(feature = "rayon")]
 extern crate rayon;
 
-#[cfg(feature = "proptest")]
 extern crate proptest;
 
 /// We count the amount of expresions given to this macro.
@@ -91,12 +89,13 @@ macro_rules! bit_vec {
     };
 }
 
+#[macro_use]
 mod disjoint_sets;
 mod partition_map;
 
-pub use disjoint_sets::partition_vec::{self, PartitionVec};
-pub use partition_map::partition_btree_map::{self, PartitionBTreeMap};
-pub use partition_map::partition_hash_map::{self, PartitionHashMap};
+pub use self::disjoint_sets::partition_vec::{self, PartitionVec};
+pub use self::partition_map::partition_btree_map::{self, PartitionBTreeMap};
+pub use self::partition_map::partition_hash_map::{self, PartitionHashMap};
 
 /// This takes an mutable reference and return a mutable reference with a different lifetime.
 ///

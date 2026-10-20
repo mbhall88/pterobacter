@@ -1,4 +1,4 @@
-use crate::types::*;
+use crate::embedded_skani::types::*;
 use gbdt::gradient_boost::GBDT;
 
 pub const GB_IN_BYTES: usize = 1_073_741_824;

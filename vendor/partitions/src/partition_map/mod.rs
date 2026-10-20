@@ -61,7 +61,7 @@ macro_rules! partition_map {
                 borrow::Borrow,
                 iter::FusedIterator,
             },
-            crate::{
+            crate::embedded_partitions::{
                 PartitionVec,
                 partition_map::{
                     UnboundedRef,
@@ -671,7 +671,7 @@ macro_rules! partition_map {
 
             #[inline]
             fn next(&mut self) -> Option<&'a mut V> {
-                unsafe { Some(crate::extend_mut(&mut self.vec[*self.iter.next()?].1)) }
+                unsafe { Some(crate::embedded_partitions::extend_mut(&mut self.vec[*self.iter.next()?].1)) }
             }
 
             #[inline]
@@ -768,7 +768,7 @@ macro_rules! partition_map {
             #[inline]
             fn next(&mut self) -> Option<(&'a K, &'a mut V)> {
                 let index = *self.iter.next()?;
-                let (key, value) = unsafe { crate::extend_mut(&mut self.vec[index]) };
+                let (key, value) = unsafe { crate::embedded_partitions::extend_mut(&mut self.vec[index]) };
 
                 Some((key, value))
             }

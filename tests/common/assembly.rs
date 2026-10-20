@@ -21,7 +21,9 @@ pub fn native_case(case: NativeCase) -> (tempfile::TempDir, String, Vec<u8>) {
 fn build_package(rescue: bool, case: NativeCase) -> (tempfile::TempDir, String, Vec<u8>) {
     use super::package::{sha256_hex, Synthetic, EXPORT_PATH, SOURCE_PATH};
     use serde_json::json;
-    use skani::{params::SketchParams, sketch_db::SketchDbWriter, types::Sketch};
+    use terobacter::embedded_skani::{
+        params::SketchParams, sketch_db::SketchDbWriter, types::Sketch,
+    };
     let mut package = Synthetic::new();
     let verified = package.verify().unwrap();
     let component = verified.component("primary_whole").unwrap();
@@ -74,7 +76,7 @@ fn build_package(rescue: bool, case: NativeCase) -> (tempfile::TempDir, String, 
         sketch.contigs.push("synthetic".into());
         sketch.contig_lengths.push(seq.len() as u32);
         sketch.total_sequence_length = seq.len();
-        skani::seeding::fmh_seeds(&seq, &params, 0, &mut sketch, true);
+        terobacter::embedded_skani::seeding::fmh_seeds(&seq, &params, 0, &mut sketch, true);
         writer.add_sketch(&params, &sketch).unwrap();
         markers.push(Sketch::get_markers_only(&sketch));
     }

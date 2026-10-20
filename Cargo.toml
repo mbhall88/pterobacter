@@ -6,16 +6,20 @@ authors = ["Michael Hall <michael@mbh.sh>"]
 edition = "2021"
 repository = "https://github.com/mbhall88/pterobacter"
 homepage = "https://github.com/mbhall88/pterobacter"
+documentation = "https://mbhall88.github.io/pterobacter/"
 readme = "README.md"
 keywords = ["bioinformatics", "enterobacter", "classification", "ani", "taxonomy"]
 categories = ["science", "command-line-utilities"]
 license = "GPL-3.0-or-later"
-# Public release is a later author decision, so accidental publication is blocked.
-publish = false
+# Registry publication is restricted to the explicit release workflow.
+publish = ["crates-io"]
+include = ["src/**", "native/**", "vendor/**", "tests/**", "examples/**", "scripts/*.py", "scripts/*.json", "docs/**", "investigations/anim/*.patch", "Cargo.toml", "Cargo.lock", "build.rs", "README.md", "LICENSE*", "THIRD*", "CITATION.cff"]
 
 [features]
 # Evaluation-only operations. Built only on request; never part of a default build or install.
 dev = []
+# Exercise the alternative upstream partition representation in CI only.
+embedded-partitions-compact = []
 
 [lib]
 name = "terobacter"
@@ -36,7 +40,6 @@ required-features = ["dev"]
 
 [dependencies]
 num-bigint = "0.5.1"
-skani = { path = "vendor/skani" }
 # The published skani database uses bincode 1; newer major versions are not compatible.
 bincode = "1.3.3"
 needletail = "0.7.3"
@@ -52,6 +55,24 @@ sha2 = "0.11.1"
 tar = { version = "0.4.46", default-features = false }
 flate2 = "1.1.10"
 ureq = { version = "3", default-features = false, features = ["rustls"] }
+
+# Dependencies of the reviewed embedded skani and partitions code.
+bio = "1.4.0"
+bit-vec = "0.5.1"
+fastrand = "1.9.0"
+fxhash = "0.2.1"
+gbdt = "0.1.1"
+gcollections = "1.5.0"
+intervallum = "1.4.0"
+log = "0.4.34"
+memmap2 = "0.9.11"
+num-traits = "0.2.19"
+proptest = "0.8.7"
+rand = "0.8.8"
+rust-lapper = "1.1.0"
+simple-logging = "2.0.2"
+smallvec = { version = "1.16.2", features = ["union", "serde", "write"] }
+statrs = "0.18.0"
 
 [build-dependencies]
 cc = "1.4.0"
@@ -70,3 +91,11 @@ lto = true # https://doc.rust-lang.org/cargo/reference/profiles.html
 # Keep test builds smaller; CARGO_PROFILE_TEST_DEBUG can restore symbols for debugging.
 [profile.test]
 debug = 0
+
+# cargo-shear 1.14 does not normalize the ../vendor module paths in src/lib.rs.
+# These imports are used by the compiled embedded engines. Their source inventory
+# and content are checked by scripts/check_embedded_sources.py; remove these
+# exceptions when the checker follows those paths.
+[package.metadata.cargo-shear]
+ignored = ["bio", "bit-vec", "fastrand", "fxhash", "gbdt", "gcollections", "interval", "log", "memmap2", "num-traits", "proptest", "rand", "rust-lapper", "simple-logging", "smallvec", "statrs"]
+ignored-paths = ["vendor/skani/src/**", "vendor/partitions/src/**"]

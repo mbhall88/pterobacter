@@ -3,7 +3,7 @@ use std::cell::Cell;
 /// This provides additional information about a given value in the `DisjointSets`.
 ///
 /// For each value in the `DisjointSets` we store a `Metadata`.
-#[cfg(not(feature = "compact"))]
+#[cfg(not(feature = "embedded-partitions-compact"))]
 #[derive(Clone, Debug, Default)]
 pub(crate) struct Metadata {
     /// The parent of the value in its sets tree.
@@ -16,7 +16,7 @@ pub(crate) struct Metadata {
     rank: Cell<usize>,
 }
 
-#[cfg(not(feature = "compact"))]
+#[cfg(not(feature = "embedded-partitions-compact"))]
 impl Metadata {
     /// Create a new `Metadata` for an element with the given index.
     pub(crate) fn new(index: usize) -> Self {
@@ -58,7 +58,7 @@ impl Metadata {
     }
 }
 
-#[cfg(feature = "compact")]
+#[cfg(feature = "embedded-partitions-compact")]
 const USIZE_BITS: usize = 8 * ::std::mem::size_of::<usize>();
 // The least amount of elements you need in a set to get a rank of 0 is 1.
 // For a given n > 0 the least amount of elements you need to get a rank of n is
@@ -75,17 +75,17 @@ const USIZE_BITS: usize = 8 * ::std::mem::size_of::<usize>();
 // Because we devide these bits over the parent and link we need a maximum of (B + 3) / 2 bits
 // rounded up which is B / 2 + 2 bits rounded down.
 // Equivalent to the upstream width table, including 16/32/64-bit targets.
-#[cfg(feature = "compact")]
+#[cfg(feature = "embedded-partitions-compact")]
 const RANK_BITS: usize = std::mem::size_of::<usize>().trailing_zeros() as usize / 2 + 2;
-#[cfg(feature = "compact")]
+#[cfg(feature = "embedded-partitions-compact")]
 const MASK: usize = (1 << RANK_BITS) - 1;
-#[cfg(feature = "compact")]
+#[cfg(feature = "embedded-partitions-compact")]
 const MAX: usize = (1 << (USIZE_BITS - RANK_BITS)) - 2;
 
 /// This provides additional information about a given value in the `DisjointSets`.
 ///
 /// For each value in the `DisjointSets` we store a `Metadata`.
-#[cfg(feature = "compact")]
+#[cfg(feature = "embedded-partitions-compact")]
 #[derive(Clone, Debug, Default)]
 pub(crate) struct Metadata {
     /// The parent of the value in its sets tree.
@@ -96,7 +96,7 @@ pub(crate) struct Metadata {
     link: Cell<usize>,
 }
 
-#[cfg(feature = "compact")]
+#[cfg(feature = "embedded-partitions-compact")]
 impl Metadata {
     /// Create a new `Metadata` for an element with the given index.
     ///
@@ -168,7 +168,7 @@ impl Metadata {
     }
 }
 
-#[cfg(all(test, feature = "compact"))]
+#[cfg(all(test, feature = "embedded-partitions-compact"))]
 mod maintenance_tests {
     #[test]
     fn compact_rank_bits_match_supported_upstream_widths() {

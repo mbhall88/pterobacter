@@ -18,3 +18,5 @@ Without `just`, run `cargo test --all-targets --no-fail-fast`, `cargo test --all
 See [development commands and source layout](docs/development.md), [AGENTS.md](AGENTS.md) and [CONTEXT.md](CONTEXT.md) for implementation guidance. Classification accepts assemblies directly; `database install`, `database list` and `database verify` manage reference and typing packages. Evaluation operations stay in the optional development binary. Changes to scientific rules, references, defaults or output schemas require their own scoped review and validation.
 
 For the searchable documentation preview, see [building the docs site](docs/documentation-site.md).
+
+For package verification and approved publication, see [preparing a release](docs/releasing.md).

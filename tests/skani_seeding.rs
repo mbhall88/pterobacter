@@ -1,6 +1,6 @@
 //! Direct tests of the pinned seeding contract, using native AVX2 as an independent oracle.
-use skani::params::SketchParams;
-use skani::types::Sketch;
+use terobacter::embedded_skani::params::SketchParams;
+use terobacter::embedded_skani::types::Sketch;
 mod common;
 
 fn sequence(len: usize) -> Vec<u8> {
@@ -50,7 +50,7 @@ fn portable_seeds_match_frozen_native_vectors_on_every_architecture() {
         seq[240..262].fill(b'N');
         let params = SketchParams::new(1, 1, 15, false, false);
         let mut portable = Sketch::new(1, 1, 15, String::new(), false);
-        skani::seeding::fmh_seeds(&seq, &params, 7, &mut portable, true);
+        terobacter::embedded_skani::seeding::fmh_seeds(&seq, &params, 7, &mut portable, true);
         assert_eq!(digest(&portable), expected, "length {len}");
     }
 }
@@ -60,19 +60,31 @@ fn short_contigs_are_safe_and_marker_only_seeding_does_not_add_positions() {
     let params = SketchParams::new(1, 1, 15, false, false);
     for len in 0..42 {
         let mut sketch = Sketch::new(1, 1, 15, String::new(), false);
-        skani::seeding::fmh_seeds(&sequence(len), &params, 0, &mut sketch, true);
+        terobacter::embedded_skani::seeding::fmh_seeds(
+            &sequence(len),
+            &params,
+            0,
+            &mut sketch,
+            true,
+        );
         assert!(sketch.kmer_seeds_k.as_ref().unwrap().is_empty());
         assert!(sketch.marker_seeds.is_empty());
         #[cfg(target_arch = "x86_64")]
         if is_x86_feature_detected!("avx2") {
             unsafe {
-                skani::avx2_seeding::avx2_fmh_seeds(&sequence(len), &params, 0, &mut sketch, true)
+                terobacter::embedded_skani::avx2_seeding::avx2_fmh_seeds(
+                    &sequence(len),
+                    &params,
+                    0,
+                    &mut sketch,
+                    true,
+                )
             };
             assert!(sketch.kmer_seeds_k.as_ref().unwrap().is_empty());
         }
     }
     let mut sketch = Sketch::new(1, 1, 15, String::new(), false);
-    skani::seeding::fmh_seeds(&sequence(503), &params, 0, &mut sketch, false);
+    terobacter::embedded_skani::seeding::fmh_seeds(&sequence(503), &params, 0, &mut sketch, false);
     assert!(sketch.kmer_seeds_k.is_none());
     assert!(!sketch.marker_seeds.is_empty());
 }
@@ -87,12 +99,28 @@ fn compare(seq: &[u8]) {
         let mut native = Sketch::new(marker_c, c, 15, String::new(), false);
         let mut portable = native.clone();
         // SAFETY: runtime detection above establishes the AVX2 requirement.
-        unsafe { skani::avx2_seeding::avx2_fmh_seeds(seq, &params, 7, &mut native, true) };
-        skani::seeding::fmh_seeds(seq, &params, 7, &mut portable, true);
+        unsafe {
+            terobacter::embedded_skani::avx2_seeding::avx2_fmh_seeds(
+                seq,
+                &params,
+                7,
+                &mut native,
+                true,
+            )
+        };
+        terobacter::embedded_skani::seeding::fmh_seeds(seq, &params, 7, &mut portable, true);
         assert!(native == portable, "length {}, c {c}", seq.len());
         // A second contig verifies packed contig indices and repeated-seed order.
-        unsafe { skani::avx2_seeding::avx2_fmh_seeds(seq, &params, 8, &mut native, true) };
-        skani::seeding::fmh_seeds(seq, &params, 8, &mut portable, true);
+        unsafe {
+            terobacter::embedded_skani::avx2_seeding::avx2_fmh_seeds(
+                seq,
+                &params,
+                8,
+                &mut native,
+                true,
+            )
+        };
+        terobacter::embedded_skani::seeding::fmh_seeds(seq, &params, 8, &mut portable, true);
         assert!(
             native == portable,
             "second contig, length {}, c {c}",

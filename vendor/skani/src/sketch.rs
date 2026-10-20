@@ -1,7 +1,7 @@
-use crate::file_io;
-use crate::params::*;
-use crate::sketch_db::SketchDbWriter;
-use crate::types::*;
+use crate::embedded_skani::file_io;
+use crate::embedded_skani::params::*;
+use crate::embedded_skani::sketch_db::SketchDbWriter;
+use crate::embedded_skani::types::*;
 use log::*;
 use rayon::prelude::*;
 use std::fs::File;

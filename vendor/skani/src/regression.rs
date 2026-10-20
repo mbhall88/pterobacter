@@ -1,6 +1,6 @@
-use crate::model;
-use crate::params::*;
-use crate::types::*;
+use crate::embedded_skani::model;
+use crate::embedded_skani::params::*;
+use crate::embedded_skani::types::*;
 use gbdt::decision_tree::Data;
 use gbdt::gradient_boost::GBDT;
 use log::*;

@@ -1,12 +1,12 @@
-use crate::params::*;
-use crate::regression;
-use crate::types::*;
+use crate::embedded_skani::params::*;
+use crate::embedded_skani::regression;
+use crate::embedded_skani::types::*;
 use bio::data_structures::interval_tree::IntervalTree;
 use gbdt::gradient_boost::GBDT;
 
 use fxhash::FxHashMap;
 use log::*;
-use partitions::*;
+use crate::embedded_partitions::*;
 use std::mem;
 extern crate interval;
 use gcollections::ops::set::*;

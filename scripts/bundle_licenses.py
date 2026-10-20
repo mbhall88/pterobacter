@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
+import tomllib
 
 
 BUNDLER_VERSION = "4.2.0"
@@ -40,7 +41,28 @@ def collect_packages(metadata):
     )
 
 
+def embedded_packages():
+    packages = []
+    for name in ['skani', 'partitions']:
+        manifest = ROOT / 'vendor' / name / 'Cargo.toml.upstream'
+        package = tomllib.loads(manifest.read_text())['package']
+        packages.append({**package, 'manifest_path': str(manifest),
+                         'authors': package.get('authors', [])})
+    return packages
+
+
 def complete_bundle(bundle):
+    for package in embedded_packages():
+        name = package['name']
+        filename = 'LICENSE' if name == 'skani' else 'LICENSE.txt'
+        selected = 'MIT' if name == 'skani' else 'Apache-2.0'
+        bundle['third_party_libraries'].append({
+            'package_name': name, 'package_version': package['version'],
+            'repository': package['repository'], 'license': package['license'],
+            'licenses': [{'license': selected,
+                          'text': (ROOT / 'vendor' / name / filename).read_text()}],
+        })
+    bundle['third_party_libraries'].sort(key=lambda p: (p['package_name'], p['package_version']))
     for package in bundle["third_party_libraries"]:
         # skani ships MIT text. Its generic LICENSE is also misidentified as an
         # Apache alternative by the bundler, so select its supplied MIT option.
@@ -132,7 +154,7 @@ def main():
     lock = ROOT / "Cargo.lock"
     original_lock = lock.read_bytes()
     metadata = json.loads(run("cargo", "metadata", "--locked", "--offline", "--format-version", "1"))
-    packages = collect_packages(metadata)
+    packages = sorted(collect_packages(metadata) + embedded_packages(), key=lambda p: (p['name'], p['version']))
     with tempfile.TemporaryDirectory(prefix="pterobacter-licenses-") as directory:
         output = Path(directory) / "bundle.json"
         subprocess.run([

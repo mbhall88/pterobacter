@@ -1,7 +1,7 @@
-use crate::params::*;
+use crate::embedded_skani::params::*;
 //use std::collections::{HashMap, HashSet};
 //use std::hash::{BuildHasherDefault, Hash, Hasher};
-use crate::types::*;
+use crate::embedded_skani::types::*;
 use fxhash::FxHashMap;
 use fxhash::FxHashSet;
 use log::*;
