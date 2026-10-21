@@ -1,32 +1,51 @@
-# Example outputs
+# Try two real genomes
 
-These synthetic examples preserve the original JSON and TSV files. They predate sample names, so they lack the `input.sample_name` and `input.source` fields and the `sample_name` TSV column that current reports carry; see [input identity and sample names](../report-reference.md#input-identity-and-sample-names). The readable summaries are rendered with the current labels; their calls and evidence tables match the originals exactly. They are not biological measurements. Fixture software/data versions and names belong to the tests and do not identify the current release.
+These examples use public NCBI assemblies and the published database **2026-10-15**. They show what the tool actually writes, including MLST alleles, a genomovar match and an unresolved species call.
 
-## One assembly
+| Assembly | Strain | Pterobacter result | MLST | Genomovar |
+|---|---|---|---|---|
+| [GCA_013738375.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_013738375.1/) | RHBSTW-00333 | *E. xiangfangensis* subsp. *hoffmannii* | ST286 | GV10 |
+| [GCA_043966805.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_043966805.1/) | ECC-219 | Species unresolved after ANIm | ST2274 | Withheld |
 
-[JSON](output/single/report.json) · [Calls TSV](output/single/calls.tsv) · [Evidence TSV](output/single/evidence.tsv) · [Readable Markdown](readable/single.md)
+[Walk through the assigned genome](public/assigned.md) · [Walk through the unresolved genome](public/unresolved.md)
 
-These files were rendered from the assigned-assembly fixture in [`tests/report.rs`](../../tests/report.rs). The species and subspecies are assigned and the genomovar is withheld.
+NCBI calls the first assembly *E. hormaechei* and the second *Enterobacter* sp. ECC-219. Pterobacter uses its [documented taxonomic framework](../supported-taxa.md); the *xiangfangensis* subsp. *hoffmannii* combination is proposed. These are demonstrations, not an independent accuracy test. The first genome is itself a diversity reference and a member of the database's GV10 definition.
 
-## Batch outputs
+## Run them yourself
 
-[JSON array](output/batch/report.json) · [Calls TSV](output/batch/calls.tsv) · [Evidence TSV](output/batch/evidence.tsv) · [Readable Markdown](readable/batch.md)
+After [installing Pterobacter](../installation.md), download and run the [reproduction script](public/reproduce.sh). It requires Bash, curl, gzip and either `sha256sum` or `shasum`:
 
-The batch combines a skani assignment, an input failure and an ANIm-supported assignment from the same fixture. This deliberately mixes outcomes with and without ANIm to illustrate reporting; one normal invocation uses the same ANIm setting for all inputs. A failed input keeps its own execution status and does not erase the other rows.
+```sh
+curl --fail --location \
+  https://mbhall88.github.io/pterobacter/examples/public/reproduce.sh \
+  --output reproduce.sh
+bash reproduce.sh pterobacter-example
+```
 
-## Genomovar match
+The script creates a new directory and refuses to overwrite an existing one. It downloads both whole assemblies, verifies their FASTA checksums, installs database version 2026-10-15 including MLST, and runs one assembly and a two-assembly batch. Allow roughly 1 GB for the database, inputs and results, plus alignment working space. Use local storage that supports the database installer's atomic operations.
 
-The [assigned-genomovar excerpt](output/genomovar-excerpt.json) selects `status`, `genomovar_id` and `reasons` from `Case::new().run()` in [`tests/genomovar_policy.rs`](../../tests/genomovar_policy.rs). Its small synthetic definition uses the short ID `GV01`; production definitions use versioned concept IDs. This is a decision-function fixture, not a whole-assembly run.
+The classification commands inside that directory are:
 
-## Sources
+```sh
+ptero --database 2026-10-15 --database-dir ./database --threads 2 --sample-name RHBSTW-00333 \
+  --anim-output single-alignments --output single.json --report-dir single \
+  GCA_013738375.1.fna
 
-The [original JSON excerpt](synthetic-report-excerpt.json) remains the exact selection from the assigned-assembly fixture. The [recorded public-assembly example](../boundary-review.md#a-recorded-wider-context-example) supplies observed comparisons and an expert tree review separately.
+ptero --database 2026-10-15 --database-dir ./database --threads 2 --jobs 1 --sample-sheet samples.tsv \
+  --anim-output batch-alignments --output batch.json --report-dir batch
+```
 
-Original fixture and renderer SHA-256 hashes, retained for the historical files:
+Both assemblies are supplied whole. RHBSTW-00333 has eight records, including its plasmids; ECC-219 has one chromosome record. MLST and ANIm are enabled by default. Only ECC-219 needs ANIm in these examples.
 
-- `tests/report.rs`: `f1aebab28783eec31617654f9c64b44b7f7a0101d16512b3081e65b4021cfc4f`
-- `tests/genomovar_policy.rs`: `bc5302ea1fd09df79151ecb855b8e24c1e4ffd83bf03049b61acee1e4de9ec71`
-- `src/report.rs`: `e47fe20df47033a0dd5ef61372e177cd1c47d60df2f9771440161467b8477f38`
-- `src/genomovar.rs`: `9e2eb08b8413bb507b265a261fa74ee3fd9a194af559a0166156ffd0136c88e1`
+## Inspect the saved outputs
 
-The readable examples use the current label “MLST”. Original rendered outputs retain their earlier wording and hashes. These fixtures omit typing; use `--no-mlst` to request that behavior in a new run.
+| Run | Readable report | Calls | Comparisons | Full JSON |
+|---|---|---|---|---|
+| RHBSTW-00333 alone | [Markdown](public/single/report.md) | [TSV](public/single/calls.tsv) | [TSV](public/single/evidence.tsv) | [JSON](public/single/report.json) |
+| Both assemblies | [Markdown](public/batch/report.md) | [TSV](public/batch/calls.tsv) | [TSV](public/batch/evidence.tsv) | [JSON](public/batch/report.json) |
+
+The files are unedited outputs from source commit `0944f6d13b989f0329a6c266dbc9e20340fde58d`, which reports software version `0.0.0` before the first release. [Provenance](public/provenance.json) records the source, database, input and output hashes. The [checksums](public/SHA256SUMS) cover the saved reports and reproduction script.
+
+For the exact implementation, build the source commit recorded above; later software versions may change results. Your local paths, process identifiers, timings, resource limits and software version will differ. Use the recorded assembly and database hashes when comparing results; byte-identical report files are not expected across machines. The saved reports retain the tool's `not_yet_validated` metadata value; these examples do not change that status.
+
+MLST uses PubMLST submissions through **31 December 2024**. An ST describes an allele profile, not a species assignment: ECC-219 demonstrates that distinction. See [MLST](../historical-mlst.md) for scheme limits and [genomovars](../genomovar.md) for the scope of a GV match.

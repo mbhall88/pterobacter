@@ -1,0 +1,47 @@
+{
+  "generated": "2026-10-22",
+  "source_commit": "0944f6d13b989f0329a6c266dbc9e20340fde58d",
+  "software_version": "0.0.0",
+  "reference_version": "2026-10-15",
+  "reference_doi": "10.6084/m9.figshare.34640883.v1",
+  "reference_manifest_sha256": "f7c82d8e912fdb08aec93b190316f482fd462b3c514c5b374f8c694af1278e28",
+  "mlst_manifest_sha256": "0f0a4bd051e7a29d97f530a38982026df10ca223805e7b0147b19796763978dd",
+  "inputs": [
+    {
+      "accession": "GCA_013738375.1",
+      "strain": "RHBSTW-00333",
+      "ncbi_label": "Enterobacter hormaechei",
+      "assembly_name": "ASM1373837v1",
+      "fasta_sha256": "603ed679732e01cb7d1a06ec73d89a53fc12b6f6b22f071df5dee866cdf982b9",
+      "gzip_sha256": "d801f875a620988ed9aa49d0f2742b47d3a690a3bd8c77372d42439559d79227",
+      "fasta_bytes": 5280992
+    },
+    {
+      "accession": "GCA_043966805.1",
+      "strain": "ECC-219",
+      "ncbi_label": "Enterobacter sp. ECC-219",
+      "assembly_name": "ASM4396680v1",
+      "fasta_sha256": "34f4924c5954e5c424ecdb5476386a3f5ddbfc7d09aa6be2f32c049806b177a0",
+      "gzip_sha256": "dda6ccde28d1812d6385e512c06534c352e2deb65038f1b923557ecbea7eda88",
+      "fasta_bytes": 5090827
+    }
+  ],
+  "outputs_sha256": {
+    "single/calls.tsv": "f683257edf17886be5a0041d0bb7faf78c418bc19cc5b7af7daedfafef3c0b55",
+    "single/evidence.tsv": "98cf8d4320d7b89f7b1cec62732aa8bf55eaf4c96751f91004e597455d5c2df5",
+    "single/report.json": "bfefb52f2c57550fce110f4f9d72467f262406d6101a3ed863c70d11dd264523",
+    "single/report.md": "13ef8af3db1c86474aa4eab21c2d6ffbea3187fdfb4b0ce6577ab353acf0d68a",
+    "batch/calls.tsv": "73d3e2a1aea3a875d457420b2788d7b46989ab21d6ebd3bbad80746db3001acc",
+    "batch/evidence.tsv": "1265b974fb0b71634fb748f9b30a1378def07a933528718790949a321c952f88",
+    "batch/report.json": "f05bdba055e0e450d2f2da89a552456c52203544ad19219d9559ec152c3e145b",
+    "batch/report.md": "5b2557dd0bdc65bc0589ae6c26354f4b4665b5572280817541bae4efc16f3256"
+  },
+  "reproduce_script_sha256": "2098a9e2f730c09430ef6ba81b36a6ccf0d9756349982ae83f9ca279d5c68af0",
+  "notes": [
+    "Actual unedited reports; paths, timings and process identifiers are run-specific.",
+    "Demonstrations only; RHBSTW-00333 is a diversity reference and GV10 member.",
+    "MLST snapshot covers submissions through 2024-12-31.",
+    "Includes a CLI option-parsing correction; scientific code and reference data unchanged."
+  ],
+  "binary_sha256": "fab364d8fb58f97d3e517644e54f9b352b642cb751ee0a475fbc3c4b5731fe01"
+}

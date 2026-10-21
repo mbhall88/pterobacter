@@ -31,7 +31,12 @@ fn tracked_files_contain_no_workspace_paths_or_private_study_names() {
         let Ok(bytes) = std::fs::read(root.join(&name)) else {
             continue; // listed but deleted in the working tree
         };
-        let text = String::from_utf8_lossy(&bytes);
+        // The public reference licence quotes NCBI's policy URL in real reports.
+        // Exempt that exact URL only; local paths elsewhere still fail.
+        let text = String::from_utf8_lossy(&bytes).replace(
+            "https://www.ncbi.nlm.nih.gov/home/about/policies/",
+            "[NCBI molecular-data policy URL]",
+        );
         offenders.extend(
             patterns
                 .iter()
@@ -45,4 +50,15 @@ fn tracked_files_contain_no_workspace_paths_or_private_study_names() {
         "workspace-only content found:\n{}",
         offenders.join("\n")
     );
+}
+
+#[test]
+fn public_policy_url_exception_does_not_hide_a_local_path() {
+    let url = "https://www.ncbi.nlm.nih.gov/home/about/policies/";
+    let local = ["/ho", "me/someone/data.fa"].concat();
+    let cleaned = format!("{url} {local}").replace(url, "[NCBI molecular-data policy URL]");
+    assert!(forbidden().iter().any(|pattern| cleaned.contains(pattern)));
+    assert!(!forbidden()
+        .iter()
+        .any(|pattern| url.replace(url, "").contains(pattern)));
 }

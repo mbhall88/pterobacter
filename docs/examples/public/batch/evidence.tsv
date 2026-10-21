@@ -1,0 +1,59 @@
+assembly	sample_name	section	rank	tie_group	reference_id	parent_kind	parent_id	reference_species_id	reference_subspecies_id	lineage_id	reference_role	skani_ani	skani_af_query	skani_af_reference	anim_finished	anim_identity_qr	anim_identity_rq	anim_orientations	panel_references	returned_references	best_skani_reference_ids	in_top	challenging_reference_ids	anim_unmeasured
+1	RHBSTW-00333	top_reference	1	0	primary_whole:GCA_013738375.1	species	ECTX-SP025	ECTX-SP025	ECTX-SS007		diversity	100.0	99.99	99.99										
+1	RHBSTW-00333	top_reference	2	1	primary_whole:GCA_001729745.1	species	ECTX-SP025	ECTX-SP025	ECTX-SS007		type_anchor	98.97	82.69	92.17										
+1	RHBSTW-00333	top_reference	3	1	primary_whole:GCA_013625435.1	species	ECTX-SP025	ECTX-SP025	ECTX-SS007		diversity	98.97	85.66	90.75										
+1	RHBSTW-00333	top_reference	4	1	primary_whole:GCA_052922205.1	species	ECTX-SP025	ECTX-SP025	ECTX-SS007		type_anchor	98.97	85.51	91.21										
+1	RHBSTW-00333	top_reference	5	2	primary_whole:GCA_027595125.1	species	ECTX-SP025	ECTX-SP025	ECTX-SS007		diversity	98.92	83.07	90.16										
+1	RHBSTW-00333	panel_parent				species	ECTX-SP025					100.0							30	30	primary_whole:GCA_013738375.1	true		30
+1	RHBSTW-00333	panel_parent				species	ECTX-SP009					94.32							5	5	primary_whole:GCA_019048245.1;primary_whole:GCA_045037665.1	false		5
+1	RHBSTW-00333	panel_parent				species	ECTX-SP018					93.76							1	1	primary_whole:GCA_004331385.1	false		1
+1	RHBSTW-00333	panel_parent				species	ECTX-SP016					91.5							2	2	primary_whole:GCA_013376835.1	false		2
+1	RHBSTW-00333	panel_parent				species	ECTX-SP003					89.67							8	8	primary_whole:GCA_031218175.1	false		8
+1	RHBSTW-00333	panel_parent				species	ECTX-SP007					89.48							4	4	primary_whole:GCA_045348695.1	false		4
+1	RHBSTW-00333	panel_parent				species	ECTX-SP019					89.29							14	14	primary_whole:GCA_030410235.2	false		14
+1	RHBSTW-00333	panel_parent				species	ECTX-SP014					89.17							1	1	primary_whole:GCA_026344075.1	false		1
+1	RHBSTW-00333	panel_parent				species	ECTX-SP013					89.14							8	8	primary_whole:GCA_977007405.1	false		8
+1	RHBSTW-00333	panel_parent				species	ECTX-SP002					89.01							8	8	primary_whole:GCA_001521715.1	false		8
+1	RHBSTW-00333	panel_parent				species	ECTX-SP017					88.7							4	4	primary_whole:GCA_045866555.1	false		4
+1	RHBSTW-00333	panel_parent				species	ECTX-SP023					88.63							7	7	primary_whole:GCA_004006055.1	false		7
+1	RHBSTW-00333	panel_parent				species	ECTX-SP015					88.62							1	1	primary_whole:GCA_009176645.1	false		1
+1	RHBSTW-00333	panel_parent				species	ECTX-SP011					88.59							8	8	primary_whole:GCA_053699365.1	false		8
+1	RHBSTW-00333	panel_parent				species	ECTX-SP024					88.56							3	3	primary_whole:GCA_050847275.1	false		3
+1	RHBSTW-00333	panel_parent				species	ECTX-SP005					88.54							3	3	primary_whole:GCA_001984825.2	false		3
+1	RHBSTW-00333	panel_parent				species	ECTX-SP010					88.48							1	1	primary_whole:GCA_003594935.2	false		1
+1	RHBSTW-00333	panel_parent				species	ECTX-SP021					88.34							4	4	primary_whole:GCA_002939185.1	false		4
+1	RHBSTW-00333	panel_parent				species	ECTX-SP008					88.33							13	13	primary_whole:GCA_000025565.1	false		13
+1	RHBSTW-00333	panel_parent				species	ECTX-SP006					87.99							1	1	primary_whole:GCA_034008295.1	false		1
+1	RHBSTW-00333	panel_parent				species	ECTX-SP001					87.77							1	1	primary_whole:GCA_023023105.1	false		1
+1	RHBSTW-00333	panel_parent				species	ECTX-SP012					87.67							8	8	primary_whole:GCA_043647335.2	false		8
+1	RHBSTW-00333	panel_parent				species	ECTX-SP004					87.55							3	3	primary_whole:GCA_019047785.1	false		3
+1	RHBSTW-00333	panel_parent				species	ECTX-SP022					86.9							2	2	primary_whole:GCA_025152625.1	false		2
+2	ECC-219	top_reference	1	0	primary_whole:GCA_026344075.1	species	ECTX-SP014	ECTX-SP014			type_anchor	94.83	82.65	88.26	true	95.02964941527868	95.0343144759382							
+2	ECC-219	top_reference	2	1	primary_whole:GCA_031218175.1	species	ECTX-SP003	ECTX-SP003			diversity	94.31	80.89	85.57										
+2	ECC-219	top_reference	3	2	primary_whole:GCA_043970685.1	species	ECTX-SP003	ECTX-SP003			diversity	94.3	80.33	86.03										
+2	ECC-219	top_reference	4	3	primary_whole:GCA_043967505.1	species	ECTX-SP003	ECTX-SP003			diversity	94.18	81.06	85.68										
+2	ECC-219	top_reference	5	4	primary_whole:GCA_043966825.1	species	ECTX-SP003	ECTX-SP003			diversity	94.06	80.54	84.03										
+2	ECC-219	panel_parent				species	ECTX-SP014					94.83							1	1	primary_whole:GCA_026344075.1	true		0
+2	ECC-219	panel_parent				species	ECTX-SP003					94.31							8	8	primary_whole:GCA_031218175.1	true		8
+2	ECC-219	panel_parent				species	ECTX-SP007					93.37							4	4	primary_whole:GCA_039718975.1	false		4
+2	ECC-219	panel_parent				species	ECTX-SP002					92.48							8	8	primary_whole:GCA_035556915.2	false		8
+2	ECC-219	panel_parent				species	ECTX-SP017					91.98							4	4	primary_whole:GCA_030406165.1	false		4
+2	ECC-219	panel_parent				species	ECTX-SP023					91.97							7	7	primary_whole:GCA_007035975.1	false		7
+2	ECC-219	panel_parent				species	ECTX-SP019					91.85							14	14	primary_whole:GCA_001729805.1	false		14
+2	ECC-219	panel_parent				species	ECTX-SP005					91.63							3	3	primary_whole:GCA_001984825.2	false		3
+2	ECC-219	panel_parent				species	ECTX-SP011					91.63							8	8	primary_whole:GCA_001729765.1	false		8
+2	ECC-219	panel_parent				species	ECTX-SP006					91.11							1	1	primary_whole:GCA_034008295.1	false		1
+2	ECC-219	panel_parent				species	ECTX-SP021					90.82							4	4	primary_whole:GCA_042434935.1	false		4
+2	ECC-219	panel_parent				species	ECTX-SP013					90.68							8	8	primary_whole:GCA_003964905.1	false		8
+2	ECC-219	panel_parent				species	ECTX-SP001					90.02							1	1	primary_whole:GCA_023023105.1	false		1
+2	ECC-219	panel_parent				species	ECTX-SP024					89.63							3	3	primary_whole:GCA_004331265.1;primary_whole:GCA_035835995.1	false		3
+2	ECC-219	panel_parent				species	ECTX-SP008					89.51							13	13	primary_whole:GCA_000235765.3	false		13
+2	ECC-219	panel_parent				species	ECTX-SP025					89.45							30	30	primary_whole:GCA_001729785.1	false		30
+2	ECC-219	panel_parent				species	ECTX-SP009					89.4							5	5	primary_whole:GCA_031852185.1	false		5
+2	ECC-219	panel_parent				species	ECTX-SP010					89.22							1	1	primary_whole:GCA_003594935.2	false		1
+2	ECC-219	panel_parent				species	ECTX-SP016					89.22							2	2	primary_whole:GCA_028890245.1	false		2
+2	ECC-219	panel_parent				species	ECTX-SP018					89.21							1	1	primary_whole:GCA_004331385.1	false		1
+2	ECC-219	panel_parent				species	ECTX-SP012					89.04							8	8	primary_whole:GCA_031851515.1	false		8
+2	ECC-219	panel_parent				species	ECTX-SP015					88.65							1	1	primary_whole:GCA_009176645.1	false		1
+2	ECC-219	panel_parent				species	ECTX-SP004					87.98							3	3	primary_whole:GCA_019047785.1	false		3
+2	ECC-219	panel_parent				species	ECTX-SP022					87.15							2	2	primary_whole:GCA_025152625.1	false		2

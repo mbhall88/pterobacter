@@ -80,64 +80,25 @@ Each report carries its versions separately, in the `versions` object and in the
 
 ## A worked manual-review example
 
-This example uses invented numbers. It follows an isolate that remains unresolved after ANIm, and shows what to do next without inventing a label.
+The [ECC-219 example](examples/public/unresolved.md) is an actual public assembly that stays unresolved after ANIm. Its [saved report](examples/public/batch/report.json) and [reproduction commands](examples/README.md#run-them-yourself) retain the whole input and database identity.
 
-You run:
-
-```sh
-ptero --no-mlst --reference-package REFERENCE_DIR --expected-sha256 PORTABLE_JSON_SHA256 \
-  --anim-reference-package REFERENCE_FASTAS --expected-anim-sha256 ANIM_SHA256 \
-  --anim-output ani-evidence --report-dir review isolate_17.fa
-```
-
-`calls.tsv` has one row. The columns that matter:
-
-| Column | Value |
+| Field | Observed value |
 |---|---|
-| `call_status` | `unresolved` |
-| `reasons` | `foreign_parent_challenge` |
-| `trigger` | `true` |
-| `rescue_status` | `withheld` |
-| `anim_completed` / `anim_required` | `5` / `5` |
+| `status` | `unresolved` |
+| `reasons` | `ANIm_no_strict_witness` |
+| Nearest species reference | *E. nematophilus*, GCA_026344075.1 |
+| skani ANI | 94.83% |
+| Reciprocal ANIm | 95.02965% / 95.03431% |
+| ANIm pairs completed / required | 1 / 1 |
+| MLST | ST2274 |
 
-The initial skani estimate was just below the species threshold, so the tool ran ANIm. The result stayed unresolved because another parent challenged the call.
+**Read the reason first.** The alignment ran successfully, but neither orientation exceeded the required 96% ANI. This is not a missing comparison or an execution failure. Adequate aligned fraction and an exact ST do not substitute for the species criterion.
 
-**Step 1: read the reasons.** `foreign_parent_challenge` means a reference from a different parent also reached the conflict threshold. The pair counts are complete, so this is a measured disagreement, not a missing measurement.
+**Keep the other candidates visible.** The strongest-match and whole-panel tables include the nearby *E. bugandensis* references as well as *E. nematophilus*. Do not turn the nearest-reference name into an assignment. An empty challenge list is not proof that every alternative has been ruled out: read the competitor-assessment field and the measured pair counts.
 
-**Step 2: find the competitor.** In `report.md`, the Strongest matches table puts species A at 95.29% and species B at 95.15%. The Challenges section names `primary_whole:ACCESSION_B1` of species B, marked as outside the strongest matches: skani ranked it low, but both ANIm orientations reach the conflict threshold. The Whole-panel summary lists species B with that reference under "Challenging references", so the challenge is visible even though the top table alone would hide it.
+**Choose a follow-up question.** A useful next question is whether broader sampling places ECC-219 within an existing group or supports a separate lineage. Select types and diverse representatives of both nearby groups, adding relevant neighbouring groups for context. The [boundary guide](boundary-review.md#tree-follow-up) explains how to record that selection and compare tree evidence. No follow-up tree or new species conclusion is claimed for this documentation example.
 
-**Step 3: collect the genomes.** Reference IDs are GenBank assembly accessions after the `primary_whole:` prefix. Put the accessions of the isolate's strongest references and of the challenging reference in a file, then download them with NCBI Datasets:
-
-```sh
-datasets download genome accession --inputfile accessions.txt --include genome
-```
-
-Unpack them into one directory with `isolate_17.fa`. Add a type anchor for each parent; the `reference_role` column in `evidence.tsv` marks them.
-
-**Step 4: repeat the ANI.** A reproduction is only as exact as the settings you pin. Read them from the report first. `measurement.engine_version` and `measurement.engine_profile` (also `versions.skani_method`) name the skani build, `0.3.2` here, and `measurement.reporting_floor_percent` gives the aligned-fraction floor. The package search also screens at 80% and takes its sketch compression from the reference package's database, not from a skani default. Use the same inputs: the isolate file must hash to `input.query_sha256` in the report, and a reference downloaded from NCBI may differ from the copy in the package if the assembly was updated, so use the package's reference FASTA component when you have it. The isolate is always the query and the reference genome is the reference. skani's ANI and aligned fractions are not symmetric, so swapping them changes the numbers.
-
-With the same skani version, `skani dist` on the isolate and one reference checks that pair. It is not an exact replay of the package search, so a default invocation does not guarantee the same value:
-
-```sh
-skani --version    # must report 0.3.2
-skani dist -q isolate_17.fa -r refs/ACCESSION_A1.fa -o follow_up_ani.tsv
-```
-
-Compare `ANI` with `skani_ani`, and `Align_fraction_query` with `skani_af_query`, in the `evidence.tsv` row for that reference. Small differences are expected unless you also match the database's compression settings. A large difference points at the wrong genome, the wrong orientation or a different skani build.
-
-For an independent view, run a different ANI method on the same pairs, such as fastANI or a whole-genome alignment, and compare its values and aligned fractions.
-
-If the follow-up agrees that species A and species B are both near 95%, the isolate sits between two parents and the tool was right to withhold. If the follow-up puts one parent clearly ahead, check the isolate for contamination or a second genome: compare the record lengths and sequence hashes in `report.json` under `input.records` with what you expect.
-
-**Step 5: place it on a tree.** Build a quick tree of the isolate, the references from both parents and the type anchors:
-
-```sh
-mashtree --numcpus 4 isolate_17.fa refs/*.fa > follow_up.dnd
-```
-
-Open `follow_up.dnd` in a tree viewer. Three patterns are common. The isolate nests inside one parent's references: that parent is the likely answer and the challenge probably reflects a close relative. The isolate sits on a long branch between the two: it may belong to a group the package does not represent. It sits with neither: the reference panel may not cover it. A whole-genome distance tree is quick, not authoritative. For anything you plan to publish, build a core-genome tree with a method suited to the question.
-
-**Step 6: record the outcome.** The result for this isolate stays unresolved. Write down what you found: "closest to species A at 95.29%, challenged by species B at 95.15%, tree placement …". Do not copy the nearest parent into a species field. If the evidence points to a lineage the package lacks, that is a question for the reference package's maintainers, not something the tool decides.
+**Preserve the automatic result.** Record any later expert interpretation separately, with its inputs, evidence and rationale. The saved output stays species-unresolved, with its independently reported ST2274.
 
 ## Limits
 

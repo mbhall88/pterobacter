@@ -6,7 +6,7 @@ Start with the reported reason. Inspect both aligned fractions, the closest type
 
 The default adds ANIm for eligible samples just below the species boundary. `--no-anim` skips those alignments and uses skani only. The [ANIm guide](assembly.md#boundary-anim) shows the reference FASTAs and evidence directory needed for alignments.
 
-A successful rescue requires ANIm strictly above 96% in both directions, the AF and competitor safeguards, and a complete required panel. It assigns species only. Preserve method disagreement rather than selecting an estimator because it produces a preferred label. The [worked manual review](report-reference.md#a-worked-manual-review-example) shows an invented unresolved case with a competing species match.
+A successful rescue requires ANIm strictly above 96% in both directions, the AF and competitor safeguards, and a complete required panel. It assigns species only. Preserve method disagreement rather than selecting an estimator because it produces a preferred label. The [worked manual review](report-reference.md#a-worked-manual-review-example) uses the real ECC-219 assembly, whose species remains unresolved after ANIm.
 
 ## A recorded wider-context example
 

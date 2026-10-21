@@ -57,7 +57,6 @@ impl ThresholdArgs {
     version,
     about,
     subcommand_negates_reqs = true,
-    subcommand_precedence_over_arg = true,
     after_help = "Uses skani first, then ANIm for eligible samples near the species boundary.
 ANIm can be slower; use -n/--no-anim to skip it.
 MLST runs by default; use -x/--no-mlst to skip sequence typing.
@@ -874,6 +873,32 @@ mod public_option_tests {
             let error = Public::try_parse_from(base.iter().copied().chain(conflicting.clone()))
                 .unwrap_err();
             assert_eq!(error.exit_code(), 2, "{conflicting:?}");
+        }
+    }
+    #[test]
+    fn subcommand_names_remain_valid_option_values() {
+        for (option, value) in [
+            ("--database-dir", "database"),
+            ("--sample-name", "database"),
+            ("--output", "database"),
+            ("--sample-name", "help"),
+        ] {
+            let args =
+                Public::try_parse_from(["ptero", option, value, "--threads", "2", "isolate.fa"])
+                    .unwrap_or_else(|error| panic!("{option} {value}: {error}"));
+            assert!(args.command.is_none());
+            assert_eq!(args.threads, 2);
+        }
+        for args in [
+            vec!["ptero", "--database-dir", "database", "database", "list"],
+            vec!["ptero", "database", "list", "--database-dir", "database"],
+        ] {
+            let parsed = Public::try_parse_from(args).unwrap();
+            assert!(parsed.command.is_some());
+            assert_eq!(
+                parsed.databases.database_dir,
+                Some(PathBuf::from("database"))
+            );
         }
     }
 }

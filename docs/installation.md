@@ -37,7 +37,7 @@ brew install gcc
 cargo install --path . --locked
 ```
 
-Discovery checks the installed gcc prefix and supports Apple Silicon and Intel Homebrew locations. Explicit compiler overrides retain cc-rs precedence; empty or whitespace-only values fail with a variable-specific error. Unset the variable to request discovery. Keep the compiler's GNU C++ runtime available. macOS CI build/test smoke passes; scientific parity on the final arm64 panel is still pending. Linux ARM and Windows are untested. The native build currently targets Linux and macOS.
+Discovery checks the installed gcc prefix and supports Apple Silicon and Intel Homebrew locations. Explicit compiler overrides retain cc-rs precedence; empty or whitespace-only values fail with a variable-specific error. Unset the variable to request discovery. Keep the compiler's GNU C++ runtime available. macOS CI build/test smoke and the fixed scientific parity panel on an Apple Silicon Mac have passed. Linux ARM and Windows are untested. The native build currently targets Linux and macOS.
 
 ## Build offline
 
@@ -53,7 +53,7 @@ An uncached machine still needs to obtain those prerequisites. At runtime the pr
 
 Classification needs reference data separately from the executable. Run `ptero database install 2026-10-15`, then follow [database setup](databases.md) and [run an assembly](running.md). The current source version is `0.0.0`; retain the supplied source commit and binary identity with your analysis record.
 
-For test commands and the optional development binary, see [Contributing](../CONTRIBUTING.md). [Measured package and platform details](release-preparation.md) remain available for packaging review.
+For test commands and the optional development binary, see [Contributing](../CONTRIBUTING.md). [Release preparation](release-preparation.md) records the checked platforms and publication steps.
 
 ## Planned release downloads
 
