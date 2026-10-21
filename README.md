@@ -45,7 +45,7 @@ Pterobacter estimates average nucleotide identity (ANI) with skani and uses geno
 
 Open `isolate-report/report.md` for the readable result or `isolate-report/calls.tsv` for a table of calls. The JSON report and `evidence.tsv` contain the detailed comparisons. Output files and directories must be new.
 
-See [example outputs](https://mbhall88.github.io/pterobacter/examples/index.html) and [reading results](https://mbhall88.github.io/pterobacter/results.html). For an uncertain assignment, the [worked boundary-review example](https://mbhall88.github.io/pterobacter/boundary-review.html#a-recorded-wider-context-example) shows how to examine genome comparisons and tree evidence.
+Try the [public-genome examples](https://mbhall88.github.io/pterobacter/examples/index.html): download two assemblies and see a species/subspecies call, ST286 and a genomovar match, alongside an unresolved case with ST2274. [Reading results](https://mbhall88.github.io/pterobacter/results.html) explains the output fields. For an uncertain assignment, the [worked boundary-review example](https://mbhall88.github.io/pterobacter/boundary-review.html#a-recorded-wider-context-example) shows how to examine genome comparisons and tree evidence.
 
 ## Run a batch
 

@@ -15,7 +15,7 @@ Open `report.md` in the directory you supplied with `--report-dir`. Start with t
 
 The JSON sent to standard output or `--output FILE` contains the same report as `report.json`. TSV and Markdown are derived from it. One input produces an object; a batch produces an array.
 
-The [small JSON excerpt](examples/synthetic-report-excerpt.json) shown in the README is taken from the existing synthetic report fixture described in [the example notes](examples/README.md). Its species and subspecies are assigned, but its genomovar is withheld because that synthetic parent does not qualify for the genomovar definitions. It is an output-format example, not evidence of biological accuracy.
+The [public-genome examples](examples/README.md) include a species/subspecies assignment with ST286 and a genomovar match, plus an unresolved species call with ST2274. They contain real JSON, TSV and readable reports, with download and reproduction commands.
 
 ## Separate a call from its nearest reference
 

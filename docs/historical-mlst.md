@@ -1,6 +1,6 @@
-# Add multilocus sequence typing (MLST)
+# Multilocus sequence typing (MLST)
 
-MLST reports the sequence type (ST) from the scheme's allele profile. It is included in database installation and runs by default:
+MLST reports the sequence type (ST) from the scheme's allele profile. The [ST286 example](examples/public/assigned.md) shows a complete allele profile; the [ST2274 example](examples/public/unresolved.md) shows why an ST can be reported even when species is unresolved. It is included in database installation and runs by default:
 
 ```sh
 ptero database install 2026-10-15
