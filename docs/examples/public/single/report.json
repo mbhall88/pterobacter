@@ -40,7 +40,7 @@
     "query_seconds": null,
     "query_threads": 1,
     "stop_reason": "not_required",
-    "wall_seconds": 0.00049283
+    "wall_seconds": 0.000498798
   },
   "anim_plan": {
     "anim_executed": false,

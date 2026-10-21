@@ -41,7 +41,7 @@
       "query_seconds": null,
       "query_threads": 1,
       "stop_reason": "not_required",
-      "wall_seconds": 0.000551058
+      "wall_seconds": 0.000536844
     },
     "anim_plan": {
       "anim_executed": false,
@@ -5963,7 +5963,7 @@
       "pair_workers": 1,
       "pairs": [
         {
-          "directory": "/tmp/ptero-public-examples/final-example/batch-alignments/query-000002/pair-000001",
+          "directory": "/tmp/ptero-public-examples/pinned-example/batch-alignments/query-000002/pair-000001",
           "record": {
             "error": null,
             "execution": {
@@ -6036,14 +6036,14 @@
                     "/tmp/ptero-public-examples/target/release/ptero"
                   ],
                   "artifacts": {
-                    "limits.json": "1075bf0f307ab1a85dc917757b29cbf99974468533cd5abc71d4a7d66dd71e0c",
+                    "limits.json": "b63b7379c671374fd76597e35fd0e2c03705d5934a5387b2317ba15f6d6ac263",
                     "native.delta": "abb7863b618fcb3c6f85d114b2f0c8043ae49a4fa89ae556e1de572efa0fc006",
                     "native.filter": "6eab6723dab287b80a688d748073a23f8f557585ab152258e70c3723d1d1d343",
-                    "request.json": "b19ca9695947f68c8645813271838b03244d28d47a1c83f3f7bcf2c45f3b1070",
+                    "request.json": "f6c16abde7c07a5d421210519e9a2d1cc611afc23f511f4071be04a7778e84c7",
                     "worker.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-                    "worker.stdout": "8b6e7a9d9e08241709771ed8ece700c5c9f22a6c5777a4ab5976a92b62f72bc3"
+                    "worker.stdout": "c96aaf7d043d6f91daf604291b85741cc57ed1062394552c17d5a2ceee347466"
                   },
-                  "cpu_seconds": 8.794008999999999,
+                  "cpu_seconds": 9.248143,
                   "environment": {
                     "LC_ALL": "C",
                     "TERO_INTERNAL_ANIM_WORKER": "1"
@@ -6112,7 +6112,7 @@
                         "remaining_query_budget": null
                       },
                       "pair_elapsed": {
-                        "nanos": 171506793,
+                        "nanos": 165233587,
                         "secs": 0
                       }
                     },
@@ -6122,11 +6122,11 @@
                   "implementation_sha256": "fab364d8fb58f97d3e517644e54f9b352b642cb751ee0a475fbc3c4b5731fe01",
                   "native_error": null,
                   "native_exit_code": 0,
-                  "peak_rss_bytes": 336543744,
+                  "peak_rss_bytes": 335544320,
                   "signal": null,
                   "stop_reason": null,
-                  "wall_seconds": 8.874222918,
-                  "worker_pid": 1140756
+                  "wall_seconds": 9.326363632,
+                  "worker_pid": 1290201
                 },
                 "status": "aligned"
               },
@@ -6150,14 +6150,14 @@
                     "/tmp/ptero-public-examples/target/release/ptero"
                   ],
                   "artifacts": {
-                    "limits.json": "42953e44aa53f6187ed3f5b647329807a019064298b49a331f22749559675dc1",
+                    "limits.json": "ee282facaca86ee63d89c6078adb30dda4756c72727dee09fca6feaf35d777d8",
                     "native.delta": "7005526cd18457c94952cfcb338b19811fd4aec67f5511e72e3d6e702275db45",
                     "native.filter": "089d55ad23f84ef430e337fa9ca8a51f4e7428c0f23af91ff5480eabd658e94f",
-                    "request.json": "ddf919d99da9dcfcf959405a22c65d8fafebdbc905256f87f0378631a590cef0",
+                    "request.json": "e5af1336fae841b65d7bd1b7784364976b1283104d94d8f0e1e167074577b4c5",
                     "worker.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-                    "worker.stdout": "e9bd969e1a0b5d2f8e11f8d32d4792f4f4348699b8b29acd833ee582461b63ea"
+                    "worker.stdout": "5fa794bdcfddf1b7928a0fffdcf25b878db395a18b84b88e3e3803af7785f3f3"
                   },
-                  "cpu_seconds": 6.131384,
+                  "cpu_seconds": 6.845458,
                   "environment": {
                     "LC_ALL": "C",
                     "TERO_INTERNAL_ANIM_WORKER": "1"
@@ -6226,7 +6226,7 @@
                         "remaining_query_budget": null
                       },
                       "pair_elapsed": {
-                        "nanos": 53817160,
+                        "nanos": 493442164,
                         "secs": 9
                       }
                     },
@@ -6236,11 +6236,11 @@
                   "implementation_sha256": "fab364d8fb58f97d3e517644e54f9b352b642cb751ee0a475fbc3c4b5731fe01",
                   "native_error": null,
                   "native_exit_code": 0,
-                  "peak_rss_bytes": 336543744,
+                  "peak_rss_bytes": 335544320,
                   "signal": null,
                   "stop_reason": null,
-                  "wall_seconds": 6.172765695,
-                  "worker_pid": 1143585
+                  "wall_seconds": 6.902747608,
+                  "worker_pid": 1292672
                 },
                 "status": "aligned"
               }
@@ -6306,7 +6306,7 @@
         "reference_package_sha256": "f7c82d8e912fdb08aec93b190316f482fd462b3c514c5b374f8c694af1278e28"
       },
       "stop_reason": "plan_complete",
-      "wall_seconds": 16.371647756
+      "wall_seconds": 17.590149648
     },
     "anim_plan": {
       "anim_executed": false,

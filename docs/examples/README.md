@@ -27,11 +27,11 @@ The script creates a new directory and refuses to overwrite an existing one. It 
 The classification commands inside that directory are:
 
 ```sh
-ptero --database-dir ./database --threads 2 --sample-name RHBSTW-00333 \
+ptero --database 2026-10-15 --database-dir ./database --threads 2 --sample-name RHBSTW-00333 \
   --anim-output single-alignments --output single.json --report-dir single \
   GCA_013738375.1.fna
 
-ptero --database-dir ./database --threads 2 --jobs 1 --sample-sheet samples.tsv \
+ptero --database 2026-10-15 --database-dir ./database --threads 2 --jobs 1 --sample-sheet samples.tsv \
   --anim-output batch-alignments --output batch.json --report-dir batch
 ```
 
@@ -46,6 +46,6 @@ Both assemblies are supplied whole. RHBSTW-00333 has eight records, including it
 
 The files are unedited outputs from source commit `0944f6d13b989f0329a6c266dbc9e20340fde58d`, which reports software version `0.0.0` before the first release. [Provenance](public/provenance.json) records the source, database, input and output hashes. The [checksums](public/SHA256SUMS) cover the saved reports and reproduction script.
 
-Your local paths, process identifiers, timings, resource limits and software version will differ. Use the recorded assembly and database hashes when comparing results; byte-identical report files are not expected across machines. The saved reports retain the tool's `not_yet_validated` metadata value; these examples do not change that status.
+For the exact implementation, build the source commit recorded above; later software versions may change results. Your local paths, process identifiers, timings, resource limits and software version will differ. Use the recorded assembly and database hashes when comparing results; byte-identical report files are not expected across machines. The saved reports retain the tool's `not_yet_validated` metadata value; these examples do not change that status.
 
 MLST uses PubMLST submissions through **31 December 2024**. An ST describes an allele profile, not a species assignment: ECC-219 demonstrates that distinction. See [MLST](../historical-mlst.md) for scheme limits and [genomovars](../genomovar.md) for the scope of a GV match.
