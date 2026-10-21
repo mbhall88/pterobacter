@@ -1,15 +1,15 @@
 # Containers
 
-The Docker image is prepared for GHCR but has not been published yet. Until the first release, build it from a source checkout:
+Download the versioned Linux amd64 image from GitHub Container Registry:
 
 ```sh
-docker build --platform linux/amd64 -t pterobacter:local .
-docker run --rm pterobacter:local --version
+docker pull --platform linux/amd64 ghcr.io/mbhall88/pterobacter:0.1.0
+docker run --rm --platform linux/amd64 ghcr.io/mbhall88/pterobacter:0.1.0 --version
 ```
 
 The tested platform is Linux x86_64. On an Apple Silicon Mac, Docker can emulate it with `--platform linux/amd64`; native Linux ARM support has not been validated.
 
-The image contains both `ptero` and `pterobacter`, including the alignment and MLST engines. It runs as an unprivileged user and contains no compiler or reference database. Versioned release images will be at `ghcr.io/mbhall88/pterobacter:VERSION`.
+The image contains both `ptero` and `pterobacter`, including the alignment and MLST engines. It runs as an unprivileged user and contains no compiler or reference database. Use a version tag rather than relying on an implicit `latest` tag.
 
 ## Download the database once
 
@@ -21,7 +21,7 @@ mkdir -p database
 docker run --rm --platform linux/amd64 \
   --user "$(id -u):$(id -g)" \
   -v "$PWD/database:/database" \
-  pterobacter:local database install 2026-10-15
+  ghcr.io/mbhall88/pterobacter:0.1.0 database install 2026-10-15
 ```
 
 This installs the reference sketches, alignment sequences and MLST data. Add `--no-mlst` to opt out of downloading MLST data. See [database management](databases.md) for verification and storage requirements. Use local storage with atomic rename support; a container does not change the capabilities of an underlying network filesystem.
@@ -35,7 +35,7 @@ docker run --rm --platform linux/amd64 \
   --user "$(id -u):$(id -g)" \
   -v "$PWD/database:/database" \
   -v "$PWD:/work" \
-  pterobacter:local --threads 2 \
+  ghcr.io/mbhall88/pterobacter:0.1.0 --threads 2 \
   --output isolate.json --report-dir isolate-report isolate.fasta
 ```
 
@@ -44,7 +44,14 @@ The report and alignment evidence stay in the mounted working directory. Choose 
 Without arguments, the image shows command help. A small init process starts Pterobacter and forwards signals to it. Keep that entrypoint for normal use; it also gives alignment workers the parent process they require. To use the longer command name:
 
 ```sh
-docker run --rm --entrypoint /usr/bin/tini pterobacter:local -- pterobacter --help
+docker run --rm --entrypoint /usr/bin/tini ghcr.io/mbhall88/pterobacter:0.1.0 -- pterobacter --help
+```
+
+## Build from source
+
+```sh
+docker build --platform linux/amd64 -t pterobacter:local .
+docker run --rm pterobacter:local --version
 ```
 
 ## Release provenance

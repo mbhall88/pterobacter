@@ -10,25 +10,16 @@ Classify *Enterobacter* isolate assemblies by species and subspecies, with seque
 
 ## Install
 
-You need Rust and GNU C++ with C++17 support. On macOS, first install the Xcode command-line tools and Homebrew GCC:
+Install with Cargo, using Rust and GNU C++ with C++17 support:
 
 ```sh
-xcode-select --install  # skip if already installed
-brew install gcc
-```
-
-Install from source:
-
-```sh
-git clone https://github.com/mbhall88/pterobacter.git
-cd pterobacter
-cargo install --path . --locked
+cargo install pterobacter --version 0.1.0 --locked
 ptero --version
 ```
 
-`cargo install` puts `ptero` and its equivalent alias `pterobacter` in Cargo's bin directory, usually `~/.cargo/bin`; that directory must be on your `PATH`. To build without installing, use `cargo build --release --locked` and run `./target/release/ptero` instead.
+On macOS, install the Xcode command-line tools and Homebrew GCC first (`brew install gcc`). Cargo's bin directory, usually `~/.cargo/bin`, must be on your `PATH`. Both `ptero` and `pterobacter` run the same program.
 
-See the [installation guide](https://mbhall88.github.io/pterobacter/installation.html) for compiler setup and platform details. Registry packages and precompiled releases are not available yet. For Docker builds and usage, see [containers](https://mbhall88.github.io/pterobacter/containers.html).
+[Precompiled binaries](https://github.com/mbhall88/pterobacter/releases/tag/0.1.0) are provided for Linux x86_64 and Apple Silicon macOS. The [installation guide](https://mbhall88.github.io/pterobacter/installation.html) covers runtime requirements, checksums and building from source. A Linux amd64 image is available at `ghcr.io/mbhall88/pterobacter:0.1.0`; see [container usage](https://mbhall88.github.io/pterobacter/containers.html).
 
 ## Classify an assembly
 
