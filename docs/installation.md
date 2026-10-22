@@ -15,28 +15,60 @@ On macOS, install the Xcode command-line tools and Homebrew GCC first, as descri
 
 ## Precompiled binaries
 
-Download the archive for your platform and `SHA256SUMS` from the [0.1.0 release](https://github.com/mbhall88/pterobacter/releases/tag/0.1.0). Linux x86_64 binaries require glibc and the GNU C++ runtime. Apple Silicon macOS binaries require Homebrew runtimes: `brew install gcc xz`. Each archive includes its measured runtime-library requirements, licences and checksums. Linux ARM and Windows are untested.
+| Platform | Archive |
+| --- | --- |
+| Linux x86_64 | [Download](https://github.com/mbhall88/pterobacter/releases/download/0.1.0/pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz) |
+| macOS Apple Silicon | [Download](https://github.com/mbhall88/pterobacter/releases/download/0.1.0/pterobacter-0.1.0-aarch64-apple-darwin.tar.gz) |
 
-For example, on Linux x86_64:
+Each archive contains both commands, licences and runtime requirements. Rust is not needed to use these binaries. Intel macOS, Linux ARM and Windows binaries are not provided for this release. The [release page](https://github.com/mbhall88/pterobacter/releases/tag/0.1.0) also provides checksums and complete corresponding source.
+
+### Linux x86_64
+
+The released binary needs glibc 2.34 or newer and a GNU C++ runtime providing `GLIBCXX_3.4.29` or newer. If your system is older, use the container or check the source-build requirements below. Use a new download directory:
 
 ```sh
+mkdir pterobacter-0.1.0-download
+cd pterobacter-0.1.0-download
 curl --fail --location --remote-name \
   https://github.com/mbhall88/pterobacter/releases/download/0.1.0/pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz
 curl --fail --location --remote-name \
   https://github.com/mbhall88/pterobacter/releases/download/0.1.0/SHA256SUMS
 grep ' pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz$' SHA256SUMS | sha256sum --check -
 tar -xzf pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz
-./pterobacter-0.1.0-x86_64-unknown-linux-gnu/bin/ptero --version
+export PATH="$PWD/pterobacter-0.1.0-x86_64-unknown-linux-gnu/bin:$PATH"
+ptero --version
 ```
 
-For Apple Silicon, use the `aarch64-apple-darwin` archive and `shasum -a 256 --check` for checksum verification. Add the extracted `bin` directory to your `PATH` or invoke its commands by their paths. Complete corresponding source is provided beside the binaries.
+### macOS Apple Silicon
+
+Install the required Homebrew runtime libraries, then download and verify the archive:
+
+```sh
+brew install gcc xz
+mkdir pterobacter-0.1.0-download
+cd pterobacter-0.1.0-download
+curl --fail --location --remote-name \
+  https://github.com/mbhall88/pterobacter/releases/download/0.1.0/pterobacter-0.1.0-aarch64-apple-darwin.tar.gz
+curl --fail --location --remote-name \
+  https://github.com/mbhall88/pterobacter/releases/download/0.1.0/SHA256SUMS
+grep ' pterobacter-0.1.0-aarch64-apple-darwin.tar.gz$' SHA256SUMS | shasum -a 256 --check -
+tar -xzf pterobacter-0.1.0-aarch64-apple-darwin.tar.gz
+export PATH="$PWD/pterobacter-0.1.0-aarch64-apple-darwin/bin:$PATH"
+ptero --version
+```
+
+The `export PATH` command applies to the current terminal. For future terminals, add the extracted `bin` directory's absolute path to your shell configuration, or invoke `bin/ptero` by its full path. Keep the extracted directory in a permanent location before adding it to your configuration.
+
+## Bioconda
+
+A [Bioconda recipe](https://github.com/mbhall88/pterobacter/tree/main/packaging/bioconda) is being prepared for Linux x86_64 and ARM64, and macOS Intel and Apple Silicon. It has not yet been accepted into the channel. Use Cargo, a release binary or Docker until a package is available.
 
 ## Linux source build
 
-Install Rust and GNU C++ with C++17 support, then obtain the source:
+Install Rust and GNU C++ with C++17 support, then obtain the source. Linux source builds require glibc 2.28 or newer for the database installer:
 
 ```sh
-git clone https://github.com/mbhall88/pterobacter.git
+git clone --branch 0.1.0 --depth 1 https://github.com/mbhall88/pterobacter.git
 cd pterobacter
 cargo install --path . --locked
 ptero --version
@@ -63,6 +95,8 @@ Install the Xcode command-line tools and Homebrew GNU GCC. Native builds discove
 ```sh
 xcode-select --install  # skip if already installed
 brew install gcc
+git clone --branch 0.1.0 --depth 1 https://github.com/mbhall88/pterobacter.git
+cd pterobacter
 cargo install --path . --locked
 ```
 

@@ -11,7 +11,7 @@ just install-check
 cargo fmt --all -- --check
 ```
 
-`just test` checks the default and all-feature builds. `just lint` runs clippy with warnings denied. `just install-check` installs in a temporary directory and checks the two public commands with synthetic smoke data. Distribution remains on hold; these are contributor checks, not release publication.
+`just test` checks the default and all-feature builds. `just lint` runs clippy with warnings denied. `just install-check` installs in a temporary directory and checks the two public commands with synthetic smoke data. These checks also apply to changes made after a release.
 
 Without `just`, run `cargo test --all-targets --no-fail-fast`, `cargo test --all-targets --all-features --no-fail-fast` and `cargo clippy --all-features --all-targets -- -D warnings`. Tests use synthetic fixtures and retained development evidence; do not add private data or research paths.
 

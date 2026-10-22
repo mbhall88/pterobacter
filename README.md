@@ -10,16 +10,29 @@ Classify *Enterobacter* isolate assemblies by species and subspecies, with seque
 
 ## Install
 
-Install with Cargo, using Rust and GNU C++ with C++17 support:
+### Download a binary
+
+| Platform | Download |
+| --- | --- |
+| Linux x86_64 | [pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz](https://github.com/mbhall88/pterobacter/releases/download/0.1.0/pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz) |
+| macOS Apple Silicon | [pterobacter-0.1.0-aarch64-apple-darwin.tar.gz](https://github.com/mbhall88/pterobacter/releases/download/0.1.0/pterobacter-0.1.0-aarch64-apple-darwin.tar.gz) |
+
+Download, verify and unpack the archive using the [Linux instructions](https://mbhall88.github.io/pterobacter/installation.html#linux-x86_64) or [macOS instructions](https://mbhall88.github.io/pterobacter/installation.html#macos-apple-silicon). Linux needs glibc and the GNU C++ runtime; macOS needs `brew install gcc xz`. [Checksums](https://github.com/mbhall88/pterobacter/releases/download/0.1.0/SHA256SUMS) and complete source are on the [release page](https://github.com/mbhall88/pterobacter/releases/tag/0.1.0).
+
+### Cargo
+
+With Rust and GNU C++ with C++17 support installed:
 
 ```sh
 cargo install pterobacter --version 0.1.0 --locked
 ptero --version
 ```
 
-On macOS, install the Xcode command-line tools and Homebrew GCC first (`brew install gcc`). Cargo's bin directory, usually `~/.cargo/bin`, must be on your `PATH`. Both `ptero` and `pterobacter` run the same program.
+On macOS, install the Xcode command-line tools and Homebrew GCC first. See [source-build prerequisites](https://mbhall88.github.io/pterobacter/installation.html#macos-source-build). Cargo's bin directory, usually `~/.cargo/bin`, must be on your `PATH`. Both `ptero` and `pterobacter` run the same program.
 
-[Precompiled binaries](https://github.com/mbhall88/pterobacter/releases/tag/0.1.0) are provided for Linux x86_64 and Apple Silicon macOS. The [installation guide](https://mbhall88.github.io/pterobacter/installation.html) covers runtime requirements, checksums and building from source. A Linux amd64 image is available at `ghcr.io/mbhall88/pterobacter:0.1.0`; see [container usage](https://mbhall88.github.io/pterobacter/containers.html).
+### Other installation methods
+
+A Linux amd64 image is available at `ghcr.io/mbhall88/pterobacter:0.1.0`; see [container usage](https://mbhall88.github.io/pterobacter/containers.html). A Bioconda recipe is being prepared; the package is not yet available from that channel.
 
 ## Classify an assembly
 
