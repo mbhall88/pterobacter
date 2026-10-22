@@ -1,13 +1,42 @@
 # Install Pterobacter
 
-Build from the private source if you have repository access. Distribution is on hold during repository review; no public binary, crates.io package, Bioconda package or Homebrew formula is currently offered.
+Install version 0.1.0 with Cargo, download a precompiled binary, or use the Docker image. Bioconda and Homebrew formulae are not currently provided.
+
+## Cargo
+
+Install Rust and GNU C++ with C++17 support, then run:
+
+```sh
+cargo install pterobacter --version 0.1.0 --locked
+ptero --version
+```
+
+On macOS, install the Xcode command-line tools and Homebrew GCC first, as described below.
+
+## Precompiled binaries
+
+Download the archive for your platform and `SHA256SUMS` from the [0.1.0 release](https://github.com/mbhall88/pterobacter/releases/tag/0.1.0). Linux x86_64 binaries require glibc and the GNU C++ runtime. Apple Silicon macOS binaries require Homebrew runtimes: `brew install gcc xz`. Each archive includes its measured runtime-library requirements, licences and checksums. Linux ARM and Windows are untested.
+
+For example, on Linux x86_64:
+
+```sh
+curl --fail --location --remote-name \
+  https://github.com/mbhall88/pterobacter/releases/download/0.1.0/pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz
+curl --fail --location --remote-name \
+  https://github.com/mbhall88/pterobacter/releases/download/0.1.0/SHA256SUMS
+grep ' pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz$' SHA256SUMS | sha256sum --check -
+tar -xzf pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz
+./pterobacter-0.1.0-x86_64-unknown-linux-gnu/bin/ptero --version
+```
+
+For Apple Silicon, use the `aarch64-apple-darwin` archive and `shasum -a 256 --check` for checksum verification. Add the extracted `bin` directory to your `PATH` or invoke its commands by their paths. Complete corresponding source is provided beside the binaries.
 
 ## Linux source build
 
 Install Rust and GNU C++ with C++17 support, then obtain the source:
 
 ```sh
-git clone git@github.com:mbhall88/pterobacter.git
+git clone https://github.com/mbhall88/pterobacter.git
 cd pterobacter
 cargo install --path . --locked
 ptero --version
@@ -51,14 +80,10 @@ An uncached machine still needs to obtain those prerequisites. At runtime the pr
 
 ## Next: reference data
 
-Classification needs reference data separately from the executable. Run `ptero database install 2026-10-15`, then follow [database setup](databases.md) and [run an assembly](running.md). The current source version is `0.0.0`; retain the supplied source commit and binary identity with your analysis record.
+Classification needs reference data separately from the executable. Run `ptero database install 2026-10-15`, then follow [database setup](databases.md) and [run an assembly](running.md). Retain the software version, database version and input identity with your analysis record.
 
 For test commands and the optional development binary, see [Contributing](../CONTRIBUTING.md). [Release preparation](release-preparation.md) records the checked platforms and publication steps.
 
-## Planned release downloads
-
-Release preparation now builds a Cargo package and precompiled Linux x86_64 and Apple Silicon macOS archives. They are not published yet; use the source installation above until the first approved release. The Linux binaries use glibc and the GNU C++ runtime. The macOS binaries require Homebrew GCC and XZ runtime libraries, available with `brew install gcc xz`. Each archive records its actual runtime-library requirements and includes licences and checksums. Complete corresponding source is supplied separately beside the binaries.
-
 ## Docker
 
-A minimal Docker image can be built from source. See [containers](containers.md) for database and assembly mounts. GHCR publication is prepared for the first approved release.
+Use `ghcr.io/mbhall88/pterobacter:0.1.0`, or build the Dockerfile from source. See [containers](containers.md) for database and assembly mounts.

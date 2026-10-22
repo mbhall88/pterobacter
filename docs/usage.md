@@ -6,7 +6,7 @@ Start with a whole isolate assembly in FASTA format. Pterobacter keeps all suppl
 
 | Task | Guide |
 |---|---|
-| Install from the private source | [Installation](installation.md) |
+| Install Pterobacter | [Installation](installation.md) |
 | Install and verify managed components | [Database management](databases.md) |
 | Verify explicit reference paths | [Reference setup](reference-setup.md) |
 | Analyse one assembly or a batch | [Running Pterobacter](running.md) |
