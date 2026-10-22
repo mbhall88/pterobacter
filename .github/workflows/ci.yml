@@ -32,7 +32,12 @@ jobs:
       - name: Fetch sources for all locked targets
         run: cargo fetch --locked
       - name: Check redistribution notices
-        run: python3 scripts/bundle_licenses.py --check
+        run: |
+          python3 -m pip install 'PyYAML==6.0.3'
+          python3 -m unittest discover -s scripts -p 'test_bundle_licenses.py'
+          python3 scripts/bundle_licenses.py --check
+          python3 scripts/bundle_licenses.py --distribution "$RUNNER_TEMP/THIRDPARTY.yml"
+          python3 scripts/bundle_licenses.py --check --distribution "$RUNNER_TEMP/THIRDPARTY.yml"
 
   conventional-commits:
     runs-on: ubuntu-latest
