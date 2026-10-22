@@ -25,6 +25,7 @@ REQUIRED = (
     'vendor/mummer4/COPYRIGHT', 'vendor/mummer4/ACKNOWLEDGEMENTS',
     'vendor/mummer4/README.md', 'vendor/mummer4/upstream-files.json',
     'investigations/anim/mummer4-maintenance.patch',
+    'investigations/anim/type-traits-portability.patch',
     'investigations/anim/filter-portability.patch',
     'vendor/mummer4/include/mummer/pterobacter_filter_rng.hh',
     'vendor/skani/LICENSE', 'vendor/partitions/LICENSE.txt',

@@ -787,7 +787,7 @@ fn worker() -> Result<WorkerResult, AnimError> {
         .map(|p| CString::new(p.as_os_str().as_bytes()).map_err(|_| invalid("NUL in native path")));
     let [reference, query, prefix] = strings;
     let (reference, query, prefix) = (reference?, query?, prefix?);
-    let mut error = [0_i8; 1024];
+    let mut error = [0 as libc::c_char; 1024];
     let code = unsafe {
         tero_anim_orientation(
             reference.as_ptr(),

@@ -105,3 +105,17 @@ pub fn is_gnu(path: &Path) -> bool {
                 && !macros.contains("#define __clang__ ")
         })
 }
+
+/// Select the runtime explicitly; an active Conda environment alone changes nothing.
+pub fn cpp_stdlib(target: &str, value: Option<OsString>) -> Result<&'static str, String> {
+    match value.as_deref().and_then(|s| s.to_str()) {
+        None if value.is_none() => Ok("stdc++"),
+        Some("stdc++") => Ok("stdc++"),
+        Some("c++") if target.contains("apple-darwin") => Ok("c++"),
+        _ => Err("PTERO_CXX_STDLIB must be stdc++, or c++ for a macOS GNU/libc++ toolchain".into()),
+    }
+}
+
+pub fn alternate_string_layout(target: &str, stdlib: &str) -> bool {
+    target == "aarch64-apple-darwin" && stdlib == "c++"
+}

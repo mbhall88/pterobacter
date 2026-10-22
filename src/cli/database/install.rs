@@ -610,7 +610,10 @@ pub(super) fn rename_no_replace(from: &Path, to: &Path) -> io::Result<()> {
     // SAFETY: paths are NUL terminated. Both OS calls refuse any existing destination.
     #[cfg(target_os = "linux")]
     let result = unsafe {
-        libc::renameat2(
+        // Call the kernel directly: glibc only added its wrapper in 2.28.
+        // Keep RENAME_NOREPLACE and errno handling unchanged on older glibc.
+        libc::syscall(
+            libc::SYS_renameat2,
             libc::AT_FDCWD,
             from.as_ptr(),
             libc::AT_FDCWD,

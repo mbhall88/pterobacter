@@ -15,3 +15,7 @@ The additional `investigations/anim/filter-portability.patch` gives each delta g
 The upstream package includes the Artistic License 2.0 in `LICENSE.md`. Jellyfish and mt_skip_list headers carry GPLv3-or-later notices; `GPL-3.0.txt` supplies that license. Compact suffix sorting and thread_pipe files retain their own permissive notices. `COPYRIGHT` retains the upstream package notice. Terobacter's root MIT license describes its own code and does not replace these component licenses.
 
 The combined Pterobacter executable is distributed under GPL-3.0-or-later conditions. Original component grants remain intact; the Artistic-2.0 compatibility route is section 4(c)(ii). Every distribution must retain the applicable notices and make complete corresponding source available, including this maintained subset, its upstream-file manifest and the maintenance patch. See [licensing and source availability](../../docs/licensing.md). This distribution policy does not itself publish a release.
+
+`investigations/anim/type-traits-portability.patch` adds the standard
+`<type_traits>` include required by `said_traits.hpp`. This fixes compilation
+against libc++ without changing alignment or filtering logic.
