@@ -1,13 +1,24 @@
 # Install Pterobacter
 
-Install version 0.1.0 with Cargo, download a precompiled binary, or use the Docker image. Bioconda and Homebrew formulae are not currently provided.
+Install with Bioconda or Cargo, download a precompiled binary, or use the Docker image.
+
+## Bioconda
+
+[![Bioconda version](https://img.shields.io/conda/vn/bioconda/pterobacter)](https://anaconda.org/bioconda/pterobacter) [![Bioconda downloads](https://img.shields.io/conda/dn/bioconda/pterobacter)](https://anaconda.org/bioconda/pterobacter)
+
+```sh
+conda install -c conda-forge -c bioconda pterobacter
+ptero --version
+```
 
 ## Cargo
+
+[![Crates.io version](https://img.shields.io/crates/v/pterobacter)](https://crates.io/crates/pterobacter) [![Crates.io downloads](https://img.shields.io/crates/d/pterobacter)](https://crates.io/crates/pterobacter)
 
 Install Rust and GNU C++ with C++17 support, then run:
 
 ```sh
-cargo install pterobacter --version 0.1.0 --locked
+cargo install pterobacter --locked
 ptero --version
 ```
 
@@ -15,60 +26,68 @@ On macOS, install the Xcode command-line tools and Homebrew GCC first, as descri
 
 ## Precompiled binaries
 
-| Platform | Archive |
-| --- | --- |
-| Linux x86_64 | [Download](https://github.com/mbhall88/pterobacter/releases/download/0.1.0/pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz) |
-| macOS Apple Silicon | [Download](https://github.com/mbhall88/pterobacter/releases/download/0.1.0/pterobacter-0.1.0-aarch64-apple-darwin.tar.gz) |
+[![GitHub release](https://img.shields.io/github/v/release/mbhall88/pterobacter)](https://github.com/mbhall88/pterobacter/releases/latest) [![Release downloads](https://img.shields.io/github/downloads/mbhall88/pterobacter/total)](https://github.com/mbhall88/pterobacter/releases/latest)
 
-Each archive contains both commands, licences and runtime requirements. Rust is not needed to use these binaries. Intel macOS, Linux ARM and Windows binaries are not provided for this release. The [release page](https://github.com/mbhall88/pterobacter/releases/tag/0.1.0) also provides checksums and complete corresponding source.
+The [latest release](https://github.com/mbhall88/pterobacter/releases/latest) provides these archives:
+
+| Platform | Archive suffix |
+| --- | --- |
+| Linux x86_64 | `x86_64-unknown-linux-gnu.tar.gz` |
+| macOS Apple Silicon | `aarch64-apple-darwin.tar.gz` |
+
+Each archive contains both commands, licences and runtime requirements. Rust is not needed to use these binaries. The release page also provides checksums and complete corresponding source.
 
 ### Linux x86_64
 
-The released binary needs glibc 2.34 or newer and a GNU C++ runtime providing `GLIBCXX_3.4.29` or newer. If your system is older, use the container or check the source-build requirements below. Use a new download directory:
+The released binary needs glibc 2.34 or newer and a GNU C++ runtime providing `GLIBCXX_3.4.29` or newer. If your system is older, use the container or check the source-build requirements below. These commands find the latest release, then download and verify its archive:
 
 ```sh
-mkdir pterobacter-0.1.0-download
-cd pterobacter-0.1.0-download
-curl --fail --location --remote-name \
-  https://github.com/mbhall88/pterobacter/releases/download/0.1.0/pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz
-curl --fail --location --remote-name \
-  https://github.com/mbhall88/pterobacter/releases/download/0.1.0/SHA256SUMS
-grep ' pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz$' SHA256SUMS | sha256sum --check -
-tar -xzf pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz
-export PATH="$PWD/pterobacter-0.1.0-x86_64-unknown-linux-gnu/bin:$PATH"
+mkdir pterobacter-download
+cd pterobacter-download
+release_url=$(curl --fail --silent --show-error --location \
+  --output /dev/null --write-out '%{url_effective}' \
+  https://github.com/mbhall88/pterobacter/releases/latest)
+version=${release_url##*/}
+archive="pterobacter-${version}-x86_64-unknown-linux-gnu.tar.gz"
+base="https://github.com/mbhall88/pterobacter/releases/download/${version}"
+curl --fail --location --remote-name "$base/$archive"
+curl --fail --location --remote-name "$base/SHA256SUMS"
+awk -v name="$archive" '$2 == name' SHA256SUMS | sha256sum --check -
+tar -xzf "$archive"
+export PATH="$PWD/${archive%.tar.gz}/bin:$PATH"
 ptero --version
 ```
 
 ### macOS Apple Silicon
 
-Install the required Homebrew runtime libraries, then download and verify the archive:
+Install the Homebrew runtime libraries, then download and verify the latest release:
 
 ```sh
 brew install gcc xz
-mkdir pterobacter-0.1.0-download
-cd pterobacter-0.1.0-download
-curl --fail --location --remote-name \
-  https://github.com/mbhall88/pterobacter/releases/download/0.1.0/pterobacter-0.1.0-aarch64-apple-darwin.tar.gz
-curl --fail --location --remote-name \
-  https://github.com/mbhall88/pterobacter/releases/download/0.1.0/SHA256SUMS
-grep ' pterobacter-0.1.0-aarch64-apple-darwin.tar.gz$' SHA256SUMS | shasum -a 256 --check -
-tar -xzf pterobacter-0.1.0-aarch64-apple-darwin.tar.gz
-export PATH="$PWD/pterobacter-0.1.0-aarch64-apple-darwin/bin:$PATH"
+mkdir pterobacter-download
+cd pterobacter-download
+release_url=$(curl --fail --silent --show-error --location \
+  --output /dev/null --write-out '%{url_effective}' \
+  https://github.com/mbhall88/pterobacter/releases/latest)
+version=${release_url##*/}
+archive="pterobacter-${version}-aarch64-apple-darwin.tar.gz"
+base="https://github.com/mbhall88/pterobacter/releases/download/${version}"
+curl --fail --location --remote-name "$base/$archive"
+curl --fail --location --remote-name "$base/SHA256SUMS"
+awk -v name="$archive" '$2 == name' SHA256SUMS | shasum -a 256 --check -
+tar -xzf "$archive"
+export PATH="$PWD/${archive%.tar.gz}/bin:$PATH"
 ptero --version
 ```
 
 The `export PATH` command applies to the current terminal. For future terminals, add the extracted `bin` directory's absolute path to your shell configuration, or invoke `bin/ptero` by its full path. Keep the extracted directory in a permanent location before adding it to your configuration.
-
-## Bioconda
-
-A [Bioconda recipe](https://github.com/mbhall88/pterobacter/tree/main/packaging/bioconda) is being prepared for Linux x86_64 and ARM64, and macOS Intel and Apple Silicon. It has not yet been accepted into the channel. Use Cargo, a release binary or Docker until a package is available.
 
 ## Linux source build
 
 Install Rust and GNU C++ with C++17 support, then obtain the source. Linux source builds require glibc 2.28 or newer for the database installer:
 
 ```sh
-git clone --branch 0.1.0 --depth 1 https://github.com/mbhall88/pterobacter.git
+git clone https://github.com/mbhall88/pterobacter.git
 cd pterobacter
 cargo install --path . --locked
 ptero --version
@@ -86,7 +105,6 @@ cargo build --release --locked
 
 For a debug build, use `cargo build --locked` and `./target/debug/ptero`. These local paths apply to `cargo build`; `cargo install` makes the commands available through Cargo's bin directory.
 
-The measured Linux build used Rust 1.95.0 and GCC 11.5.0 on x86_64 Red Hat Enterprise Linux 9.8. The binary links system C/C++ libraries; the inspected build requires glibc symbols through 2.34. These describe the tested build, not a minimum Rust version or compatibility guarantee for every Linux system. The source includes Rust and embedded C/C++.
 
 ## macOS source build
 
@@ -95,7 +113,7 @@ Install the Xcode command-line tools and Homebrew GNU GCC. Native builds discove
 ```sh
 xcode-select --install  # skip if already installed
 brew install gcc
-git clone --branch 0.1.0 --depth 1 https://github.com/mbhall88/pterobacter.git
+git clone https://github.com/mbhall88/pterobacter.git
 cd pterobacter
 cargo install --path . --locked
 ```
@@ -120,4 +138,6 @@ For test commands and the optional development binary, see [Contributing](../CON
 
 ## Docker
 
-Use `ghcr.io/mbhall88/pterobacter:0.1.0`, or build the Dockerfile from source. See [containers](containers.md) for database and assembly mounts.
+[![Container version](https://ghcr-badge.egpl.dev/mbhall88/pterobacter/latest_tag?label=GHCR)](https://github.com/mbhall88/pterobacter/pkgs/container/pterobacter) [![Container downloads](https://ghcr-badge.elias.eu.org/shield/mbhall88/pterobacter/pterobacter)](https://github.com/mbhall88/pterobacter/pkgs/container/pterobacter)
+
+Pull the image from [GitHub Container Registry](https://github.com/mbhall88/pterobacter/pkgs/container/pterobacter), or build the Dockerfile from source. See [containers](containers.md) for download commands and database/assembly mounts.

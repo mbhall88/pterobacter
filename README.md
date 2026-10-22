@@ -10,29 +10,45 @@ Classify *Enterobacter* isolate assemblies by species and subspecies, with seque
 
 ## Install
 
-### Download a binary
+### Bioconda
 
-| Platform | Download |
-| --- | --- |
-| Linux x86_64 | [pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz](https://github.com/mbhall88/pterobacter/releases/download/0.1.0/pterobacter-0.1.0-x86_64-unknown-linux-gnu.tar.gz) |
-| macOS Apple Silicon | [pterobacter-0.1.0-aarch64-apple-darwin.tar.gz](https://github.com/mbhall88/pterobacter/releases/download/0.1.0/pterobacter-0.1.0-aarch64-apple-darwin.tar.gz) |
+[![Bioconda version](https://img.shields.io/conda/vn/bioconda/pterobacter)](https://anaconda.org/bioconda/pterobacter) [![Bioconda downloads](https://img.shields.io/conda/dn/bioconda/pterobacter)](https://anaconda.org/bioconda/pterobacter)
 
-Download, verify and unpack the archive using the [Linux instructions](https://mbhall88.github.io/pterobacter/installation.html#linux-x86_64) or [macOS instructions](https://mbhall88.github.io/pterobacter/installation.html#macos-apple-silicon). Linux needs glibc and the GNU C++ runtime; macOS needs `brew install gcc xz`. [Checksums](https://github.com/mbhall88/pterobacter/releases/download/0.1.0/SHA256SUMS) and complete source are on the [release page](https://github.com/mbhall88/pterobacter/releases/tag/0.1.0).
+```sh
+conda install -c conda-forge -c bioconda pterobacter
+```
 
 ### Cargo
+
+[![Crates.io version](https://img.shields.io/crates/v/pterobacter)](https://crates.io/crates/pterobacter) [![Crates.io downloads](https://img.shields.io/crates/d/pterobacter)](https://crates.io/crates/pterobacter)
 
 With Rust and GNU C++ with C++17 support installed:
 
 ```sh
-cargo install pterobacter --version 0.1.0 --locked
+cargo install pterobacter --locked
 ptero --version
 ```
 
 On macOS, install the Xcode command-line tools and Homebrew GCC first. See [source-build prerequisites](https://mbhall88.github.io/pterobacter/installation.html#macos-source-build). Cargo's bin directory, usually `~/.cargo/bin`, must be on your `PATH`. Both `ptero` and `pterobacter` run the same program.
 
-### Other installation methods
+### Download a binary
 
-A Linux amd64 image is available at `ghcr.io/mbhall88/pterobacter:0.1.0`; see [container usage](https://mbhall88.github.io/pterobacter/containers.html). A Bioconda recipe is being prepared; the package is not yet available from that channel.
+[![GitHub release](https://img.shields.io/github/v/release/mbhall88/pterobacter)](https://github.com/mbhall88/pterobacter/releases/latest) [![Release downloads](https://img.shields.io/github/downloads/mbhall88/pterobacter/total)](https://github.com/mbhall88/pterobacter/releases/latest)
+
+Download the archive for your platform from the [latest release](https://github.com/mbhall88/pterobacter/releases/latest):
+
+| Platform | Archive suffix | Instructions |
+| --- | --- | --- |
+| Linux x86_64 | `x86_64-unknown-linux-gnu.tar.gz` | [Download and install](https://mbhall88.github.io/pterobacter/installation.html#linux-x86_64) |
+| macOS Apple Silicon | `aarch64-apple-darwin.tar.gz` | [Download and install](https://mbhall88.github.io/pterobacter/installation.html#macos-apple-silicon) |
+
+The release includes checksums and complete source. Linux needs glibc and the GNU C++ runtime; macOS needs `brew install gcc xz`.
+
+### Docker
+
+[![Container version](https://ghcr-badge.egpl.dev/mbhall88/pterobacter/latest_tag?label=GHCR)](https://github.com/mbhall88/pterobacter/pkgs/container/pterobacter) [![Container downloads](https://ghcr-badge.elias.eu.org/shield/mbhall88/pterobacter/pterobacter)](https://github.com/mbhall88/pterobacter/pkgs/container/pterobacter)
+
+A Linux amd64 image is available from [GitHub Container Registry](https://github.com/mbhall88/pterobacter/pkgs/container/pterobacter). See [container usage](https://mbhall88.github.io/pterobacter/containers.html) for download commands and examples.
 
 ## Classify an assembly
 

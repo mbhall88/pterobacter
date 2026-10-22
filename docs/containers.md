@@ -1,15 +1,21 @@
 # Containers
 
-Download the versioned Linux amd64 image from GitHub Container Registry:
+[![Container version](https://ghcr-badge.egpl.dev/mbhall88/pterobacter/latest_tag?label=GHCR)](https://github.com/mbhall88/pterobacter/pkgs/container/pterobacter) [![Container downloads](https://ghcr-badge.elias.eu.org/shield/mbhall88/pterobacter/pterobacter)](https://github.com/mbhall88/pterobacter/pkgs/container/pterobacter)
+
+Find the latest release tag and download its Linux amd64 image from GitHub Container Registry:
 
 ```sh
-docker pull --platform linux/amd64 ghcr.io/mbhall88/pterobacter:0.1.0
-docker run --rm --platform linux/amd64 ghcr.io/mbhall88/pterobacter:0.1.0 --version
+release_url=$(curl --fail --silent --show-error --location \
+  --output /dev/null --write-out '%{url_effective}' \
+  https://github.com/mbhall88/pterobacter/releases/latest)
+PTERO_VERSION=${release_url##*/}
+docker pull --platform linux/amd64 "ghcr.io/mbhall88/pterobacter:$PTERO_VERSION"
+docker run --rm --platform linux/amd64 "ghcr.io/mbhall88/pterobacter:$PTERO_VERSION" --version
 ```
 
 The tested platform is Linux x86_64. On an Apple Silicon Mac, Docker can emulate it with `--platform linux/amd64`; native Linux ARM support has not been validated.
 
-The image contains both `ptero` and `pterobacter`, including the alignment and MLST engines. It runs as an unprivileged user and contains no compiler or reference database. Use a version tag rather than relying on an implicit `latest` tag.
+The image contains both `ptero` and `pterobacter`, including the alignment and MLST engines. It runs as an unprivileged user and contains no compiler or reference database. The commands below reuse `PTERO_VERSION` from the first step; the registry publishes release tags rather than a `latest` alias.
 
 ## Download the database once
 
@@ -21,7 +27,7 @@ mkdir -p database
 docker run --rm --platform linux/amd64 \
   --user "$(id -u):$(id -g)" \
   -v "$PWD/database:/database" \
-  ghcr.io/mbhall88/pterobacter:0.1.0 database install 2026-10-15
+  "ghcr.io/mbhall88/pterobacter:$PTERO_VERSION" database install 2026-10-15
 ```
 
 This installs the reference sketches, alignment sequences and MLST data. Add `--no-mlst` to opt out of downloading MLST data. See [database management](databases.md) for verification and storage requirements. Use local storage with atomic rename support; a container does not change the capabilities of an underlying network filesystem.
@@ -35,7 +41,7 @@ docker run --rm --platform linux/amd64 \
   --user "$(id -u):$(id -g)" \
   -v "$PWD/database:/database" \
   -v "$PWD:/work" \
-  ghcr.io/mbhall88/pterobacter:0.1.0 --threads 2 \
+  "ghcr.io/mbhall88/pterobacter:$PTERO_VERSION" --threads 2 \
   --output isolate.json --report-dir isolate-report isolate.fasta
 ```
 
@@ -44,7 +50,7 @@ The report and alignment evidence stay in the mounted working directory. Choose 
 Without arguments, the image shows command help. A small init process starts Pterobacter and forwards signals to it. Keep that entrypoint for normal use; it also gives alignment workers the parent process they require. To use the longer command name:
 
 ```sh
-docker run --rm --entrypoint /usr/bin/tini ghcr.io/mbhall88/pterobacter:0.1.0 -- pterobacter --help
+docker run --rm --entrypoint /usr/bin/tini "ghcr.io/mbhall88/pterobacter:$PTERO_VERSION" -- pterobacter --help
 ```
 
 ## Build from source
