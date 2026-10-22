@@ -24,7 +24,7 @@ The reference database is downloaded separately with `ptero database install 202
 Run Bioconda's lint/build workflow before submission. A direct local check with conda-build is:
 
 ```sh
-conda build --override-channels -c conda-forge -c bioconda packaging/bioconda/pterobacter
+conda-build --override-channels -c conda-forge -c bioconda packaging/bioconda/pterobacter
 ```
 
 Bioconda CI uses its own compiler pins and build environment; a local build does not replace that check. Do not advertise `conda install pterobacter` until the recipe has been accepted and a package is available in the channel.

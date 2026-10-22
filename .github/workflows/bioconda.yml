@@ -57,7 +57,7 @@ jobs:
           CONDA_BLD_PATH: ${{ runner.temp }}/conda-build
         run: |
           set -o pipefail
-          conda build --override-channels -c conda-forge -c bioconda \
+          conda-build --override-channels -c conda-forge -c bioconda \
             packaging/bioconda/pterobacter 2>&1 | tee conda-build.log
       - name: Retain build evidence and candidate packages
         if: always()
