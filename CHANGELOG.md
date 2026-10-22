@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/mbhall88/pterobacter/compare/0.1.0...0.1.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* **build:** upstream Conda portability and automate licence bundles ([#81](https://github.com/mbhall88/pterobacter/issues/81)) ([79ee21f](https://github.com/mbhall88/pterobacter/commit/79ee21f05596c6ca3cc92ae2196b4da368d4839b))
+
 ## 0.1.0 (2026-10-22)
 
 
