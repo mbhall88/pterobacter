@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import tempfile
+import sys
 import unittest
 from unittest.mock import patch
 
@@ -74,6 +75,22 @@ class DistributionNotices(unittest.TestCase):
                 (native / 'LICENSE.md').unlink()
                 with self.assertRaises(FileNotFoundError):
                     licenses.native_notices()
+
+    def test_cli_check_rejects_stale_export_without_overwriting_it(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / 'THIRDPARTY.yml'
+            output.write_text('stale export\n')
+            def bundler(argv, **kwargs):
+                Path(argv[argv.index('--output') + 1]).write_text(json.dumps(self.bundle))
+            with patch.object(sys, 'argv', ['bundle_licenses.py', '--check', '--distribution', str(output)]), \
+                 patch.object(licenses, 'run', side_effect=['cargo-bundle-licenses cargo:4.2.0', '{}']), \
+                 patch.object(licenses, 'collect_packages', return_value=[]), \
+                 patch.object(licenses, 'embedded_packages', return_value=[]), \
+                 patch.object(licenses, 'supplemental_notices', return_value=self.supplement), \
+                 patch.object(licenses.subprocess, 'run', side_effect=bundler):
+                with self.assertRaisesRegex(ValueError, 'is stale'):
+                    licenses.main()
+            self.assertEqual(output.read_text(), 'stale export\n')
 
     def test_missing_required_cargo_text_stops_generation(self):
         bundle = {'third_party_libraries': [{'package_name': 'missing', 'package_version': '1',
