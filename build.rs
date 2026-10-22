@@ -62,7 +62,17 @@ fn main() {
         .unwrap_or_else(|error| panic!("{error}"));
     let discover = compiler::needs_discovery(&host, &target, explicit.is_some())
         .unwrap_or_else(|error| panic!("{error}"));
+    println!("cargo:rerun-if-env-changed=PTERO_CXX_STDLIB");
+    let stdlib = compiler::cpp_stdlib(&target, env::var_os("PTERO_CXX_STDLIB"))
+        .unwrap_or_else(|error| panic!("{error}"));
+    assert!(stdlib != "c++" || explicit.is_some(),
+        "PTERO_CXX_STDLIB=c++ requires an explicit GNU C++ compiler override; Homebrew discovery uses stdc++");
     let mut build = cc::Build::new();
+    if compiler::alternate_string_layout(&target, stdlib) {
+        // Match the string layout of Darwin ARM libc++ built with Clang. GNU
+        // does not select this ABI automatically in libc++'s target headers.
+        build.define("_LIBCPP_ABI_ALTERNATE_STRING_LAYOUT", None);
+    }
     if discover {
         let prefixes = compiler::homebrew_prefixes();
         for prefix in &prefixes {
@@ -79,7 +89,7 @@ fn main() {
     }
     build
         .cpp(true)
-        .cpp_link_stdlib("stdc++")
+        .cpp_link_stdlib(stdlib)
         .std("c++17")
         .opt_level(3)
         .debug(false)
@@ -110,7 +120,7 @@ fn main() {
         .next()
         .unwrap()
         .to_owned();
-    if target.contains("apple-darwin") {
+    if target.contains("apple-darwin") && stdlib == "stdc++" {
         // Homebrew GCC uses libstdc++, whereas cc's macOS default is libc++.
         let library = Command::new(compiler.path())
             .arg("-print-file-name=libstdc++.dylib")

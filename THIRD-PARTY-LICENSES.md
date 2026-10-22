@@ -19,10 +19,33 @@ just licenses
 just licenses-check
 ```
 
-Python 3.9 or later is required. The wrapper reads Cargo metadata and source archives offline, verifies that `Cargo.lock` stays unchanged and never copies source-cache paths into the outputs. JSON keeps generation and comparison within Python's standard library. Review both generated files when changing dependencies.
+Python 3.11 or later is required. The wrapper reads Cargo metadata and source archives offline, verifies that `Cargo.lock` stays unchanged and never copies source-cache paths into the outputs. JSON keeps generation and comparison within Python's standard library. Review both generated files when changing dependencies.
 
 Some source archives omit licence files. For a missing text, add the reviewed text to the matching package's `licenses` entry in `THIRDPARTY.json`, then regenerate. The bundler's `--previous` option carries that text forward while the package name, version and licence match. A version update needs a fresh review. The initial bundle retains reviewed texts for cloudabi, enum-map, enum-map-derive, fxhash, nalgebra-macros, newtype_derive, r-efi and the two winapi target crates.
 
 For an OR expression, the wrapper retains available licence options. Every constituent of an AND expression must have text. Missing required text stops generation. skani selects its supplied MIT option because the bundler also assigns that same text to its declared Apache alternative. The supplement preserves all other source notices, including alternatives omitted from the bundle.
 
 CI installs the same pinned bundler, fetches all locked target sources and runs the check. It compares both complete files without rewriting them, so additions, removals and text edits all fail until the notices are regenerated and reviewed.
+
+## A single notice bundle for binary packages
+
+Packagers can generate one YAML document instead of shipping the separate Cargo,
+supplemental and MUMmer notice files:
+
+```sh
+python3 -m pip install PyYAML
+cargo fetch --locked
+python3 scripts/bundle_licenses.py --distribution THIRDPARTY.yml
+python3 scripts/bundle_licenses.py --check --distribution THIRDPARTY.yml
+```
+
+Ship `LICENSE`, `LICENSE-GPL-3.0.txt` and the generated `THIRDPARTY.yml`.
+The YAML contains the Cargo texts, vendored skani and partitions licences,
+supplemental source notices, and MUMmer licence files and source-comment notices.
+All are read from the current locked sources; do not edit the YAML by hand.
+This export leaves the two upstream generated files unchanged. PyYAML is required
+only for this export. CI checks generation, coverage and stale-output rejection.
+
+The source link names the corresponding-source archive for the package version.
+Downstream distributors must also provide their patches and build scripts; this
+notice bundle does not replace the corresponding-source requirement.

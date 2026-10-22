@@ -1,6 +1,8 @@
 #ifndef __SAID_TRAITS_H__
 #define __SAID_TRAITS_H__
 
+#include <type_traits>
+
 namespace compactsufsort_imp {
 template<typename SAIDPTR>
 struct type_traits {

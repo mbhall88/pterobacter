@@ -141,3 +141,20 @@ For test commands and the optional development binary, see [Contributing](../CON
 [![Container version](https://ghcr-badge.egpl.dev/mbhall88/pterobacter/latest_tag?label=GHCR)](https://github.com/mbhall88/pterobacter/pkgs/container/pterobacter) [![Container downloads](https://ghcr-badge.elias.eu.org/shield/mbhall88/pterobacter/pterobacter)](https://github.com/mbhall88/pterobacter/pkgs/container/pterobacter)
 
 Pull the image from [GitHub Container Registry](https://github.com/mbhall88/pterobacter/pkgs/container/pterobacter), or build the Dockerfile from source. See [containers](containers.md) for download commands and database/assembly mounts.
+
+### Packaging with a macOS GNU/libc++ toolchain
+
+The default GNU build links libstdc++; native Homebrew discovery is unchanged.
+For a macOS packaging toolchain that supplies GNU C++ configured for libc++, set
+an explicit compiler and `PTERO_CXX_STDLIB=c++`. For example, after activating
+Conda's native compiler environment:
+
+```sh
+PTERO_CXX_STDLIB=c++ cargo build --release --locked
+```
+
+The environment must already supply `CXX` or a target-specific GNU C++ override,
+libc++ headers, and linker search paths. This mode skips Homebrew runtime
+lookup and selects the matching libc++ string layout on Apple Silicon.
+An active Conda environment alone does not select this mode. Empty or unsupported
+runtime values fail the build; GNU C++ remains required.

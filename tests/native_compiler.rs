@@ -153,3 +153,29 @@ fn nonblank_overrides_keep_wrapper_arguments_and_ignore_lower_blank_values() {
         assert_eq!(values[&keys[0]], OsString::from(value));
     }
 }
+
+#[test]
+fn cpp_runtime_selection_preserves_defaults_and_rejects_unsupported_overrides() {
+    for target in [
+        "x86_64-unknown-linux-gnu",
+        "aarch64-unknown-linux-gnu",
+        "x86_64-apple-darwin",
+        "aarch64-apple-darwin",
+    ] {
+        assert_eq!(compiler::cpp_stdlib(target, None).unwrap(), "stdc++");
+        assert_eq!(
+            compiler::cpp_stdlib(target, Some("stdc++".into())).unwrap(),
+            "stdc++"
+        );
+        let alternate = compiler::cpp_stdlib(target, Some("c++".into()));
+        assert_eq!(alternate.is_ok(), target.contains("apple-darwin"));
+        for invalid in ["", " ", "libc++", " c++", "stdc++ "] {
+            assert!(compiler::cpp_stdlib(target, Some(invalid.into())).is_err());
+        }
+        assert!(!compiler::alternate_string_layout(target, "stdc++"));
+        assert_eq!(
+            compiler::alternate_string_layout(target, "c++"),
+            target == "aarch64-apple-darwin"
+        );
+    }
+}
