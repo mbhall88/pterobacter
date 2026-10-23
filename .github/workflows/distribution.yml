@@ -3,6 +3,8 @@ name: Distribution
 on:
   pull_request:
     branches: [main]
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       tag:
@@ -18,7 +20,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: distribution-${{ github.event_name }}-${{ inputs.tag || github.ref }}
+  group: distribution-${{ github.event.release.tag_name || inputs.tag || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
@@ -37,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.tag || github.sha }}
+          ref: ${{ github.event.release.tag_name || inputs.tag || github.sha }}
           fetch-depth: 0
       - uses: actions/setup-python@v6
         with:
@@ -46,14 +48,23 @@ jobs:
       - name: Validate release identity and publication authorization
         id: identity
         env:
-          TAG: ${{ inputs.tag }}
-          PUBLISH: ${{ inputs.publish }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          PUBLISH: ${{ github.event_name == 'release' || inputs.publish }}
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ "$PUBLISH" = true ]; then
-            test "$GITHUB_EVENT_NAME" = workflow_dispatch
-            test "$GITHUB_REF" = refs/heads/main
-            python3 scripts/check_release_tag.py --tag "$TAG" --publish > "$RUNNER_TEMP/identity.json"
+            if [ "$GITHUB_EVENT_NAME" = release ]; then
+              test "$GITHUB_REF" = "refs/tags/$TAG"
+            else
+              test "$GITHUB_EVENT_NAME" = workflow_dispatch
+              test "$GITHUB_REF" = refs/heads/main
+            fi
+            # Older tags predate CI waiting; manual recovery retains their original check.
+            wait_args=()
+            if python3 scripts/check_release_tag.py --help | grep -q -- '--wait-for-ci'; then
+              wait_args=(--wait-for-ci 1800)
+            fi
+            python3 scripts/check_release_tag.py --tag "$TAG" --publish "${wait_args[@]}" > "$RUNNER_TEMP/identity.json"
           else
             python3 scripts/check_release_tag.py --tag "$TAG" > "$RUNNER_TEMP/identity.json"
           fi
@@ -152,7 +163,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.tag || github.sha }}
+          ref: ${{ github.event.release.tag_name || inputs.tag || github.sha }}
           fetch-depth: 0
       - uses: actions/setup-python@v6
         with:
@@ -160,7 +171,7 @@ jobs:
       - name: Check container source identity
         id: identity
         env:
-          TAG: ${{ inputs.tag }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
         run: |
           python3 scripts/check_release_tag.py --tag "$TAG" > "$RUNNER_TEMP/container-identity.json"
           python3 - <<'PYCODE'
@@ -212,7 +223,7 @@ jobs:
             ${{ runner.temp }}/container/work/**/evidence.tsv
 
   publish:
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish)
     needs: [source, binaries, verify, container]
     runs-on: ubuntu-22.04
     permissions:
@@ -235,7 +246,7 @@ jobs:
           path: ${{ runner.temp }}/release-assets
       - name: Recheck the tag, source CI and tested crate
         env:
-          TAG: ${{ inputs.tag }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
           VERSION: ${{ needs.source.outputs.version }}
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -247,7 +258,7 @@ jobs:
       - name: Publish the verified package and attach release assets
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-          TAG: ${{ inputs.tag }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
           GH_TOKEN: ${{ github.token }}
         run: |
           python3 scripts/publish_distribution.py --approved-publication --tag "$TAG" \
@@ -258,7 +269,7 @@ jobs:
           path: ${{ runner.temp }}/container
       - name: Publish the tested image to GHCR
         env:
-          TAG: ${{ inputs.tag }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
           GH_TOKEN: ${{ github.token }}
         run: |
           printf '%s' "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin

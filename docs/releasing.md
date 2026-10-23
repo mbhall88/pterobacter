@@ -1,6 +1,6 @@
 # Preparing and publishing a release
 
-The **Distribution** workflow prepares crates.io and precompiled downloads. Pull requests build private candidate artifacts; they do not publish. A manual run with **publish=false** also prepares artifacts without publication.
+The **Distribution** workflow automatically builds and publishes the crate, binary downloads, corresponding source and GHCR image when a GitHub release is published. Pull requests build candidate artifacts; they do not publish. A manual run with **publish=false** also prepares artifacts without publication.
 
 ## What is built
 
@@ -28,13 +28,17 @@ Use `aarch64-apple-darwin` on an Apple Silicon Mac. The output must be new and o
 
 ## Publish an approved version
 
-Publication makes source, crate and binaries public and requires Michael's approval. The source repository must be public for this workflow; changing its visibility is a separate decision. A configured token alone is not publication approval.
+Publishing a GitHub release authorizes distribution of that version. Keep unapproved releases as drafts. The source repository must be public; changing its visibility is a separate decision.
 
-1. Once publication is approved, update the README and installation page in the release candidate to show the approved crates.io and binary installation commands. This ensures the packaged README describes the released version. Review and merge the release-please version PR. Confirm the resulting version tag and GitHub release exist and main CI has passed for that exact commit.
-2. Run **Distribution** from main, set the tag to the reviewed tag such as `0.1.0`, and set **publish=true**. The workflow checks the tag against Cargo's version, its ancestry on main, repository visibility and successful source CI.
+1. Once publication is approved, update the README and installation page in the release candidate to show the approved crates.io and binary installation commands. This ensures the packaged README describes the released version. Review and merge the release-please version PR. Release Please creates the version tag and publishes its GitHub release, which starts Distribution automatically.
+2. Distribution uses the published release tag and waits up to 30 minutes for main CI on that exact commit. Failed CI stops publication. Tag/version matching, ancestry on main and repository visibility are checked before building; the release environment protections still apply.
 3. Both native builds and the corresponding-source rebuild must pass. The collector validates the inventories and hashes. The publisher then regenerates the crate and compares it byte-for-byte with the tested archive.
 4. Only the publication job receives `CARGO_REGISTRY_TOKEN`. It uploads corresponding source before binaries, publishes the crate, verifies its registry checksum, then attaches the remaining assets.
-5. Verify the public downloads, checksums and installation instructions after publication. Until publication is approved, the main README and installation page continue to describe those channels as pending.
+5. Verify the public downloads, checksums, crates.io version and GHCR image after publication.
+
+Release Please uses `secrets.PAT` to create releases: GitHub suppresses release-triggered workflows for releases created with `GITHUB_TOKEN`. Preserve that credential choice or use a GitHub App token. The `published` trigger covers stable releases and prereleases, but not drafts.
+
+For an existing release that has never started Distribution, run it manually from main with the release tag and **publish=true**. For tags predating automatic publication, first confirm main CI has passed: their original validation script checks immediately. Automatic and manual runs for the same tag share a concurrency group and do not cancel active publication.
 
 If a network failure interrupts only the publication job, rerun the failed job from that original workflow run with `gh run rerun RUN_ID --failed`. This reuses the verified assets. A fresh build of the same tag is not guaranteed to produce identical binary bytes or runtime metadata, so retain the original artifacts for retries. Existing registry versions and GitHub assets are accepted only when their bytes match; differing content is refused, never replaced. Do not change a published version's contents to repair an upload.
 
