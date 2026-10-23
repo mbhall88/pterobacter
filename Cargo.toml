@@ -58,7 +58,7 @@ ureq = { version = "3", default-features = false, features = ["rustls"] }
 
 # Dependencies of the reviewed embedded skani and partitions code.
 bio = "1.4.0"
-bit-vec = "0.5.1"
+bit-vec = "0.6.3"
 fastrand = "1.9.0"
 fxhash = "0.2.1"
 gbdt = "0.1.1"
