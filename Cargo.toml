@@ -68,7 +68,7 @@ log = "0.4.34"
 memmap2 = "0.9.11"
 num-traits = "0.2.19"
 proptest = "0.8.7"
-rand = "0.8.8"
+rand = "0.10.3"
 rust-lapper = "1.1.0"
 simple-logging = "2.0.2"
 smallvec = { version = "1.16.2", features = ["union", "serde", "write"] }
