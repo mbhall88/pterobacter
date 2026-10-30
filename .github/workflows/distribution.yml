@@ -41,7 +41,7 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name || inputs.tag || github.sha }}
           fetch-depth: 0
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - uses: dtolnay/rust-toolchain@stable
@@ -109,7 +109,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ needs.source.outputs.commit }}
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - uses: dtolnay/rust-toolchain@stable
@@ -138,7 +138,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ needs.source.outputs.commit }}
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - uses: actions/download-artifact@v8
@@ -165,7 +165,7 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name || inputs.tag || github.sha }}
           fetch-depth: 0
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - name: Check container source identity
@@ -236,7 +236,7 @@ jobs:
         with:
           ref: ${{ needs.source.outputs.commit }}
           fetch-depth: 0
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - uses: dtolnay/rust-toolchain@stable
